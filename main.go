@@ -19,7 +19,7 @@ var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
 	listenAddress = flag.String("web.listen-address", ":9326", "Address on which to expose metrics and web interface.")
 	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
-	snmpTargets   = flag.String("snmp.targets", "127.0.0.1", "Addresses or hostnames of switches or routers (comma seperated)")
+	snmpTargets   = flag.String("snmp.targets", "127.0.0.1", "Addresses or hostnames of switches or routers (comma separated)")
 	snmpCommunity = flag.String("snmp.community", "default", "Community allowed to access SNMP")
 )
 

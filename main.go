@@ -8,12 +8,14 @@ import (
 
 	"strings"
 
+	"sync"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.1.0"
+const version string = "0.1.1"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
@@ -21,6 +23,7 @@ var (
 	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	snmpTargets   = flag.String("snmp.targets", "127.0.0.1", "Addresses or hostnames of switches or routers (comma separated)")
 	snmpCommunity = flag.String("snmp.community", "default", "Community allowed to access SNMP")
+	mutex         = &sync.Mutex{}
 )
 
 func init() {
@@ -69,6 +72,9 @@ func startServer() {
 }
 
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	reg := prometheus.NewRegistry()
 	targets := strings.Split(*snmpTargets, ",")
 	reg.MustRegister(NewJunosCollector(targets, *snmpCommunity))

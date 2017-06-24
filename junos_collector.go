@@ -20,6 +20,7 @@ const (
 )
 
 var (
+	scrapeDurationDesc *prometheus.Desc
 	upDesc             *prometheus.Desc
 	receiveBytesDesc   *prometheus.Desc
 	receiveErrorsDesc  *prometheus.Desc
@@ -31,6 +32,7 @@ var (
 
 func init() {
 	upDesc = prometheus.NewDesc(prefix+"up", "Scrape of target was successful", []string{"target"}, nil)
+	scrapeDurationDesc = prometheus.NewDesc(prefix+"collector_duration_seconds", "Duration of a collector scrape for one target", []string{"target"}, nil)
 
 	l := []string{"name", "description", "target"}
 	receiveBytesDesc = prometheus.NewDesc(prefix+"interface_receive_bytes", "Received data in bytes", l, nil)
@@ -60,6 +62,7 @@ func NewJunosCollector(targets []string, community string) *JunosCollector {
 
 func (c *JunosCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- upDesc
+	ch <- scrapeDurationDesc
 	ch <- receiveBytesDesc
 	ch <- receiveErrorsDesc
 	ch <- receiveDropsDesc
@@ -90,6 +93,9 @@ func (c *JunosCollector) collectForTarget(target string, ch chan<- prometheus.Me
 	s.snmp.Version = 1
 	s.snmp.MaxOids = 255
 
+	start := time.Now()
+	defer func() { ch <- c.durationMetric(time.Since(start), s) }()
+
 	c.collectMetrics(s)
 	if s.err != nil {
 		log.Error(s.err)
@@ -106,6 +112,11 @@ func (c *JunosCollector) upMetric(value float64, s *scope) prometheus.Metric {
 	return m
 }
 
+func (c *JunosCollector) durationMetric(t time.Duration, s *scope) prometheus.Metric {
+	m, _ := prometheus.NewConstMetric(scrapeDurationDesc, prometheus.GaugeValue, float64(t*time.Second), s.snmp.Target)
+	return m
+}
+
 func (c *JunosCollector) collectMetrics(s *scope) {
 	err := s.snmp.Connect()
 	if err != nil {
@@ -113,8 +124,6 @@ func (c *JunosCollector) collectMetrics(s *scope) {
 		return
 	}
 	defer s.snmp.Conn.Close()
-
-	start := time.Now()
 
 	err = c.fetchInterfaces(s)
 	if err != nil {
@@ -131,8 +140,6 @@ func (c *JunosCollector) collectMetrics(s *scope) {
 	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.2.2.1.14", receiveErrorsDesc, noConvert, s)
 	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.2.2.1.19", transmitDropsDesc, noConvert, s)
 	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.2.2.1.20", transmitErrorsDesc, noConvert, s)
-
-	log.Info(time.Since(start))
 }
 
 func (c *JunosCollector) fetchInterfaces(s *scope) error {

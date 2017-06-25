@@ -176,6 +176,10 @@ func (c *JunosCollector) fetchInterfaceMetricFromOid(oid string, desc *prometheu
 }
 
 func (c *JunosCollector) fetchForInterfaces(oid string, handler func(gosnmp.SnmpPDU) error, s *scope) {
+	if s.err != nil {
+		return
+	}
+
 	oids := make([]string, len(s.interfaceLabels))
 	i := 0
 	for _, x := range s.interfaces {
@@ -184,15 +188,19 @@ func (c *JunosCollector) fetchForInterfaces(oid string, handler func(gosnmp.Snmp
 	}
 
 	res, err := s.snmp.Get(oids)
-	if err != nil && s.err != nil {
+	if err != nil {
 		s.err = err
+		return
+	}
+
+	if res.Variables == nil {
 		return
 	}
 
 	for _, v := range res.Variables {
 		if v.Value != nil {
 			err := handler(v)
-			if err != nil && s.err != nil {
+			if err != nil {
 				return
 			}
 		}

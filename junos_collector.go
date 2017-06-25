@@ -188,6 +188,7 @@ func (c *JunosCollector) fetchForInterfaces(oid string, handler func(gosnmp.Snmp
 	}
 
 	if res.Variables == nil {
+		log.Errorf("No result for OID: %s", oid)
 		return
 	}
 

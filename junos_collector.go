@@ -180,13 +180,7 @@ func (c *JunosCollector) fetchForInterfaces(oid string, handler func(gosnmp.Snmp
 		return
 	}
 
-	oids := make([]string, len(s.interfaceLabels))
-	i := 0
-	for _, x := range s.interfaces {
-		oids[i] = oid + "." + x
-		i++
-	}
-
+	oids := c.getOidsForInterfaces(oid, s)
 	res, err := s.snmp.Get(oids)
 	if err != nil {
 		s.err = err
@@ -205,6 +199,17 @@ func (c *JunosCollector) fetchForInterfaces(oid string, handler func(gosnmp.Snmp
 			}
 		}
 	}
+}
+
+func (c *JunosCollector) getOidsForInterfaces(oid string, s *scope) []string {
+	oids := make([]string, len(s.interfaceLabels))
+	i := 0
+	for _, x := range s.interfaces {
+		oids[i] = oid + "." + x
+		i++
+	}
+
+	return oids
 }
 
 func (c *JunosCollector) handlePduAsLabel(index int, p gosnmp.SnmpPDU, s *scope) {

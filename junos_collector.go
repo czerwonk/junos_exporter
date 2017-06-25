@@ -190,9 +190,11 @@ func (c *JunosCollector) fetchForInterfaces(oid string, handler func(gosnmp.Snmp
 	}
 
 	for _, v := range res.Variables {
-		err := handler(v)
-		if err != nil && s.err != nil {
-			return
+		if v.Value != nil {
+			err := handler(v)
+			if err != nil && s.err != nil {
+				return
+			}
 		}
 	}
 }

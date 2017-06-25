@@ -12,7 +12,7 @@ import (
 	"github.com/soniah/gosnmp"
 )
 
-type ValueConverter func(uint) float64
+type ValueConverter func(float64) float64
 
 const (
 	numberOfInterfaceLabels = 2
@@ -134,8 +134,8 @@ func (c *JunosCollector) collectMetrics(s *scope) {
 	c.fetchInterfaceLabelFromOid(".1.3.6.1.2.1.31.1.1.1.1", 0, s)
 	c.fetchInterfaceLabelFromOid(".1.3.6.1.2.1.31.1.1.1.18", 1, s)
 
-	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.2.2.1.10", receiveBytesDesc, bitsToBytes, s)
-	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.2.2.1.16", transmitBytesDesc, bitsToBytes, s)
+	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.31.1.1.1.10", receiveBytesDesc, bitsToBytes, s)
+	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.31.1.1.1.16", transmitBytesDesc, bitsToBytes, s)
 	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.2.2.1.13", receiveDropsDesc, noConvert, s)
 	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.2.2.1.14", receiveErrorsDesc, noConvert, s)
 	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.2.2.1.19", transmitDropsDesc, noConvert, s)
@@ -222,7 +222,15 @@ func (c *JunosCollector) handlePduAsLabel(index int, p gosnmp.SnmpPDU, s *scope)
 
 func (c *JunosCollector) handlePduAsMetric(desc *prometheus.Desc, pdu gosnmp.SnmpPDU, converter ValueConverter, s *scope) error {
 	id := c.getId(pdu.Name)
-	v := pdu.Value.(uint)
+
+	var v float64 = 0
+	switch pdu.Value.(type) {
+	case uint:
+		v = float64(pdu.Value.(uint))
+	case uint64:
+		v = float64(pdu.Value.(uint64))
+	}
+
 	l := append(s.interfaceLabels[id], s.snmp.Target)
 	m, err := prometheus.NewConstMetric(desc, prometheus.GaugeValue, converter(v), l...)
 

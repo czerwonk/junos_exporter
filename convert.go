@@ -1,9 +1,9 @@
 package main
 
-func noConvert(v uint) float64 {
+func noConvert(v float64) float64 {
 	return float64(v)
 }
 
-func bitsToBytes(v uint) float64 {
+func bitsToBytes(v float64) float64 {
 	return float64(v * 8)
 }

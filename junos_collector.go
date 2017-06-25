@@ -15,7 +15,7 @@ import (
 type ValueConverter func(float64) float64
 
 const (
-	numberOfInterfaceLabels = 2
+	numberOfInterfaceLabels = 3
 	prefix                  = "junos_"
 )
 
@@ -34,7 +34,7 @@ func init() {
 	upDesc = prometheus.NewDesc(prefix+"up", "Scrape of target was successful", []string{"target"}, nil)
 	scrapeDurationDesc = prometheus.NewDesc(prefix+"collector_duration_seconds", "Duration of a collector scrape for one target", []string{"target"}, nil)
 
-	l := []string{"name", "description", "target"}
+	l := []string{"name", "description", "mac", "target"}
 	receiveBytesDesc = prometheus.NewDesc(prefix+"interface_receive_bytes", "Received data in bytes", l, nil)
 	receiveErrorsDesc = prometheus.NewDesc(prefix+"interface_receive_errors", "Number of errors caused by incoming packets", l, nil)
 	receiveDropsDesc = prometheus.NewDesc(prefix+"interface_receive_drops", "Number of dropped incoming packets", l, nil)
@@ -133,9 +133,10 @@ func (c *JunosCollector) collectMetrics(s *scope) {
 
 	c.fetchInterfaceLabelFromOid(".1.3.6.1.2.1.31.1.1.1.1", 0, s)
 	c.fetchInterfaceLabelFromOid(".1.3.6.1.2.1.31.1.1.1.18", 1, s)
+	//c.fetchInterfaceLabelFromOid(".1.3.6.1.2.1.2.2.1.6", 2, s)
 
-	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.31.1.1.1.10", receiveBytesDesc, bitsToBytes, s)
-	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.31.1.1.1.16", transmitBytesDesc, bitsToBytes, s)
+	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.31.1.1.1.6", receiveBytesDesc, bitsToBytes, s)
+	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.31.1.1.1.10", transmitBytesDesc, bitsToBytes, s)
 	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.2.2.1.13", receiveDropsDesc, noConvert, s)
 	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.2.2.1.14", receiveErrorsDesc, noConvert, s)
 	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.2.2.1.19", transmitDropsDesc, noConvert, s)

@@ -1,7 +1,7 @@
 # junos_exporter
-[![Build Status](https://travis-ci.org/czerwonk/junos_exporter.svg)][travis]
-[![Docker Build Statu](https://img.shields.io/docker/build/czerwonk/junos_exporter.svg)][dockerbuild]
-[![Go Report Card](https://goreportcard.com/badge/github.com/czerwonk/junos_exporter)][goreportcard]
+[![Build Status](https://travis-ci.org/czerwonk/junos_exporter.svg)](https://travis-ci.org/czerwonk/junos_exporter)
+[![Docker Build Statu](https://img.shields.io/docker/build/czerwonk/junos_exporter.svg)](https://hub.docker.com/r/czerwonk/junos_exporter/builds)
+[![Go Report Card](https://goreportcard.com/badge/github.com/czerwonk/junos_exporter)](https://goreportcard.com/report/github.com/czerwonk/junos_exporter)
 
 Exporter for metrics from devices running JunOS (via SNMP) https://prometheus.io/
 
@@ -31,7 +31,3 @@ This software uses components of the following projects
 
 ## Prometheus
 see https://prometheus.io/
-
-[travis]: https://travis-ci.org/czerwonk/junos_exporter
-[dockerbuild]: https://hub.docker.com/r/czerwonk/junos_exporter/builds
-[goreportcard]: https://goreportcard.com/report/github.com/czerwonk/junos_exporter

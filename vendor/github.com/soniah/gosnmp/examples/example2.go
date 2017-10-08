@@ -7,23 +7,44 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"strconv"
+	"time"
 
 	g "github.com/soniah/gosnmp"
 )
 
 func main() {
 
-	// Default is a pointer to a GoSNMP struct that contains sensible defaults
-	// eg port 161, community public, etc
-	g.Default.Target = "192.168.1.10"
-	err := g.Default.Connect()
+	// get Target and Port from environment
+	envTarget := os.Getenv("GOSNMP_TARGET")
+	envPort := os.Getenv("GOSNMP_PORT")
+	if len(envTarget) <= 0 {
+		log.Fatalf("environment variable not set: GOSNMP_TARGET")
+	}
+	if len(envPort) <= 0 {
+		log.Fatalf("environment variable not set: GOSNMP_PORT")
+	}
+	port, _ := strconv.ParseUint(envPort, 10, 16)
+
+	// Build our own GoSNMP struct, rather than using g.Default.
+	// Do verbose logging of packets.
+	params := &g.GoSNMP{
+		Target:    envTarget,
+		Port:      uint16(port),
+		Community: "public",
+		Version:   g.Version2c,
+		Timeout:   time.Duration(2) * time.Second,
+		Logger:    log.New(os.Stdout, "", 0),
+	}
+	err := params.Connect()
 	if err != nil {
 		log.Fatalf("Connect() err: %v", err)
 	}
-	defer g.Default.Conn.Close()
+	defer params.Conn.Close()
 
 	oids := []string{"1.3.6.1.2.1.1.4.0", "1.3.6.1.2.1.1.7.0"}
-	result, err2 := g.Default.Get(oids) // Get() accepts up to g.MAX_OIDS
+	result, err2 := params.Get(oids) // Get() accepts up to g.MAX_OIDS
 	if err2 != nil {
 		log.Fatalf("Get() err: %v", err2)
 	}

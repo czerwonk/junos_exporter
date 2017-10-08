@@ -15,12 +15,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/alouca/gologger"
-  packages = ["."]
-  revision = "7d4b7291de9c9df1b3fe6a3d784b3675b6c0c996"
-
-[[projects]]
-  branch = "master"
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
   revision = "4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9"
@@ -70,8 +64,7 @@
 [[projects]]
   name = "github.com/soniah/gosnmp"
   packages = ["."]
-  revision = "ecdd943d00fe0e34ea021e893b295a9ff6af0434"
-  version = "v1.0"
+  revision = "55acec044875c95a3fb3fbc37160cb766501939f"
 
 [[projects]]
   branch = "master"
@@ -94,6 +87,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f5654318471318676091da655317e6b8c366675ffb92f0e28809c3c7537e50c6"
+  inputs-digest = "2f8d380dafeae7bb65e081264c19816ad9596b49ba384a19c0364d258af05d43"
   solver-name = "gps-cdcl"
   solver-version = 1

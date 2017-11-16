@@ -28,11 +28,15 @@ var (
 	transmitBytesDesc  *prometheus.Desc
 	transmitErrorsDesc *prometheus.Desc
 	transmitDropsDesc  *prometheus.Desc
+	alarmsYellowCount  *prometheus.Desc
+	alarmsRedCount     *prometheus.Desc
 )
 
 func init() {
 	upDesc = prometheus.NewDesc(prefix+"up", "Scrape of target was successful", []string{"target"}, nil)
 	scrapeDurationDesc = prometheus.NewDesc(prefix+"collector_duration_seconds", "Duration of a collector scrape for one target", []string{"target"}, nil)
+	alarmsYellowCount = prometheus.NewDesc(prefix+"alarms_yollow_count", "Number of yollow alarms (not silenced)", []string{"target"}, nil)
+	alarmsRedCount = prometheus.NewDesc(prefix+"alarms_red_count", "Number of red alarms (not silenced)", []string{"target"}, nil)
 
 	l := []string{"name", "description", "mac", "target"}
 	receiveBytesDesc = prometheus.NewDesc(prefix+"interface_receive_bytes", "Received data in bytes", l, nil)
@@ -63,6 +67,8 @@ func NewJunosCollector(targets []string, community string) *JunosCollector {
 func (c *JunosCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- upDesc
 	ch <- scrapeDurationDesc
+	ch <- alarmsYellowCount
+	ch <- alarmsRedCount
 	ch <- receiveBytesDesc
 	ch <- receiveErrorsDesc
 	ch <- receiveDropsDesc
@@ -123,7 +129,9 @@ func (c *JunosCollector) collectMetrics(s *scope) {
 		s.err = err
 		return
 	}
-	defer s.snmp.Conn.Close()
+
+	c.fetchMetricForOid(".1.3.6.1.4.1.2636.3.4.2.2.2.0", alarmsYellowCount, noConvert, s)
+	c.fetchMetricForOid(".1.3.6.1.4.1.2636.3.4.2.3.2.0", alarmsRedCount, noConvert, s)
 
 	err = c.fetchInterfaces(s)
 	if err != nil {
@@ -133,8 +141,6 @@ func (c *JunosCollector) collectMetrics(s *scope) {
 
 	c.fetchInterfaceLabelFromOid(".1.3.6.1.2.1.31.1.1.1.1", 0, s)
 	c.fetchInterfaceLabelFromOid(".1.3.6.1.2.1.31.1.1.1.18", 1, s)
-	//c.fetchInterfaceLabelFromOid(".1.3.6.1.2.1.2.2.1.6", 2, s)
-
 	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.31.1.1.1.6", receiveBytesDesc, bitsToBytes, s)
 	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.31.1.1.1.10", transmitBytesDesc, bitsToBytes, s)
 	c.fetchInterfaceMetricFromOid(".1.3.6.1.2.1.2.2.1.13", receiveDropsDesc, noConvert, s)
@@ -159,29 +165,16 @@ func (c *JunosCollector) fetchInterfaces(s *scope) error {
 	return nil
 }
 
-func (c *JunosCollector) fetchInterfaceLabelFromOid(oid string, index int, s *scope) {
+func (c *JunosCollector) fetchMetricForOid(oid string, desc *prometheus.Desc, converter ValueConverter, s *scope) {
 	h := func(p gosnmp.SnmpPDU) error {
-		c.handlePduAsLabel(index, p, s)
-		return nil
+		return c.handlePduAsMetric(desc, p, converter, s, s.snmp.Target)
 	}
 
-	c.fetchForInterfaces(oid, h, s)
+	oids := []string{oid}
+	c.fetchForOids(oids, h, s)
 }
 
-func (c *JunosCollector) fetchInterfaceMetricFromOid(oid string, desc *prometheus.Desc, converter ValueConverter, s *scope) {
-	h := func(p gosnmp.SnmpPDU) error {
-		return c.handlePduAsMetric(desc, p, converter, s)
-	}
-
-	c.fetchForInterfaces(oid, h, s)
-}
-
-func (c *JunosCollector) fetchForInterfaces(oid string, handler func(gosnmp.SnmpPDU) error, s *scope) {
-	if s.err != nil {
-		return
-	}
-
-	oids := c.getOidsForInterfaces(oid, s)
+func (c *JunosCollector) fetchForOids(oids []string, handler func(gosnmp.SnmpPDU) error, s *scope) {
 	res, err := s.snmp.Get(oids)
 	if err != nil {
 		s.err = err
@@ -189,7 +182,7 @@ func (c *JunosCollector) fetchForInterfaces(oid string, handler func(gosnmp.Snmp
 	}
 
 	if res.Variables == nil {
-		log.Errorf("No result for OID: %s", oid)
+		log.Errorf("No result for OIDs: %s", oids)
 		return
 	}
 
@@ -201,6 +194,32 @@ func (c *JunosCollector) fetchForInterfaces(oid string, handler func(gosnmp.Snmp
 			}
 		}
 	}
+}
+
+func (c *JunosCollector) fetchInterfaceLabelFromOid(oid string, index int, s *scope) {
+	h := func(p gosnmp.SnmpPDU) error {
+		c.handlePduAsLabel(index, p, s)
+		return nil
+	}
+
+	c.fetchForInterfaces(oid, h, s)
+}
+
+func (c *JunosCollector) fetchInterfaceMetricFromOid(oid string, desc *prometheus.Desc, converter ValueConverter, s *scope) {
+	h := func(p gosnmp.SnmpPDU) error {
+		return c.handlePduAsInterfaceMetric(desc, p, converter, s)
+	}
+
+	c.fetchForInterfaces(oid, h, s)
+}
+
+func (c *JunosCollector) fetchForInterfaces(oid string, handler func(gosnmp.SnmpPDU) error, s *scope) {
+	if s.err != nil {
+		return
+	}
+
+	oids := c.getOidsForInterfaces(oid, s)
+	c.fetchForOids(oids, handler, s)
 }
 
 func (c *JunosCollector) getOidsForInterfaces(oid string, s *scope) []string {
@@ -221,9 +240,14 @@ func (c *JunosCollector) handlePduAsLabel(index int, p gosnmp.SnmpPDU, s *scope)
 	s.interfaceLabels[id][index] = string(b)
 }
 
-func (c *JunosCollector) handlePduAsMetric(desc *prometheus.Desc, pdu gosnmp.SnmpPDU, converter ValueConverter, s *scope) error {
+func (c *JunosCollector) handlePduAsInterfaceMetric(desc *prometheus.Desc, pdu gosnmp.SnmpPDU, converter ValueConverter, s *scope) error {
 	id := c.getId(pdu.Name)
+	l := append(s.interfaceLabels[id], s.snmp.Target)
 
+	return c.handlePduAsMetric(desc, pdu, converter, s, l...)
+}
+
+func (c *JunosCollector) handlePduAsMetric(desc *prometheus.Desc, pdu gosnmp.SnmpPDU, converter ValueConverter, s *scope, l ...string) error {
 	var v float64 = 0
 	switch pdu.Value.(type) {
 	case uint:
@@ -232,7 +256,6 @@ func (c *JunosCollector) handlePduAsMetric(desc *prometheus.Desc, pdu gosnmp.Snm
 		v = float64(pdu.Value.(uint64))
 	}
 
-	l := append(s.interfaceLabels[id], s.snmp.Target)
 	m, err := prometheus.NewConstMetric(desc, prometheus.GaugeValue, converter(v), l...)
 
 	if err != nil {

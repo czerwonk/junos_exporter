@@ -35,7 +35,7 @@ var (
 func init() {
 	upDesc = prometheus.NewDesc(prefix+"up", "Scrape of target was successful", []string{"target"}, nil)
 	scrapeDurationDesc = prometheus.NewDesc(prefix+"collector_duration_seconds", "Duration of a collector scrape for one target", []string{"target"}, nil)
-	alarmsYellowCount = prometheus.NewDesc(prefix+"alarms_yollow_count", "Number of yollow alarms (not silenced)", []string{"target"}, nil)
+	alarmsYellowCount = prometheus.NewDesc(prefix+"alarms_yellow_count", "Number of yollow alarms (not silenced)", []string{"target"}, nil)
 	alarmsRedCount = prometheus.NewDesc(prefix+"alarms_red_count", "Number of red alarms (not silenced)", []string{"target"}, nil)
 
 	l := []string{"name", "description", "mac", "target"}

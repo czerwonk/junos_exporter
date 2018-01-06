@@ -10,6 +10,7 @@ import (
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/czerwonk/junos_exporter/interfaces"
+	"github.com/czerwonk/junos_exporter/ospf"
 )
 
 type RpcClient struct {
@@ -113,6 +114,26 @@ func (c *RpcClient) BgpSessions() ([]*bgp.BgpSession, error) {
 	}
 
 	return sessions, nil
+}
+
+func (c *RpcClient) OspfAreas() ([]*ospf.OspfArea, error) {
+	var x = Ospf3Rpc{}
+	err := c.runCommandAndParse("show ospf3 overview", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	areas := make([]*ospf.OspfArea, 0)
+	for _, area := range x.Information.Overview.Areas {
+		a := &ospf.OspfArea{
+			Name:      area.Name,
+			Neighbors: float64(area.Neighbors.NeighborsUp),
+		}
+
+		areas = append(areas, a)
+	}
+
+	return areas, nil
 }
 
 func (c *RpcClient) runCommandAndParse(cmd string, obj interface{}) error {

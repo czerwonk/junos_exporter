@@ -10,6 +10,7 @@ import (
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/czerwonk/junos_exporter/interfaces"
+	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
@@ -31,6 +32,7 @@ type JunosCollector struct {
 	interfaceCollector *interfaces.InterfaceCollector
 	alarmCollector     *alarm.AlarmCollector
 	bgpCollector       *bgp.BgpCollector
+	ospfCollector      *ospf.OspfCollector
 }
 
 func (c *JunosCollector) Describe(ch chan<- *prometheus.Desc) {
@@ -40,6 +42,7 @@ func (c *JunosCollector) Describe(ch chan<- *prometheus.Desc) {
 	c.interfaceCollector.Describe(ch)
 	c.alarmCollector.Describe(ch)
 	c.bgpCollector.Describe(ch)
+	c.ospfCollector.Describe(ch)
 }
 
 func (c *JunosCollector) Collect(ch chan<- prometheus.Metric) {
@@ -86,6 +89,11 @@ func (c *JunosCollector) collectForHost(host string, ch chan<- prometheus.Metric
 	}
 
 	err = c.bgpCollector.Collect(rpc, ch, l)
+	if err != nil {
+		log.Errorln(err)
+	}
+
+	err = c.ospfCollector.Collect(rpc, ch, l)
 	if err != nil {
 		log.Errorln(err)
 	}

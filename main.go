@@ -11,7 +11,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.4.0"
+const version string = "0.5.0"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
@@ -19,7 +19,7 @@ var (
 	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	sshHosts      = flag.String("ssh.targets", "", "Hosts to scrape")
 	sshUsername   = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
-	sshKeyFile    = flag.String("ssh.key_file", "junos_exporter", "Public key file to use when connecting to junos devices using ssh")
+	sshKeyFile    = flag.String("ssh.keyfile", "junos_exporter", "Public key file to use when connecting to junos devices using ssh")
 )
 
 func init() {

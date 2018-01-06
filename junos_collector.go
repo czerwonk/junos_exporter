@@ -8,6 +8,9 @@ import (
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/prometheus/common/log"
+	"sync"
 )
 
 const prefix = "junos_"
@@ -38,18 +41,34 @@ func (c *JunosCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *JunosCollector) Collect(ch chan<- prometheus.Metric) {
-	for _, h := range strings.Split(*sshHosts, ",") {
-		go c.collectForHost(strings.Trim(h, " "), ch)
+	hosts := strings.Split(*sshHosts, ",")
+	wg := &sync.WaitGroup{}
+
+	wg.Add(len(hosts))
+	for _, h := range hosts {
+		go c.collectForHost(strings.Trim(h, " "), ch, wg)
 	}
+
+	wg.Wait()
 }
 
-func (c *JunosCollector) collectForHost(host string, ch chan<- prometheus.Metric) {
+func (c *JunosCollector) collectForHost(host string, ch chan<- prometheus.Metric, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	l := []string{host}
 
 	t := time.Now()
 	defer func() {
 		ch <- prometheus.MustNewConstMetric(scrapeDurationDesc, prometheus.GaugeValue, time.Since(t).Seconds(), l...)
 	}()
+
+	conn, err := connector.NewSshConnection(host, *sshUsername, *sshKeyFile)
+	if err != nil {
+		log.Errorln(err)
+		ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 0, l...)
+		return
+	}
+	defer conn.Close()
 
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 1, l...)
 

@@ -1,16 +1,16 @@
 package connector
 
 import (
-	"strings"
-	"golang.org/x/crypto/ssh"
-	"io/ioutil"
-	"errors"
 	"bytes"
+	"io/ioutil"
+	"strings"
+
+	"golang.org/x/crypto/ssh"
 )
 
 func NewSshConnection(host, user, keyFile string) (*SshConnection, error) {
 	if !strings.Contains(host, ":") {
-		host = host+":22"
+		host = host + ":22"
 	}
 
 	c := &SshConnection{}
@@ -23,7 +23,7 @@ func NewSshConnection(host, user, keyFile string) (*SshConnection, error) {
 }
 
 type SshConnection struct {
-	session *ssh.Session
+	conn *ssh.Client
 }
 
 func (c *SshConnection) Connect(host, user, keyFile string) error {
@@ -33,29 +33,26 @@ func (c *SshConnection) Connect(host, user, keyFile string) error {
 	}
 
 	config := &ssh.ClientConfig{
-		User: user,
-		Auth: []ssh.AuthMethod{pk},
+		User:            user,
+		Auth:            []ssh.AuthMethod{pk},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
-	conn, err := ssh.Dial("tcp", host, config)
-	if err != nil {
-		return err
-	}
-
-	c.session, err = openSession(conn)
+	c.conn, err = ssh.Dial("tcp", host, config)
 	return err
 }
 
 func (c *SshConnection) RunCommand(cmd string) ([]byte, error) {
-	if c.session == nil {
-		return nil, errors.New("Session must be opened first")
+	session, err := c.conn.NewSession()
+	if err != nil {
+		return nil, err
 	}
+	defer session.Close()
 
 	var b = &bytes.Buffer{}
-	c.session.Stdout = b
+	session.Stdout = b
 
-	err := c.session.Run(cmd)
+	err = session.Run(cmd)
 	if err != nil {
 		return nil, err
 	}
@@ -64,21 +61,12 @@ func (c *SshConnection) RunCommand(cmd string) ([]byte, error) {
 }
 
 func (c *SshConnection) Close() {
-	if c.session == nil {
+	if c.conn == nil {
 		return
 	}
 
-	c.session.Close()
-	c.session = nil
-}
-
-func openSession(conn *ssh.Client) (*ssh.Session, error) {
-	session, err := conn.NewSession()
-	if err != nil {
-		return nil, err
-	}
-
-	return session, nil
+	c.conn.Close()
+	c.conn = nil
 }
 
 func loadPublicKeyFile(file string) (ssh.AuthMethod, error) {

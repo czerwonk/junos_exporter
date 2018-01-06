@@ -75,7 +75,18 @@ func (c *JunosCollector) collectForHost(host string, ch chan<- prometheus.Metric
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 1, l...)
 
 	rpc := rpc.NewClient(conn)
-	c.interfaceCollector.Collect(rpc, ch, l)
-	c.alarmCollector.Collect(rpc, ch, l)
-	c.bgpCollector.Collect(rpc, ch, l)
+	err = c.interfaceCollector.Collect(rpc, ch, l)
+	if err != nil {
+		log.Errorln(err)
+	}
+
+	err = c.alarmCollector.Collect(rpc, ch, l)
+	if err != nil {
+		log.Errorln(err)
+	}
+
+	err = c.bgpCollector.Collect(rpc, ch, l)
+	if err != nil {
+		log.Errorln(err)
+	}
 }

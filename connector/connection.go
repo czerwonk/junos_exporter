@@ -5,8 +5,37 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"sync"
+
 	"golang.org/x/crypto/ssh"
 )
+
+var (
+	cachedConfig *ssh.ClientConfig = nil
+	lock                           = &sync.Mutex{}
+)
+
+func config(user, keyFile string) (*ssh.ClientConfig, error) {
+	lock.Lock()
+	defer lock.Unlock()
+
+	if cachedConfig != nil {
+		return cachedConfig, nil
+	}
+
+	pk, err := loadPublicKeyFile(keyFile)
+	if err != nil {
+		return nil, err
+	}
+
+	cachedConfig = &ssh.ClientConfig{
+		User:            user,
+		Auth:            []ssh.AuthMethod{pk},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+
+	return cachedConfig, nil
+}
 
 func NewSshConnection(host, user, keyFile string) (*SshConnection, error) {
 	if !strings.Contains(host, ":") {
@@ -28,15 +57,9 @@ type SshConnection struct {
 }
 
 func (c *SshConnection) Connect(user, keyFile string) error {
-	pk, err := loadPublicKeyFile(keyFile)
+	config, err := config(user, keyFile)
 	if err != nil {
 		return err
-	}
-
-	config := &ssh.ClientConfig{
-		User:            user,
-		Auth:            []ssh.AuthMethod{pk},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
 	c.conn, err = ssh.Dial("tcp", c.Host, config)

@@ -28,7 +28,3 @@
 [[constraint]]
   branch = "master"
   name = "github.com/prometheus/common"
-
-[[constraint]]
-  name = "github.com/soniah/gosnmp"
-  revision = "55acec044875c95a3fb3fbc37160cb766501939f"

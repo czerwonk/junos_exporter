@@ -53,4 +53,11 @@ func (*InterfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prom
 	l := append(labelValues, []string{ s.Name, s.Description, s.Mac }...)
 	ch <- prometheus.MustNewConstMetric(receiveBytesDesc, prometheus.GaugeValue, s.ReceiveBytes, l...)
 	ch <- prometheus.MustNewConstMetric(transmitBytesDesc, prometheus.GaugeValue, s.TransmitBytes, l...)
+
+	if s.IsPhysical {
+		ch <- prometheus.MustNewConstMetric(transmitErrorsDesc, prometheus.GaugeValue, s.TransmitErrors, l...)
+		ch <- prometheus.MustNewConstMetric(transmitDropsDesc, prometheus.GaugeValue, s.TransmitDrops, l...)
+		ch <- prometheus.MustNewConstMetric(receiveErrorsDesc, prometheus.GaugeValue, s.ReceiveErrors, l...)
+		ch <- prometheus.MustNewConstMetric(receiveDropsDesc, prometheus.GaugeValue, s.ReceiveDrops, l...)
+	}
 }

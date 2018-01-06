@@ -15,7 +15,7 @@ This approach should allow us to scrape our metrics in a very time efficient way
 For this reason this project was started.
 
 ## Important notice for users of version < 0.5
-In version 0.5 SNMP was replaced by SSH. This is was a breaking change. 
+In version 0.5 SNMP was replaced by SSH. This is was a breaking change (metric names were kept). 
 All SNMP related parameters were removed at this point. 
 Please have a look on the new SSH related parameters and update your service units accordingly.
 

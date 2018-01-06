@@ -45,27 +45,37 @@ func (c *RpcClient) AlarmCounter() (*alarm.AlarmCounter, error) {
 
 func (c *RpcClient) InterfaceStats() ([]*interfaces.InterfaceStats, error) {
 	var x = InterfaceRpc{}
-	err := c.runCommandAndParse("show interfaces detail", &x)
+	err := c.runCommandAndParse("show interfaces statistics detail", &x)
 	if err != nil {
 		return nil, err
 	}
 
 	stats := make([]*interfaces.InterfaceStats, 0)
-	for _, i := range x.Information.Interfaces {
-		s := &interfaces.InterfaceStats{}
-		s.Name = i.Name
-		s.Description = i.Description
-		s.Mac = i.MacAddress
-		fillWithTrafficStat(s, &i.Stats)
+	for _, phy := range x.Information.Interfaces {
+		s := &interfaces.InterfaceStats{
+			IsPhysical: true,
+			Name: phy.Name,
+			Description: phy.Description,
+			Mac: phy.MacAddress,
+			ReceiveDrops: float64(phy.InputErrors.Drops),
+			ReceiveErrors: float64(phy.InputErrors.Errors),
+			ReceiveBytes: float64(phy.Stats.InputBytes),
+			TransmitDrops: float64(phy.OutputErrors.Drops),
+			TransmitErrors: float64(phy.OutputErrors.Errors),
+			TransmitBytes: float64(phy.Stats.OutputBytes),
+		}
 
 		stats = append(stats, s)
 
-		for _, l := range i.LogicalInterfaces {
-			sl := &interfaces.InterfaceStats{}
-			sl.Name = l.Name
-			sl.Description = l.Description
-			sl.Mac = i.MacAddress
-			fillWithTrafficStat(sl, &l.Stats)
+		for _, log := range phy.LogicalInterfaces {
+			sl := &interfaces.InterfaceStats{
+				IsPhysical: false,
+				Name: log.Name,
+				Description: log.Description,
+				Mac: phy.MacAddress,
+				ReceiveBytes: float64(log.Stats.InputBytes),
+				TransmitBytes: float64(log.Stats.OutputBytes),
+			}
 
 			stats = append(stats, sl)
 		}
@@ -86,9 +96,4 @@ func (c *RpcClient) runCommandAndParse(cmd string, obj interface{}) error {
 
 	err = xml.Unmarshal(b, obj)
 	return err
-}
-
-func fillWithTrafficStat(s *interfaces.InterfaceStats, t *TrafficStat) {
-	s.ReceiveBytes = float64(t.InputBytes)
-	s.TransmitBytes = float64(t.OutputBytes)
 }

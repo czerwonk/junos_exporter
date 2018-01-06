@@ -62,11 +62,6 @@
   version = "v1.0.3"
 
 [[projects]]
-  name = "github.com/soniah/gosnmp"
-  packages = ["."]
-  revision = "55acec044875c95a3fb3fbc37160cb766501939f"
-
-[[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
@@ -87,6 +82,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2f8d380dafeae7bb65e081264c19816ad9596b49ba384a19c0364d258af05d43"
+  inputs-digest = "a6cebbe049ed9f30fbcbc092e916b2f4c9deda42c90b933dbe9c4872524d3880"
   solver-name = "gps-cdcl"
   solver-version = 1

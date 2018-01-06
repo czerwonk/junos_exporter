@@ -6,24 +6,20 @@ import (
 	"net/http"
 	"os"
 
-	"strings"
-
-	"sync"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.3.0"
+const version string = "0.4.0"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
 	listenAddress = flag.String("web.listen-address", ":9326", "Address on which to expose metrics and web interface.")
 	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
-	snmpTargets   = flag.String("snmp.targets", "127.0.0.1", "Addresses or hostnames of switches or routers (comma separated)")
-	snmpCommunity = flag.String("snmp.community", "default", "Community allowed to access SNMP")
-	mutex         = &sync.Mutex{}
+	sshHosts      = flag.String("ssh.targets", "", "Hosts to scrape")
+	sshUsername   = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
+	sshKeyFile    = flag.String("ssh.key_file", "junos_exporter", "Public key file to use when connecting to junos devices using ssh")
 )
 
 func init() {
@@ -72,12 +68,8 @@ func startServer() {
 }
 
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
-	mutex.Lock()
-	defer mutex.Unlock()
-
 	reg := prometheus.NewRegistry()
-	targets := strings.Split(*snmpTargets, ",")
-	reg.MustRegister(NewJunosCollector(targets, *snmpCommunity))
+	reg.MustRegister(&JunosCollector{})
 
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
 		ErrorLog:      log.NewErrorLogger(),

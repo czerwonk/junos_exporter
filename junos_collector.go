@@ -72,6 +72,11 @@ func (c *JunosCollector) collectForHost(host string, ch chan<- prometheus.Metric
 
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 1, l...)
 
+	x, err := conn.RunCommand("show interfaces | display xml")
+	if err == nil {
+		log.Info(string(x))
+	}
+
 	//c.interfaceCollector.Collect()
 	//c.alarmCollector.Collect()
 	//c.bgpCollector.Collect()

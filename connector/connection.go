@@ -4,6 +4,8 @@ import (
 	"strings"
 	"golang.org/x/crypto/ssh"
 	"io/ioutil"
+	"errors"
+	"bytes"
 )
 
 func NewSshConnection(host, user, keyFile string) (*SshConnection, error) {
@@ -45,28 +47,34 @@ func (c *SshConnection) Connect(host, user, keyFile string) error {
 	return err
 }
 
+func (c *SshConnection) RunCommand(cmd string) ([]byte, error) {
+	if c.session == nil {
+		return nil, errors.New("Session must be opened first")
+	}
+
+	var b = &bytes.Buffer{}
+	c.session.Stdout = b
+
+	err := c.session.Run(cmd)
+	if err != nil {
+		return nil, err
+	}
+
+	return b.Bytes(), nil
+}
+
 func (c *SshConnection) Close() {
 	if c.session == nil {
 		return
 	}
 
 	c.session.Close()
+	c.session = nil
 }
 
 func openSession(conn *ssh.Client) (*ssh.Session, error) {
 	session, err := conn.NewSession()
 	if err != nil {
-		return nil, err
-	}
-
-	modes := ssh.TerminalModes{
-		ssh.ECHO:          0,     // disable echoing
-		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
-		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
-	}
-
-	if err := session.RequestPty("xterm", 80, 40, modes); err != nil {
-		session.Close()
 		return nil, err
 	}
 

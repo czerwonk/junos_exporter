@@ -4,13 +4,15 @@ import (
 	"strings"
 	"time"
 
+	"sync"
+
 	"github.com/czerwonk/junos_exporter/alarm"
 	"github.com/czerwonk/junos_exporter/bgp"
-	"github.com/czerwonk/junos_exporter/interfaces"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/czerwonk/junos_exporter/interfaces"
+	"github.com/czerwonk/junos_exporter/rpc"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
-	"sync"
 )
 
 const prefix = "junos_"
@@ -72,12 +74,8 @@ func (c *JunosCollector) collectForHost(host string, ch chan<- prometheus.Metric
 
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 1, l...)
 
-	x, err := conn.RunCommand("show interfaces | display xml")
-	if err == nil {
-		log.Info(string(x))
-	}
-
-	//c.interfaceCollector.Collect()
-	//c.alarmCollector.Collect()
-	//c.bgpCollector.Collect()
+	rpc := rpc.NewClient(conn)
+	c.interfaceCollector.Collect(rpc, ch, l)
+	c.alarmCollector.Collect(rpc, ch, l)
+	c.bgpCollector.Collect(rpc, ch, l)
 }

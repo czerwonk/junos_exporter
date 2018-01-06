@@ -36,19 +36,19 @@ func (*InterfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- transmitErrorsDesc
 }
 
-func (c *InterfaceCollector) Collect(datasource InterfaceStatsDatasource, ch chan<- prometheus.Metric) error {
+func (c *InterfaceCollector) Collect(datasource InterfaceStatsDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
 	stats, err := datasource.InterfaceStats()
 	if err != nil {
 		return err
 	}
 
 	for _, s := range stats {
-		c.collectForInterface(s, ch)
+		c.collectForInterface(s, ch, labelValues)
 	}
 
 	return nil
 }
 
-func (*InterfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prometheus.Metric) {
+func (*InterfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prometheus.Metric, labelValues []string) {
 	
 }

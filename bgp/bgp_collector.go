@@ -9,19 +9,19 @@ func (*BgpCollector) Describe(ch chan<- *prometheus.Desc) {
 
 }
 
-func (c *BgpCollector) Collect(datasource BgpDatasource, ch chan<- prometheus.Metric) error {
+func (c *BgpCollector) Collect(datasource BgpDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
 	sessions, err := datasource.BgpSessions()
 	if err != nil {
 		return err
 	}
 
 	for _, s := range sessions {
-		c.collectForSession(s, ch)
+		c.collectForSession(s, ch, labelValues)
 	}
 
 	return nil
 }
 
-func (*BgpCollector) collectForSession(s *BgpSession, ch chan<- prometheus.Metric) {
+func (*BgpCollector) collectForSession(s *BgpSession, ch chan<- prometheus.Metric, labelValues []string) {
 
 }

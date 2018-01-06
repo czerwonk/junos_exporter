@@ -53,27 +53,27 @@ func (c *RpcClient) InterfaceStats() ([]*interfaces.InterfaceStats, error) {
 	stats := make([]*interfaces.InterfaceStats, 0)
 	for _, phy := range x.Information.Interfaces {
 		s := &interfaces.InterfaceStats{
-			IsPhysical: true,
-			Name: phy.Name,
-			Description: phy.Description,
-			Mac: phy.MacAddress,
-			ReceiveDrops: float64(phy.InputErrors.Drops),
-			ReceiveErrors: float64(phy.InputErrors.Errors),
-			ReceiveBytes: float64(phy.Stats.InputBytes),
-			TransmitDrops: float64(phy.OutputErrors.Drops),
+			IsPhysical:     true,
+			Name:           phy.Name,
+			Description:    phy.Description,
+			Mac:            phy.MacAddress,
+			ReceiveDrops:   float64(phy.InputErrors.Drops),
+			ReceiveErrors:  float64(phy.InputErrors.Errors),
+			ReceiveBytes:   float64(phy.Stats.InputBytes),
+			TransmitDrops:  float64(phy.OutputErrors.Drops),
 			TransmitErrors: float64(phy.OutputErrors.Errors),
-			TransmitBytes: float64(phy.Stats.OutputBytes),
+			TransmitBytes:  float64(phy.Stats.OutputBytes),
 		}
 
 		stats = append(stats, s)
 
 		for _, log := range phy.LogicalInterfaces {
 			sl := &interfaces.InterfaceStats{
-				IsPhysical: false,
-				Name: log.Name,
-				Description: log.Description,
-				Mac: phy.MacAddress,
-				ReceiveBytes: float64(log.Stats.InputBytes),
+				IsPhysical:    false,
+				Name:          log.Name,
+				Description:   log.Description,
+				Mac:           phy.MacAddress,
+				ReceiveBytes:  float64(log.Stats.InputBytes),
 				TransmitBytes: float64(log.Stats.OutputBytes),
 			}
 
@@ -84,8 +84,32 @@ func (c *RpcClient) InterfaceStats() ([]*interfaces.InterfaceStats, error) {
 	return stats, nil
 }
 
-func (*RpcClient) BgpSessions() ([]*bgp.BgpSession, error) {
-	return make([]*bgp.BgpSession, 0), nil
+func (c *RpcClient) BgpSessions() ([]*bgp.BgpSession, error) {
+	var x = BgpRpc{}
+	err := c.runCommandAndParse("show bgp summary", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	sessions := make([]*bgp.BgpSession, 0)
+	for _, peer := range x.Information.Peers {
+		s := &bgp.BgpSession{
+			Ip:               peer.Ip,
+			Up:               peer.State == "Established",
+			Asn:              peer.Asn,
+			Flaps:            float64(peer.Flaps),
+			InputMessages:    float64(peer.InputMessages),
+			OutputMessages:   float64(peer.OutputMessages),
+			AcceptedPrefixes: float64(peer.Rib.AcceptedPrefixes),
+			ActivePrefixes:   float64(peer.Rib.ActivePrefixes),
+			ReceivedPrefixes: float64(peer.Rib.ReceivedPrefixes),
+			RejectedPrefixes: float64(peer.Rib.RejectedPrefixes),
+		}
+
+		sessions = append(sessions, s)
+	}
+
+	return sessions, nil
 }
 
 func (c *RpcClient) runCommandAndParse(cmd string, obj interface{}) error {

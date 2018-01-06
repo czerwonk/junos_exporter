@@ -74,7 +74,7 @@ func (c *JunosCollector) collectForHost(host string, ch chan<- prometheus.Metric
 
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 1, l...)
 
-	rpc := rpc.NewClient(conn)
+	rpc := rpc.NewClient(conn, *debug)
 	err = c.interfaceCollector.Collect(rpc, ch, l)
 	if err != nil {
 		log.Errorln(err)

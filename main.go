@@ -20,6 +20,7 @@ var (
 	sshHosts      = flag.String("ssh.targets", "", "Hosts to scrape")
 	sshUsername   = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
 	sshKeyFile    = flag.String("ssh.keyfile", "junos_exporter", "Public key file to use when connecting to junos devices using ssh")
+	debug         = flag.Bool("debug", false, "Show verbose debug output in log")
 )
 
 func init() {

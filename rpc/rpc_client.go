@@ -4,6 +4,8 @@ import (
 	"encoding/xml"
 	"fmt"
 
+	"log"
+
 	"github.com/czerwonk/junos_exporter/alarm"
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/connector"
@@ -11,11 +13,12 @@ import (
 )
 
 type RpcClient struct {
-	conn *connector.SshConnection
+	conn  *connector.SshConnection
+	debug bool
 }
 
-func NewClient(ssh *connector.SshConnection) *RpcClient {
-	return &RpcClient{conn: ssh}
+func NewClient(ssh *connector.SshConnection, debug bool) *RpcClient {
+	return &RpcClient{conn: ssh, debug: debug}
 }
 
 func (c *RpcClient) AlarmCounter() (*alarm.AlarmCounter, error) {
@@ -113,9 +116,17 @@ func (c *RpcClient) BgpSessions() ([]*bgp.BgpSession, error) {
 }
 
 func (c *RpcClient) runCommandAndParse(cmd string, obj interface{}) error {
+	if c.debug {
+		log.Printf("Running command on %s: %s\n", c.conn.Host, cmd)
+	}
+
 	b, err := c.conn.RunCommand(fmt.Sprintf("%s | display xml", cmd))
 	if err != nil {
 		return err
+	}
+
+	if c.debug {
+		log.Printf("Output for %s: %s\n", c.conn.Host, string(b))
 	}
 
 	err = xml.Unmarshal(b, obj)

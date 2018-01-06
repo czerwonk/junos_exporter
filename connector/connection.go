@@ -13,8 +13,8 @@ func NewSshConnection(host, user, keyFile string) (*SshConnection, error) {
 		host = host + ":22"
 	}
 
-	c := &SshConnection{}
-	err := c.Connect(host, user, keyFile)
+	c := &SshConnection{Host: host}
+	err := c.Connect(user, keyFile)
 	if err != nil {
 		return nil, err
 	}
@@ -24,9 +24,10 @@ func NewSshConnection(host, user, keyFile string) (*SshConnection, error) {
 
 type SshConnection struct {
 	conn *ssh.Client
+	Host string
 }
 
-func (c *SshConnection) Connect(host, user, keyFile string) error {
+func (c *SshConnection) Connect(user, keyFile string) error {
 	pk, err := loadPublicKeyFile(keyFile)
 	if err != nil {
 		return err
@@ -38,7 +39,7 @@ func (c *SshConnection) Connect(host, user, keyFile string) error {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
-	c.conn, err = ssh.Dial("tcp", host, config)
+	c.conn, err = ssh.Dial("tcp", c.Host, config)
 	return err
 }
 

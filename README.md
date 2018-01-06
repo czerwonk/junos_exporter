@@ -23,7 +23,8 @@ Please have a look on the new SSH related parameters and update your service uni
 The following metrics are supported by now:
 * Interfaces (bytes transmitted/received, errors, drops)
 * Routes (per table, by protocol)
-* Alarms (counters)
+* Alarms (count)
+* BGP (message count, prefix counts per peer, session state)
 * OSPFv3 (number of neighbors)
 
 ## Install

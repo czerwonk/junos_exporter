@@ -11,6 +11,7 @@ import (
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/czerwonk/junos_exporter/ospf"
+	"github.com/czerwonk/junos_exporter/route"
 )
 
 type RpcClient struct {
@@ -134,6 +135,39 @@ func (c *RpcClient) OspfAreas() ([]*ospf.OspfArea, error) {
 	}
 
 	return areas, nil
+}
+
+func (c *RpcClient) RoutingTables() ([]*route.RoutingTable, error) {
+	var x = RouteRpc{}
+	err := c.runCommandAndParse("show route summary", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	tables := make([]*route.RoutingTable, 0)
+	for _, table := range x.Information.Tables {
+		t := &route.RoutingTable{
+			Name:         table.Name,
+			MaxRoutes:    float64(table.MaxRoutes),
+			ActiveRoutes: float64(table.ActiveRoutes),
+			TotalRoutes:  float64(table.TotalRoutes),
+			Protocols:    make([]*route.ProtocolRouteCount, 0),
+		}
+
+		for _, proto := range table.Protocols {
+			p := &route.ProtocolRouteCount{
+				Name:         proto.Name,
+				Routes:       float64(proto.Routes),
+				ActiveRoutes: float64(proto.ActiveRoutes),
+			}
+
+			t.Protocols = append(t.Protocols, p)
+		}
+
+		tables = append(tables, t)
+	}
+
+	return tables, nil
 }
 
 func (c *RpcClient) runCommandAndParse(cmd string, obj interface{}) error {

@@ -48,5 +48,5 @@ func (c *OspfCollector) Collect(datasource OspfDatasource, ch chan<- prometheus.
 func (c *OspfCollector) collectForArea(area *OspfArea, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, area.Name)
 
-	ch <- prometheus.MustNewConstMetric(neighborsDesc, prometheus.GaugeValue, float64(area.Neighbors), l...)
+	ch <- prometheus.MustNewConstMetric(neighborsDesc, prometheus.GaugeValue, area.Neighbors, l...)
 }

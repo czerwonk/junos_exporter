@@ -19,6 +19,13 @@ In version 0.5 SNMP was replaced by SSH. This is was a breaking change (metric n
 All SNMP related parameters were removed at this point. 
 Please have a look on the new SSH related parameters and update your service units accordingly.
 
+## Features
+The following metrics are supported by now:
+* Interfaces (bytes transmitted/received, errors, drops)
+* Routes (per table, by protocol)
+* Alarms (counters)
+* OSPFv3 (number of neighbors)
+
 ## Install
 ```
 go get -u github.com/czerwonk/junos_exporter

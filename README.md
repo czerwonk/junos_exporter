@@ -38,8 +38,14 @@ In this example we want to scrape 3 hosts:
 * Host 2 (DNS: host2.example.com, Port: 2233)
 * Host 3 (IP: 172.16.0.1, Port: 22)
 
+### Binary
 ```
 ./junos_exporter -ssh.targets="host1.example.com,host2.example.com:2233,172.16.0.1" -ssh.keyfile=junos_exporter
+```
+
+### Docker
+```
+docker run -d --restart unless-stopped -p 9326:9326 -v /opt/junos_exporter_keyfile:/ssh-keyfile -e TARGETS="host1.example.com,host2.example.com:2233,172.16.0.1" czerwonk/junos_exporter
 ```
 
 ## Third Party Components

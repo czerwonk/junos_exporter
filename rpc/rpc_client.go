@@ -43,8 +43,35 @@ func (c *RpcClient) AlarmCounter() (*alarm.AlarmCounter, error) {
 	return &alarm.AlarmCounter{RedCount: float64(red), YellowCount: float64(yellow)}, nil
 }
 
-func (*RpcClient) InterfaceStats() ([]*interfaces.InterfaceStats, error) {
-	return make([]*interfaces.InterfaceStats, 0), nil
+func (c *RpcClient) InterfaceStats() ([]*interfaces.InterfaceStats, error) {
+	var x = InterfaceRpc{}
+	err := c.runCommandAndParse("show interfaces detail", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	stats := make([]*interfaces.InterfaceStats, 0)
+	for _, i := range x.Information.Interfaces {
+		s := &interfaces.InterfaceStats{}
+		s.Name = i.Name
+		s.Description = i.Description
+		s.Mac = i.MacAddress
+		fillWithTrafficStat(s, &i.Stats)
+
+		stats = append(stats, s)
+
+		for _, l := range i.LogicalInterfaces {
+			sl := &interfaces.InterfaceStats{}
+			sl.Name = l.Name
+			sl.Description = l.Description
+			sl.Mac = i.MacAddress
+			fillWithTrafficStat(sl, &l.Stats)
+
+			stats = append(stats, sl)
+		}
+	}
+
+	return stats, nil
 }
 
 func (*RpcClient) BgpSessions() ([]*bgp.BgpSession, error) {
@@ -59,4 +86,9 @@ func (c *RpcClient) runCommandAndParse(cmd string, obj interface{}) error {
 
 	err = xml.Unmarshal(b, obj)
 	return err
+}
+
+func fillWithTrafficStat(s *interfaces.InterfaceStats, t *TrafficStat) {
+	s.ReceiveBytes = float64(t.InputBytes)
+	s.TransmitBytes = float64(t.OutputBytes)
 }

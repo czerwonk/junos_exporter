@@ -14,7 +14,7 @@ var (
 )
 
 func init() {
-	l := []string{"name", "description", "mac", "target"}
+	l := []string{"target", "name", "description", "mac"}
 	receiveBytesDesc = prometheus.NewDesc(prefix+"interface_receive_bytes", "Received data in bytes", l, nil)
 	receiveErrorsDesc = prometheus.NewDesc(prefix+"interface_receive_errors", "Number of errors caused by incoming packets", l, nil)
 	receiveDropsDesc = prometheus.NewDesc(prefix+"interface_receive_drops", "Number of dropped incoming packets", l, nil)
@@ -50,5 +50,7 @@ func (c *InterfaceCollector) Collect(datasource InterfaceStatsDatasource, ch cha
 }
 
 func (*InterfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prometheus.Metric, labelValues []string) {
-	
+	l := append(labelValues, []string{ s.Name, s.Description, s.Mac }...)
+	ch <- prometheus.MustNewConstMetric(receiveBytesDesc, prometheus.GaugeValue, s.ReceiveBytes, l...)
+	ch <- prometheus.MustNewConstMetric(transmitBytesDesc, prometheus.GaugeValue, s.TransmitBytes, l...)
 }

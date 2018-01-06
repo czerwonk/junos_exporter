@@ -1,6 +1,9 @@
 package interfaces
 
 type InterfaceStats struct {
+	Name string
+	Description string
+	Mac string
 	ReceiveBytes   float64
 	ReceiveErrors  float64
 	ReceiveDrops   float64

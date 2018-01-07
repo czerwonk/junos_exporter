@@ -57,3 +57,6 @@ This software uses components of the following projects
 
 ## Prometheus
 see https://prometheus.io/
+
+## JunOS
+see https://www.juniper.net/us/en/products-services/nos/junos/

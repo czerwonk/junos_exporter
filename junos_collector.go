@@ -81,18 +81,18 @@ func (c *JunosCollector) collectForHost(host string, ch chan<- prometheus.Metric
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 1, l...)
 
 	rpc := rpc.NewClient(conn, *debug)
-	collectors := []func() error{
-		func() error { return c.interfaceCollector.Collect(rpc, ch, l) },
-		func() error { return c.alarmCollector.Collect(rpc, ch, l) },
-		func() error { return c.bgpCollector.Collect(rpc, ch, l) },
-		func() error { return c.ospfCollector.Collect(rpc, ch, l) },
-		func() error { return c.routeCollector.Collect(rpc, ch, l) },
+	collectors := map[string]func() error{
+		"interface": func() error { return c.interfaceCollector.Collect(rpc, ch, l) },
+		"alarm":     func() error { return c.alarmCollector.Collect(rpc, ch, l) },
+		"route":     func() error { return c.routeCollector.Collect(rpc, ch, l) },
+		"bgp":       func() error { return c.bgpCollector.Collect(rpc, ch, l) },
+		"ospf":      func() error { return c.ospfCollector.Collect(rpc, ch, l) },
 	}
 
-	for _, c := range collectors {
+	for k, c := range collectors {
 		err = c()
-		if err != nil {
-			log.Errorln(err)
+		if err != nil && err.Error() != "EOF" {
+			log.Errorln(k + ": " + err.Error())
 		}
 	}
 }

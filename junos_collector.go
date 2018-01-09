@@ -80,19 +80,32 @@ func (c *JunosCollector) collectForHost(host string, ch chan<- prometheus.Metric
 
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 1, l...)
 
-	rpc := rpc.NewClient(conn, *debug)
-	collectors := map[string]func() error{
-		"interface": func() error { return c.interfaceCollector.Collect(rpc, ch, l) },
-		"alarm":     func() error { return c.alarmCollector.Collect(rpc, ch, l) },
-		"route":     func() error { return c.routeCollector.Collect(rpc, ch, l) },
-		"bgp":       func() error { return c.bgpCollector.Collect(rpc, ch, l) },
-		"ospf":      func() error { return c.ospfCollector.Collect(rpc, ch, l) },
-	}
-
-	for k, c := range collectors {
+	rpc := rpc.NewClient(conn, *debug, *alarmFilter)
+	for k, c := range c.collectors(rpc, ch, l) {
 		err = c()
 		if err != nil && err.Error() != "EOF" {
 			log.Errorln(k + ": " + err.Error())
 		}
 	}
+}
+
+func (c *JunosCollector) collectors(rpc *rpc.RpcClient, ch chan<- prometheus.Metric, labelValues []string) map[string]func() error {
+	m := map[string]func() error{
+		"interface": func() error { return c.interfaceCollector.Collect(rpc, ch, labelValues) },
+		"alarm":     func() error { return c.alarmCollector.Collect(rpc, ch, labelValues) },
+	}
+
+	if *routesEnabled {
+		m["routes"] = func() error { return c.routeCollector.Collect(rpc, ch, labelValues) }
+	}
+
+	if *bgpEnabled {
+		m["bgp"] = func() error { return c.bgpCollector.Collect(rpc, ch, labelValues) }
+	}
+
+	if *ospfEnabled {
+		m["ospf"] = func() error { return c.ospfCollector.Collect(rpc, ch, labelValues) }
+	}
+
+	return m
 }

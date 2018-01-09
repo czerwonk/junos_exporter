@@ -11,7 +11,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.5.0"
+const version string = "0.5.1"
 
 var (
 	showVersion   = flag.Bool("version", false, "Print version information.")
@@ -21,6 +21,10 @@ var (
 	sshUsername   = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
 	sshKeyFile    = flag.String("ssh.keyfile", "junos_exporter", "Public key file to use when connecting to junos devices using ssh")
 	debug         = flag.Bool("debug", false, "Show verbose debug output in log")
+	bgpEnabled    = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
+	ospfEnabled   = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
+	routesEnabled = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
+	alarmFilter   = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 )
 
 func init() {

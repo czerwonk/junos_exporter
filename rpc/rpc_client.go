@@ -6,6 +6,8 @@ import (
 
 	"log"
 
+	"regexp"
+
 	"github.com/czerwonk/junos_exporter/alarm"
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/connector"
@@ -15,12 +17,19 @@ import (
 )
 
 type RpcClient struct {
-	conn  *connector.SshConnection
-	debug bool
+	conn        *connector.SshConnection
+	debug       bool
+	alarmFilter *regexp.Regexp
 }
 
-func NewClient(ssh *connector.SshConnection, debug bool) *RpcClient {
-	return &RpcClient{conn: ssh, debug: debug}
+func NewClient(ssh *connector.SshConnection, debug bool, alarmFilter string) *RpcClient {
+	rpc := &RpcClient{conn: ssh, debug: debug, alarmFilter: nil}
+
+	if len(alarmFilter) > 0 {
+		rpc.alarmFilter = regexp.MustCompile(alarmFilter)
+	}
+
+	return rpc
 }
 
 func (c *RpcClient) AlarmCounter() (*alarm.AlarmCounter, error) {
@@ -37,6 +46,10 @@ func (c *RpcClient) AlarmCounter() (*alarm.AlarmCounter, error) {
 		}
 
 		for _, d := range a.Information.Details {
+			if c.shouldFilterAlarm(&d) {
+				continue
+			}
+
 			if d.Class == "Major" {
 				red++
 			} else if d.Class == "Minor" {
@@ -46,6 +59,14 @@ func (c *RpcClient) AlarmCounter() (*alarm.AlarmCounter, error) {
 	}
 
 	return &alarm.AlarmCounter{RedCount: float64(red), YellowCount: float64(yellow)}, nil
+}
+
+func (c *RpcClient) shouldFilterAlarm(alarm *AlarmDetails) bool {
+	if c.alarmFilter == nil {
+		return false
+	}
+
+	return c.alarmFilter.MatchString(alarm.Description) || c.alarmFilter.MatchString(alarm.Type)
 }
 
 func (c *RpcClient) InterfaceStats() ([]*interfaces.InterfaceStats, error) {

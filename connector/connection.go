@@ -7,8 +7,12 @@ import (
 
 	"sync"
 
+	"time"
+
 	"golang.org/x/crypto/ssh"
 )
+
+const timeoutInSeconds = 5
 
 var (
 	cachedConfig *ssh.ClientConfig = nil
@@ -32,6 +36,7 @@ func config(user, keyFile string) (*ssh.ClientConfig, error) {
 		User:            user,
 		Auth:            []ssh.AuthMethod{pk},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         timeoutInSeconds * time.Second,
 	}
 
 	return cachedConfig, nil

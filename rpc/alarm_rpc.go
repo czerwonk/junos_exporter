@@ -7,5 +7,7 @@ type AlarmRpc struct {
 }
 
 type AlarmDetails struct {
-	Class string `xml:"alarm-class"`
+	Class       string `xml:"alarm-class"`
+	Description string `xml:"alarm-description"`
+	Type        string `xml:"alarm-type"`
 }

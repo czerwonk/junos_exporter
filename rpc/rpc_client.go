@@ -12,6 +12,7 @@ import (
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/czerwonk/junos_exporter/interfaces"
+	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/route"
 )
@@ -156,6 +157,25 @@ func (c *RpcClient) OspfAreas() ([]*ospf.OspfArea, error) {
 	}
 
 	return areas, nil
+}
+
+func (c *RpcClient) IsisAdjancies() (*isis.IsisAdjacencies, error) {
+	up := 0
+	total := 0
+	var x = IsisRpc{}
+	err := c.runCommandAndParse("show isis adjacency", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, adjacency := range x.Information.Adjacencies {
+		if adjacency.AdjacencyState == "Up" {
+			up++
+		}
+		total++
+	}
+
+	return &isis.IsisAdjacencies{Up: float64(up), Total: float64(total)}, nil
 }
 
 func (c *RpcClient) RoutingTables() ([]*route.RoutingTable, error) {

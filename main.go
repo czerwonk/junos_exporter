@@ -23,6 +23,7 @@ var (
 	debug         = flag.Bool("debug", false, "Show verbose debug output in log")
 	bgpEnabled    = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
 	ospfEnabled   = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
+	isisEnabled   = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
 	routesEnabled = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
 	alarmFilter   = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 )

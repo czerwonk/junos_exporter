@@ -10,6 +10,7 @@ import (
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/czerwonk/junos_exporter/interfaces"
+	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/route"
 	"github.com/czerwonk/junos_exporter/rpc"
@@ -34,6 +35,7 @@ type JunosCollector struct {
 	alarmCollector     *alarm.AlarmCollector
 	bgpCollector       *bgp.BgpCollector
 	ospfCollector      *ospf.OspfCollector
+	isisCollector      *isis.IsisCollector
 	routeCollector     *route.RouteCollector
 }
 
@@ -45,6 +47,7 @@ func (c *JunosCollector) Describe(ch chan<- *prometheus.Desc) {
 	c.alarmCollector.Describe(ch)
 	c.bgpCollector.Describe(ch)
 	c.ospfCollector.Describe(ch)
+	c.isisCollector.Describe(ch)
 	c.routeCollector.Describe(ch)
 }
 
@@ -105,6 +108,10 @@ func (c *JunosCollector) collectors(rpc *rpc.RpcClient, ch chan<- prometheus.Met
 
 	if *ospfEnabled {
 		m["ospf"] = func() error { return c.ospfCollector.Collect(rpc, ch, labelValues) }
+	}
+
+	if *isisEnabled {
+		m["isis"] = func() error { return c.isisCollector.Collect(rpc, ch, labelValues) }
 	}
 
 	return m

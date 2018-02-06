@@ -13,6 +13,7 @@ import (
 	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/route"
+	"github.com/czerwonk/junos_exporter/routing_engine"
 	"github.com/czerwonk/junos_exporter/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
@@ -31,12 +32,13 @@ func init() {
 }
 
 type JunosCollector struct {
-	interfaceCollector *interfaces.InterfaceCollector
-	alarmCollector     *alarm.AlarmCollector
-	bgpCollector       *bgp.BgpCollector
-	ospfCollector      *ospf.OspfCollector
-	isisCollector      *isis.IsisCollector
-	routeCollector     *route.RouteCollector
+	interfaceCollector     *interfaces.InterfaceCollector
+	alarmCollector         *alarm.AlarmCollector
+	bgpCollector           *bgp.BgpCollector
+	ospfCollector          *ospf.OspfCollector
+	isisCollector          *isis.IsisCollector
+	routeCollector         *route.RouteCollector
+	routingEngineCollector *routing_engine.RoutingEngineCollector
 }
 
 func (c *JunosCollector) Describe(ch chan<- *prometheus.Desc) {
@@ -112,6 +114,10 @@ func (c *JunosCollector) collectors(rpc *rpc.RpcClient, ch chan<- prometheus.Met
 
 	if *isisEnabled {
 		m["isis"] = func() error { return c.isisCollector.Collect(rpc, ch, labelValues) }
+	}
+
+	if *routingEngineEnabled {
+		m["routing-engine"] = func() error { return c.routingEngineCollector.Collect(rpc, ch, labelValues) }
 	}
 
 	return m

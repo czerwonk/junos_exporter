@@ -15,6 +15,7 @@ import (
 	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/route"
+	"github.com/czerwonk/junos_exporter/routing_engine"
 )
 
 type RpcClient struct {
@@ -209,6 +210,29 @@ func (c *RpcClient) RoutingTables() ([]*route.RoutingTable, error) {
 	}
 
 	return tables, nil
+}
+
+func (c *RpcClient) RouteEngineStats() (*routing_engine.RouteEngineStats, error) {
+	var x = RoutingEngineRpc{}
+	err := c.runCommandAndParse("show chassis routing-engine", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	r := &routing_engine.RouteEngineStats{
+		Temperature:        float64(x.Information.RouteEngine.Temperature.Value),
+		CPUTemperature:     float64(x.Information.RouteEngine.CPUTemperature.Value),
+		CPUUser:            float64(x.Information.RouteEngine.CPUUser),
+		CPUBackground:      float64(x.Information.RouteEngine.CPUBackground),
+		CPUSystem:          float64(x.Information.RouteEngine.CPUSystem),
+		CPUInterrupt:       float64(x.Information.RouteEngine.CPUInterrupt),
+		CPUIdle:            float64(x.Information.RouteEngine.CPUIdle),
+		LoadAverageOne:     float64(x.Information.RouteEngine.LoadAverageOne),
+		LoadAverageFive:    float64(x.Information.RouteEngine.LoadAAverageFive),
+		LoadAverageFifteen: float64(x.Information.RouteEngine.LoadAverageFifteen),
+	}
+
+	return r, nil
 }
 
 func (c *RpcClient) runCommandAndParse(cmd string, obj interface{}) error {

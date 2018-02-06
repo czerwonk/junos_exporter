@@ -14,18 +14,19 @@ import (
 const version string = "0.5.1"
 
 var (
-	showVersion   = flag.Bool("version", false, "Print version information.")
-	listenAddress = flag.String("web.listen-address", ":9326", "Address on which to expose metrics and web interface.")
-	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
-	sshHosts      = flag.String("ssh.targets", "", "Hosts to scrape")
-	sshUsername   = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
-	sshKeyFile    = flag.String("ssh.keyfile", "junos_exporter", "Public key file to use when connecting to junos devices using ssh")
-	debug         = flag.Bool("debug", false, "Show verbose debug output in log")
-	bgpEnabled    = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
-	ospfEnabled   = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
-	isisEnabled   = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
-	routesEnabled = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
-	alarmFilter   = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
+	showVersion          = flag.Bool("version", false, "Print version information.")
+	listenAddress        = flag.String("web.listen-address", ":9326", "Address on which to expose metrics and web interface.")
+	metricsPath          = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
+	sshHosts             = flag.String("ssh.targets", "", "Hosts to scrape")
+	sshUsername          = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
+	sshKeyFile           = flag.String("ssh.keyfile", "junos_exporter", "Public key file to use when connecting to junos devices using ssh")
+	debug                = flag.Bool("debug", false, "Show verbose debug output in log")
+	bgpEnabled           = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
+	ospfEnabled          = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
+	isisEnabled          = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
+	routingEngineEnabled = flag.Bool("routingengine.enabled", true, "Scrape Routing Engine metrics")
+	routesEnabled        = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
+	alarmFilter          = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 )
 
 func init() {

@@ -11,6 +11,7 @@ import (
 	"github.com/czerwonk/junos_exporter/alarm"
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/czerwonk/junos_exporter/environment"
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/ospf"
@@ -233,6 +234,33 @@ func (c *RpcClient) RouteEngineStats() (*routing_engine.RouteEngineStats, error)
 	}
 
 	return r, nil
+}
+
+func (c *RpcClient) EnvironmentItems() ([]*environment.EnvironmentItem, error) {
+	var x = EnvironmentRpc{}
+	err := c.runCommandAndParse("show chassis environment", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	// remove duplicates
+	list := make(map[string]float64)
+	for _, item := range x.Information.Items {
+		if item.Temperature != nil {
+			list[item.Name] = float64(item.Temperature.Value)
+		}
+	}
+
+	items := make([]*environment.EnvironmentItem, 0)
+	for name, value := range list {
+		i := &environment.EnvironmentItem{
+			Name:        name,
+			Temperature: value,
+		}
+		items = append(items, i)
+	}
+
+	return items, nil
 }
 
 func (c *RpcClient) runCommandAndParse(cmd string, obj interface{}) error {

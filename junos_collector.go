@@ -10,6 +10,7 @@ import (
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/czerwonk/junos_exporter/environment"
+	"github.com/czerwonk/junos_exporter/interface_diagnostics"
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/ospf"
@@ -33,14 +34,15 @@ func init() {
 }
 
 type JunosCollector struct {
-	interfaceCollector     *interfaces.InterfaceCollector
-	alarmCollector         *alarm.AlarmCollector
-	bgpCollector           *bgp.BgpCollector
-	ospfCollector          *ospf.OspfCollector
-	isisCollector          *isis.IsisCollector
-	routeCollector         *route.RouteCollector
-	routingEngineCollector *routing_engine.RoutingEngineCollector
-	environmentCollector   *environment.EnvironmentCollector
+	interfaceCollector            *interfaces.InterfaceCollector
+	alarmCollector                *alarm.AlarmCollector
+	bgpCollector                  *bgp.BgpCollector
+	ospfCollector                 *ospf.OspfCollector
+	isisCollector                 *isis.IsisCollector
+	routeCollector                *route.RouteCollector
+	routingEngineCollector        *routing_engine.RoutingEngineCollector
+	environmentCollector          *environment.EnvironmentCollector
+	interfaceDiagnosticsCollector *interface_diagnostics.InterfaceDiagnosticsCollector
 }
 
 func (c *JunosCollector) Describe(ch chan<- *prometheus.Desc) {
@@ -125,6 +127,10 @@ func (c *JunosCollector) collectors(rpc *rpc.RpcClient, ch chan<- prometheus.Met
 
 	if *environmentEnabled {
 		m["environment"] = func() error { return c.environmentCollector.Collect(rpc, ch, labelValues) }
+	}
+
+	if *ifDiagnEnabled {
+		m["interface_diagnostics"] = func() error { return c.interfaceDiagnosticsCollector.Collect(rpc, ch, labelValues) }
 	}
 
 	return m

@@ -3,6 +3,7 @@ package rpc
 import (
 	"encoding/xml"
 	"fmt"
+	"strconv"
 
 	"log"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/czerwonk/junos_exporter/environment"
+	"github.com/czerwonk/junos_exporter/interface_diagnostics"
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/ospf"
@@ -261,6 +263,47 @@ func (c *RpcClient) EnvironmentItems() ([]*environment.EnvironmentItem, error) {
 	}
 
 	return items, nil
+}
+
+func (c *RpcClient) InterfaceDiagnostics() ([]*interface_diagnostics.InterfaceDiagnostics, error) {
+	var x = InterfaceDiagnosticsRpc{}
+	err := c.runCommandAndParse("show interfaces diagnostics optics", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	diagnostics := make([]*interface_diagnostics.InterfaceDiagnostics, 0)
+	for _, diag := range x.Information.Diagnostics {
+		if diag.Diagnostics.NA == "N/A" {
+			continue
+		}
+		d := &interface_diagnostics.InterfaceDiagnostics{
+			Name:                diag.Name,
+			LaserBiasCurrent:    float64(diag.Diagnostics.LaserBiasCurrent),
+			LaserOutputPower:    float64(diag.Diagnostics.LaserOutputPower),
+			LaserOutputPowerDbm: float64(diag.Diagnostics.LaserOutputPowerDbm),
+			ModuleTemperature:   float64(diag.Diagnostics.ModuleTemperature.Value),
+		}
+
+		if diag.Diagnostics.ModuleVoltage > 0 {
+			d.ModuleVoltage = float64(diag.Diagnostics.ModuleVoltage)
+			d.RxSignalAvgOpticalPower = float64(diag.Diagnostics.RxSignalAvgOpticalPower)
+			f, err := strconv.ParseFloat(diag.Diagnostics.RxSignalAvgOpticalPowerDbm, 64)
+			if err != nil {
+				d.RxSignalAvgOpticalPowerDbm = f
+			}
+		} else {
+			d.LaserRxOpticalPower = float64(diag.Diagnostics.LaserRxOpticalPower)
+			f, err := strconv.ParseFloat(diag.Diagnostics.LaserRxOpticalPowerDbm, 64)
+			if err != nil {
+				d.LaserRxOpticalPowerDbm = f
+			}
+		}
+
+		diagnostics = append(diagnostics, d)
+	}
+
+	return diagnostics, nil
 }
 
 func (c *RpcClient) runCommandAndParse(cmd string, obj interface{}) error {

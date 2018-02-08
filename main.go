@@ -27,6 +27,7 @@ var (
 	routingEngineEnabled = flag.Bool("routingengine.enabled", true, "Scrape Routing Engine metrics")
 	routesEnabled        = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
 	environmentEnabled   = flag.Bool("environment.enabled", true, "Scrape environment metrics")
+	ifDiagnEnabled       = flag.Bool("ifdiag.enabled", true, "Scrape optical interface diagnostic metrics")
 	alarmFilter          = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 )
 

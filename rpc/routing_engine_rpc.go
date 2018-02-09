@@ -8,6 +8,7 @@ type RoutingEngineRpc struct {
 
 type RouteEngine struct {
 	Temperature        RouteEngineTemperature `xml:"temperature"`
+	MemoryUtilization  float64                `xml:"memory-buffer-utilization"`
 	CPUTemperature     RouteEngineTemperature `xml:"cpu-temperature"`
 	CPUUser            float64                `xml:"cpu-user"`
 	CPUBackground      float64                `xml:"cpu-background"`

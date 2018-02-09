@@ -2,6 +2,7 @@ package routing_engine
 
 type RouteEngineStats struct {
 	Temperature        float64
+	MemoryUtilization  float64
 	CPUTemperature     float64
 	CPUUser            float64
 	CPUBackground      float64

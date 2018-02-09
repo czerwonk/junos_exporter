@@ -6,6 +6,7 @@ const prefix string = "junos_route_engine_"
 
 var (
 	temperature        *prometheus.Desc
+	memoryUtilization  *prometheus.Desc
 	cpuTemperature     *prometheus.Desc
 	cpuUser            *prometheus.Desc
 	cpuBackground      *prometheus.Desc
@@ -20,6 +21,7 @@ var (
 func init() {
 	l := []string{"target"}
 	temperature = prometheus.NewDesc(prefix+"temp", "Temperature of the air flowing past the Routing Engine (in degrees C)", l, nil)
+	memoryUtilization = prometheus.NewDesc(prefix+"memory_utilization", "Percentage of Routing Engine memory being used", l, nil)
 	cpuTemperature = prometheus.NewDesc(prefix+"cpu_temp", "Temperature of the CPU (in degrees C)", l, nil)
 	cpuUser = prometheus.NewDesc(prefix+"cpu_user", "Percentage of CPU time being used by user processes", l, nil)
 	cpuBackground = prometheus.NewDesc(prefix+"cpu_background", "Percentage of CPU time being used by background processes", l, nil)
@@ -36,6 +38,7 @@ type RoutingEngineCollector struct {
 
 func (*RoutingEngineCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- temperature
+	ch <- memoryUtilization
 	ch <- cpuTemperature
 	ch <- cpuUser
 	ch <- cpuBackground
@@ -54,6 +57,7 @@ func (c *RoutingEngineCollector) Collect(datasource RoutingEngineDatasource, ch 
 	}
 
 	ch <- prometheus.MustNewConstMetric(temperature, prometheus.GaugeValue, stats.Temperature, labelValues...)
+	ch <- prometheus.MustNewConstMetric(memoryUtilization, prometheus.GaugeValue, stats.MemoryUtilization, labelValues...)
 	ch <- prometheus.MustNewConstMetric(cpuTemperature, prometheus.GaugeValue, stats.CPUTemperature, labelValues...)
 	ch <- prometheus.MustNewConstMetric(cpuUser, prometheus.GaugeValue, stats.CPUUser, labelValues...)
 	ch <- prometheus.MustNewConstMetric(cpuBackground, prometheus.GaugeValue, stats.CPUBackground, labelValues...)

@@ -224,6 +224,7 @@ func (c *RpcClient) RouteEngineStats() (*routing_engine.RouteEngineStats, error)
 
 	r := &routing_engine.RouteEngineStats{
 		Temperature:        float64(x.Information.RouteEngine.Temperature.Value),
+		MemoryUtilization:  float64(x.Information.RouteEngine.MemoryUtilization),
 		CPUTemperature:     float64(x.Information.RouteEngine.CPUTemperature.Value),
 		CPUUser:            float64(x.Information.RouteEngine.CPUUser),
 		CPUBackground:      float64(x.Information.RouteEngine.CPUBackground),

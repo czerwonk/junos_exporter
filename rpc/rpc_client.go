@@ -278,23 +278,26 @@ func (c *RpcClient) InterfaceDiagnostics() ([]*interface_diagnostics.InterfaceDi
 			continue
 		}
 		d := &interface_diagnostics.InterfaceDiagnostics{
-			Name:                diag.Name,
-			LaserBiasCurrent:    float64(diag.Diagnostics.LaserBiasCurrent),
-			LaserOutputPower:    float64(diag.Diagnostics.LaserOutputPower),
-			LaserOutputPowerDbm: float64(diag.Diagnostics.LaserOutputPowerDbm),
-			ModuleTemperature:   float64(diag.Diagnostics.ModuleTemperature.Value),
+			Name:              diag.Name,
+			LaserBiasCurrent:  float64(diag.Diagnostics.LaserBiasCurrent),
+			LaserOutputPower:  float64(diag.Diagnostics.LaserOutputPower),
+			ModuleTemperature: float64(diag.Diagnostics.ModuleTemperature.Value),
+		}
+		f, err := strconv.ParseFloat(diag.Diagnostics.LaserOutputPowerDbm, 64)
+		if err != nil {
+			d.LaserOutputPowerDbm = f
 		}
 
 		if diag.Diagnostics.ModuleVoltage > 0 {
 			d.ModuleVoltage = float64(diag.Diagnostics.ModuleVoltage)
 			d.RxSignalAvgOpticalPower = float64(diag.Diagnostics.RxSignalAvgOpticalPower)
-			f, err := strconv.ParseFloat(diag.Diagnostics.RxSignalAvgOpticalPowerDbm, 64)
+			f, err = strconv.ParseFloat(diag.Diagnostics.RxSignalAvgOpticalPowerDbm, 64)
 			if err != nil {
 				d.RxSignalAvgOpticalPowerDbm = f
 			}
 		} else {
 			d.LaserRxOpticalPower = float64(diag.Diagnostics.LaserRxOpticalPower)
-			f, err := strconv.ParseFloat(diag.Diagnostics.LaserRxOpticalPowerDbm, 64)
+			f, err = strconv.ParseFloat(diag.Diagnostics.LaserRxOpticalPowerDbm, 64)
 			if err != nil {
 				d.LaserRxOpticalPowerDbm = f
 			}

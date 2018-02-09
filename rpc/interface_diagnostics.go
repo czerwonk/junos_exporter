@@ -11,7 +11,7 @@ type PhyDiagInterface struct {
 	Diagnostics struct {
 		LaserBiasCurrent    float64 `xml:"laser-bias-current"`
 		LaserOutputPower    float64 `xml:"laser-output-power"`
-		LaserOutputPowerDbm float64 `xml:"laser-output-power-dbm"`
+		LaserOutputPowerDbm string  `xml:"laser-output-power-dbm"`
 		ModuleTemperature   struct {
 			Value float64 `xml:"celsius,attr"`
 		} `xml:"module-temperature"`

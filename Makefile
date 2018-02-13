@@ -19,6 +19,7 @@ MAKE_COLOR=\033[33;01m%-20s\033[0m
 
 MAIN = github.com/czerwonk/junos_exporter
 SRCS = $(shell git ls-files '*.go' | grep -v '^vendor/')
+PKGS = $(shell go list ./... | grep -v '/vendor/')
 
 .DEFAULT_GOAL := help
 

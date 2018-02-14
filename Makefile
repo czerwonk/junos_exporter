@@ -33,7 +33,6 @@ init: ## Install requirements
 	@echo -e "$(OK_COLOR)[$(APP)] Install requirements$(NO_COLOR)"
 	@go get -u github.com/golang/dep/cmd/dep
 	@go get -u github.com/golang/lint/golint
-	@go get -u github.com/kisielk/errcheck
 
 .PHONY: deps
 deps: ## Update dependencies
@@ -57,11 +56,6 @@ lint: ## Launch golint
 .PHONY: vet
 vet: ## Launch go vet
 	@$(foreach file,$(SRCS),$(GO) vet $(file) || exit;)
-
-.PHONY: errcheck
-errcheck: ## Launch go errcheck
-	@echo -e "$(OK_COLOR)[$(APP)] Go Errcheck $(NO_COLOR)"
-	@$(foreach pkg,$(PKGS),errcheck $(pkg) || exit;)
 
 .PHONY: coverage
 coverage: ## Launch code coverage

@@ -285,7 +285,7 @@ func (c *RpcClient) InterfaceDiagnostics() ([]*interface_diagnostics.InterfaceDi
 			ModuleTemperature: float64(diag.Diagnostics.ModuleTemperature.Value),
 		}
 		f, err := strconv.ParseFloat(diag.Diagnostics.LaserOutputPowerDbm, 64)
-		if err != nil {
+		if err == nil {
 			d.LaserOutputPowerDbm = f
 		}
 
@@ -293,13 +293,13 @@ func (c *RpcClient) InterfaceDiagnostics() ([]*interface_diagnostics.InterfaceDi
 			d.ModuleVoltage = float64(diag.Diagnostics.ModuleVoltage)
 			d.RxSignalAvgOpticalPower = float64(diag.Diagnostics.RxSignalAvgOpticalPower)
 			f, err = strconv.ParseFloat(diag.Diagnostics.RxSignalAvgOpticalPowerDbm, 64)
-			if err != nil {
+			if err == nil {
 				d.RxSignalAvgOpticalPowerDbm = f
 			}
 		} else {
 			d.LaserRxOpticalPower = float64(diag.Diagnostics.LaserRxOpticalPower)
 			f, err = strconv.ParseFloat(diag.Diagnostics.LaserRxOpticalPowerDbm, 64)
-			if err != nil {
+			if err == nil {
 				d.LaserRxOpticalPowerDbm = f
 			}
 		}

@@ -11,6 +11,8 @@ var (
 	transmitBytesDesc  *prometheus.Desc
 	transmitErrorsDesc *prometheus.Desc
 	transmitDropsDesc  *prometheus.Desc
+	adminStatusDesc    *prometheus.Desc
+	operStatusDesc     *prometheus.Desc
 )
 
 func init() {
@@ -21,6 +23,8 @@ func init() {
 	transmitBytesDesc = prometheus.NewDesc(prefix+"transmit_bytes", "Transmitted data in bytes", l, nil)
 	transmitErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors", "Number of errors caused by outgoing packets", l, nil)
 	transmitDropsDesc = prometheus.NewDesc(prefix+"transmit_drops", "Number of dropped outgoing packets", l, nil)
+	adminStatusDesc = prometheus.NewDesc(prefix+"admin_status", "Admin operational status", l, nil)
+	operStatusDesc = prometheus.NewDesc(prefix+"oper_status", "Interface operational status", l, nil)
 }
 
 type InterfaceCollector struct {
@@ -33,6 +37,8 @@ func (*InterfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- transmitBytesDesc
 	ch <- transmitDropsDesc
 	ch <- transmitErrorsDesc
+	ch <- adminStatusDesc
+	ch <- operStatusDesc
 }
 
 func (c *InterfaceCollector) Collect(datasource InterfaceStatsDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
@@ -54,6 +60,17 @@ func (*InterfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prom
 	ch <- prometheus.MustNewConstMetric(transmitBytesDesc, prometheus.GaugeValue, s.TransmitBytes, l...)
 
 	if s.IsPhysical {
+		adminUp := 0
+		if s.AdminStatus {
+			adminUp = 1
+		}
+		operUp := 0
+		if s.OperStatus {
+			operUp = 1
+		}
+
+		ch <- prometheus.MustNewConstMetric(adminStatusDesc, prometheus.GaugeValue, float64(adminUp), l...)
+		ch <- prometheus.MustNewConstMetric(operStatusDesc, prometheus.GaugeValue, float64(operUp), l...)
 		ch <- prometheus.MustNewConstMetric(transmitErrorsDesc, prometheus.GaugeValue, s.TransmitErrors, l...)
 		ch <- prometheus.MustNewConstMetric(transmitDropsDesc, prometheus.GaugeValue, s.TransmitDrops, l...)
 		ch <- prometheus.MustNewConstMetric(receiveErrorsDesc, prometheus.GaugeValue, s.ReceiveErrors, l...)

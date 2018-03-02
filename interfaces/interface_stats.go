@@ -2,6 +2,8 @@ package interfaces
 
 type InterfaceStats struct {
 	Name           string
+	AdminStatus    bool
+	OperStatus     bool
 	Description    string
 	Mac            string
 	IsPhysical     bool

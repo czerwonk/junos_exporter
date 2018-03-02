@@ -86,6 +86,8 @@ func (c *RpcClient) InterfaceStats() ([]*interfaces.InterfaceStats, error) {
 		s := &interfaces.InterfaceStats{
 			IsPhysical:     true,
 			Name:           phy.Name,
+			AdminStatus:    phy.AdminStatus == "up",
+			OperStatus:     phy.OperStatus == "up",
 			Description:    phy.Description,
 			Mac:            phy.MacAddress,
 			ReceiveDrops:   float64(phy.InputErrors.Drops),

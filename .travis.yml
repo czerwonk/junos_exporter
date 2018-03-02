@@ -1,4 +1,4 @@
 language: go
 go:
   - 1.8
-script: make init test vet lint errcheck
+script: make init test vet lint

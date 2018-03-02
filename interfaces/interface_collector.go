@@ -13,6 +13,7 @@ var (
 	transmitDropsDesc  *prometheus.Desc
 	adminStatusDesc    *prometheus.Desc
 	operStatusDesc     *prometheus.Desc
+	errorStatusDesc    *prometheus.Desc
 )
 
 func init() {
@@ -25,6 +26,7 @@ func init() {
 	transmitDropsDesc = prometheus.NewDesc(prefix+"transmit_drops", "Number of dropped outgoing packets", l, nil)
 	adminStatusDesc = prometheus.NewDesc(prefix+"admin_status", "Admin operational status", l, nil)
 	operStatusDesc = prometheus.NewDesc(prefix+"oper_status", "Interface operational status", l, nil)
+	errorStatusDesc = prometheus.NewDesc(prefix+"error_status", "Admin and operational status differ", l, nil)
 }
 
 type InterfaceCollector struct {
@@ -39,6 +41,7 @@ func (*InterfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- transmitErrorsDesc
 	ch <- adminStatusDesc
 	ch <- operStatusDesc
+	ch <- errorStatusDesc
 }
 
 func (c *InterfaceCollector) Collect(datasource InterfaceStatsDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
@@ -68,9 +71,14 @@ func (*InterfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prom
 		if s.OperStatus {
 			operUp = 1
 		}
+		err := 0
+		if s.ErrorStatus {
+			err = 1
+		}
 
 		ch <- prometheus.MustNewConstMetric(adminStatusDesc, prometheus.GaugeValue, float64(adminUp), l...)
 		ch <- prometheus.MustNewConstMetric(operStatusDesc, prometheus.GaugeValue, float64(operUp), l...)
+		ch <- prometheus.MustNewConstMetric(errorStatusDesc, prometheus.GaugeValue, float64(err), l...)
 		ch <- prometheus.MustNewConstMetric(transmitErrorsDesc, prometheus.GaugeValue, s.TransmitErrors, l...)
 		ch <- prometheus.MustNewConstMetric(transmitDropsDesc, prometheus.GaugeValue, s.TransmitDrops, l...)
 		ch <- prometheus.MustNewConstMetric(receiveErrorsDesc, prometheus.GaugeValue, s.ReceiveErrors, l...)

@@ -4,6 +4,7 @@ type InterfaceStats struct {
 	Name           string
 	AdminStatus    bool
 	OperStatus     bool
+	ErrorStatus    bool
 	Description    string
 	Mac            string
 	IsPhysical     bool

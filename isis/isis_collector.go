@@ -11,8 +11,8 @@ var (
 
 func init() {
 	l := []string{"target"}
-	upCount = prometheus.NewDesc(prefix+"up", "Number of ISIS Adjacencies in state up", l, nil)
-	totalCount = prometheus.NewDesc(prefix+"total", "Number of ISIS Adjacencies", l, nil)
+	upCount = prometheus.NewDesc(prefix+"up_count", "Number of ISIS Adjacencies in state up", l, nil)
+	totalCount = prometheus.NewDesc(prefix+"total_count", "Number of ISIS Adjacencies", l, nil)
 }
 
 type IsisCollector struct {

@@ -24,8 +24,8 @@ func init() {
 	transmitBytesDesc = prometheus.NewDesc(prefix+"transmit_bytes", "Transmitted data in bytes", l, nil)
 	transmitErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors", "Number of errors caused by outgoing packets", l, nil)
 	transmitDropsDesc = prometheus.NewDesc(prefix+"transmit_drops", "Number of dropped outgoing packets", l, nil)
-	adminStatusDesc = prometheus.NewDesc(prefix+"admin_status", "Admin operational status", l, nil)
-	operStatusDesc = prometheus.NewDesc(prefix+"oper_status", "Interface operational status", l, nil)
+	adminStatusDesc = prometheus.NewDesc(prefix+"interface_admin_up", "Admin operational status", l, nil)
+	operStatusDesc = prometheus.NewDesc(prefix+"interface_up", "Interface operational status", l, nil)
 	errorStatusDesc = prometheus.NewDesc(prefix+"error_status", "Admin and operational status differ", l, nil)
 }
 

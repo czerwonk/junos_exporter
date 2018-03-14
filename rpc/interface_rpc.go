@@ -8,6 +8,8 @@ type InterfaceRpc struct {
 
 type PhyInterface struct {
 	Name              string         `xml:"name"`
+	AdminStatus       string         `xml:"admin-status"`
+	OperStatus        string         `xml:"oper-status"`
 	Description       string         `xml:"description"`
 	MacAddress        string         `xml:"current-physical-address"`
 	Stats             TrafficStat    `xml:"traffic-statistics"`

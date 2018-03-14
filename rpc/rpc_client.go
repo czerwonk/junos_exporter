@@ -3,6 +3,7 @@ package rpc
 import (
 	"encoding/xml"
 	"fmt"
+	"strconv"
 
 	"log"
 
@@ -11,9 +12,13 @@ import (
 	"github.com/czerwonk/junos_exporter/alarm"
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/czerwonk/junos_exporter/environment"
+	"github.com/czerwonk/junos_exporter/interface_diagnostics"
 	"github.com/czerwonk/junos_exporter/interfaces"
+	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/route"
+	"github.com/czerwonk/junos_exporter/routing_engine"
 )
 
 type RpcClient struct {
@@ -81,6 +86,9 @@ func (c *RpcClient) InterfaceStats() ([]*interfaces.InterfaceStats, error) {
 		s := &interfaces.InterfaceStats{
 			IsPhysical:     true,
 			Name:           phy.Name,
+			AdminStatus:    phy.AdminStatus == "up",
+			OperStatus:     phy.OperStatus == "up",
+			ErrorStatus:    !(phy.AdminStatus == phy.OperStatus),
 			Description:    phy.Description,
 			Mac:            phy.MacAddress,
 			ReceiveDrops:   float64(phy.InputErrors.Drops),
@@ -158,6 +166,25 @@ func (c *RpcClient) OspfAreas() ([]*ospf.OspfArea, error) {
 	return areas, nil
 }
 
+func (c *RpcClient) IsisAdjancies() (*isis.IsisAdjacencies, error) {
+	up := 0
+	total := 0
+	var x = IsisRpc{}
+	err := c.runCommandAndParse("show isis adjacency", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, adjacency := range x.Information.Adjacencies {
+		if adjacency.AdjacencyState == "Up" {
+			up++
+		}
+		total++
+	}
+
+	return &isis.IsisAdjacencies{Up: float64(up), Total: float64(total)}, nil
+}
+
 func (c *RpcClient) RoutingTables() ([]*route.RoutingTable, error) {
 	var x = RouteRpc{}
 	err := c.runCommandAndParse("show route summary", &x)
@@ -189,6 +216,101 @@ func (c *RpcClient) RoutingTables() ([]*route.RoutingTable, error) {
 	}
 
 	return tables, nil
+}
+
+func (c *RpcClient) RouteEngineStats() (*routing_engine.RouteEngineStats, error) {
+	var x = RoutingEngineRpc{}
+	err := c.runCommandAndParse("show chassis routing-engine", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	r := &routing_engine.RouteEngineStats{
+		Temperature:        float64(x.Information.RouteEngine.Temperature.Value),
+		MemoryUtilization:  float64(x.Information.RouteEngine.MemoryUtilization),
+		CPUTemperature:     float64(x.Information.RouteEngine.CPUTemperature.Value),
+		CPUUser:            float64(x.Information.RouteEngine.CPUUser),
+		CPUBackground:      float64(x.Information.RouteEngine.CPUBackground),
+		CPUSystem:          float64(x.Information.RouteEngine.CPUSystem),
+		CPUInterrupt:       float64(x.Information.RouteEngine.CPUInterrupt),
+		CPUIdle:            float64(x.Information.RouteEngine.CPUIdle),
+		LoadAverageOne:     float64(x.Information.RouteEngine.LoadAverageOne),
+		LoadAverageFive:    float64(x.Information.RouteEngine.LoadAAverageFive),
+		LoadAverageFifteen: float64(x.Information.RouteEngine.LoadAverageFifteen),
+	}
+
+	return r, nil
+}
+
+func (c *RpcClient) EnvironmentItems() ([]*environment.EnvironmentItem, error) {
+	var x = EnvironmentRpc{}
+	err := c.runCommandAndParse("show chassis environment", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	// remove duplicates
+	list := make(map[string]float64)
+	for _, item := range x.Information.Items {
+		if item.Temperature != nil {
+			list[item.Name] = float64(item.Temperature.Value)
+		}
+	}
+
+	items := make([]*environment.EnvironmentItem, 0)
+	for name, value := range list {
+		i := &environment.EnvironmentItem{
+			Name:        name,
+			Temperature: value,
+		}
+		items = append(items, i)
+	}
+
+	return items, nil
+}
+
+func (c *RpcClient) InterfaceDiagnostics() ([]*interface_diagnostics.InterfaceDiagnostics, error) {
+	var x = InterfaceDiagnosticsRpc{}
+	err := c.runCommandAndParse("show interfaces diagnostics optics", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	diagnostics := make([]*interface_diagnostics.InterfaceDiagnostics, 0)
+	for _, diag := range x.Information.Diagnostics {
+		if diag.Diagnostics.NA == "N/A" {
+			continue
+		}
+		d := &interface_diagnostics.InterfaceDiagnostics{
+			Name:              diag.Name,
+			LaserBiasCurrent:  float64(diag.Diagnostics.LaserBiasCurrent),
+			LaserOutputPower:  float64(diag.Diagnostics.LaserOutputPower),
+			ModuleTemperature: float64(diag.Diagnostics.ModuleTemperature.Value),
+		}
+		f, err := strconv.ParseFloat(diag.Diagnostics.LaserOutputPowerDbm, 64)
+		if err == nil {
+			d.LaserOutputPowerDbm = f
+		}
+
+		if diag.Diagnostics.ModuleVoltage > 0 {
+			d.ModuleVoltage = float64(diag.Diagnostics.ModuleVoltage)
+			d.RxSignalAvgOpticalPower = float64(diag.Diagnostics.RxSignalAvgOpticalPower)
+			f, err = strconv.ParseFloat(diag.Diagnostics.RxSignalAvgOpticalPowerDbm, 64)
+			if err == nil {
+				d.RxSignalAvgOpticalPowerDbm = f
+			}
+		} else {
+			d.LaserRxOpticalPower = float64(diag.Diagnostics.LaserRxOpticalPower)
+			f, err = strconv.ParseFloat(diag.Diagnostics.LaserRxOpticalPowerDbm, 64)
+			if err == nil {
+				d.LaserRxOpticalPowerDbm = f
+			}
+		}
+
+		diagnostics = append(diagnostics, d)
+	}
+
+	return diagnostics, nil
 }
 
 func (c *RpcClient) runCommandAndParse(cmd string, obj interface{}) error {

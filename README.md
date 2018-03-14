@@ -26,6 +26,10 @@ The following metrics are supported by now:
 * Alarms (count)
 * BGP (message count, prefix counts per peer, session state)
 * OSPFv3 (number of neighbors)
+* Interface diagnostics (optical signals)
+* ISIS (number of adjacencies, total number of routers)
+* Environment (temperatures)
+* Routing engine statistics
 
 ## Install
 ```

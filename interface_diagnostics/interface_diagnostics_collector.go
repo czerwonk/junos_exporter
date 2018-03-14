@@ -57,7 +57,7 @@ func (c *InterfaceDiagnosticsCollector) Collect(datasource InterfaceDiagnosticsD
 	}
 
 	for _, d := range diagnostics {
-		l := append(labelValues, []string{d.Name}...)
+		l := append(labelValues, d.Name)
 		ch <- prometheus.MustNewConstMetric(laserBiasCurrentDesc, prometheus.GaugeValue, d.LaserBiasCurrent, l...)
 		ch <- prometheus.MustNewConstMetric(laserOutputPowerDesc, prometheus.GaugeValue, d.LaserOutputPower, l...)
 		ch <- prometheus.MustNewConstMetric(laserOutputPowerDbmDesc, prometheus.GaugeValue, d.LaserOutputPowerDbm, l...)

@@ -15,8 +15,8 @@ import (
 const timeoutInSeconds = 5
 
 var (
-	cachedConfig *ssh.ClientConfig = nil
-	lock                           = &sync.Mutex{}
+	cachedConfig *ssh.ClientConfig
+	lock         = &sync.Mutex{}
 )
 
 func config(user, keyFile string) (*ssh.ClientConfig, error) {

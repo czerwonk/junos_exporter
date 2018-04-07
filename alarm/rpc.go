@@ -1,4 +1,4 @@
-package rpc
+package alarm
 
 type AlarmRpc struct {
 	Information struct {

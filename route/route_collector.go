@@ -1,6 +1,10 @@
 package route
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/czerwonk/junos_exporter/collector"
+	"github.com/czerwonk/junos_exporter/rpc"
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 const prefix string = "junos_routes_"
 
@@ -23,10 +27,16 @@ func init() {
 	protocolActiveRoutes = prometheus.NewDesc(prefix+"protocol_active_count", "Number of active routes by protocol in table", l, nil)
 }
 
-type RouteCollector struct {
+type routeCollector struct {
 }
 
-func (*RouteCollector) Describe(ch chan<- *prometheus.Desc) {
+// NewCollector creates a new collector
+func NewCollector() collector.RPCCollector {
+	return &routeCollector{}
+}
+
+// Describe describes the metrics
+func (*routeCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- totalRoutesDesc
 	ch <- activeRoutesDesc
 	ch <- maxRoutesDesc
@@ -34,8 +44,9 @@ func (*RouteCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- protocolActiveRoutes
 }
 
-func (c *RouteCollector) Collect(datasource RoutesDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
-	tables, err := datasource.RoutingTables()
+// Collect collects metrics from JunOS
+func (c *routeCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	tables, err := c.routingTables(client)
 	if err != nil {
 		return err
 	}
@@ -47,7 +58,40 @@ func (c *RouteCollector) Collect(datasource RoutesDatasource, ch chan<- promethe
 	return nil
 }
 
-func (c *RouteCollector) collectForTable(table *RoutingTable, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *routeCollector) routingTables(client *rpc.Client) ([]*RoutingTable, error) {
+	var x = RouteRpc{}
+	err := client.RunCommandAndParse("show route summary", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	tables := make([]*RoutingTable, 0)
+	for _, table := range x.Information.Tables {
+		t := &RoutingTable{
+			Name:         table.Name,
+			MaxRoutes:    float64(table.MaxRoutes),
+			ActiveRoutes: float64(table.ActiveRoutes),
+			TotalRoutes:  float64(table.TotalRoutes),
+			Protocols:    make([]*ProtocolRouteCount, 0),
+		}
+
+		for _, proto := range table.Protocols {
+			p := &ProtocolRouteCount{
+				Name:         proto.Name,
+				Routes:       float64(proto.Routes),
+				ActiveRoutes: float64(proto.ActiveRoutes),
+			}
+
+			t.Protocols = append(t.Protocols, p)
+		}
+
+		tables = append(tables, t)
+	}
+
+	return tables, nil
+}
+
+func (c *routeCollector) collectForTable(table *RoutingTable, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, table.Name)
 
 	ch <- prometheus.MustNewConstMetric(totalRoutesDesc, prometheus.GaugeValue, table.TotalRoutes, l...)

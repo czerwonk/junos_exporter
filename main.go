@@ -11,7 +11,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.6.0"
+const version string = "0.6.1"
 
 var (
 	showVersion          = flag.Bool("version", false, "Print version information.")
@@ -78,7 +78,9 @@ func startServer() {
 
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	reg := prometheus.NewRegistry()
-	reg.MustRegister(&JunosCollector{})
+
+	c := newJunosCollector()
+	reg.MustRegister(c)
 
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
 		ErrorLog:      log.NewErrorLogger(),

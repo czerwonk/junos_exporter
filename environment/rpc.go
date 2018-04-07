@@ -1,12 +1,12 @@
-package rpc
+package environment
 
 type EnvironmentRpc struct {
 	Information struct {
-		Items []EnvironmentItem `xml:"environment-item"`
+		Items []EnvironmentItemRpc `xml:"environment-item"`
 	} `xml:"environment-information"`
 }
 
-type EnvironmentItem struct {
+type EnvironmentItemRpc struct {
 	Name        string `xml:"name"`
 	Class       string `xml:"class"`
 	Status      string `xml:"status"`

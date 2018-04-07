@@ -1,6 +1,10 @@
 package isis
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/czerwonk/junos_exporter/collector"
+	"github.com/czerwonk/junos_exporter/rpc"
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 const prefix string = "junos_isis_"
 
@@ -15,16 +19,23 @@ func init() {
 	totalCount = prometheus.NewDesc(prefix+"total_count", "Number of ISIS Adjacencies", l, nil)
 }
 
-type IsisCollector struct {
+type isisCollector struct {
 }
 
-func (*IsisCollector) Describe(ch chan<- *prometheus.Desc) {
+// NewCollector creates a new collector
+func NewCollector() collector.RPCCollector {
+	return &isisCollector{}
+}
+
+// Describe describes the metrics
+func (*isisCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- upCount
 	ch <- totalCount
 }
 
-func (c *IsisCollector) Collect(datasource IsisDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
-	adjancies, err := datasource.IsisAdjancies()
+// Collect collects metrics from JunOS
+func (c *isisCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	adjancies, err := c.isisAdjancies(client)
 	if err != nil {
 		return err
 	}
@@ -33,4 +44,24 @@ func (c *IsisCollector) Collect(datasource IsisDatasource, ch chan<- prometheus.
 	ch <- prometheus.MustNewConstMetric(totalCount, prometheus.GaugeValue, adjancies.Total, labelValues...)
 
 	return nil
+}
+
+func (c *isisCollector) isisAdjancies(client *rpc.Client) (*IsisAdjacencies, error) {
+	up := 0
+	total := 0
+
+	var x = IsisRpc{}
+	err := client.RunCommandAndParse("show isis adjacency", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, adjacency := range x.Information.Adjacencies {
+		if adjacency.AdjacencyState == "Up" {
+			up++
+		}
+		total++
+	}
+
+	return &IsisAdjacencies{Up: float64(up), Total: float64(total)}, nil
 }

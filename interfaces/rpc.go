@@ -1,4 +1,4 @@
-package rpc
+package interfaces
 
 type InterfaceRpc struct {
 	Information struct {

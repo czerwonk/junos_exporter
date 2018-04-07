@@ -1,4 +1,4 @@
-package rpc
+package ospfv3
 
 type Ospf3Rpc struct {
 	Information struct {

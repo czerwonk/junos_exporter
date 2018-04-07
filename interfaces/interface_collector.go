@@ -1,6 +1,10 @@
 package interfaces
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/czerwonk/junos_exporter/collector"
+	"github.com/czerwonk/junos_exporter/rpc"
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 const prefix = "junos_interface_"
 
@@ -29,10 +33,17 @@ func init() {
 	errorStatusDesc = prometheus.NewDesc(prefix+"error_status", "Admin and operational status differ", l, nil)
 }
 
-type InterfaceCollector struct {
+// Collector collects interface metrics
+type interfaceCollector struct {
 }
 
-func (*InterfaceCollector) Describe(ch chan<- *prometheus.Desc) {
+// NewCollector creates a new collector
+func NewCollector() collector.RPCCollector {
+	return &interfaceCollector{}
+}
+
+// Describe describes the metrics
+func (*interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- receiveBytesDesc
 	ch <- receiveErrorsDesc
 	ch <- receiveDropsDesc
@@ -44,8 +55,9 @@ func (*InterfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- errorStatusDesc
 }
 
-func (c *InterfaceCollector) Collect(datasource InterfaceStatsDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
-	stats, err := datasource.InterfaceStats()
+// Collect collects metrics from JunOS
+func (c *interfaceCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	stats, err := c.interfaceStats(client)
 	if err != nil {
 		return err
 	}
@@ -57,7 +69,51 @@ func (c *InterfaceCollector) Collect(datasource InterfaceStatsDatasource, ch cha
 	return nil
 }
 
-func (*InterfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceStats, error) {
+	var x = InterfaceRpc{}
+	err := client.RunCommandAndParse("show interfaces statistics detail", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	stats := make([]*InterfaceStats, 0)
+	for _, phy := range x.Information.Interfaces {
+		s := &InterfaceStats{
+			IsPhysical:     true,
+			Name:           phy.Name,
+			AdminStatus:    phy.AdminStatus == "up",
+			OperStatus:     phy.OperStatus == "up",
+			ErrorStatus:    !(phy.AdminStatus == phy.OperStatus),
+			Description:    phy.Description,
+			Mac:            phy.MacAddress,
+			ReceiveDrops:   float64(phy.InputErrors.Drops),
+			ReceiveErrors:  float64(phy.InputErrors.Errors),
+			ReceiveBytes:   float64(phy.Stats.InputBytes),
+			TransmitDrops:  float64(phy.OutputErrors.Drops),
+			TransmitErrors: float64(phy.OutputErrors.Errors),
+			TransmitBytes:  float64(phy.Stats.OutputBytes),
+		}
+
+		stats = append(stats, s)
+
+		for _, log := range phy.LogicalInterfaces {
+			sl := &InterfaceStats{
+				IsPhysical:    false,
+				Name:          log.Name,
+				Description:   log.Description,
+				Mac:           phy.MacAddress,
+				ReceiveBytes:  float64(log.Stats.InputBytes),
+				TransmitBytes: float64(log.Stats.OutputBytes),
+			}
+
+			stats = append(stats, sl)
+		}
+	}
+
+	return stats, nil
+}
+
+func (*interfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, []string{s.Name, s.Description, s.Mac}...)
 	ch <- prometheus.MustNewConstMetric(receiveBytesDesc, prometheus.GaugeValue, s.ReceiveBytes, l...)
 	ch <- prometheus.MustNewConstMetric(transmitBytesDesc, prometheus.GaugeValue, s.TransmitBytes, l...)

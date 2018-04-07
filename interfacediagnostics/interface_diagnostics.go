@@ -1,4 +1,4 @@
-package interface_diagnostics
+package interfacediagnostics
 
 type InterfaceDiagnostics struct {
 	Name                string

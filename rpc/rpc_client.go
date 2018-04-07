@@ -13,12 +13,12 @@ import (
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/czerwonk/junos_exporter/environment"
-	"github.com/czerwonk/junos_exporter/interface_diagnostics"
+	"github.com/czerwonk/junos_exporter/interfacediagnostics"
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/route"
-	"github.com/czerwonk/junos_exporter/routing_engine"
+	"github.com/czerwonk/junos_exporter/routingengine"
 )
 
 type RpcClient struct {
@@ -218,14 +218,14 @@ func (c *RpcClient) RoutingTables() ([]*route.RoutingTable, error) {
 	return tables, nil
 }
 
-func (c *RpcClient) RouteEngineStats() (*routing_engine.RouteEngineStats, error) {
+func (c *RpcClient) RouteEngineStats() (*routingengine.RouteEngineStats, error) {
 	var x = RoutingEngineRpc{}
 	err := c.runCommandAndParse("show chassis routing-engine", &x)
 	if err != nil {
 		return nil, err
 	}
 
-	r := &routing_engine.RouteEngineStats{
+	r := &routingengine.RouteEngineStats{
 		Temperature:        float64(x.Information.RouteEngine.Temperature.Value),
 		MemoryUtilization:  float64(x.Information.RouteEngine.MemoryUtilization),
 		CPUTemperature:     float64(x.Information.RouteEngine.CPUTemperature.Value),
@@ -269,19 +269,19 @@ func (c *RpcClient) EnvironmentItems() ([]*environment.EnvironmentItem, error) {
 	return items, nil
 }
 
-func (c *RpcClient) InterfaceDiagnostics() ([]*interface_diagnostics.InterfaceDiagnostics, error) {
+func (c *RpcClient) InterfaceDiagnostics() ([]*interfacediagnostics.InterfaceDiagnostics, error) {
 	var x = InterfaceDiagnosticsRpc{}
 	err := c.runCommandAndParse("show interfaces diagnostics optics", &x)
 	if err != nil {
 		return nil, err
 	}
 
-	diagnostics := make([]*interface_diagnostics.InterfaceDiagnostics, 0)
+	diagnostics := make([]*interfacediagnostics.InterfaceDiagnostics, 0)
 	for _, diag := range x.Information.Diagnostics {
 		if diag.Diagnostics.NA == "N/A" {
 			continue
 		}
-		d := &interface_diagnostics.InterfaceDiagnostics{
+		d := &interfacediagnostics.InterfaceDiagnostics{
 			Name:              diag.Name,
 			LaserBiasCurrent:  float64(diag.Diagnostics.LaserBiasCurrent),
 			LaserOutputPower:  float64(diag.Diagnostics.LaserOutputPower),

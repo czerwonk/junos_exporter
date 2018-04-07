@@ -1,4 +1,4 @@
-package interface_diagnostics
+package interfacediagnostics
 
 import "github.com/prometheus/client_golang/prometheus"
 

@@ -1,4 +1,4 @@
-package routing_engine
+package routingengine
 
 type RouteEngineStats struct {
 	Temperature        float64

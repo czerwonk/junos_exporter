@@ -1,4 +1,4 @@
-package routing_engine
+package routingengine
 
 import "github.com/prometheus/client_golang/prometheus"
 

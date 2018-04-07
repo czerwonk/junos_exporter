@@ -10,12 +10,12 @@ import (
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/czerwonk/junos_exporter/environment"
-	"github.com/czerwonk/junos_exporter/interface_diagnostics"
+	"github.com/czerwonk/junos_exporter/interfacediagnostics"
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/route"
-	"github.com/czerwonk/junos_exporter/routing_engine"
+	"github.com/czerwonk/junos_exporter/routingengine"
 	"github.com/czerwonk/junos_exporter/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
@@ -40,9 +40,9 @@ type JunosCollector struct {
 	ospfCollector                 *ospf.OspfCollector
 	isisCollector                 *isis.IsisCollector
 	routeCollector                *route.RouteCollector
-	routingEngineCollector        *routing_engine.RoutingEngineCollector
+	routingEngineCollector        *routingengine.RoutingEngineCollector
 	environmentCollector          *environment.EnvironmentCollector
-	interfaceDiagnosticsCollector *interface_diagnostics.InterfaceDiagnosticsCollector
+	interfaceDiagnosticsCollector *interfacediagnostics.InterfaceDiagnosticsCollector
 }
 
 func (c *JunosCollector) Describe(ch chan<- *prometheus.Desc) {

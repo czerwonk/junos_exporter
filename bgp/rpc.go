@@ -1,4 +1,4 @@
-package rpc
+package bgp
 
 type BgpRpc struct {
 	Information struct {

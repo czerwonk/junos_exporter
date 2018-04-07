@@ -1,6 +1,13 @@
 package interfacediagnostics
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"strconv"
+
+	"github.com/czerwonk/junos_exporter/rpc"
+
+	"github.com/czerwonk/junos_exporter/collector"
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 const prefix = "junos_interface_diagnostics_"
 
@@ -33,12 +40,16 @@ func init() {
 	rxSignalAvgOpticalPowerDbmDesc = prometheus.NewDesc(prefix+"rx_signal_avg_dbm", "Receiver signal average optical power in mW", l, nil)
 }
 
-// Collector collects optical diagnostic metrics
-type Collector struct {
+type interfaceDiagnosticsCollector struct {
+}
+
+// NewCollector creates a new collector
+func NewCollector() collector.RPCCollector {
+	return &interfaceDiagnosticsCollector{}
 }
 
 // Describe describes the metrics
-func (*Collector) Describe(ch chan<- *prometheus.Desc) {
+func (*interfaceDiagnosticsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- laserBiasCurrentDesc
 	ch <- laserOutputPowerDesc
 	ch <- laserOutputPowerDbmDesc
@@ -52,9 +63,9 @@ func (*Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- rxSignalAvgOpticalPowerDbmDesc
 }
 
-// Collect collects metrics from datasource
-func (c *Collector) Collect(datasource InterfaceDiagnosticsDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
-	diagnostics, err := datasource.InterfaceDiagnostics()
+// Collect collects metrics from JunOS
+func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	diagnostics, err := c.interfaceDiagnostics(client)
 	if err != nil {
 		return err
 	}
@@ -77,4 +88,48 @@ func (c *Collector) Collect(datasource InterfaceDiagnosticsDatasource, ch chan<-
 	}
 
 	return nil
+}
+
+func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client) ([]*InterfaceDiagnostics, error) {
+	var x = InterfaceDiagnosticsRpc{}
+	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	diagnostics := make([]*InterfaceDiagnostics, 0)
+	for _, diag := range x.Information.Diagnostics {
+		if diag.Diagnostics.NA == "N/A" {
+			continue
+		}
+		d := &InterfaceDiagnostics{
+			Name:              diag.Name,
+			LaserBiasCurrent:  float64(diag.Diagnostics.LaserBiasCurrent),
+			LaserOutputPower:  float64(diag.Diagnostics.LaserOutputPower),
+			ModuleTemperature: float64(diag.Diagnostics.ModuleTemperature.Value),
+		}
+		f, err := strconv.ParseFloat(diag.Diagnostics.LaserOutputPowerDbm, 64)
+		if err == nil {
+			d.LaserOutputPowerDbm = f
+		}
+
+		if diag.Diagnostics.ModuleVoltage > 0 {
+			d.ModuleVoltage = float64(diag.Diagnostics.ModuleVoltage)
+			d.RxSignalAvgOpticalPower = float64(diag.Diagnostics.RxSignalAvgOpticalPower)
+			f, err = strconv.ParseFloat(diag.Diagnostics.RxSignalAvgOpticalPowerDbm, 64)
+			if err == nil {
+				d.RxSignalAvgOpticalPowerDbm = f
+			}
+		} else {
+			d.LaserRxOpticalPower = float64(diag.Diagnostics.LaserRxOpticalPower)
+			f, err = strconv.ParseFloat(diag.Diagnostics.LaserRxOpticalPowerDbm, 64)
+			if err == nil {
+				d.LaserRxOpticalPowerDbm = f
+			}
+		}
+
+		diagnostics = append(diagnostics, d)
+	}
+
+	return diagnostics, nil
 }

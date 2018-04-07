@@ -1,6 +1,10 @@
 package routingengine
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/czerwonk/junos_exporter/collector"
+	"github.com/czerwonk/junos_exporter/rpc"
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 const prefix string = "junos_route_engine_"
 
@@ -33,12 +37,16 @@ func init() {
 	loadAverageFifteen = prometheus.NewDesc(prefix+"load_average_fifteen", "Routing Engine load averages for the last 15 minutes", l, nil)
 }
 
-// Collector collects metrics from the routing engine
-type Collector struct {
+type routingEngineCollector struct {
+}
+
+// NewCollector creates a new collector
+func NewCollector() collector.RPCCollector {
+	return &routingEngineCollector{}
 }
 
 // Describe describes the metrics
-func (*Collector) Describe(ch chan<- *prometheus.Desc) {
+func (*routingEngineCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- temperature
 	ch <- memoryUtilization
 	ch <- cpuTemperature
@@ -52,9 +60,9 @@ func (*Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- loadAverageFifteen
 }
 
-// Collect collects metrics from datasource
-func (c *Collector) Collect(datasource RoutingEngineDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
-	stats, err := datasource.RouteEngineStats()
+// Collect collects metrics from JunOS
+func (c *routingEngineCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	stats, err := c.routeEngineStats(client)
 	if err != nil {
 		return err
 	}
@@ -72,4 +80,28 @@ func (c *Collector) Collect(datasource RoutingEngineDatasource, ch chan<- promet
 	ch <- prometheus.MustNewConstMetric(loadAverageFifteen, prometheus.GaugeValue, stats.LoadAverageFifteen, labelValues...)
 
 	return nil
+}
+
+func (c *routingEngineCollector) routeEngineStats(client *rpc.Client) (*RouteEngineStats, error) {
+	var x = RoutingEngineRpc{}
+	err := client.RunCommandAndParse("show chassis routing-engine", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	r := &RouteEngineStats{
+		Temperature:        float64(x.Information.RouteEngine.Temperature.Value),
+		MemoryUtilization:  float64(x.Information.RouteEngine.MemoryUtilization),
+		CPUTemperature:     float64(x.Information.RouteEngine.CPUTemperature.Value),
+		CPUUser:            float64(x.Information.RouteEngine.CPUUser),
+		CPUBackground:      float64(x.Information.RouteEngine.CPUBackground),
+		CPUSystem:          float64(x.Information.RouteEngine.CPUSystem),
+		CPUInterrupt:       float64(x.Information.RouteEngine.CPUInterrupt),
+		CPUIdle:            float64(x.Information.RouteEngine.CPUIdle),
+		LoadAverageOne:     float64(x.Information.RouteEngine.LoadAverageOne),
+		LoadAverageFive:    float64(x.Information.RouteEngine.LoadAAverageFive),
+		LoadAverageFifteen: float64(x.Information.RouteEngine.LoadAverageFifteen),
+	}
+
+	return r, nil
 }

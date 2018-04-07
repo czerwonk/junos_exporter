@@ -1,12 +1,12 @@
-package rpc
+package isis
 
 type IsisRpc struct {
 	Information struct {
-		Adjacencies []IsisAdjacencies `xml:"isis-adjacency"`
+		Adjacencies []IsisAdjacenciesRpc `xml:"isis-adjacency"`
 	} `xml:"isis-adjacency-information"`
 }
 
-type IsisAdjacencies struct {
+type IsisAdjacenciesRpc struct {
 	InterfaceName  string `xml:"interface-name"`
 	SystemName     string `xml:"system-name"`
 	Level          int64  `xml:"level"`

@@ -1,4 +1,4 @@
-package rpc
+package routingengine
 
 type RoutingEngineRpc struct {
 	Information struct {

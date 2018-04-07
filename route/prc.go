@@ -1,4 +1,4 @@
-package rpc
+package route
 
 type RouteRpc struct {
 	Information struct {

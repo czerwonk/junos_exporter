@@ -32,7 +32,7 @@ The following metrics are supported by now:
 * Routing engine statistics
 
 ## Install
-```
+```bash
 go get -u github.com/czerwonk/junos_exporter
 ```
 
@@ -43,12 +43,12 @@ In this example we want to scrape 3 hosts:
 * Host 3 (IP: 172.16.0.1, Port: 22)
 
 ### Binary
-```
+```bash
 ./junos_exporter -ssh.targets="host1.example.com,host2.example.com:2233,172.16.0.1" -ssh.keyfile=junos_exporter
 ```
 
 ### Docker
-```
+```bash
 docker run -d --restart unless-stopped -p 9326:9326 -v /opt/junos_exporter_keyfile:/ssh-keyfile -e TARGETS="host1.example.com,host2.example.com:2233,172.16.0.1" czerwonk/junos_exporter
 ```
 

@@ -8,13 +8,13 @@ import (
 
 	"github.com/czerwonk/junos_exporter/alarm"
 	"github.com/czerwonk/junos_exporter/bgp"
+	"github.com/czerwonk/junos_exporter/ospfv3"
 	"github.com/czerwonk/junos_exporter/collector"
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/czerwonk/junos_exporter/environment"
 	"github.com/czerwonk/junos_exporter/interfacediagnostics"
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/czerwonk/junos_exporter/isis"
-	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/route"
 	"github.com/czerwonk/junos_exporter/routingengine"
 	"github.com/czerwonk/junos_exporter/rpc"
@@ -58,7 +58,7 @@ func collectors() map[string]collector.RPCCollector {
 	}
 
 	if *ospfEnabled {
-		m["ospf"] = ospf.NewCollector()
+		m["ospf"] = ospfv3.NewCollector()
 	}
 
 	if *isisEnabled {

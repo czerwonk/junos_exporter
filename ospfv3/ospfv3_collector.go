@@ -1,4 +1,4 @@
-package ospf
+package ospfv3
 
 import (
 	"github.com/czerwonk/junos_exporter/collector"

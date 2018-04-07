@@ -1,4 +1,4 @@
-package ospf
+package ospfv3
 
 type OspfArea struct {
 	Name      string

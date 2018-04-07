@@ -11,12 +11,12 @@ import (
 
 // Client sends commands to JunOS and parses results
 type Client struct {
-	conn  *connector.SshConnection
+	conn  *connector.SSHConnection
 	debug bool
 }
 
 // NewClient creates a new client to connect to
-func NewClient(ssh *connector.SshConnection, debug bool) *Client {
+func NewClient(ssh *connector.SSHConnection, debug bool) *Client {
 	rpc := &Client{conn: ssh, debug: debug}
 
 	return rpc

@@ -42,12 +42,13 @@ func config(user, keyFile string) (*ssh.ClientConfig, error) {
 	return cachedConfig, nil
 }
 
-func NewSshConnection(host, user, keyFile string) (*SshConnection, error) {
+// NewSSSHConnection connects to device
+func NewSSSHConnection(host, user, keyFile string) (*SSHConnection, error) {
 	if !strings.Contains(host, ":") {
 		host = host + ":22"
 	}
 
-	c := &SshConnection{Host: host}
+	c := &SSHConnection{Host: host}
 	err := c.Connect(user, keyFile)
 	if err != nil {
 		return nil, err
@@ -56,12 +57,14 @@ func NewSshConnection(host, user, keyFile string) (*SshConnection, error) {
 	return c, nil
 }
 
-type SshConnection struct {
+// SSHConnection encapsulates the connection to the device
+type SSHConnection struct {
 	conn *ssh.Client
 	Host string
 }
 
-func (c *SshConnection) Connect(user, keyFile string) error {
+// Connect connects to the device
+func (c *SSHConnection) Connect(user, keyFile string) error {
 	config, err := config(user, keyFile)
 	if err != nil {
 		return err
@@ -71,7 +74,8 @@ func (c *SshConnection) Connect(user, keyFile string) error {
 	return err
 }
 
-func (c *SshConnection) RunCommand(cmd string) ([]byte, error) {
+// RunCommand runs a command against the device
+func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 	session, err := c.conn.NewSession()
 	if err != nil {
 		return nil, err
@@ -89,7 +93,8 @@ func (c *SshConnection) RunCommand(cmd string) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func (c *SshConnection) Close() {
+// Close closes connection
+func (c *SSHConnection) Close() {
 	if c.conn == nil {
 		return
 	}

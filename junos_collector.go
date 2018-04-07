@@ -113,7 +113,7 @@ func (c *junosCollector) collectForHost(host string, ch chan<- prometheus.Metric
 		ch <- prometheus.MustNewConstMetric(scrapeDurationDesc, prometheus.GaugeValue, time.Since(t).Seconds(), l...)
 	}()
 
-	conn, err := connector.NewSshConnection(host, *sshUsername, *sshKeyFile)
+	conn, err := connector.NewSSSHConnection(host, *sshUsername, *sshKeyFile)
 	if err != nil {
 		log.Errorln(err)
 		ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 0, l...)

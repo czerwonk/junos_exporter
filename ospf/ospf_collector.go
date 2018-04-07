@@ -17,15 +17,18 @@ func init() {
 	neighborsDesc = prometheus.NewDesc(prefix+"neighbors_count", "Number of neighbors", l, nil)
 }
 
-type OspfCollector struct {
+// Collector collects OSPFv3 metrics
+type Collector struct {
 }
 
-func (*OspfCollector) Describe(ch chan<- *prometheus.Desc) {
+// Describe describes the metrics
+func (*Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- upDesc
 	ch <- neighborsDesc
 }
 
-func (c *OspfCollector) Collect(datasource OspfDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
+// Collect collects metrics from datasource
+func (c *Collector) Collect(datasource OspfDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
 	areas, err := datasource.OspfAreas()
 	if err != nil {
 		return err
@@ -45,7 +48,7 @@ func (c *OspfCollector) Collect(datasource OspfDatasource, ch chan<- prometheus.
 	return nil
 }
 
-func (c *OspfCollector) collectForArea(area *OspfArea, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *Collector) collectForArea(area *OspfArea, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, area.Name)
 
 	ch <- prometheus.MustNewConstMetric(neighborsDesc, prometheus.GaugeValue, area.Neighbors, l...)

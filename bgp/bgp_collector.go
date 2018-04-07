@@ -27,10 +27,12 @@ func init() {
 	flapsDesc = prometheus.NewDesc(prefix+"flap_count", "Number of session flaps", l, nil)
 }
 
-type BgpCollector struct {
+// Collector collects BGP metrics
+type Collector struct {
 }
 
-func (*BgpCollector) Describe(ch chan<- *prometheus.Desc) {
+// Describe describes the metrics
+func (*Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- upDesc
 	ch <- receivedPrefixesDesc
 	ch <- acceptedPrefixesDesc
@@ -41,7 +43,8 @@ func (*BgpCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- flapsDesc
 }
 
-func (c *BgpCollector) Collect(datasource BgpDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
+// Collect collects metrics from datasource
+func (c *Collector) Collect(datasource BgpDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
 	sessions, err := datasource.BgpSessions()
 	if err != nil {
 		return err
@@ -54,7 +57,7 @@ func (c *BgpCollector) Collect(datasource BgpDatasource, ch chan<- prometheus.Me
 	return nil
 }
 
-func (*BgpCollector) collectForSession(s *BgpSession, ch chan<- prometheus.Metric, labelValues []string) {
+func (*Collector) collectForSession(s *BgpSession, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, []string{s.Asn, s.Ip}...)
 
 	up := 0

@@ -33,10 +33,12 @@ func init() {
 	rxSignalAvgOpticalPowerDbmDesc = prometheus.NewDesc(prefix+"rx_signal_avg_dbm", "Receiver signal average optical power in mW", l, nil)
 }
 
-type InterfaceDiagnosticsCollector struct {
+// Collector collects optical diagnostic metrics
+type Collector struct {
 }
 
-func (*InterfaceDiagnosticsCollector) Describe(ch chan<- *prometheus.Desc) {
+// Describe describes the metrics
+func (*Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- laserBiasCurrentDesc
 	ch <- laserOutputPowerDesc
 	ch <- laserOutputPowerDbmDesc
@@ -50,7 +52,8 @@ func (*InterfaceDiagnosticsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- rxSignalAvgOpticalPowerDbmDesc
 }
 
-func (c *InterfaceDiagnosticsCollector) Collect(datasource InterfaceDiagnosticsDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
+// Collect collects metrics from datasource
+func (c *Collector) Collect(datasource InterfaceDiagnosticsDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
 	diagnostics, err := datasource.InterfaceDiagnostics()
 	if err != nil {
 		return err

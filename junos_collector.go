@@ -33,19 +33,20 @@ func init() {
 	scrapeDurationDesc = prometheus.NewDesc(prefix+"collector_duration_seconds", "Duration of a collector scrape for one target", []string{"target"}, nil)
 }
 
-type JunosCollector struct {
-	interfaceCollector            *interfaces.InterfaceCollector
-	alarmCollector                *alarm.AlarmCollector
-	bgpCollector                  *bgp.BgpCollector
-	ospfCollector                 *ospf.OspfCollector
-	isisCollector                 *isis.IsisCollector
-	routeCollector                *route.RouteCollector
-	routingEngineCollector        *routingengine.RoutingEngineCollector
-	environmentCollector          *environment.EnvironmentCollector
-	interfaceDiagnosticsCollector *interfacediagnostics.InterfaceDiagnosticsCollector
+type junosCollector struct {
+	interfaceCollector            *interfaces.Collector
+	alarmCollector                *alarm.Collector
+	bgpCollector                  *bgp.Collector
+	ospfCollector                 *ospf.Collector
+	isisCollector                 *isis.Collector
+	routeCollector                *route.Collector
+	routingEngineCollector        *routingengine.Collector
+	environmentCollector          *environment.Collector
+	interfaceDiagnosticsCollector *interfacediagnostics.Collector
 }
 
-func (c *JunosCollector) Describe(ch chan<- *prometheus.Desc) {
+// Describe implements prometheus.Collector interface
+func (c *junosCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- upDesc
 	ch <- scrapeDurationDesc
 
@@ -58,7 +59,8 @@ func (c *JunosCollector) Describe(ch chan<- *prometheus.Desc) {
 	c.environmentCollector.Describe(ch)
 }
 
-func (c *JunosCollector) Collect(ch chan<- prometheus.Metric) {
+// Collect implements prometheus.Collector interface
+func (c *junosCollector) Collect(ch chan<- prometheus.Metric) {
 	hosts := strings.Split(*sshHosts, ",")
 	wg := &sync.WaitGroup{}
 
@@ -70,7 +72,7 @@ func (c *JunosCollector) Collect(ch chan<- prometheus.Metric) {
 	wg.Wait()
 }
 
-func (c *JunosCollector) collectForHost(host string, ch chan<- prometheus.Metric, wg *sync.WaitGroup) {
+func (c *junosCollector) collectForHost(host string, ch chan<- prometheus.Metric, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	l := []string{host}
@@ -99,7 +101,7 @@ func (c *JunosCollector) collectForHost(host string, ch chan<- prometheus.Metric
 	}
 }
 
-func (c *JunosCollector) collectors(rpc *rpc.RpcClient, ch chan<- prometheus.Metric, labelValues []string) map[string]func() error {
+func (c *junosCollector) collectors(rpc *rpc.RpcClient, ch chan<- prometheus.Metric, labelValues []string) map[string]func() error {
 	m := map[string]func() error{
 		"interface": func() error { return c.interfaceCollector.Collect(rpc, ch, labelValues) },
 		"alarm":     func() error { return c.alarmCollector.Collect(rpc, ch, labelValues) },

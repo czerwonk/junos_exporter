@@ -13,14 +13,17 @@ func init() {
 	temperaturesDesc = prometheus.NewDesc(prefix+"item_temp", "Temperature of the air flowing past", l, nil)
 }
 
-type EnvironmentCollector struct {
+// Collector collects environment metrics
+type Collector struct {
 }
 
-func (*EnvironmentCollector) Describe(ch chan<- *prometheus.Desc) {
+// Describe describes the metrics
+func (*Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- temperaturesDesc
 }
 
-func (c *EnvironmentCollector) Collect(datasource EnvironmentDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
+// Collect collects metrics from datasource
+func (c *Collector) Collect(datasource EnvironmentDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
 	items, err := datasource.EnvironmentItems()
 	if err != nil {
 		return err

@@ -23,10 +23,12 @@ func init() {
 	protocolActiveRoutes = prometheus.NewDesc(prefix+"protocol_active_count", "Number of active routes by protocol in table", l, nil)
 }
 
-type RouteCollector struct {
+// Collector collects metrics from RIB
+type Collector struct {
 }
 
-func (*RouteCollector) Describe(ch chan<- *prometheus.Desc) {
+// Describe describes the metrics
+func (*Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- totalRoutesDesc
 	ch <- activeRoutesDesc
 	ch <- maxRoutesDesc
@@ -34,7 +36,8 @@ func (*RouteCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- protocolActiveRoutes
 }
 
-func (c *RouteCollector) Collect(datasource RoutesDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
+// Collect collects metrics from datasource
+func (c *Collector) Collect(datasource RoutesDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
 	tables, err := datasource.RoutingTables()
 	if err != nil {
 		return err
@@ -47,7 +50,7 @@ func (c *RouteCollector) Collect(datasource RoutesDatasource, ch chan<- promethe
 	return nil
 }
 
-func (c *RouteCollector) collectForTable(table *RoutingTable, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *Collector) collectForTable(table *RoutingTable, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, table.Name)
 
 	ch <- prometheus.MustNewConstMetric(totalRoutesDesc, prometheus.GaugeValue, table.TotalRoutes, l...)

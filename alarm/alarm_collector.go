@@ -15,15 +15,18 @@ func init() {
 	alarmsRedCount = prometheus.NewDesc(prefix+"red_count", "Number of red alarms (not silenced)", l, nil)
 }
 
-type AlarmCollector struct {
+// Collector collects alarm metrics
+type Collector struct {
 }
 
-func (*AlarmCollector) Describe(ch chan<- *prometheus.Desc) {
+// Describe describes the metrics
+func (*Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- alarmsYellowCount
 	ch <- alarmsRedCount
 }
 
-func (c *AlarmCollector) Collect(datasource AlarmDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
+// Collect collects metrics from datasource
+func (c *Collector) Collect(datasource AlarmDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
 	counter, err := datasource.AlarmCounter()
 	if err != nil {
 		return err

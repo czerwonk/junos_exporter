@@ -33,10 +33,12 @@ func init() {
 	loadAverageFifteen = prometheus.NewDesc(prefix+"load_average_fifteen", "Routing Engine load averages for the last 15 minutes", l, nil)
 }
 
-type RoutingEngineCollector struct {
+// Collector collects metrics from the routing engine
+type Collector struct {
 }
 
-func (*RoutingEngineCollector) Describe(ch chan<- *prometheus.Desc) {
+// Describe describes the metrics
+func (*Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- temperature
 	ch <- memoryUtilization
 	ch <- cpuTemperature
@@ -50,7 +52,8 @@ func (*RoutingEngineCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- loadAverageFifteen
 }
 
-func (c *RoutingEngineCollector) Collect(datasource RoutingEngineDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
+// Collect collects metrics from datasource
+func (c *Collector) Collect(datasource RoutingEngineDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
 	stats, err := datasource.RouteEngineStats()
 	if err != nil {
 		return err

@@ -78,7 +78,7 @@ func startServer() {
 
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	reg := prometheus.NewRegistry()
-	reg.MustRegister(&JunosCollector{})
+	reg.MustRegister(&junosCollector{})
 
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
 		ErrorLog:      log.NewErrorLogger(),

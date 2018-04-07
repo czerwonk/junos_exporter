@@ -15,15 +15,18 @@ func init() {
 	totalCount = prometheus.NewDesc(prefix+"total_count", "Number of ISIS Adjacencies", l, nil)
 }
 
-type IsisCollector struct {
+// Collector collects ISIS metrics
+type Collector struct {
 }
 
-func (*IsisCollector) Describe(ch chan<- *prometheus.Desc) {
+// Describe describes the metrics
+func (*Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- upCount
 	ch <- totalCount
 }
 
-func (c *IsisCollector) Collect(datasource IsisDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
+// Collect collects metrics from datasource
+func (c *Collector) Collect(datasource IsisDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
 	adjancies, err := datasource.IsisAdjancies()
 	if err != nil {
 		return err

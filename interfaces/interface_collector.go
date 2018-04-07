@@ -29,10 +29,12 @@ func init() {
 	errorStatusDesc = prometheus.NewDesc(prefix+"error_status", "Admin and operational status differ", l, nil)
 }
 
-type InterfaceCollector struct {
+// Collector collects interface metrics
+type Collector struct {
 }
 
-func (*InterfaceCollector) Describe(ch chan<- *prometheus.Desc) {
+// Describe describes the metrics
+func (*Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- receiveBytesDesc
 	ch <- receiveErrorsDesc
 	ch <- receiveDropsDesc
@@ -44,7 +46,8 @@ func (*InterfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- errorStatusDesc
 }
 
-func (c *InterfaceCollector) Collect(datasource InterfaceStatsDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
+// Collect collects metrics from datasource
+func (c *Collector) Collect(datasource InterfaceStatsDatasource, ch chan<- prometheus.Metric, labelValues []string) error {
 	stats, err := datasource.InterfaceStats()
 	if err != nil {
 		return err
@@ -57,7 +60,7 @@ func (c *InterfaceCollector) Collect(datasource InterfaceStatsDatasource, ch cha
 	return nil
 }
 
-func (*InterfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prometheus.Metric, labelValues []string) {
+func (*Collector) collectForInterface(s *InterfaceStats, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, []string{s.Name, s.Description, s.Mac}...)
 	ch <- prometheus.MustNewConstMetric(receiveBytesDesc, prometheus.GaugeValue, s.ReceiveBytes, l...)
 	ch <- prometheus.MustNewConstMetric(transmitBytesDesc, prometheus.GaugeValue, s.TransmitBytes, l...)

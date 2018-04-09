@@ -49,7 +49,26 @@ In this example we want to scrape 3 hosts:
 
 ### Docker
 ```bash
-docker run -d --restart unless-stopped -p 9326:9326 -v /opt/junos_exporter_keyfile:/ssh-keyfile -e TARGETS="host1.example.com,host2.example.com:2233,172.16.0.1" czerwonk/junos_exporter
+docker run -d --restart unless-stopped -p 9326:9326 -v /opt/junos_exporter_keyfile:/ssh-keyfile:ro -v /opt/junos_exporter_config.yml:/config.yml:ro czerwonk/junos_exporter
+```
+
+## Config file
+
+The exporter can be configured with a YAML based config file:
+
+```yaml
+targets:
+  - router1
+  - router2
+
+features:
+  bgp: true
+  ospf: false
+  isis: false
+  environment: true
+  routes: true
+  routing_engine: true
+  interface_diagnostic: true
 ```
 
 ## Third Party Components

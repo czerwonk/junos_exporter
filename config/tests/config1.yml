@@ -1,0 +1,12 @@
+targets:
+  - router1
+  - router2
+
+features:
+  bgp: true
+  ospf: false
+  isis: true
+  environment: false
+  routes: true
+  routing_engine: true
+  interface_diagnostic: false

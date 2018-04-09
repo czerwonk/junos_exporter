@@ -49,32 +49,34 @@ func collectors() map[string]collector.RPCCollector {
 		"alarm":     alarm.NewCollector(*alarmFilter),
 	}
 
-	if *routesEnabled {
+	f := &cfg.Features
+
+	if f.Routes {
 		m["routes"] = route.NewCollector()
 	}
 
-	if *bgpEnabled {
+	if f.BPG {
 		m["bgp"] = bgp.NewCollector()
 	}
 
-	if *ospfEnabled {
+	if f.OSPF {
 		m["ospf"] = ospfv3.NewCollector()
 	}
 
-	if *isisEnabled {
+	if f.ISIS {
 		m["isis"] = isis.NewCollector()
 	}
 
-	if *routingEngineEnabled {
+	if f.RoutingEngine {
 		m["routing-engine"] = routingengine.NewCollector()
 	}
 
-	if *environmentEnabled {
+	if f.Environment {
 		m["environment"] = environment.NewCollector()
 	}
 
-	if *ifDiagnEnabled {
-		m["interface_diagnostics"] = interfacediagnostics.NewCollector()
+	if f.InterfaceDiagnostic {
+		m["interface-diagnostics"] = interfacediagnostics.NewCollector()
 	}
 
 	return m
@@ -92,7 +94,7 @@ func (c *junosCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector interface
 func (c *junosCollector) Collect(ch chan<- prometheus.Metric) {
-	hosts := strings.Split(*sshHosts, ",")
+	hosts := cfg.Targets
 	wg := &sync.WaitGroup{}
 
 	wg.Add(len(hosts))

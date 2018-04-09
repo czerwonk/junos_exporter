@@ -1,17 +1,21 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
+	"github.com/czerwonk/junos_exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.6.1"
+const version string = "0.6.2"
 
 var (
 	showVersion          = flag.Bool("version", false, "Print version information.")
@@ -29,6 +33,8 @@ var (
 	environmentEnabled   = flag.Bool("environment.enabled", true, "Scrape environment metrics")
 	ifDiagnEnabled       = flag.Bool("ifdiag.enabled", true, "Scrape optical interface diagnostic metrics")
 	alarmFilter          = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
+	configFile           = flag.String("config.file", "", "Path to config file")
+	cfg                  *config.Config
 )
 
 func init() {
@@ -47,6 +53,12 @@ func main() {
 		os.Exit(0)
 	}
 
+	c, err := loadConfig()
+	if err != nil {
+		log.Fatalf("could not load config file. %v", err)
+	}
+	cfg = c
+
 	startServer()
 }
 
@@ -55,6 +67,36 @@ func printVersion() {
 	fmt.Printf("Version: %s\n", version)
 	fmt.Println("Author(s): Daniel Czerwonk")
 	fmt.Println("Metric exporter for switches and routers running JunOS")
+}
+
+func loadConfig() (*config.Config, error) {
+	if len(*configFile) == 0 {
+		return loadConfigFromFlags(), nil
+	}
+
+	log.Infoln("Loading config from", *configFile)
+	b, err := ioutil.ReadFile(*configFile)
+	if err != nil {
+		return nil, err
+	}
+
+	return config.Load(bytes.NewReader(b))
+}
+
+func loadConfigFromFlags() *config.Config {
+	c := config.New()
+	c.Targets = strings.Split(*sshHosts, ",")
+
+	f := &c.Features
+	f.BPG = *bgpEnabled
+	f.Environment = *environmentEnabled
+	f.InterfaceDiagnostic = *ifDiagnEnabled
+	f.ISIS = *isisEnabled
+	f.OSPF = *ospfEnabled
+	f.Routes = *routesEnabled
+	f.RoutingEngine = *routingEngineEnabled
+
+	return c
 }
 
 func startServer() {

@@ -18,3 +18,4 @@
 *.iml
 
 junos_exporter
+config.yml

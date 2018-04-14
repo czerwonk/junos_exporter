@@ -14,7 +14,7 @@ import (
 	"github.com/czerwonk/junos_exporter/interfacediagnostics"
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/czerwonk/junos_exporter/isis"
-	"github.com/czerwonk/junos_exporter/ospfv3"
+	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/route"
 	"github.com/czerwonk/junos_exporter/routingengine"
 	"github.com/czerwonk/junos_exporter/rpc"
@@ -60,7 +60,7 @@ func collectors() map[string]collector.RPCCollector {
 	}
 
 	if f.OSPF {
-		m["ospf"] = ospfv3.NewCollector()
+		m["ospf"] = ospf.NewCollector()
 	}
 
 	if f.ISIS {

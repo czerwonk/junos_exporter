@@ -10,3 +10,4 @@ features:
   routes: true
   routing_engine: true
   interface_diagnostic: false
+  interfaces: false

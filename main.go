@@ -31,6 +31,7 @@ var (
 	routingEngineEnabled = flag.Bool("routingengine.enabled", true, "Scrape Routing Engine metrics")
 	routesEnabled        = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
 	environmentEnabled   = flag.Bool("environment.enabled", true, "Scrape environment metrics")
+	ifEnabled            = flag.Bool("interfaces.enabled", true, "Scrape interface metrics")
 	ifDiagnEnabled       = flag.Bool("ifdiag.enabled", true, "Scrape optical interface diagnostic metrics")
 	alarmFilter          = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 	configFile           = flag.String("config.file", "", "Path to config file")
@@ -90,6 +91,7 @@ func loadConfigFromFlags() *config.Config {
 	f := &c.Features
 	f.BPG = *bgpEnabled
 	f.Environment = *environmentEnabled
+	f.Interfaces = *ifEnabled
 	f.InterfaceDiagnostic = *ifDiagnEnabled
 	f.ISIS = *isisEnabled
 	f.OSPF = *ospfEnabled

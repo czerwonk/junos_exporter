@@ -45,11 +45,14 @@ func newJunosCollector() *junosCollector {
 
 func collectors() map[string]collector.RPCCollector {
 	m := map[string]collector.RPCCollector{
-		"interface": interfaces.NewCollector(),
 		"alarm":     alarm.NewCollector(*alarmFilter),
 	}
 
 	f := &cfg.Features
+
+	if f.Interfaces {
+		m["interfaces"] = interfaces.NewCollector()
+	}
 
 	if f.Routes {
 		m["routes"] = route.NewCollector()

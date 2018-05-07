@@ -17,6 +17,7 @@ type Config struct {
 		ISIS                bool `yaml:"isis,omitempty"`
 		Routes              bool `yaml:"routes,omitempty"`
 		RoutingEngine       bool `yaml:"routing_engine,omitempty"`
+		Interfaces          bool `yaml:"interfaces,omitempty"`
 		InterfaceDiagnostic bool `yaml:"interface_diagnostic,omitempty"`
 	} `yaml:"features,omitempty"`
 }
@@ -50,6 +51,7 @@ func setDefaultValues(c *Config) {
 	f := &c.Features
 	f.BPG = true
 	f.Environment = true
+	f.Interfaces = true
 	f.InterfaceDiagnostic = true
 	f.OSPF = true
 	f.Routes = true

@@ -15,27 +15,27 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.6.3"
+const version string = "0.6.4"
 
 var (
-	showVersion          = flag.Bool("version", false, "Print version information.")
-	listenAddress        = flag.String("web.listen-address", ":9326", "Address on which to expose metrics and web interface.")
-	metricsPath          = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
-	sshHosts             = flag.String("ssh.targets", "", "Hosts to scrape")
-	sshUsername          = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
-	sshKeyFile           = flag.String("ssh.keyfile", "junos_exporter", "Public key file to use when connecting to junos devices using ssh")
-	debug                = flag.Bool("debug", false, "Show verbose debug output in log")
-	bgpEnabled           = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
-	ospfEnabled          = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
-	isisEnabled          = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
-	routingEngineEnabled = flag.Bool("routingengine.enabled", true, "Scrape Routing Engine metrics")
-	routesEnabled        = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
-	environmentEnabled   = flag.Bool("environment.enabled", true, "Scrape environment metrics")
-	ifEnabled            = flag.Bool("interfaces.enabled", true, "Scrape interface metrics")
-	ifDiagnEnabled       = flag.Bool("ifdiag.enabled", true, "Scrape optical interface diagnostic metrics")
-	alarmFilter          = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
-	configFile           = flag.String("config.file", "", "Path to config file")
-	cfg                  *config.Config
+	showVersion                 = flag.Bool("version", false, "Print version information.")
+	listenAddress               = flag.String("web.listen-address", ":9326", "Address on which to expose metrics and web interface.")
+	metricsPath                 = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
+	sshHosts                    = flag.String("ssh.targets", "", "Hosts to scrape")
+	sshUsername                 = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
+	sshKeyFile                  = flag.String("ssh.keyfile", "junos_exporter", "Public key file to use when connecting to junos devices using ssh")
+	debug                       = flag.Bool("debug", false, "Show verbose debug output in log")
+	bgpEnabled                  = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
+	ospfEnabled                 = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
+	isisEnabled                 = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
+	routingEngineEnabled        = flag.Bool("routingengine.enabled", true, "Scrape Routing Engine metrics")
+	routesEnabled               = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
+	environmentEnabled          = flag.Bool("environment.enabled", true, "Scrape environment metrics")
+	interfacesEnabled           = flag.Bool("interfaces.enabled", true, "Scrape interface metrics")
+	interfaceDiagnosticsEnabled = flag.Bool("ifdiag.enabled", true, "Scrape optical interface diagnostic metrics")
+	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
+	configFile                  = flag.String("config.file", "", "Path to config file")
+	cfg                         *config.Config
 )
 
 func init() {
@@ -91,8 +91,8 @@ func loadConfigFromFlags() *config.Config {
 	f := &c.Features
 	f.BPG = *bgpEnabled
 	f.Environment = *environmentEnabled
-	f.Interfaces = *ifEnabled
-	f.InterfaceDiagnostic = *ifDiagnEnabled
+	f.Interfaces = *interfacesEnabled
+	f.InterfaceDiagnostic = *interfaceDiagnosticsEnabled
 	f.ISIS = *isisEnabled
 	f.OSPF = *ospfEnabled
 	f.Routes = *routesEnabled

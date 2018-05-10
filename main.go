@@ -121,9 +121,29 @@ func startServer() {
 }
 
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
+	var targets []string
+	reqTarget := r.URL.Query().Get("target")
+	if reqTarget == "" {
+		targets = cfg.Targets
+	} else {
+		targetInConfig := func(target string) bool {
+			for _, t := range cfg.Targets {
+				if target == t {
+					return true
+				}
+			}
+			return false
+		}
+		if targetInConfig(reqTarget) {
+			targets = []string{reqTarget}
+		} else {
+			http.Error(w, fmt.Sprintf("the target '%s' is not defined in the configuration file", reqTarget), 400)
+		}
+	}
+
 	reg := prometheus.NewRegistry()
 
-	c := newJunosCollector()
+	c := newJunosCollector(targets)
 	reg.MustRegister(c)
 
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{

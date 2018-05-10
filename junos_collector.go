@@ -35,12 +35,13 @@ func init() {
 }
 
 type junosCollector struct {
+	targets    []string
 	collectors map[string]collector.RPCCollector
 }
 
-func newJunosCollector() *junosCollector {
+func newJunosCollector(targets []string) *junosCollector {
 	collectors := collectors()
-	return &junosCollector{collectors}
+	return &junosCollector{targets, collectors}
 }
 
 func collectors() map[string]collector.RPCCollector {
@@ -97,7 +98,7 @@ func (c *junosCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector interface
 func (c *junosCollector) Collect(ch chan<- prometheus.Metric) {
-	hosts := cfg.Targets
+	hosts := c.targets
 	wg := &sync.WaitGroup{}
 
 	wg.Add(len(hosts))

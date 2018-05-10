@@ -15,7 +15,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.6.4"
+const version string = "0.6.5"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -121,27 +121,13 @@ func startServer() {
 }
 
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
-	var targets []string
-	reqTarget := r.URL.Query().Get("target")
-	if reqTarget == "" {
-		targets = cfg.Targets
-	} else {
-		targetInConfig := func(target string) bool {
-			for _, t := range cfg.Targets {
-				if target == t {
-					return true
-				}
-			}
-			return false
-		}
-		if targetInConfig(reqTarget) {
-			targets = []string{reqTarget}
-		} else {
-			http.Error(w, fmt.Sprintf("the target '%s' is not defined in the configuration file", reqTarget), 400)
-		}
-	}
-
 	reg := prometheus.NewRegistry()
+
+	targets, err := targetsForRequest(r)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
 
 	c := newJunosCollector(targets)
 	reg.MustRegister(c)
@@ -149,4 +135,19 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
 		ErrorLog:      log.NewErrorLogger(),
 		ErrorHandling: promhttp.ContinueOnError}).ServeHTTP(w, r)
+}
+
+func targetsForRequest(r *http.Request) ([]string, error) {
+	reqTarget := r.URL.Query().Get("target")
+	if reqTarget == "" {
+		return cfg.Targets, nil
+	}
+
+	for _, t := range cfg.Targets {
+		if t == reqTarget {
+			return []string{t}, nil
+		}
+	}
+
+	return nil, fmt.Errorf("the target '%s' is not defined in the configuration file", reqTarget)
 }

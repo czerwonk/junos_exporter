@@ -52,6 +52,24 @@ In this example we want to scrape 3 hosts:
 docker run -d --restart unless-stopped -p 9326:9326 -v /opt/junos_exporter_keyfile:/ssh-keyfile:ro -v /opt/junos_exporter_config.yml:/config.yml:ro czerwonk/junos_exporter
 ```
 
+### Target Parameter
+By default, all configured targets will be scrapped when `/metrics` is hit. As an alternative, it is possible to scrape a specific target by passing the target's hostname/IP address to the target parameter - e.g. ` http://localhost:9326/metrics?target=1.2.3.4`. The specific target must be present in the configuration file or passed in with the ssh.targets flag, otherwise, the request will be denied. This can be used with the below example Prometheus config:
+
+```
+scrape_configs:
+  - job_name: 'junos'
+    static_configs:
+      - targets:
+        - 192.168.1.2  # Target device.
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 127.0.0.1:9326  # The junos_exporter's real hostname:port.
+```
+
 ## Config file
 
 The exporter can be configured with a YAML based config file:

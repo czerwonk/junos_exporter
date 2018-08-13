@@ -74,7 +74,7 @@ func (c *environmentCollector) environmentItems(client *rpc.Client) ([]*TempItem
 	tempList := make(map[string]float64)
 	powersupplyList := make(map[string]string)
 	for _, item := range x.Information.Items {
-		if strings.HasPrefix(item.Name, "Power Supply") || strings.HasPrefix(item.Name, "PEM") {
+		if strings.Contains(item.Name, "Power Supply") || strings.Contains(item.Name, "PEM") {
 			powersupplyList[item.Name] = item.Status
 		} else if item.Temperature != nil {
 			tempList[item.Name] = float64(item.Temperature.Value)

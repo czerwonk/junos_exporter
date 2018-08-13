@@ -25,7 +25,7 @@ func init() {
 type environmentCollector struct {
 }
 
-// NewCollector creates a new collectors
+// NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
 	return &environmentCollector{}
 }

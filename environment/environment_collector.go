@@ -63,7 +63,7 @@ func (c *environmentCollector) Collect(client *rpc.Client, ch chan<- prometheus.
 	return nil
 }
 
-func (c *environmentCollector) environmentItems(client *rpc.Client) ([]*TempItem, []*PowerItem, error) {
+func (c *environmentCollector) environmentItems(client *rpc.Client) ([]*temperatureItem, []*powerItem, error) {
 	var x = EnvironmentRpc{}
 	err := client.RunCommandAndParse("show chassis environment", &x)
 	if err != nil {
@@ -71,33 +71,33 @@ func (c *environmentCollector) environmentItems(client *rpc.Client) ([]*TempItem
 	}
 
 	// remove duplicates
-	tempList := make(map[string]float64)
+	temperatureList := make(map[string]float64)
 	powersupplyList := make(map[string]string)
 	for _, item := range x.Information.Items {
 		if strings.Contains(item.Name, "Power Supply") || strings.Contains(item.Name, "PEM") {
 			powersupplyList[item.Name] = item.Status
 		} else if item.Temperature != nil {
-			tempList[item.Name] = float64(item.Temperature.Value)
+			temperatureList[item.Name] = float64(item.Temperature.Value)
 		}
 	}
 
-	tempItems := make([]*TempItem, 0)
-	for name, value := range tempList {
-		i := &TempItem{
+	temperatureItems := make([]*temperatureItem, 0)
+	for name, value := range temperatureList {
+		i := &temperatureItem{
 			Name:        name,
 			Temperature: value,
 		}
-		tempItems = append(tempItems, i)
+		temperatureItems = append(temperatureItems, i)
 	}
 
-	powerItems := make([]*PowerItem, 0)
+	powerItems := make([]*powerItem, 0)
 	for name, value := range powersupplyList {
-		i := &PowerItem{
+		i := &powerItem{
 			Name:   name,
 			Status: value,
 		}
 		powerItems = append(powerItems, i)
 	}
 
-	return tempItems, powerItems, nil
+	return temperatureItems, powerItems, nil
 }

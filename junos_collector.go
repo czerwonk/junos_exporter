@@ -46,7 +46,7 @@ func newJunosCollector(targets []string) *junosCollector {
 
 func collectors() map[string]collector.RPCCollector {
 	m := map[string]collector.RPCCollector{
-		"alarm":     alarm.NewCollector(*alarmFilter),
+		"alarm": alarm.NewCollector(*alarmFilter),
 	}
 
 	f := &cfg.Features

@@ -1,11 +1,11 @@
 package environment
 
-type TempItem struct {
+type temperatureItem struct {
 	Name        string
 	Temperature float64
 }
 
-type PowerItem struct {
+type powerItem struct {
 	Name   string
 	Status string
 }

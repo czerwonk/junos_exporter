@@ -1,5 +1,5 @@
 FROM golang as builder
-RUN go get github.com/czerwonk/junos_exporter
+RUN CGO_ENABLED=0 GOOS=linux go get github.com/czerwonk/junos_exporter
 
 
 FROM alpine:latest

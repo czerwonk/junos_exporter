@@ -1,17 +1,20 @@
 FROM golang as builder
-RUN CGO_ENABLED=0 GOOS=linux go get github.com/czerwonk/junos_exporter
+RUN go get -d -v github.com/czerwonk/junos_exporter
+WORKDIR /go/src/github.com/czerwonk/junos_exporter
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
 
 
-FROM scratch
+FROM alpine
 
 ENV SSH_KEYFILE "/ssh-keyfile"
 ENV CONFIG_FILE "/config.yml"
 ENV ALARM_FILTER ""
 
-RUN mkdir /app
-WORKDIR /app
-COPY --from=builder /go/bin/junos_exporter .
+RUN apk --no-cache add ca-certificates
 
-CMD junos_exporter -ssh.keyfile=$SSH_KEYFILE -config.file=$CONFIG_FILE -alarms.filter=$ALARM_FILTER
+WORKDIR /app
+COPY --from=builder /go/src/github.com/czerwonk/junos_exporter/app junos_exporter
+
+CMD ./junos_exporter -ssh.keyfile=$SSH_KEYFILE -config.file=$CONFIG_FILE -alarms.filter=$ALARM_FILTER
 
 EXPOSE 9326

@@ -1,4 +1,4 @@
-FROM golang:alpine as builder
+FROM golang as builder
 RUN go get github.com/czerwonk/junos_exporter
 
 

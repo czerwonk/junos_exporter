@@ -8,7 +8,7 @@ Exporter for metrics from devices running JunOS (via SSH) https://prometheus.io/
 ## Remarks
 This project is an alternative approach for collecting metrics from Juniper devices.
 The set of metrics is minimal to increase performance. 
-We (a few friends from the Freifunk communiy and myself) used the generic snmp_exporter before. 
+We (a few friends from the Freifunk community and myself) used the generic snmp_exporter before. 
 Since snmp_exporter is highly generic it comes with a lot of complexity at the cost of performance. 
 We wanted to have an KIS and vendor specific exporter instead. 
 This approach should allow us to scrape our metrics in a very time efficient way.

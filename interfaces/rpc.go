@@ -31,6 +31,8 @@ type LogInterface struct {
 }
 
 type TrafficStat struct {
-	InputBytes  int64 `xml:"input-bytes"`
-	OutputBytes int64 `xml:"output-bytes"`
+	InputBytes    int64 `xml:"input-bytes"`
+	InputPackets  int64 `xml:"input-packets"`
+	OutputBytes   int64 `xml:"output-bytes"`
+	OutputPackets int64 `xml:"output-packets"`
 }

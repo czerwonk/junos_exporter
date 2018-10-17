@@ -32,7 +32,7 @@ help:
 init: ## Install requirements
 	@echo -e "$(OK_COLOR)[$(APP)] Install requirements$(NO_COLOR)"
 	@go get -u github.com/golang/dep/cmd/dep
-	@go get -u github.com/golang/lint/golint
+	@go get -u golang.org/x/lint/golint
 
 .PHONY: deps
 deps: ## Update dependencies

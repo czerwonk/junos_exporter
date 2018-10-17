@@ -9,23 +9,27 @@ import (
 const prefix = "junos_interface_"
 
 var (
-	receiveBytesDesc   *prometheus.Desc
-	receiveErrorsDesc  *prometheus.Desc
-	receiveDropsDesc   *prometheus.Desc
-	transmitBytesDesc  *prometheus.Desc
-	transmitErrorsDesc *prometheus.Desc
-	transmitDropsDesc  *prometheus.Desc
-	adminStatusDesc    *prometheus.Desc
-	operStatusDesc     *prometheus.Desc
-	errorStatusDesc    *prometheus.Desc
+	receiveBytesDesc    *prometheus.Desc
+	receivePacketsDesc  *prometheus.Desc
+	receiveErrorsDesc   *prometheus.Desc
+	receiveDropsDesc    *prometheus.Desc
+	transmitBytesDesc   *prometheus.Desc
+	transmitPacketsDesc *prometheus.Desc
+	transmitErrorsDesc  *prometheus.Desc
+	transmitDropsDesc   *prometheus.Desc
+	adminStatusDesc     *prometheus.Desc
+	operStatusDesc      *prometheus.Desc
+	errorStatusDesc     *prometheus.Desc
 )
 
 func init() {
 	l := []string{"target", "name", "description", "mac"}
 	receiveBytesDesc = prometheus.NewDesc(prefix+"receive_bytes", "Received data in bytes", l, nil)
+	receivePacketsDesc = prometheus.NewDesc(prefix+"receive_packets_total", "Received packets", l, nil)
 	receiveErrorsDesc = prometheus.NewDesc(prefix+"receive_errors", "Number of errors caused by incoming packets", l, nil)
 	receiveDropsDesc = prometheus.NewDesc(prefix+"receive_drops", "Number of dropped incoming packets", l, nil)
 	transmitBytesDesc = prometheus.NewDesc(prefix+"transmit_bytes", "Transmitted data in bytes", l, nil)
+	transmitPacketsDesc = prometheus.NewDesc(prefix+"transmit_packets_total", "Transmitted packets", l, nil)
 	transmitErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors", "Number of errors caused by outgoing packets", l, nil)
 	transmitDropsDesc = prometheus.NewDesc(prefix+"transmit_drops", "Number of dropped outgoing packets", l, nil)
 	adminStatusDesc = prometheus.NewDesc(prefix+"admin_up", "Admin operational status", l, nil)
@@ -45,9 +49,11 @@ func NewCollector() collector.RPCCollector {
 // Describe describes the metrics
 func (*interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- receiveBytesDesc
+	ch <- receivePacketsDesc
 	ch <- receiveErrorsDesc
 	ch <- receiveDropsDesc
 	ch <- transmitBytesDesc
+	ch <- transmitPacketsDesc
 	ch <- transmitDropsDesc
 	ch <- transmitErrorsDesc
 	ch <- adminStatusDesc
@@ -79,31 +85,35 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 	stats := make([]*InterfaceStats, 0)
 	for _, phy := range x.Information.Interfaces {
 		s := &InterfaceStats{
-			IsPhysical:     true,
-			Name:           phy.Name,
-			AdminStatus:    phy.AdminStatus == "up",
-			OperStatus:     phy.OperStatus == "up",
-			ErrorStatus:    !(phy.AdminStatus == phy.OperStatus),
-			Description:    phy.Description,
-			Mac:            phy.MacAddress,
-			ReceiveDrops:   float64(phy.InputErrors.Drops),
-			ReceiveErrors:  float64(phy.InputErrors.Errors),
-			ReceiveBytes:   float64(phy.Stats.InputBytes),
-			TransmitDrops:  float64(phy.OutputErrors.Drops),
-			TransmitErrors: float64(phy.OutputErrors.Errors),
-			TransmitBytes:  float64(phy.Stats.OutputBytes),
+			IsPhysical:      true,
+			Name:            phy.Name,
+			AdminStatus:     phy.AdminStatus == "up",
+			OperStatus:      phy.OperStatus == "up",
+			ErrorStatus:     !(phy.AdminStatus == phy.OperStatus),
+			Description:     phy.Description,
+			Mac:             phy.MacAddress,
+			ReceiveDrops:    float64(phy.InputErrors.Drops),
+			ReceiveErrors:   float64(phy.InputErrors.Errors),
+			ReceiveBytes:    float64(phy.Stats.InputBytes),
+			ReceivePackets:  float64(phy.Stats.InputPackets),
+			TransmitDrops:   float64(phy.OutputErrors.Drops),
+			TransmitErrors:  float64(phy.OutputErrors.Errors),
+			TransmitBytes:   float64(phy.Stats.OutputBytes),
+			TransmitPackets: float64(phy.Stats.OutputPackets),
 		}
 
 		stats = append(stats, s)
 
 		for _, log := range phy.LogicalInterfaces {
 			sl := &InterfaceStats{
-				IsPhysical:    false,
-				Name:          log.Name,
-				Description:   log.Description,
-				Mac:           phy.MacAddress,
-				ReceiveBytes:  float64(log.Stats.InputBytes),
-				TransmitBytes: float64(log.Stats.OutputBytes),
+				IsPhysical:      false,
+				Name:            log.Name,
+				Description:     log.Description,
+				Mac:             phy.MacAddress,
+				ReceiveBytes:    float64(log.Stats.InputBytes),
+				ReceivePackets:  float64(log.Stats.InputPackets),
+				TransmitBytes:   float64(log.Stats.OutputBytes),
+				TransmitPackets: float64(log.Stats.OutputPackets),
 			}
 
 			stats = append(stats, sl)
@@ -116,7 +126,9 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 func (*interfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, []string{s.Name, s.Description, s.Mac}...)
 	ch <- prometheus.MustNewConstMetric(receiveBytesDesc, prometheus.GaugeValue, s.ReceiveBytes, l...)
+	ch <- prometheus.MustNewConstMetric(receivePacketsDesc, prometheus.GaugeValue, s.ReceivePackets, l...)
 	ch <- prometheus.MustNewConstMetric(transmitBytesDesc, prometheus.GaugeValue, s.TransmitBytes, l...)
+	ch <- prometheus.MustNewConstMetric(transmitPacketsDesc, prometheus.GaugeValue, s.TransmitPackets, l...)
 
 	if s.IsPhysical {
 		adminUp := 0

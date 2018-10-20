@@ -6,7 +6,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-const prefix string = "junos_bgp_seesion_"
+const prefix string = "junos_bgp_session_"
 
 var (
 	upDesc               *prometheus.Desc

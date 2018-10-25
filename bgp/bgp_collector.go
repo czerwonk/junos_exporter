@@ -20,7 +20,7 @@ var (
 )
 
 func init() {
-	l := []string{"target", "asn", "ip"}
+	l := []string{"target", "asn", "ip", "description"}
 	upDesc = prometheus.NewDesc(prefix+"up", "Session is up (1 = Established)", l, nil)
 	receivedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_received_count", "Number of received prefixes", l, nil)
 	acceptedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_accepted_count", "Number of accepted prefixes", l, nil)
@@ -78,6 +78,7 @@ func (c *bgpCollector) bgpSessions(client *rpc.Client) ([]*BgpSession, error) {
 			Ip:               peer.Ip,
 			Up:               peer.State == "Established",
 			Asn:              peer.Asn,
+			Description:      peer.Description,
 			Flaps:            float64(peer.Flaps),
 			InputMessages:    float64(peer.InputMessages),
 			OutputMessages:   float64(peer.OutputMessages),
@@ -94,7 +95,7 @@ func (c *bgpCollector) bgpSessions(client *rpc.Client) ([]*BgpSession, error) {
 }
 
 func (*bgpCollector) collectForSession(s *BgpSession, ch chan<- prometheus.Metric, labelValues []string) {
-	l := append(labelValues, []string{s.Asn, s.Ip}...)
+	l := append(labelValues, []string{s.Asn, s.Ip, s.Description}...)
 
 	up := 0
 	if s.Up {

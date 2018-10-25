@@ -31,6 +31,14 @@ type LogInterface struct {
 }
 
 type TrafficStat struct {
+	InputBytes    int64    `xml:"input-bytes"`
+	InputPackets  int64    `xml:"input-packets"`
+	OutputBytes   int64    `xml:"output-bytes"`
+	OutputPackets int64    `xml:"output-packets"`
+	IPv6Traffic   IPv6Stat `xml:"ipv6-transit-statistics"`
+}
+
+type IPv6Stat struct {
 	InputBytes    int64 `xml:"input-bytes"`
 	InputPackets  int64 `xml:"input-packets"`
 	OutputBytes   int64 `xml:"output-bytes"`

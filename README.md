@@ -14,6 +14,9 @@ We wanted to have an KIS and vendor specific exporter instead.
 This approach should allow us to scrape our metrics in a very time efficient way.
 For this reason this project was started.
 
+## Important notice for users of version < 0.7
+In version 0.7 a typo in the prefix of all BGP related metrics was fixed. Please update your queries accordingly. 
+
 ## Important notice for users of version < 0.5
 In version 0.5 SNMP was replaced by SSH. This is was a breaking change (metric names were kept). 
 All SNMP related parameters were removed at this point. 

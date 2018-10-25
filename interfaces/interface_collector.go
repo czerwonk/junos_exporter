@@ -9,17 +9,21 @@ import (
 const prefix = "junos_interface_"
 
 var (
-	receiveBytesDesc    *prometheus.Desc
-	receivePacketsDesc  *prometheus.Desc
-	receiveErrorsDesc   *prometheus.Desc
-	receiveDropsDesc    *prometheus.Desc
-	transmitBytesDesc   *prometheus.Desc
-	transmitPacketsDesc *prometheus.Desc
-	transmitErrorsDesc  *prometheus.Desc
-	transmitDropsDesc   *prometheus.Desc
-	adminStatusDesc     *prometheus.Desc
-	operStatusDesc      *prometheus.Desc
-	errorStatusDesc     *prometheus.Desc
+	receiveBytesDesc        *prometheus.Desc
+	receivePacketsDesc      *prometheus.Desc
+	receiveErrorsDesc       *prometheus.Desc
+	receiveDropsDesc        *prometheus.Desc
+	transmitBytesDesc       *prometheus.Desc
+	transmitPacketsDesc     *prometheus.Desc
+	transmitErrorsDesc      *prometheus.Desc
+	transmitDropsDesc       *prometheus.Desc
+	ipv6receiveBytesDesc    *prometheus.Desc
+	ipv6receivePacketsDesc  *prometheus.Desc
+	ipv6transmitBytesDesc   *prometheus.Desc
+	ipv6transmitPacketsDesc *prometheus.Desc
+	adminStatusDesc         *prometheus.Desc
+	operStatusDesc          *prometheus.Desc
+	errorStatusDesc         *prometheus.Desc
 )
 
 func init() {
@@ -32,6 +36,10 @@ func init() {
 	transmitPacketsDesc = prometheus.NewDesc(prefix+"transmit_packets_total", "Transmitted packets", l, nil)
 	transmitErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors", "Number of errors caused by outgoing packets", l, nil)
 	transmitDropsDesc = prometheus.NewDesc(prefix+"transmit_drops", "Number of dropped outgoing packets", l, nil)
+	ipv6receiveBytesDesc = prometheus.NewDesc(prefix+"IPv6_receive_bytes_total", "Received IPv6 data in bytes", l, nil)
+	ipv6receivePacketsDesc = prometheus.NewDesc(prefix+"IPv6_receive_packets_total", "Received IPv6 packets", l, nil)
+	ipv6transmitBytesDesc = prometheus.NewDesc(prefix+"IPv6_transmit_bytes_total", "Transmitted IPv6 data in bytes", l, nil)
+	ipv6transmitPacketsDesc = prometheus.NewDesc(prefix+"IPv6_transmit_packets_total", "Transmitted IPv6 packets", l, nil)
 	adminStatusDesc = prometheus.NewDesc(prefix+"admin_up", "Admin operational status", l, nil)
 	operStatusDesc = prometheus.NewDesc(prefix+"up", "Interface operational status", l, nil)
 	errorStatusDesc = prometheus.NewDesc(prefix+"error_status", "Admin and operational status differ", l, nil)
@@ -56,6 +64,10 @@ func (*interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- transmitPacketsDesc
 	ch <- transmitDropsDesc
 	ch <- transmitErrorsDesc
+	ch <- ipv6receiveBytesDesc
+	ch <- ipv6receivePacketsDesc
+	ch <- ipv6transmitBytesDesc
+	ch <- ipv6transmitPacketsDesc
 	ch <- adminStatusDesc
 	ch <- operStatusDesc
 	ch <- errorStatusDesc
@@ -85,35 +97,43 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 	stats := make([]*InterfaceStats, 0)
 	for _, phy := range x.Information.Interfaces {
 		s := &InterfaceStats{
-			IsPhysical:      true,
-			Name:            phy.Name,
-			AdminStatus:     phy.AdminStatus == "up",
-			OperStatus:      phy.OperStatus == "up",
-			ErrorStatus:     !(phy.AdminStatus == phy.OperStatus),
-			Description:     phy.Description,
-			Mac:             phy.MacAddress,
-			ReceiveDrops:    float64(phy.InputErrors.Drops),
-			ReceiveErrors:   float64(phy.InputErrors.Errors),
-			ReceiveBytes:    float64(phy.Stats.InputBytes),
-			ReceivePackets:  float64(phy.Stats.InputPackets),
-			TransmitDrops:   float64(phy.OutputErrors.Drops),
-			TransmitErrors:  float64(phy.OutputErrors.Errors),
-			TransmitBytes:   float64(phy.Stats.OutputBytes),
-			TransmitPackets: float64(phy.Stats.OutputPackets),
+			IsPhysical:          true,
+			Name:                phy.Name,
+			AdminStatus:         phy.AdminStatus == "up",
+			OperStatus:          phy.OperStatus == "up",
+			ErrorStatus:         !(phy.AdminStatus == phy.OperStatus),
+			Description:         phy.Description,
+			Mac:                 phy.MacAddress,
+			ReceiveDrops:        float64(phy.InputErrors.Drops),
+			ReceiveErrors:       float64(phy.InputErrors.Errors),
+			ReceiveBytes:        float64(phy.Stats.InputBytes),
+			ReceivePackets:      float64(phy.Stats.InputPackets),
+			TransmitDrops:       float64(phy.OutputErrors.Drops),
+			TransmitErrors:      float64(phy.OutputErrors.Errors),
+			TransmitBytes:       float64(phy.Stats.OutputBytes),
+			TransmitPackets:     float64(phy.Stats.OutputPackets),
+			IPv6ReceiveBytes:    float64(phy.Stats.IPv6Traffic.InputBytes),
+			IPv6ReceivePackets:  float64(phy.Stats.IPv6Traffic.InputPackets),
+			IPv6TransmitBytes:   float64(phy.Stats.IPv6Traffic.OutputBytes),
+			IPv6TransmitPackets: float64(phy.Stats.IPv6Traffic.OutputPackets),
 		}
 
 		stats = append(stats, s)
 
 		for _, log := range phy.LogicalInterfaces {
 			sl := &InterfaceStats{
-				IsPhysical:      false,
-				Name:            log.Name,
-				Description:     log.Description,
-				Mac:             phy.MacAddress,
-				ReceiveBytes:    float64(log.Stats.InputBytes),
-				ReceivePackets:  float64(log.Stats.InputPackets),
-				TransmitBytes:   float64(log.Stats.OutputBytes),
-				TransmitPackets: float64(log.Stats.OutputPackets),
+				IsPhysical:          false,
+				Name:                log.Name,
+				Description:         log.Description,
+				Mac:                 phy.MacAddress,
+				ReceiveBytes:        float64(log.Stats.InputBytes),
+				ReceivePackets:      float64(log.Stats.InputPackets),
+				TransmitBytes:       float64(log.Stats.OutputBytes),
+				TransmitPackets:     float64(log.Stats.OutputPackets),
+				IPv6ReceiveBytes:    float64(log.Stats.IPv6Traffic.InputBytes),
+				IPv6ReceivePackets:  float64(log.Stats.IPv6Traffic.InputPackets),
+				IPv6TransmitBytes:   float64(log.Stats.IPv6Traffic.OutputBytes),
+				IPv6TransmitPackets: float64(log.Stats.IPv6Traffic.OutputPackets),
 			}
 
 			stats = append(stats, sl)
@@ -129,6 +149,10 @@ func (*interfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prom
 	ch <- prometheus.MustNewConstMetric(receivePacketsDesc, prometheus.GaugeValue, s.ReceivePackets, l...)
 	ch <- prometheus.MustNewConstMetric(transmitBytesDesc, prometheus.GaugeValue, s.TransmitBytes, l...)
 	ch <- prometheus.MustNewConstMetric(transmitPacketsDesc, prometheus.GaugeValue, s.TransmitPackets, l...)
+	ch <- prometheus.MustNewConstMetric(ipv6receiveBytesDesc, prometheus.GaugeValue, s.IPv6ReceiveBytes, l...)
+	ch <- prometheus.MustNewConstMetric(ipv6receivePacketsDesc, prometheus.GaugeValue, s.IPv6ReceivePackets, l...)
+	ch <- prometheus.MustNewConstMetric(ipv6transmitBytesDesc, prometheus.GaugeValue, s.IPv6TransmitBytes, l...)
+	ch <- prometheus.MustNewConstMetric(ipv6transmitPacketsDesc, prometheus.GaugeValue, s.IPv6TransmitPackets, l...)
 
 	if s.IsPhysical {
 		adminUp := 0

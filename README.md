@@ -58,7 +58,7 @@ docker run -d --restart unless-stopped -p 9326:9326 -v /opt/junos_exporter_keyfi
 ### Target Parameter
 By default, all configured targets will be scrapped when `/metrics` is hit. As an alternative, it is possible to scrape a specific target by passing the target's hostname/IP address to the target parameter - e.g. ` http://localhost:9326/metrics?target=1.2.3.4`. The specific target must be present in the configuration file or passed in with the ssh.targets flag, otherwise, the request will be denied. This can be used with the below example Prometheus config:
 
-```
+```yaml
 scrape_configs:
   - job_name: 'junos'
     static_configs:

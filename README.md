@@ -33,6 +33,20 @@ The following metrics are supported by now:
 * ISIS (number of adjacencies, total number of routers)
 * Environment (temperatures)
 * Routing engine statistics
+* Statistics about l2circuits (tunnel state, number of tunnels)
+```   0:EI -- encapsulation invalid      12:NP -- interface h/w not present
+   1:MM -- mtu mismatch               13:Dn -- down
+   2:EM -- encapsulation mismatch     14:VC-Dn -- Virtual circuit Down
+   3:CM -- control-word mismatch      15:Up -- operational
+   4:VM -- vlan id mismatch           16:CF -- Call admission control failure
+   5:OL -- no outgoing label          17:IB -- TDM incompatible bitrate
+   6:NC -- intf encaps not CCC/TCC    18:TM -- TDM misconfiguration
+   7:BK -- Backup Connection          19:ST -- Standby Connection
+   8:CB -- rcvd cell-bundle size bad  20:SP -- Static Pseudowire
+   9:LD -- local site signaled down   21:RS -- remote site standby
+  10:RD -- remote site signaled down  22:HS -- Hot-standby Connection
+  11:XX -- unknown
+```
 
 ## Install
 ```bash
@@ -86,6 +100,7 @@ features:
   bgp: true
   ospf: false
   isis: false
+  l2circuit: false
   environment: true
   routes: true
   routing_engine: true

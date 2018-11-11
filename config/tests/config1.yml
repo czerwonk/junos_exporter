@@ -11,3 +11,4 @@ features:
   routing_engine: true
   interface_diagnostic: false
   interfaces: false
+  l2circuit: true

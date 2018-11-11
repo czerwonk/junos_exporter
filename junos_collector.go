@@ -2,9 +2,8 @@ package main
 
 import (
 	"strings"
-	"time"
-
 	"sync"
+	"time"
 
 	"github.com/czerwonk/junos_exporter/alarm"
 	"github.com/czerwonk/junos_exporter/bgp"
@@ -72,7 +71,7 @@ func collectors() map[string]collector.RPCCollector {
 		m["isis"] = isis.NewCollector()
 	}
 
-	if f.L2CIRCUIT {
+	if f.L2Circuit {
 		m["l2circuit"] = l2circuit.NewCollector()
 	}
 

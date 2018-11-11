@@ -15,7 +15,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.7.0"
+const version string = "0.7.1"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -96,7 +96,7 @@ func loadConfigFromFlags() *config.Config {
 	f.InterfaceDiagnostic = *interfaceDiagnosticsEnabled
 	f.ISIS = *isisEnabled
 	f.OSPF = *ospfEnabled
-	f.L2CIRCUIT = *l2circuitEnabled
+	f.L2Circuit = *l2circuitEnabled
 	f.Routes = *routesEnabled
 	f.RoutingEngine = *routingEngineEnabled
 

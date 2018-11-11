@@ -28,6 +28,7 @@ var (
 	bgpEnabled                  = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
 	ospfEnabled                 = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
 	isisEnabled                 = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
+	l2circuitEnabled            = flag.Bool("l2circuit.enabled", false, "Scrape l2circuit metrics")
 	routingEngineEnabled        = flag.Bool("routingengine.enabled", true, "Scrape Routing Engine metrics")
 	routesEnabled               = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
 	environmentEnabled          = flag.Bool("environment.enabled", true, "Scrape environment metrics")
@@ -95,6 +96,7 @@ func loadConfigFromFlags() *config.Config {
 	f.InterfaceDiagnostic = *interfaceDiagnosticsEnabled
 	f.ISIS = *isisEnabled
 	f.OSPF = *ospfEnabled
+	f.L2CIRCUIT = *l2circuitEnabled
 	f.Routes = *routesEnabled
 	f.RoutingEngine = *routingEngineEnabled
 

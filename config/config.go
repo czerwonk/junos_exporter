@@ -12,7 +12,7 @@ type Config struct {
 	Targets  []string `yaml:"targets"`
 	Features struct {
 		Environment         bool `yaml:"environment,omitempty"`
-		BPG                 bool `yaml:"bgp,omitempty"`
+		BGP                 bool `yaml:"bgp,omitempty"`
 		OSPF                bool `yaml:"ospf,omitempty"`
 		ISIS                bool `yaml:"isis,omitempty"`
 		Routes              bool `yaml:"routes,omitempty"`
@@ -49,7 +49,7 @@ func Load(reader io.Reader) (*Config, error) {
 
 func setDefaultValues(c *Config) {
 	f := &c.Features
-	f.BPG = true
+	f.BGP = true
 	f.Environment = true
 	f.Interfaces = true
 	f.InterfaceDiagnostic = true

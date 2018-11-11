@@ -60,7 +60,7 @@ func collectors() map[string]collector.RPCCollector {
 		m["routes"] = route.NewCollector()
 	}
 
-	if f.BPG {
+	if f.BGP {
 		m["bgp"] = bgp.NewCollector()
 	}
 

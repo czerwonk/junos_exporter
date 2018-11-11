@@ -90,7 +90,7 @@ func loadConfigFromFlags() *config.Config {
 	c.Targets = strings.Split(*sshHosts, ",")
 
 	f := &c.Features
-	f.BPG = *bgpEnabled
+	f.BGP = *bgpEnabled
 	f.Environment = *environmentEnabled
 	f.Interfaces = *interfacesEnabled
 	f.InterfaceDiagnostic = *interfaceDiagnosticsEnabled

@@ -19,7 +19,7 @@ func init() {
 	l := []string{"target", "item"}
 	temperaturesDesc = prometheus.NewDesc(prefix+"item_temp", "Temperature of the air flowing past", l, nil)
 	l = append(l, "status")
-	powerSupplyDesc = prometheus.NewDesc(prefix+"power_up", "Status of power supplies (1 OK, 2 Testing, 3 Failed, 4 Absent)", l, nil)
+	powerSupplyDesc = prometheus.NewDesc(prefix+"power_up", "Status of power supplies (1 OK, 2 Testing, 3 Failed, 4 Absent, 5 Present)", l, nil)
 }
 
 type environmentCollector struct {
@@ -53,6 +53,7 @@ func (c *environmentCollector) Collect(client *rpc.Client, ch chan<- prometheus.
 		"Testing": 2,
 		"Failed":  3,
 		"Absent":  4,
+		"Present": 5,
 	}
 	for _, item := range powerItems {
 		l := append(labelValues, item.Name, item.Status)

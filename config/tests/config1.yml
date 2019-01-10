@@ -12,3 +12,4 @@ features:
   interface_diagnostic: false
   interfaces: false
   l2circuit: true
+  storage: false

@@ -34,6 +34,7 @@ var (
 	environmentEnabled          = flag.Bool("environment.enabled", true, "Scrape environment metrics")
 	interfacesEnabled           = flag.Bool("interfaces.enabled", true, "Scrape interface metrics")
 	interfaceDiagnosticsEnabled = flag.Bool("ifdiag.enabled", true, "Scrape optical interface diagnostic metrics")
+	storageEnabled              = flag.Bool("storage.enabled", true, "Scrape system storage metrics")
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 	configFile                  = flag.String("config.file", "", "Path to config file")
 	cfg                         *config.Config

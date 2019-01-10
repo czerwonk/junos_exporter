@@ -1,6 +1,9 @@
 package storage
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/czerwonk/junos_exporter/collector"
 	"github.com/czerwonk/junos_exporter/rpc"
 	"github.com/prometheus/client_golang/prometheus"
@@ -53,7 +56,12 @@ func (c *storageCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metr
 		ch <- prometheus.MustNewConstMetric(totalBlocksDesc, prometheus.GaugeValue, float64(f.TotalBlocks), l...)
 		ch <- prometheus.MustNewConstMetric(usedBlocksDesc, prometheus.GaugeValue, float64(f.UsedBlocks), l...)
 		ch <- prometheus.MustNewConstMetric(availableBlocksDesc, prometheus.GaugeValue, float64(f.AvailableBlocks), l...)
-		ch <- prometheus.MustNewConstMetric(usedPercentDesc, prometheus.GaugeValue, float64(f.UsedPercent), l...)
+		percent := strings.TrimSpace(f.UsedPercent)
+		value, err := strconv.ParseFloat(percent, 64)
+		if err != nil {
+			value = 0
+		}
+		ch <- prometheus.MustNewConstMetric(usedPercentDesc, prometheus.GaugeValue, value, l...)
 	}
 
 	return nil

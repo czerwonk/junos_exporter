@@ -11,6 +11,6 @@ type Filesystem struct {
 	TotalBlocks     int64  `xml:"total-blocks"`
 	UsedBlocks      int64  `xml:"used-blocks"`
 	AvailableBlocks int64  `xml:"available-blocks"`
-	UsedPercent     int64  `xml:"used-percent"`
+	UsedPercent     string `xml:"used-percent"`
 	MountedOn       string `xml:"mounted-on"`
 }

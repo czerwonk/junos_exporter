@@ -18,6 +18,7 @@ import (
 	"github.com/czerwonk/junos_exporter/route"
 	"github.com/czerwonk/junos_exporter/routingengine"
 	"github.com/czerwonk/junos_exporter/rpc"
+	"github.com/czerwonk/junos_exporter/storage"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 )
@@ -85,6 +86,10 @@ func collectors() map[string]collector.RPCCollector {
 
 	if f.InterfaceDiagnostic {
 		m["interface-diagnostics"] = interfacediagnostics.NewCollector()
+	}
+
+	if f.Storage {
+		m["storage"] = storage.NewCollector()
 	}
 
 	return m

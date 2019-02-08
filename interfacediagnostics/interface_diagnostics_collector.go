@@ -75,6 +75,8 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 		ch <- prometheus.MustNewConstMetric(moduleTemperatureDesc, prometheus.GaugeValue, d.ModuleTemperature, l...)
 		if d.ModuleVoltage > 0 {
 			ch <- prometheus.MustNewConstMetric(moduleVoltageDesc, prometheus.GaugeValue, d.ModuleVoltage, l...)
+		}
+		if d.RxSignalAvgOpticalPower > 0 {
 			ch <- prometheus.MustNewConstMetric(rxSignalAvgOpticalPowerDesc, prometheus.GaugeValue, d.RxSignalAvgOpticalPower, l...)
 			ch <- prometheus.MustNewConstMetric(rxSignalAvgOpticalPowerDbmDesc, prometheus.GaugeValue, d.RxSignalAvgOpticalPowerDbm, l...)
 		}
@@ -91,10 +93,8 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 			ch <- prometheus.MustNewConstMetric(laserBiasCurrentDesc, prometheus.GaugeValue, e.LaserBiasCurrent, l2...)
 			ch <- prometheus.MustNewConstMetric(laserOutputPowerDesc, prometheus.GaugeValue, e.LaserOutputPower, l2...)
 			ch <- prometheus.MustNewConstMetric(laserOutputPowerDbmDesc, prometheus.GaugeValue, e.LaserOutputPowerDbm, l2...)
-			if d.ModuleVoltage <= 0 {
-				ch <- prometheus.MustNewConstMetric(laserRxOpticalPowerDesc, prometheus.GaugeValue, e.LaserRxOpticalPower, l2...)
-				ch <- prometheus.MustNewConstMetric(laserRxOpticalPowerDbmDesc, prometheus.GaugeValue, e.LaserRxOpticalPowerDbm, l2...)
-			}
+			ch <- prometheus.MustNewConstMetric(laserRxOpticalPowerDesc, prometheus.GaugeValue, e.LaserRxOpticalPower, l2...)
+			ch <- prometheus.MustNewConstMetric(laserRxOpticalPowerDbmDesc, prometheus.GaugeValue, e.LaserRxOpticalPowerDbm, l2...)
 		}
 	}
 
@@ -125,19 +125,16 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client)
 			d.LaserOutputPowerDbm = f
 		}
 
-		if diag.Diagnostics.ModuleVoltage > 0 {
-			d.ModuleVoltage = float64(diag.Diagnostics.ModuleVoltage)
-			d.RxSignalAvgOpticalPower = float64(diag.Diagnostics.RxSignalAvgOpticalPower)
-			f, err = strconv.ParseFloat(diag.Diagnostics.RxSignalAvgOpticalPowerDbm, 64)
-			if err == nil {
-				d.RxSignalAvgOpticalPowerDbm = f
-			}
-		} else {
-			d.LaserRxOpticalPower = float64(diag.Diagnostics.LaserRxOpticalPower)
-			f, err = strconv.ParseFloat(diag.Diagnostics.LaserRxOpticalPowerDbm, 64)
-			if err == nil {
-				d.LaserRxOpticalPowerDbm = f
-			}
+		d.ModuleVoltage = float64(diag.Diagnostics.ModuleVoltage)
+		d.RxSignalAvgOpticalPower = float64(diag.Diagnostics.RxSignalAvgOpticalPower)
+		f, err = strconv.ParseFloat(diag.Diagnostics.RxSignalAvgOpticalPowerDbm, 64)
+		if err == nil {
+			d.RxSignalAvgOpticalPowerDbm = f
+		}
+		d.LaserRxOpticalPower = float64(diag.Diagnostics.LaserRxOpticalPower)
+		f, err = strconv.ParseFloat(diag.Diagnostics.LaserRxOpticalPowerDbm, 64)
+		if err == nil {
+			d.LaserRxOpticalPowerDbm = f
 		}
 
 		if len(diag.Diagnostics.OpticsDiagnosticsLaneValues) > 0 {
@@ -152,12 +149,10 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client)
 				if err == nil {
 					l.LaserOutputPowerDbm = f
 				}
-				if diag.Diagnostics.ModuleVoltage <= 0 {
-					l.LaserRxOpticalPower = float64(lane.LaserRxOpticalPower)
-					f, err = strconv.ParseFloat(lane.LaserRxOpticalPowerDbm, 64)
-					if err == nil {
-						l.LaserRxOpticalPowerDbm = f
-					}
+				l.LaserRxOpticalPower = float64(lane.LaserRxOpticalPower)
+				f, err = strconv.ParseFloat(lane.LaserRxOpticalPowerDbm, 64)
+				if err == nil {
+					l.LaserRxOpticalPowerDbm = f
 				}
 				d.Lanes = append(d.Lanes, l)
 			}

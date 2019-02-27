@@ -25,11 +25,27 @@ func WithReconnectInterval(d time.Duration) Option {
 	}
 }
 
+// WithKeepAliveInterval sets the keep alive interval (default 10 seconds)
+func WithKeepAliveInterval(d time.Duration) Option {
+	return func(m *SSHConnectionManager) {
+		m.keepAliveInterval = d
+	}
+}
+
+// WithKeepAliveTimeout sets the timeout after an ssh connection to be determined dead (default 15 seconds)
+func WithKeepAliveTimeout(d time.Duration) Option {
+	return func(m *SSHConnectionManager) {
+		m.keepAliveTimeout = d
+	}
+}
+
 // SSHConnectionManager manages SSH connections to different devices
 type SSHConnectionManager struct {
 	config            *ssh.ClientConfig
 	connections       map[string]*SSHConnection
 	reconnectInterval time.Duration
+	keepAliveInterval time.Duration
+	keepAliveTimeout  time.Duration
 	mu                sync.Mutex
 }
 
@@ -51,6 +67,8 @@ func NewConnectionManager(user string, key io.Reader, opts ...Option) (*SSHConne
 		config:            cfg,
 		connections:       make(map[string]*SSHConnection),
 		reconnectInterval: 30 * time.Second,
+		keepAliveInterval: 10 * time.Second,
+		keepAliveTimeout:  15 * time.Second,
 	}
 
 	for _, opt := range opts {
@@ -116,9 +134,9 @@ func (m *SSHConnectionManager) connectToServer(host string) (*ssh.Client, net.Co
 func (m *SSHConnectionManager) keepAlive(connection *SSHConnection) {
 	for {
 		select {
-		case <-time.After(10 * time.Second):
+		case <-time.After(m.keepAliveInterval):
 			log.Debugf("Sending keepalive for ")
-			connection.conn.SetDeadline(time.Now().Add(15 * time.Second))
+			connection.conn.SetDeadline(time.Now().Add(m.keepAliveTimeout))
 			_, _, err := connection.client.SendRequest("keepalive@golang.org", true, nil)
 			if err != nil {
 				log.Infof("Lost connection to %s (%v). Trying to reconnect...", connection.Host(), err)

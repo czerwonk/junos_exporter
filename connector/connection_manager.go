@@ -1,0 +1,169 @@
+package connector
+
+import (
+	"github.com/prometheus/common/log"
+	"io"
+	"io/ioutil"
+	"net"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/pkg/errors"
+	"golang.org/x/crypto/ssh"
+)
+
+const timeoutInSeconds = 5
+
+// Option defines options for the manager which are applied on creation
+type Option func(*SSHConnectionManager)
+
+// WithReconnectInterval sets the reconnect interval (default 10 seconds)
+func WithReconnectInterval(d time.Duration) Option {
+	return func(m *SSHConnectionManager) {
+		m.reconnectInterval = d
+	}
+}
+
+// SSHConnectionManager manages SSH connections to different devices
+type SSHConnectionManager struct {
+	config            *ssh.ClientConfig
+	connections       map[string]*SSHConnection
+	reconnectInterval time.Duration
+	mu                sync.Mutex
+}
+
+// NewConnectionManager creates a new connection manager
+func NewConnectionManager(user string, key io.Reader, opts ...Option) (*SSHConnectionManager, error) {
+	pk, err := loadPublicKeyFile(key)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := &ssh.ClientConfig{
+		User:            user,
+		Auth:            []ssh.AuthMethod{pk},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         timeoutInSeconds * time.Second,
+	}
+
+	m := &SSHConnectionManager{
+		config:            cfg,
+		connections:       make(map[string]*SSHConnection),
+		reconnectInterval: 30 * time.Second,
+	}
+
+	for _, opt := range opts {
+		opt(m)
+	}
+
+	return m, nil
+}
+
+// Connect connects to a device or returns an long living connection
+func (m *SSHConnectionManager) Connect(host string) (*SSHConnection, error) {
+	if !strings.Contains(host, ":") {
+		host = host + ":22"
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if connection, found := m.connections[host]; found {
+		if !connection.isConnected() {
+			return nil, errors.New("not connected")
+		}
+
+		return connection, nil
+	}
+
+	return m.connect(host)
+}
+
+func (m *SSHConnectionManager) connect(host string) (*SSHConnection, error) {
+	client, conn, err := m.connectToServer(host)
+	if err != nil {
+		return nil, err
+	}
+
+	c := &SSHConnection{
+		conn:   conn,
+		client: client,
+		host:   host,
+		done:   make(chan struct{}),
+	}
+	go m.keepAlive(c)
+
+	m.connections[host] = c
+
+	return c, nil
+}
+
+func (m *SSHConnectionManager) connectToServer(host string) (*ssh.Client, net.Conn, error) {
+	conn, err := net.DialTimeout("tcp", host, m.config.Timeout)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "could not open tcp connection")
+	}
+
+	c, chans, reqs, err := ssh.NewClientConn(conn, host, m.config)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "could not connect to device")
+	}
+
+	return ssh.NewClient(c, chans, reqs), conn, nil
+}
+
+func (m *SSHConnectionManager) keepAlive(connection *SSHConnection) {
+	for {
+		select {
+		case <-time.After(10 * time.Second):
+			log.Debugf("Sending keepalive for ")
+			connection.conn.SetDeadline(time.Now().Add(15 * time.Second))
+			_, _, err := connection.client.SendRequest("keepalive@golang.org", true, nil)
+			if err != nil {
+				log.Infof("Lost connection to %s (%v). Trying to reconnect...", connection.Host(), err)
+				connection.terminate()
+				m.reconnect(connection)
+			}
+		case <-connection.done:
+			return
+		}
+	}
+}
+
+func (m *SSHConnectionManager) reconnect(connection *SSHConnection) {
+	for {
+		client, conn, err := m.connectToServer(connection.Host())
+		if err == nil {
+			connection.client = client
+			connection.conn = conn
+			return
+		}
+
+		log.Infof("Reconnect to %s failed: %v", connection.Host(), err)
+		time.Sleep(m.reconnectInterval)
+	}
+}
+
+// Close closes all TCP connections and stop keep alives
+func (m *SSHConnectionManager) Close() error {
+	for _, c := range m.connections {
+		c.close()
+	}
+
+	return nil
+}
+
+func loadPublicKeyFile(r io.Reader) (ssh.AuthMethod, error) {
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not read from reader")
+	}
+
+	key, err := ssh.ParsePrivateKey(b)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not parse private key")
+	}
+
+	return ssh.PublicKeys(key), nil
+}

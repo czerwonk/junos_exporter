@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -15,7 +17,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.7.1"
+const version string = "0.8.0"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -38,6 +40,7 @@ var (
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 	configFile                  = flag.String("config.file", "", "Path to config file")
 	cfg                         *config.Config
+	connManager                 *connector.SSHConnectionManager
 )
 
 func init() {
@@ -61,6 +64,12 @@ func main() {
 		log.Fatalf("could not load config file. %v", err)
 	}
 	cfg = c
+
+	connManager, err = connectionManager()
+	if err != nil {
+		log.Fatalf("could initialize connection manager. %v", err)
+	}
+	defer connManager.Close()
 
 	startServer()
 }
@@ -104,6 +113,16 @@ func loadConfigFromFlags() *config.Config {
 	return c
 }
 
+func connectionManager() (*connector.SSHConnectionManager, error) {
+	f, err := os.Open(*sshKeyFile)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not open ssh key file")
+	}
+	defer f.Close()
+
+	return connector.NewConnectionManager(*sshUsername, f)
+}
+
 func startServer() {
 	log.Infof("Starting JunOS exporter (Version: %s)\n", version)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -132,7 +151,7 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := newJunosCollector(targets)
+	c := newJunosCollector(targets, connManager)
 	reg.MustRegister(c)
 
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{

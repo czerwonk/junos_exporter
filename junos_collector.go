@@ -36,13 +36,14 @@ func init() {
 }
 
 type junosCollector struct {
-	targets    []string
-	collectors map[string]collector.RPCCollector
+	targets           []string
+	collectors        map[string]collector.RPCCollector
+	connectionManager *connector.SSHConnectionManager
 }
 
-func newJunosCollector(targets []string) *junosCollector {
+func newJunosCollector(targets []string, connectionManager *connector.SSHConnectionManager) *junosCollector {
 	collectors := collectors()
-	return &junosCollector{targets, collectors}
+	return &junosCollector{targets, collectors, connectionManager}
 }
 
 func collectors() map[string]collector.RPCCollector {
@@ -128,13 +129,12 @@ func (c *junosCollector) collectForHost(host string, ch chan<- prometheus.Metric
 		ch <- prometheus.MustNewConstMetric(scrapeDurationDesc, prometheus.GaugeValue, time.Since(t).Seconds(), l...)
 	}()
 
-	conn, err := connector.NewSSSHConnection(host, *sshUsername, *sshKeyFile)
+	conn, err := c.connectionManager.Connect(host)
 	if err != nil {
-		log.Errorln(err)
+		log.Errorf("Could not connect to %s: %v", host, err)
 		ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 0, l...)
 		return
 	}
-	defer conn.Close()
 
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 1, l...)
 

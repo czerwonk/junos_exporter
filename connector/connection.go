@@ -2,83 +2,34 @@ package connector
 
 import (
 	"bytes"
-	"io/ioutil"
-	"strings"
-
+	"github.com/pkg/errors"
+	"net"
 	"sync"
-
-	"time"
 
 	"golang.org/x/crypto/ssh"
 )
 
-const timeoutInSeconds = 5
-
-var (
-	cachedConfig *ssh.ClientConfig
-	lock         = &sync.Mutex{}
-)
-
-func config(user, keyFile string) (*ssh.ClientConfig, error) {
-	lock.Lock()
-	defer lock.Unlock()
-
-	if cachedConfig != nil {
-		return cachedConfig, nil
-	}
-
-	pk, err := loadPublicKeyFile(keyFile)
-	if err != nil {
-		return nil, err
-	}
-
-	cachedConfig = &ssh.ClientConfig{
-		User:            user,
-		Auth:            []ssh.AuthMethod{pk},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         timeoutInSeconds * time.Second,
-	}
-
-	return cachedConfig, nil
-}
-
-// NewSSSHConnection connects to device
-func NewSSSHConnection(host, user, keyFile string) (*SSHConnection, error) {
-	if !strings.Contains(host, ":") {
-		host = host + ":22"
-	}
-
-	c := &SSHConnection{Host: host}
-	err := c.Connect(user, keyFile)
-	if err != nil {
-		return nil, err
-	}
-
-	return c, nil
-}
-
 // SSHConnection encapsulates the connection to the device
 type SSHConnection struct {
-	conn *ssh.Client
-	Host string
-}
-
-// Connect connects to the device
-func (c *SSHConnection) Connect(user, keyFile string) error {
-	config, err := config(user, keyFile)
-	if err != nil {
-		return err
-	}
-
-	c.conn, err = ssh.Dial("tcp", c.Host, config)
-	return err
+	host   string
+	client *ssh.Client
+	conn   net.Conn
+	mu     sync.Mutex
+	done   chan struct{}
 }
 
 // RunCommand runs a command against the device
 func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
-	session, err := c.conn.NewSession()
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.client == nil {
+		return nil, errors.New("not conneted")
+	}
+
+	session, err := c.client.NewSession()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "could not open session")
 	}
 	defer session.Close()
 
@@ -87,32 +38,40 @@ func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 
 	err = session.Run(cmd)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "could not run command")
 	}
 
 	return b.Bytes(), nil
 }
 
-// Close closes connection
-func (c *SSHConnection) Close() {
-	if c.conn == nil {
-		return
-	}
+func (c *SSHConnection) isConnected() bool {
+	return c.conn != nil
+}
+
+func (c *SSHConnection) terminate() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	c.conn.Close()
+
+	c.client = nil
 	c.conn = nil
 }
 
-func loadPublicKeyFile(file string) (ssh.AuthMethod, error) {
-	b, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
+func (c *SSHConnection) close() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.client != nil {
+		c.client.Close()
 	}
 
-	key, err := ssh.ParsePrivateKey(b)
-	if err != nil {
-		return nil, err
-	}
+	c.done <- struct{}{}
+	c.conn = nil
+	c.client = nil
+}
 
-	return ssh.PublicKeys(key), nil
+// Host returns the hostname connected to
+func (c *SSHConnection) Host() string {
+	return c.host
 }

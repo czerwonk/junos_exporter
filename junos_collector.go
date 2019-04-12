@@ -12,6 +12,7 @@ import (
 	"github.com/czerwonk/junos_exporter/environment"
 	"github.com/czerwonk/junos_exporter/interfacediagnostics"
 	"github.com/czerwonk/junos_exporter/interfaces"
+	"github.com/czerwonk/junos_exporter/nat"
 	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/l2circuit"
 	"github.com/czerwonk/junos_exporter/ospf"
@@ -67,6 +68,10 @@ func collectors() map[string]collector.RPCCollector {
 
 	if f.OSPF {
 		m["ospf"] = ospf.NewCollector()
+	}
+
+	if f.NAT {
+		m["nat"] = nat.NewCollector()
 	}
 
 	if f.ISIS {

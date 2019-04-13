@@ -18,6 +18,7 @@ type Config struct {
 		L2Circuit           bool `yaml:"l2circuit,omitempty"`
 		Routes              bool `yaml:"routes,omitempty"`
 		RoutingEngine       bool `yaml:"routing_engine,omitempty"`
+		Firewall            bool `yaml:"firewall,omitempty"`
 		Interfaces          bool `yaml:"interfaces,omitempty"`
 		InterfaceDiagnostic bool `yaml:"interface_diagnostic,omitempty"`
 		Storage             bool `yaml:"storage,omitempty"`

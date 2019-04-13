@@ -14,7 +14,6 @@ type Config struct {
 		Environment         bool `yaml:"environment,omitempty"`
 		BGP                 bool `yaml:"bgp,omitempty"`
 		OSPF                bool `yaml:"ospf,omitempty"`
-		NAT                 bool `yaml:"nat,omitempty"`
 		Firewall            bool `yaml:"firewall,omitempty"`
 		ISIS                bool `yaml:"isis,omitempty"`
 		L2Circuit           bool `yaml:"l2circuit,omitempty"`

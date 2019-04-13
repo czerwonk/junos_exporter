@@ -34,8 +34,7 @@ The following metrics are supported by now:
 * Environment (temperatures)
 * Routing engine statistics
 * Storage (total, available and used blocks, used percentage)
-* Firewall filters (counters and policers)
-** Needs explicit rights (set system login class ... allow-commands "show firewall filter regexp .*")
+* Firewall filters (counters and policers) - needs explicit rights beyond read-only
 * Statistics about l2circuits (tunnel state, number of tunnels)
 ```   0:EI -- encapsulation invalid      12:NP -- interface h/w not present
    1:MM -- mtu mismatch               13:Dn -- down

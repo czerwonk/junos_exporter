@@ -25,7 +25,6 @@ func TestShouldParse(t *testing.T) {
 
 	assertFeature("BGP", c.Features.BGP, true, t)
 	assertFeature("OSPF", c.Features.OSPF, false, t)
-	assertFeature("NAT", c.Features.NAT, false, t)
 	assertFeature("Firewall", c.Features.Firewall, false, t)
 	assertFeature("ISIS", c.Features.ISIS, true, t)
 	assertFeature("Routes", c.Features.Routes, true, t)
@@ -50,7 +49,6 @@ func TestShouldUseDefaults(t *testing.T) {
 
 	assertFeature("BGP", c.Features.BGP, true, t)
 	assertFeature("OSPF", c.Features.OSPF, true, t)
-	assertFeature("NAT", c.Features.NAT, false, t)
 	assertFeature("Firewall", c.Features.Firewall, false, t)
 	assertFeature("ISIS", c.Features.ISIS, false, t)
 	assertFeature("Routes", c.Features.Routes, true, t)

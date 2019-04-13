@@ -28,6 +28,7 @@ var (
 	sshKeyFile                  = flag.String("ssh.keyfile", "junos_exporter", "Public key file to use when connecting to junos devices using ssh")
 	debug                       = flag.Bool("debug", false, "Show verbose debug output in log")
 	bgpEnabled                  = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
+	firewallEnabled             = flag.Bool("firewall.enabled", true, "Scrape Firewall count metrics")
 	ospfEnabled                 = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
 	isisEnabled                 = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
 	l2circuitEnabled            = flag.Bool("l2circuit.enabled", false, "Scrape l2circuit metrics")
@@ -101,6 +102,7 @@ func loadConfigFromFlags() *config.Config {
 
 	f := &c.Features
 	f.BGP = *bgpEnabled
+	f.Firewall = *firewallEnabled
 	f.Environment = *environmentEnabled
 	f.Interfaces = *interfacesEnabled
 	f.InterfaceDiagnostic = *interfaceDiagnosticsEnabled

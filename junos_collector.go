@@ -10,6 +10,7 @@ import (
 	"github.com/czerwonk/junos_exporter/collector"
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/czerwonk/junos_exporter/environment"
+	"github.com/czerwonk/junos_exporter/firewall"
 	"github.com/czerwonk/junos_exporter/interfacediagnostics"
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/czerwonk/junos_exporter/nat"
@@ -64,6 +65,10 @@ func collectors() map[string]collector.RPCCollector {
 
 	if f.BGP {
 		m["bgp"] = bgp.NewCollector()
+	}
+
+	if f.Firewall {
+		m["firewall"] = firewall.NewCollector()
 	}
 
 	if f.OSPF {

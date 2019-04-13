@@ -15,6 +15,7 @@ type Config struct {
 		BGP                 bool `yaml:"bgp,omitempty"`
 		OSPF                bool `yaml:"ospf,omitempty"`
 		NAT                 bool `yaml:"nat,omitempty"`
+		Firewall            bool `yaml:"firewall,omitempty"`
 		ISIS                bool `yaml:"isis,omitempty"`
 		L2Circuit           bool `yaml:"l2circuit,omitempty"`
 		Routes              bool `yaml:"routes,omitempty"`

@@ -16,7 +16,7 @@ var (
 )
 
 func init() {
-	l := []string{"target", "filter", "counter", "type"}
+	l := []string{"target", "filter", "counter"}
 
 	counterPackets = prometheus.NewDesc(prefix+"counter_packets", "Number of packets matching counter in firewall filter", l, nil)
 	counterBytes = prometheus.NewDesc(prefix+"counter_bytes", "Number of bytes matching counter in firewall filter", l, nil)
@@ -59,13 +59,13 @@ func (c *firewallCollector) collectForFilter(filter Filter, ch chan<- prometheus
 	l := append(labelValues, filter.Name)
 
 	for _, counter := range filter.Counters {
-		lp := append(l, counter.Name, "counter")
+		lp := append(l, counter.Name)
 		ch <- prometheus.MustNewConstMetric(counterPackets, prometheus.GaugeValue, float64(counter.Packets), lp...)
 		ch <- prometheus.MustNewConstMetric(counterBytes, prometheus.GaugeValue, float64(counter.Bytes), lp...)
 	}
 
 	for _, policer := range filter.Policers {
-		lp := append(l, policer.Name, "policer")
+		lp := append(l, policer.Name)
 		ch <- prometheus.MustNewConstMetric(policerPackets, prometheus.GaugeValue, float64(policer.Packets), lp...)
 		ch <- prometheus.MustNewConstMetric(policerBytes, prometheus.GaugeValue, float64(policer.Bytes), lp...)
 	}

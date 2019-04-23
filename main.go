@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/czerwonk/junos_exporter/connector"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+
+	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/pkg/errors"
 
 	"github.com/czerwonk/junos_exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
@@ -41,6 +44,7 @@ var (
 	configFile                  = flag.String("config.file", "", "Path to config file")
 	cfg                         *config.Config
 	connManager                 *connector.SSHConnectionManager
+	reloadCh                    chan chan error
 )
 
 func init() {
@@ -63,7 +67,31 @@ func main() {
 	if err != nil {
 		log.Fatalf("could not load config file. %v", err)
 	}
+
 	cfg = c
+
+	hup := make(chan os.Signal, 1)
+	reloadCh = make(chan chan error)
+	signal.Notify(hup, syscall.SIGHUP)
+	go func() {
+		for {
+			select {
+			case <-hup:
+				log.Infoln("Reload signal received as SIGHUP")
+				if cfg, err = loadConfig(); err != nil {
+					log.Errorf("Error reloading config: %s", err)
+				}
+			case rc := <-reloadCh:
+				log.Infoln("Reload signal received via POST")
+				if cfg, err = loadConfig(); err != nil {
+					log.Errorf("Error reloading config: %s", err)
+					rc <- err
+				} else {
+					rc <- nil
+				}
+			}
+		}
+	}()
 
 	connManager, err = connectionManager()
 	if err != nil {
@@ -137,9 +165,24 @@ func startServer() {
 			</html>`))
 	})
 	http.HandleFunc(*metricsPath, handleMetricsRequest)
+	http.HandleFunc("/-/reload", updateConfiguration) // Endpoint to reload configuration.
 
 	log.Infof("Listening for %s on %s\n", *metricsPath, *listenAddress)
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
+}
+
+func updateConfiguration(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "POST":
+		rc := make(chan error)
+		reloadCh <- rc
+		if err := <-rc; err != nil {
+			http.Error(w, fmt.Sprintf("failed to reload config: %s", err), http.StatusInternalServerError)
+		}
+	default:
+		log.Errorf("POST method expected")
+		http.Error(w, "POST method expected", 400)
+	}
 }
 
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {

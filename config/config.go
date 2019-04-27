@@ -16,6 +16,7 @@ type Config struct {
 		OSPF                bool `yaml:"ospf,omitempty"`
 		ISIS                bool `yaml:"isis,omitempty"`
 		L2Circuit           bool `yaml:"l2circuit,omitempty"`
+		LDP                 bool `yaml:"ldp,omitempty"`
 		Routes              bool `yaml:"routes,omitempty"`
 		RoutingEngine       bool `yaml:"routing_engine,omitempty"`
 		Interfaces          bool `yaml:"interfaces,omitempty"`
@@ -56,6 +57,7 @@ func setDefaultValues(c *Config) {
 	f.Interfaces = true
 	f.InterfaceDiagnostic = true
 	f.OSPF = true
+	f.LDP = true
 	f.Routes = true
 	f.RoutingEngine = true
 	f.Storage = true

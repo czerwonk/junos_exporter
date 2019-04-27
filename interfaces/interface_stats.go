@@ -8,6 +8,7 @@ type InterfaceStats struct {
 	Description         string
 	Mac                 string
 	IsPhysical          bool
+	Speed               float64
 	ReceiveBytes        float64
 	ReceivePackets      float64
 	ReceiveErrors       float64

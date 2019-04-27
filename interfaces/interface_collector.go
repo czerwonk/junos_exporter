@@ -13,6 +13,7 @@ var (
 	receivePacketsDesc      *prometheus.Desc
 	receiveErrorsDesc       *prometheus.Desc
 	receiveDropsDesc        *prometheus.Desc
+	interfaceSpeedDesc      *prometheus.Desc
 	transmitBytesDesc       *prometheus.Desc
 	transmitPacketsDesc     *prometheus.Desc
 	transmitErrorsDesc      *prometheus.Desc
@@ -24,6 +25,17 @@ var (
 	adminStatusDesc         *prometheus.Desc
 	operStatusDesc          *prometheus.Desc
 	errorStatusDesc         *prometheus.Desc
+	speedMap                = map[string]float64{
+		"10mbps":   float64(10000000.0),
+		"100mbps":  float64(100000000.0),
+		"1000mbps": float64(1000000000.0),
+		"10Gbps":   float64(10000000000.0),
+		"20Gbps":   float64(20000000000.0),
+		"40Gbps":   float64(40000000000.0),
+		"50Gbps":   float64(50000000000.0),
+		"80Gbps":   float64(80000000000.0),
+		"100Gbps":  float64(100000000000.0),
+	}
 )
 
 func init() {
@@ -32,6 +44,7 @@ func init() {
 	receivePacketsDesc = prometheus.NewDesc(prefix+"receive_packets_total", "Received packets", l, nil)
 	receiveErrorsDesc = prometheus.NewDesc(prefix+"receive_errors", "Number of errors caused by incoming packets", l, nil)
 	receiveDropsDesc = prometheus.NewDesc(prefix+"receive_drops", "Number of dropped incoming packets", l, nil)
+	interfaceSpeedDesc = prometheus.NewDesc(prefix+"speed", "speed in in bps", l, nil)
 	transmitBytesDesc = prometheus.NewDesc(prefix+"transmit_bytes", "Transmitted data in bytes", l, nil)
 	transmitPacketsDesc = prometheus.NewDesc(prefix+"transmit_packets_total", "Transmitted packets", l, nil)
 	transmitErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors", "Number of errors caused by outgoing packets", l, nil)
@@ -60,6 +73,7 @@ func (*interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- receivePacketsDesc
 	ch <- receiveErrorsDesc
 	ch <- receiveDropsDesc
+	ch <- interfaceSpeedDesc
 	ch <- transmitBytesDesc
 	ch <- transmitPacketsDesc
 	ch <- transmitDropsDesc
@@ -108,6 +122,7 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 			ReceiveErrors:       float64(phy.InputErrors.Errors),
 			ReceiveBytes:        float64(phy.Stats.InputBytes),
 			ReceivePackets:      float64(phy.Stats.InputPackets),
+			Speed:               speedMap[phy.Speed],
 			TransmitDrops:       float64(phy.OutputErrors.Drops),
 			TransmitErrors:      float64(phy.OutputErrors.Errors),
 			TransmitBytes:       float64(phy.Stats.OutputBytes),
@@ -175,5 +190,7 @@ func (*interfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prom
 		ch <- prometheus.MustNewConstMetric(transmitDropsDesc, prometheus.GaugeValue, s.TransmitDrops, l...)
 		ch <- prometheus.MustNewConstMetric(receiveErrorsDesc, prometheus.GaugeValue, s.ReceiveErrors, l...)
 		ch <- prometheus.MustNewConstMetric(receiveDropsDesc, prometheus.GaugeValue, s.ReceiveDrops, l...)
+		ch <- prometheus.MustNewConstMetric(interfaceSpeedDesc, prometheus.GaugeValue, s.Speed, l...)
+
 	}
 }

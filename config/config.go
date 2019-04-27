@@ -9,6 +9,7 @@ import (
 
 // Config represents the configuration for the exporter
 type Config struct {
+	Password string   `yaml:"password"`
 	Targets  []string `yaml:"targets"`
 	Features struct {
 		Environment         bool `yaml:"environment,omitempty"`
@@ -50,6 +51,7 @@ func Load(reader io.Reader) (*Config, error) {
 }
 
 func setDefaultValues(c *Config) {
+	c.Password = ""
 	f := &c.Features
 	f.BGP = true
 	f.Environment = true

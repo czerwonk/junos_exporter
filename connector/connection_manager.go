@@ -1,13 +1,12 @@
 package connector
 
 import (
-	"github.com/prometheus/common/log"
-	"io"
-	"io/ioutil"
 	"net"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/prometheus/common/log"
 
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
@@ -50,15 +49,10 @@ type SSHConnectionManager struct {
 }
 
 // NewConnectionManager creates a new connection manager
-func NewConnectionManager(user string, key io.Reader, opts ...Option) (*SSHConnectionManager, error) {
-	pk, err := loadPublicKeyFile(key)
-	if err != nil {
-		return nil, err
-	}
-
+func NewConnectionManager(user string, auth []ssh.AuthMethod, opts ...Option) *SSHConnectionManager {
 	cfg := &ssh.ClientConfig{
 		User:            user,
-		Auth:            []ssh.AuthMethod{pk},
+		Auth:            auth,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         timeoutInSeconds * time.Second,
 	}
@@ -75,7 +69,7 @@ func NewConnectionManager(user string, key io.Reader, opts ...Option) (*SSHConne
 		opt(m)
 	}
 
-	return m, nil
+	return m
 }
 
 // Connect connects to a device or returns an long living connection
@@ -170,18 +164,4 @@ func (m *SSHConnectionManager) Close() error {
 	}
 
 	return nil
-}
-
-func loadPublicKeyFile(r io.Reader) (ssh.AuthMethod, error) {
-	b, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not read from reader")
-	}
-
-	key, err := ssh.ParsePrivateKey(b)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not parse private key")
-	}
-
-	return ssh.PublicKeys(key), nil
 }

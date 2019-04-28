@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/pkg/errors"
+	"golang.org/x/crypto/ssh"
 
 	"github.com/czerwonk/junos_exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
@@ -26,7 +28,8 @@ var (
 	metricsPath                 = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	sshHosts                    = flag.String("ssh.targets", "", "Hosts to scrape")
 	sshUsername                 = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
-	sshKeyFile                  = flag.String("ssh.keyfile", "junos_exporter", "Public key file to use when connecting to junos devices using ssh")
+	sshKeyFile                  = flag.String("ssh.keyfile", "", "Public key file to use when connecting to junos devices using ssh")
+	sshPassword                 = flag.String("ssh.password", "", "Password to use when connecting to junos devices using ssh")
 	debug                       = flag.Bool("debug", false, "Show verbose debug output in log")
 	bgpEnabled                  = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
 	ospfEnabled                 = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
@@ -116,14 +119,42 @@ func loadConfigFromFlags() *config.Config {
 	return c
 }
 
-func connectionManager() (*connector.SSHConnectionManager, error) {
-	f, err := os.Open(*sshKeyFile)
+func loadPublicKeyFile(r io.Reader) (ssh.AuthMethod, error) {
+	b, err := ioutil.ReadAll(r)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not open ssh key file")
+		return nil, errors.Wrap(err, "could not read from reader")
 	}
-	defer f.Close()
 
-	return connector.NewConnectionManager(*sshUsername, f)
+	key, err := ssh.ParsePrivateKey(b)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not parse private key")
+	}
+
+	return ssh.PublicKeys(key), nil
+}
+
+func connectionManager() (*connector.SSHConnectionManager, error) {
+	if *sshKeyFile != "" {
+		f, err := os.Open(*sshKeyFile)
+		if err != nil {
+			return nil, errors.Wrap(err, "could not open ssh key file")
+		}
+		defer f.Close()
+
+		pk, err := loadPublicKeyFile(f)
+		auth := []ssh.AuthMethod{pk}
+		if err != nil {
+			return nil, errors.Wrap(err, "could not open ssh key file")
+		}
+		return connector.NewConnectionManager(*sshUsername, auth), err
+	} else if *sshPassword != "" {
+		auth := []ssh.AuthMethod{ssh.Password(*sshPassword)}
+		return connector.NewConnectionManager(*sshUsername, auth), nil
+	} else if cfg.Password != "" {
+		auth := []ssh.AuthMethod{ssh.Password(cfg.Password)}
+		return connector.NewConnectionManager(*sshUsername, auth), nil
+	}
+	return nil, errors.New("no valid authentication method available")
 }
 
 func startServer() {

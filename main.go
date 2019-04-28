@@ -23,6 +23,7 @@ const version string = "0.9.0"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
+	ignoreConfigTargets         = flag.Bool("config.ignore-targets", false, "Ignore check if target is specified in config")
 	listenAddress               = flag.String("web.listen-address", ":9326", "Address on which to expose metrics and web interface.")
 	metricsPath                 = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	sshHosts                    = flag.String("ssh.targets", "", "Hosts to scrape")
@@ -206,6 +207,10 @@ func targetsForRequest(r *http.Request) ([]string, error) {
 		if t == reqTarget {
 			return []string{t}, nil
 		}
+	}
+
+	if *ignoreConfigTargets {
+		return []string{reqTarget}, nil
 	}
 
 	return nil, fmt.Errorf("the target '%s' is not defined in the configuration file", reqTarget)

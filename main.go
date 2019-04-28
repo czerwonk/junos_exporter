@@ -4,15 +4,14 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/pkg/errors"
-	"golang.org/x/crypto/ssh"
 
 	"github.com/czerwonk/junos_exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
@@ -20,7 +19,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.8.0"
+const version string = "0.9.0"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -31,6 +30,9 @@ var (
 	sshUsername                 = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
 	sshKeyFile                  = flag.String("ssh.keyfile", "", "Public key file to use when connecting to junos devices using ssh")
 	sshPassword                 = flag.String("ssh.password", "", "Password to use when connecting to junos devices using ssh")
+	sshReconnectInterval        = flag.Duration("ssh.reconnect-interval", 30*time.Second, "Duration to wait before reconnecting to a device after connection got lost")
+	sshKeepAliveInterval        = flag.Duration("ssh.keep-alive-interval", 10*time.Second, "Duration to wait between keep alive messages")
+	sshKeepAliveTimeout         = flag.Duration("ssh.keep-alive-timeout", 15*time.Second, "Duration to wait for keep alive message response")
 	debug                       = flag.Bool("debug", false, "Show verbose debug output in log")
 	bgpEnabled                  = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
 	ospfEnabled                 = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
@@ -120,42 +122,43 @@ func loadConfigFromFlags() *config.Config {
 	return c
 }
 
-func loadPublicKeyFile(r io.Reader) (ssh.AuthMethod, error) {
-	b, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not read from reader")
+func connectionManager() (*connector.SSHConnectionManager, error) {
+	opts := []connector.Option{
+		connector.WithReconnectInterval(*sshReconnectInterval),
+		connector.WithKeepAliveInterval(*sshKeepAliveInterval),
+		connector.WithKeepAliveTimeout(*sshKeepAliveTimeout),
 	}
 
-	key, err := ssh.ParsePrivateKey(b)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not parse private key")
+	if *sshKeyFile != "" {
+		return connectionManagerWithPublicKey(opts)
 	}
 
-	return ssh.PublicKeys(key), nil
+	if *sshPassword != "" {
+		return connector.NewConnectionManager(*sshUsername,
+			connector.AuthByPassword(*sshPassword), opts...), nil
+	}
+
+	if cfg.Password != "" {
+		return connector.NewConnectionManager(*sshUsername,
+			connector.AuthByPassword(cfg.Password), opts...), nil
+	}
+
+	return nil, errors.New("no valid authentication method available")
 }
 
-func connectionManager() (*connector.SSHConnectionManager, error) {
-	if *sshKeyFile != "" {
-		f, err := os.Open(*sshKeyFile)
-		if err != nil {
-			return nil, errors.Wrap(err, "could not open ssh key file")
-		}
-		defer f.Close()
-
-		pk, err := loadPublicKeyFile(f)
-		auth := []ssh.AuthMethod{pk}
-		if err != nil {
-			return nil, errors.Wrap(err, "could not open ssh key file")
-		}
-		return connector.NewConnectionManager(*sshUsername, auth), err
-	} else if *sshPassword != "" {
-		auth := []ssh.AuthMethod{ssh.Password(*sshPassword)}
-		return connector.NewConnectionManager(*sshUsername, auth), nil
-	} else if cfg.Password != "" {
-		auth := []ssh.AuthMethod{ssh.Password(cfg.Password)}
-		return connector.NewConnectionManager(*sshUsername, auth), nil
+func connectionManagerWithPublicKey(opts []connector.Option) (*connector.SSHConnectionManager, error) {
+	f, err := os.Open(*sshKeyFile)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not open ssh key file")
 	}
-	return nil, errors.New("no valid authentication method available")
+	defer f.Close()
+
+	auth, err := connector.AuthByKey(f)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not load ssh private key file")
+	}
+
+	return connector.NewConnectionManager(*sshUsername, auth, opts...), err
 }
 
 func startServer() {

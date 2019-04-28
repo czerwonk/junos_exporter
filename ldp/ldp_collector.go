@@ -47,15 +47,15 @@ func (*ldpCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *ldpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	err := c.collectLdpSessions(client, ch, labelValues)
+	err := c.collectLDPSessions(client, ch, labelValues)
 	if err != nil {
 		return err
 	}
 
-	return c.collectldpMetrics(client, ch, labelValues)
+	return c.collectLDPMetrics(client, ch, labelValues)
 }
 
-func (c *ldpCollector) collectldpMetrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *ldpCollector) collectLDPMetrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = LDPRpc{}
 	err := client.RunCommandAndParse("show ldp neighbor", &x)
 	if err != nil {
@@ -68,7 +68,7 @@ func (c *ldpCollector) collectldpMetrics(client *rpc.Client, ch chan<- prometheu
 	return nil
 }
 
-func (c *ldpCollector) collectLdpSessions(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *ldpCollector) collectLDPSessions(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = LDPSessionRpc{}
 	err := client.RunCommandAndParse("show ldp session", &x)
 	if err != nil {

@@ -1,6 +1,7 @@
 package connector
 
 import (
+	"io"
 	"net"
 	"strings"
 	"sync"
@@ -48,11 +49,32 @@ type SSHConnectionManager struct {
 	mu                sync.Mutex
 }
 
+// AuthMethod ithe method to use to authenticate agaist the device
+type AuthMethod func(*SSHConnectionManager)
+
+// AuthByPassword uses password authentication
+func AuthByPassword(password string) AuthMethod {
+	return func(m *SSHConnectionManager) {
+		m.config.Auth = append(m.config.Auth, ssh.Password(password))
+	}
+}
+
+// AuthByKey uses public key authentication
+func AuthByKey(key io.Reader) (AuthMethod, error) {
+	pk, err := loadPrivateKey(key)
+	if err != nil {
+		return nil, err
+	}
+
+	return func(m *SSHConnectionManager) {
+		m.config.Auth = append(m.config.Auth, pk)
+	}, nil
+}
+
 // NewConnectionManager creates a new connection manager
-func NewConnectionManager(user string, auth []ssh.AuthMethod, opts ...Option) *SSHConnectionManager {
+func NewConnectionManager(user string, auth AuthMethod, opts ...Option) *SSHConnectionManager {
 	cfg := &ssh.ClientConfig{
 		User:            user,
-		Auth:            auth,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         timeoutInSeconds * time.Second,
 	}
@@ -64,6 +86,8 @@ func NewConnectionManager(user string, auth []ssh.AuthMethod, opts ...Option) *S
 		keepAliveInterval: 10 * time.Second,
 		keepAliveTimeout:  15 * time.Second,
 	}
+
+	auth(m)
 
 	for _, opt := range opts {
 		opt(m)

@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -52,6 +53,7 @@ var (
 	cfg                         *config.Config
 	connManager                 *connector.SSHConnectionManager
 	reloadCh                    chan chan error
+	configMu                    sync.Mutex
 )
 
 func init() {
@@ -70,43 +72,46 @@ func main() {
 		os.Exit(0)
 	}
 
-	c, err := loadConfig()
+	err := initialize()
 	if err != nil {
-		log.Fatalf("could not load config file. %v", err)
+		log.Fatalf("could not initialize exporter. %v", err)
 	}
 
-	cfg = c
+	initChannels()
 
+	startServer()
+}
+
+func initChannels() {
 	hup := make(chan os.Signal, 1)
-	reloadCh = make(chan chan error)
 	signal.Notify(hup, syscall.SIGHUP)
+
+	term := make(chan os.Signal, 1)
+	signal.Notify(term, syscall.SIGTERM)
+
+	reloadCh = make(chan chan error)
 	go func() {
 		for {
 			select {
 			case <-hup:
 				log.Infoln("Reload signal received as SIGHUP")
-				if cfg, err = loadConfig(); err != nil {
+				if err := reinitialize(); err != nil {
 					log.Errorf("Error reloading config: %s", err)
 				}
 			case rc := <-reloadCh:
 				log.Infoln("Reload signal received via POST")
-				if cfg, err = loadConfig(); err != nil {
+				if err := reinitialize(); err != nil {
 					log.Errorf("Error reloading config: %s", err)
 					rc <- err
 				} else {
 					rc <- nil
 				}
+			case <-term:
+				log.Infoln("Closing connections to devices")
+				connManager.Close()
 			}
 		}
 	}()
-
-	connManager, err = connectionManager()
-	if err != nil {
-		log.Fatalf("could initialize connection manager. %v", err)
-	}
-	defer connManager.Close()
-
-	startServer()
 }
 
 func printVersion() {
@@ -114,6 +119,33 @@ func printVersion() {
 	fmt.Printf("Version: %s\n", version)
 	fmt.Println("Author(s): Daniel Czerwonk")
 	fmt.Println("Metric exporter for switches and routers running JunOS")
+}
+
+func initialize() error {
+	c, err := loadConfig()
+	if err != nil {
+		return err
+	}
+	cfg = c
+
+	connManager, err = connectionManager()
+	if err != nil {
+		log.Fatalf("could initialize connection manager. %v", err)
+	}
+
+	return nil
+}
+
+func reinitialize() error {
+	configMu.Lock()
+	defer configMu.Unlock()
+
+	if connManager != nil {
+		connManager.Close()
+		connManager = nil
+	}
+
+	return initialize()
 }
 
 func loadConfig() (*config.Config, error) {
@@ -202,7 +234,7 @@ func startServer() {
 			</html>`))
 	})
 	http.HandleFunc(*metricsPath, handleMetricsRequest)
-	http.HandleFunc("/-/reload", updateConfiguration) // Endpoint to reload configuration.
+	http.HandleFunc("/-/reload", updateConfiguration)
 
 	log.Infof("Listening for %s on %s\n", *metricsPath, *listenAddress)
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
@@ -223,6 +255,9 @@ func updateConfiguration(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
+	configMu.Lock()
+	defer configMu.Unlock()
+
 	reg := prometheus.NewRegistry()
 
 	targets, err := targetsForRequest(r)

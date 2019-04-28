@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/pkg/errors"
@@ -20,20 +21,26 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.8.0"
+const version string = "0.9.0"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
+	ignoreConfigTargets         = flag.Bool("config.ignore-targets", false, "Ignore check if target is specified in config")
 	listenAddress               = flag.String("web.listen-address", ":9326", "Address on which to expose metrics and web interface.")
 	metricsPath                 = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	sshHosts                    = flag.String("ssh.targets", "", "Hosts to scrape")
 	sshUsername                 = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
-	sshKeyFile                  = flag.String("ssh.keyfile", "junos_exporter", "Public key file to use when connecting to junos devices using ssh")
+	sshKeyFile                  = flag.String("ssh.keyfile", "", "Public key file to use when connecting to junos devices using ssh")
+	sshPassword                 = flag.String("ssh.password", "", "Password to use when connecting to junos devices using ssh")
+	sshReconnectInterval        = flag.Duration("ssh.reconnect-interval", 30*time.Second, "Duration to wait before reconnecting to a device after connection got lost")
+	sshKeepAliveInterval        = flag.Duration("ssh.keep-alive-interval", 10*time.Second, "Duration to wait between keep alive messages")
+	sshKeepAliveTimeout         = flag.Duration("ssh.keep-alive-timeout", 15*time.Second, "Duration to wait for keep alive message response")
 	debug                       = flag.Bool("debug", false, "Show verbose debug output in log")
 	bgpEnabled                  = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
 	ospfEnabled                 = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
 	isisEnabled                 = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
 	l2circuitEnabled            = flag.Bool("l2circuit.enabled", false, "Scrape l2circuit metrics")
+	ldpEnabled                  = flag.Bool("ldp.enabled", true, "Scrape ldp metrics")
 	routingEngineEnabled        = flag.Bool("routingengine.enabled", true, "Scrape Routing Engine metrics")
 	routesEnabled               = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
 	environmentEnabled          = flag.Bool("environment.enabled", true, "Scrape environment metrics")
@@ -134,6 +141,7 @@ func loadConfigFromFlags() *config.Config {
 	f.InterfaceDiagnostic = *interfaceDiagnosticsEnabled
 	f.ISIS = *isisEnabled
 	f.OSPF = *ospfEnabled
+	f.LDP = *ldpEnabled
 	f.L2Circuit = *l2circuitEnabled
 	f.Routes = *routesEnabled
 	f.RoutingEngine = *routingEngineEnabled
@@ -142,13 +150,42 @@ func loadConfigFromFlags() *config.Config {
 }
 
 func connectionManager() (*connector.SSHConnectionManager, error) {
+	opts := []connector.Option{
+		connector.WithReconnectInterval(*sshReconnectInterval),
+		connector.WithKeepAliveInterval(*sshKeepAliveInterval),
+		connector.WithKeepAliveTimeout(*sshKeepAliveTimeout),
+	}
+
+	if *sshKeyFile != "" {
+		return connectionManagerWithPublicKey(opts)
+	}
+
+	if *sshPassword != "" {
+		return connector.NewConnectionManager(*sshUsername,
+			connector.AuthByPassword(*sshPassword), opts...), nil
+	}
+
+	if cfg.Password != "" {
+		return connector.NewConnectionManager(*sshUsername,
+			connector.AuthByPassword(cfg.Password), opts...), nil
+	}
+
+	return nil, errors.New("no valid authentication method available")
+}
+
+func connectionManagerWithPublicKey(opts []connector.Option) (*connector.SSHConnectionManager, error) {
 	f, err := os.Open(*sshKeyFile)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not open ssh key file")
 	}
 	defer f.Close()
 
-	return connector.NewConnectionManager(*sshUsername, f)
+	auth, err := connector.AuthByKey(f)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not load ssh private key file")
+	}
+
+	return connector.NewConnectionManager(*sshUsername, auth, opts...), err
 }
 
 func startServer() {
@@ -212,6 +249,10 @@ func targetsForRequest(r *http.Request) ([]string, error) {
 		if t == reqTarget {
 			return []string{t}, nil
 		}
+	}
+
+	if *ignoreConfigTargets {
+		return []string{reqTarget}, nil
 	}
 
 	return nil, fmt.Errorf("the target '%s' is not defined in the configuration file", reqTarget)

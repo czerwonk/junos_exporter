@@ -6,6 +6,7 @@ features:
   bgp: true
   ospf: false
   isis: true
+  nat: false
   environment: false
   routes: true
   routing_engine: true

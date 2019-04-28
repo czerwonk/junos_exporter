@@ -7,19 +7,19 @@ Exporter for metrics from devices running JunOS (via SSH) https://prometheus.io/
 
 ## Remarks
 This project is an alternative approach for collecting metrics from Juniper devices.
-The set of metrics is minimal to increase performance. 
-We (a few friends from the Freifunk community and myself) used the generic snmp_exporter before. 
-Since snmp_exporter is highly generic it comes with a lot of complexity at the cost of performance. 
-We wanted to have an KIS and vendor specific exporter instead. 
+The set of metrics is minimal to increase performance.
+We (a few friends from the Freifunk community and myself) used the generic snmp_exporter before.
+Since snmp_exporter is highly generic it comes with a lot of complexity at the cost of performance.
+We wanted to have an KIS and vendor specific exporter instead.
 This approach should allow us to scrape our metrics in a very time efficient way.
 For this reason this project was started.
 
 ## Important notice for users of version < 0.7
-In version 0.7 a typo in the prefix of all BGP related metrics was fixed. Please update your queries accordingly. 
+In version 0.7 a typo in the prefix of all BGP related metrics was fixed. Please update your queries accordingly.
 
 ## Important notice for users of version < 0.5
-In version 0.5 SNMP was replaced by SSH. This is was a breaking change (metric names were kept). 
-All SNMP related parameters were removed at this point. 
+In version 0.5 SNMP was replaced by SSH. This is was a breaking change (metric names were kept).
+All SNMP related parameters were removed at this point.
 Please have a look on the new SSH related parameters and update your service units accordingly.
 
 ## Features
@@ -35,6 +35,7 @@ The following metrics are supported by now:
 * Environment (temperatures)
 * Routing engine statistics
 * Storage (total, available and used blocks, used percentage)
+* Firewall filters (counters and policers) - needs explicit rights beyond read-only
 * Statistics about l2circuits (tunnel state, number of tunnels)
 ```   0:EI -- encapsulation invalid      12:NP -- interface h/w not present
    1:MM -- mtu mismatch               13:Dn -- down

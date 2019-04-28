@@ -46,6 +46,7 @@ var (
 	routingEngineEnabled        = flag.Bool("routingengine.enabled", true, "Scrape Routing Engine metrics")
 	routesEnabled               = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
 	environmentEnabled          = flag.Bool("environment.enabled", true, "Scrape environment metrics")
+	firewallEnabled             = flag.Bool("firewall.enabled", true, "Scrape Firewall count metrics")
 	interfacesEnabled           = flag.Bool("interfaces.enabled", true, "Scrape interface metrics")
 	interfaceDiagnosticsEnabled = flag.Bool("ifdiag.enabled", true, "Scrape optical interface diagnostic metrics")
 	storageEnabled              = flag.Bool("storage.enabled", true, "Scrape system storage metrics")
@@ -170,6 +171,7 @@ func loadConfigFromFlags() *config.Config {
 	f := &c.Features
 	f.BGP = *bgpEnabled
 	f.Environment = *environmentEnabled
+	f.Firewall = *firewallEnabled
 	f.Interfaces = *interfacesEnabled
 	f.InterfaceDiagnostic = *interfaceDiagnosticsEnabled
 	f.ISIS = *isisEnabled

@@ -6,6 +6,7 @@ require (
 	github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a
 	github.com/golang/protobuf v0.0.0-20170920220647-130e6b02ab05
 	github.com/matttproud/golang_protobuf_extensions v1.0.0
+	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v0.8.0
 	github.com/prometheus/client_model v0.0.0-20170216185247-6f3806018612
 	github.com/prometheus/common v0.0.0-20171006141418-1bab55dd05db

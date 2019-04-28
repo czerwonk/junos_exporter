@@ -14,6 +14,7 @@ import (
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/l2circuit"
+	"github.com/czerwonk/junos_exporter/ldp"
 	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/route"
 	"github.com/czerwonk/junos_exporter/routingengine"
@@ -71,6 +72,10 @@ func collectors() map[string]collector.RPCCollector {
 
 	if f.ISIS {
 		m["isis"] = isis.NewCollector()
+	}
+
+	if f.LDP {
+		m["ldp"] = ldp.NewCollector()
 	}
 
 	if f.L2Circuit {

@@ -4,12 +4,17 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/czerwonk/junos_exporter/connector"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"sync"
+	"syscall"
+	"time"
+
+	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/pkg/errors"
 
 	"github.com/czerwonk/junos_exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
@@ -17,21 +22,27 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.8.0"
+const version string = "0.9.0"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
+	ignoreConfigTargets         = flag.Bool("config.ignore-targets", false, "Ignore check if target is specified in config")
 	listenAddress               = flag.String("web.listen-address", ":9326", "Address on which to expose metrics and web interface.")
 	metricsPath                 = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	sshHosts                    = flag.String("ssh.targets", "", "Hosts to scrape")
 	sshUsername                 = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
-	sshKeyFile                  = flag.String("ssh.keyfile", "junos_exporter", "Public key file to use when connecting to junos devices using ssh")
+	sshKeyFile                  = flag.String("ssh.keyfile", "", "Public key file to use when connecting to junos devices using ssh")
+	sshPassword                 = flag.String("ssh.password", "", "Password to use when connecting to junos devices using ssh")
+	sshReconnectInterval        = flag.Duration("ssh.reconnect-interval", 30*time.Second, "Duration to wait before reconnecting to a device after connection got lost")
+	sshKeepAliveInterval        = flag.Duration("ssh.keep-alive-interval", 10*time.Second, "Duration to wait between keep alive messages")
+	sshKeepAliveTimeout         = flag.Duration("ssh.keep-alive-timeout", 15*time.Second, "Duration to wait for keep alive message response")
 	debug                       = flag.Bool("debug", false, "Show verbose debug output in log")
 	bgpEnabled                  = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
 	ospfEnabled                 = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
 	isisEnabled                 = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
 	l2circuitEnabled            = flag.Bool("l2circuit.enabled", false, "Scrape l2circuit metrics")
-	natEnabled                  = flag.Bool("nat.enabled", false, "Scrape NAT metrics")
+	natEnabled                  = flag.Bool("nat.enabled", false, "Scrape NAT metrics"
+	ldpEnabled                  = flag.Bool("ldp.enabled", true, "Scrape ldp metrics")
 	routingEngineEnabled        = flag.Bool("routingengine.enabled", true, "Scrape Routing Engine metrics")
 	routesEnabled               = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
 	environmentEnabled          = flag.Bool("environment.enabled", true, "Scrape environment metrics")
@@ -42,6 +53,8 @@ var (
 	configFile                  = flag.String("config.file", "", "Path to config file")
 	cfg                         *config.Config
 	connManager                 *connector.SSHConnectionManager
+	reloadCh                    chan chan error
+	configMu                    sync.Mutex
 )
 
 func init() {
@@ -60,19 +73,46 @@ func main() {
 		os.Exit(0)
 	}
 
-	c, err := loadConfig()
+	err := initialize()
 	if err != nil {
-		log.Fatalf("could not load config file. %v", err)
+		log.Fatalf("could not initialize exporter. %v", err)
 	}
-	cfg = c
 
-	connManager, err = connectionManager()
-	if err != nil {
-		log.Fatalf("could initialize connection manager. %v", err)
-	}
-	defer connManager.Close()
+	initChannels()
 
 	startServer()
+}
+
+func initChannels() {
+	hup := make(chan os.Signal, 1)
+	signal.Notify(hup, syscall.SIGHUP)
+
+	term := make(chan os.Signal, 1)
+	signal.Notify(term, syscall.SIGTERM)
+
+	reloadCh = make(chan chan error)
+	go func() {
+		for {
+			select {
+			case <-hup:
+				log.Infoln("Reload signal received as SIGHUP")
+				if err := reinitialize(); err != nil {
+					log.Errorf("Error reloading config: %s", err)
+				}
+			case rc := <-reloadCh:
+				log.Infoln("Reload signal received via POST")
+				if err := reinitialize(); err != nil {
+					log.Errorf("Error reloading config: %s", err)
+					rc <- err
+				} else {
+					rc <- nil
+				}
+			case <-term:
+				log.Infoln("Closing connections to devices")
+				connManager.Close()
+			}
+		}
+	}()
 }
 
 func printVersion() {
@@ -80,6 +120,33 @@ func printVersion() {
 	fmt.Printf("Version: %s\n", version)
 	fmt.Println("Author(s): Daniel Czerwonk")
 	fmt.Println("Metric exporter for switches and routers running JunOS")
+}
+
+func initialize() error {
+	c, err := loadConfig()
+	if err != nil {
+		return err
+	}
+	cfg = c
+
+	connManager, err = connectionManager()
+	if err != nil {
+		log.Fatalf("could initialize connection manager. %v", err)
+	}
+
+	return nil
+}
+
+func reinitialize() error {
+	configMu.Lock()
+	defer configMu.Unlock()
+
+	if connManager != nil {
+		connManager.Close()
+		connManager = nil
+	}
+
+	return initialize()
 }
 
 func loadConfig() (*config.Config, error) {
@@ -108,6 +175,7 @@ func loadConfigFromFlags() *config.Config {
 	f.ISIS = *isisEnabled
 	f.NAT = *natEnabled
 	f.OSPF = *ospfEnabled
+	f.LDP = *ldpEnabled
 	f.L2Circuit = *l2circuitEnabled
 	f.Routes = *routesEnabled
 	f.RoutingEngine = *routingEngineEnabled
@@ -116,13 +184,42 @@ func loadConfigFromFlags() *config.Config {
 }
 
 func connectionManager() (*connector.SSHConnectionManager, error) {
+	opts := []connector.Option{
+		connector.WithReconnectInterval(*sshReconnectInterval),
+		connector.WithKeepAliveInterval(*sshKeepAliveInterval),
+		connector.WithKeepAliveTimeout(*sshKeepAliveTimeout),
+	}
+
+	if *sshKeyFile != "" {
+		return connectionManagerWithPublicKey(opts)
+	}
+
+	if *sshPassword != "" {
+		return connector.NewConnectionManager(*sshUsername,
+			connector.AuthByPassword(*sshPassword), opts...), nil
+	}
+
+	if cfg.Password != "" {
+		return connector.NewConnectionManager(*sshUsername,
+			connector.AuthByPassword(cfg.Password), opts...), nil
+	}
+
+	return nil, errors.New("no valid authentication method available")
+}
+
+func connectionManagerWithPublicKey(opts []connector.Option) (*connector.SSHConnectionManager, error) {
 	f, err := os.Open(*sshKeyFile)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not open ssh key file")
 	}
 	defer f.Close()
 
-	return connector.NewConnectionManager(*sshUsername, f)
+	auth, err := connector.AuthByKey(f)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not load ssh private key file")
+	}
+
+	return connector.NewConnectionManager(*sshUsername, auth, opts...), err
 }
 
 func startServer() {
@@ -139,12 +236,30 @@ func startServer() {
 			</html>`))
 	})
 	http.HandleFunc(*metricsPath, handleMetricsRequest)
+	http.HandleFunc("/-/reload", updateConfiguration)
 
 	log.Infof("Listening for %s on %s\n", *metricsPath, *listenAddress)
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
 }
 
+func updateConfiguration(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "POST":
+		rc := make(chan error)
+		reloadCh <- rc
+		if err := <-rc; err != nil {
+			http.Error(w, fmt.Sprintf("failed to reload config: %s", err), http.StatusInternalServerError)
+		}
+	default:
+		log.Errorf("POST method expected")
+		http.Error(w, "POST method expected", 400)
+	}
+}
+
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
+	configMu.Lock()
+	defer configMu.Unlock()
+
 	reg := prometheus.NewRegistry()
 
 	targets, err := targetsForRequest(r)
@@ -171,6 +286,10 @@ func targetsForRequest(r *http.Request) ([]string, error) {
 		if t == reqTarget {
 			return []string{t}, nil
 		}
+	}
+
+	if *ignoreConfigTargets {
+		return []string{reqTarget}, nil
 	}
 
 	return nil, fmt.Errorf("the target '%s' is not defined in the configuration file", reqTarget)

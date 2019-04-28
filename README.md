@@ -24,7 +24,7 @@ Please have a look on the new SSH related parameters and update your service uni
 
 ## Features
 The following metrics are supported by now:
-* Interfaces (bytes transmitted/received, errors, drops)
+* Interfaces (bytes transmitted/received, errors, drops, speed)
 * Routes (per table, by protocol)
 * Alarms (count)
 * BGP (message count, prefix counts per peer, session state)
@@ -49,6 +49,11 @@ The following metrics are supported by now:
   10:RD -- remote site signaled down  22:HS -- Hot-standby Connection
   11:XX -- unknown
 ```
+* LDP (number of neighbors, sessions and session states)
+States map to human readable names like this:
+```   0: "Nonexistant"
+   1: "Operational"
+```
 
 ## Install
 ```bash
@@ -71,8 +76,13 @@ In this example we want to scrape 3 hosts:
 docker run -d --restart unless-stopped -p 9326:9326 -v /opt/junos_exporter_keyfile:/ssh-keyfile:ro -v /opt/junos_exporter_config.yml:/config.yml:ro czerwonk/junos_exporter
 ```
 
+### Authentication
+junos_exporter supports SSH authentication via key or password based authentication.
+`-ssh.keyfile=<file>` enables key based authentication. `-ssh.password=<password-string>` enables password based authenticaton, this can also be enabled via the config file in the form of a `password: <password-string>` entry.
+Authentication order is ssh key, if none is found the cli flag is checked, the config file is checked last. If no valid auth method is specified junos_exporter exits with an error.
+
 ### Target Parameter
-By default, all configured targets will be scrapped when `/metrics` is hit. As an alternative, it is possible to scrape a specific target by passing the target's hostname/IP address to the target parameter - e.g. ` http://localhost:9326/metrics?target=1.2.3.4`. The specific target must be present in the configuration file or passed in with the ssh.targets flag, otherwise, the request will be denied. This can be used with the below example Prometheus config:
+By default, all configured targets will be scrapped when `/metrics` is hit. As an alternative, it is possible to scrape a specific target by passing the target's hostname/IP address to the target parameter - e.g. ` http://localhost:9326/metrics?target=1.2.3.4`. The specific target must be present in the configuration file or passed in with the ssh.targets flag, you can also specify the `-config.ignore-targets` flag if you don't want to specify targets in the config or commandline, if none of this matches the request will be denied. This can be used with the below example Prometheus config:
 
 ```yaml
 scrape_configs:
@@ -103,6 +113,7 @@ features:
   ospf: false
   isis: false
   nat: false
+  ldp: false
   l2circuit: false
   environment: true
   routes: true

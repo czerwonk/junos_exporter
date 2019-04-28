@@ -9,6 +9,7 @@ import (
 
 // Config represents the configuration for the exporter
 type Config struct {
+	Password string   `yaml:"password"`
 	Targets  []string `yaml:"targets"`
 	Features struct {
 		Environment         bool `yaml:"environment,omitempty"`
@@ -17,6 +18,7 @@ type Config struct {
 		ISIS                bool `yaml:"isis,omitempty"`
 		NAT                 bool `yaml:"nat,omitempty"`
 		L2Circuit           bool `yaml:"l2circuit,omitempty"`
+		LDP                 bool `yaml:"ldp,omitempty"`
 		Routes              bool `yaml:"routes,omitempty"`
 		RoutingEngine       bool `yaml:"routing_engine,omitempty"`
 		Interfaces          bool `yaml:"interfaces,omitempty"`
@@ -51,12 +53,14 @@ func Load(reader io.Reader) (*Config, error) {
 }
 
 func setDefaultValues(c *Config) {
+	c.Password = ""
 	f := &c.Features
 	f.BGP = true
 	f.Environment = true
 	f.Interfaces = true
 	f.InterfaceDiagnostic = true
 	f.OSPF = true
+	f.LDP = true
 	f.Routes = true
 	f.RoutingEngine = true
 	f.Storage = true

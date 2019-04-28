@@ -14,6 +14,7 @@ import (
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/l2circuit"
+	"github.com/czerwonk/junos_exporter/nat"
 	"github.com/czerwonk/junos_exporter/ldp"
 	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/route"
@@ -80,6 +81,10 @@ func collectors() map[string]collector.RPCCollector {
 
 	if f.L2Circuit {
 		m["l2circuit"] = l2circuit.NewCollector()
+	}
+
+	if f.NAT {
+		m["nat"] = nat.NewCollector()
 	}
 
 	if f.RoutingEngine {

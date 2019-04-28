@@ -31,6 +31,7 @@ The following metrics are supported by now:
 * OSPFv2, OSPFv3 (number of neighbors)
 * Interface diagnostics (optical signals)
 * ISIS (number of adjacencies, total number of routers)
+* NAT (all available statistics from services nat)
 * Environment (temperatures)
 * Routing engine statistics
 * Storage (total, available and used blocks, used percentage)
@@ -111,6 +112,7 @@ features:
   bgp: true
   ospf: false
   isis: false
+  nat: false
   ldp: false
   l2circuit: false
   environment: true

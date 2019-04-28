@@ -12,6 +12,7 @@ type PhyInterface struct {
 	OperStatus        string         `xml:"oper-status"`
 	Description       string         `xml:"description"`
 	MacAddress        string         `xml:"current-physical-address"`
+	Speed             string         `xml:"speed"`
 	Stats             TrafficStat    `xml:"traffic-statistics"`
 	LogicalInterfaces []LogInterface `xml:"logical-interface"`
 	InputErrors       struct {
@@ -31,10 +32,10 @@ type LogInterface struct {
 }
 
 type TrafficStat struct {
-	InputBytes    uint64    `xml:"input-bytes"`
-	InputPackets  uint64    `xml:"input-packets"`
-	OutputBytes   uint64    `xml:"output-bytes"`
-	OutputPackets uint64    `xml:"output-packets"`
+	InputBytes    uint64   `xml:"input-bytes"`
+	InputPackets  uint64   `xml:"input-packets"`
+	OutputBytes   uint64   `xml:"output-bytes"`
+	OutputPackets uint64   `xml:"output-packets"`
 	IPv6Traffic   IPv6Stat `xml:"ipv6-transit-statistics"`
 }
 

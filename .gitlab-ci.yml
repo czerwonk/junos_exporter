@@ -1,0 +1,29 @@
+image: docker:latest
+services:
+  - docker:dind
+variables:
+  DOCKER_DRIVER: overlay
+
+before_script:
+  # Install CA certs, openssl to https downloads, python for gcloud sdk
+  - apk add --update make ca-certificates openssl python
+  - update-ca-certificates
+  # Write our GCP service account private key into a file
+  - echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+  # Download and install Google Cloud SDK
+  - wget https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz
+  - tar zxvf google-cloud-sdk.tar.gz && ./google-cloud-sdk/install.sh --usage-reporting=false --path-update=true
+  - google-cloud-sdk/bin/gcloud --quiet components update
+  - google-cloud-sdk/bin/gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
+  - docker login -u _json_key --password-stdin https://eu.gcr.io < ${HOME}/gcloud-service-key.json
+
+stages:
+  - publish
+publish:
+  stage: publish
+  script:
+    - docker build -t $IMAGE_NAME .
+    - docker tag $IMAGE_NAME "eu.gcr.io/$GCLOUD_PROJECT_ID/$IMAGE_NAME"
+    - docker push "eu.gcr.io/$GCLOUD_PROJECT_ID/$IMAGE_NAME:latest"
+  only:
+    - master

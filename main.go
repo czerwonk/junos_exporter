@@ -182,6 +182,7 @@ func loadConfigFromFlags() *config.Config {
 	f.L2Circuit = *l2circuitEnabled
 	f.Routes = *routesEnabled
 	f.RoutingEngine = *routingEngineEnabled
+	f.accountingEnabled = *accountingEnabled
 
 	return c
 }

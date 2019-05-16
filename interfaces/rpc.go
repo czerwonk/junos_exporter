@@ -26,9 +26,10 @@ type PhyInterface struct {
 }
 
 type LogInterface struct {
-	Name        string      `xml:"name"`
-	Description string      `xml:"description"`
-	Stats       TrafficStat `xml:"traffic-statistics"`
+	Name        string         `xml:"name"`
+	Description string         `xml:"description"`
+	Stats       TrafficStat    `xml:"traffic-statistics"`
+	LagStats    LagTrafficStat `xml:"lag-traffic-statistics"`
 }
 
 type TrafficStat struct {
@@ -44,4 +45,11 @@ type IPv6Stat struct {
 	InputPackets  uint64 `xml:"input-packets"`
 	OutputBytes   uint64 `xml:"output-bytes"`
 	OutputPackets uint64 `xml:"output-packets"`
+}
+
+type LagTrafficStat struct {
+	Stats TrafficStat `xml:"lag-bundle"`
+	Links []struct {
+		Name string `xml:"name"`
+	} `xml:"lag-link"`
 }

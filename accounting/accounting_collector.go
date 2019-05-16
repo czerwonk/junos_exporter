@@ -11,7 +11,6 @@ import (
 const prefix string = "junos_accounting_inline_"
 
 var (
-	upDesc                    *prometheus.Desc
 	inlineActiveFlowsDesc     *prometheus.Desc
 	inlineIpv4ActiveFlowsDesc *prometheus.Desc
 	inlineIpv6ActiveFlowsDesc *prometheus.Desc

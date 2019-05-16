@@ -25,6 +25,7 @@ type Config struct {
 		Interfaces          bool `yaml:"interfaces,omitempty"`
 		InterfaceDiagnostic bool `yaml:"interface_diagnostic,omitempty"`
 		Storage             bool `yaml:"storage,omitempty"`
+		Accounting          bool `yaml:"accounting,omitempty"`
 	} `yaml:"features,omitempty"`
 }
 
@@ -65,4 +66,5 @@ func setDefaultValues(c *Config) {
 	f.Routes = true
 	f.RoutingEngine = true
 	f.Storage = true
+	f.Accounting = false
 }

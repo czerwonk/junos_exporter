@@ -136,19 +136,25 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 		stats = append(stats, s)
 
 		for _, log := range phy.LogicalInterfaces {
+			var s TrafficStat
+			if len(log.LagStats.Links) > 0 {
+				s = log.LagStats.Stats
+			} else {
+				s = log.Stats
+			}
 			sl := &InterfaceStats{
 				IsPhysical:          false,
 				Name:                log.Name,
 				Description:         log.Description,
 				Mac:                 phy.MacAddress,
-				ReceiveBytes:        float64(log.Stats.InputBytes),
-				ReceivePackets:      float64(log.Stats.InputPackets),
-				TransmitBytes:       float64(log.Stats.OutputBytes),
-				TransmitPackets:     float64(log.Stats.OutputPackets),
-				IPv6ReceiveBytes:    float64(log.Stats.IPv6Traffic.InputBytes),
-				IPv6ReceivePackets:  float64(log.Stats.IPv6Traffic.InputPackets),
-				IPv6TransmitBytes:   float64(log.Stats.IPv6Traffic.OutputBytes),
-				IPv6TransmitPackets: float64(log.Stats.IPv6Traffic.OutputPackets),
+				ReceiveBytes:        float64(s.InputBytes),
+				ReceivePackets:      float64(s.InputPackets),
+				TransmitBytes:       float64(s.OutputBytes),
+				TransmitPackets:     float64(s.OutputPackets),
+				IPv6ReceiveBytes:    float64(s.IPv6Traffic.InputBytes),
+				IPv6ReceivePackets:  float64(s.IPv6Traffic.InputPackets),
+				IPv6TransmitBytes:   float64(s.IPv6Traffic.OutputBytes),
+				IPv6TransmitPackets: float64(s.IPv6Traffic.OutputPackets),
 			}
 
 			stats = append(stats, sl)

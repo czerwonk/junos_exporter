@@ -50,6 +50,7 @@ var (
 	interfacesEnabled           = flag.Bool("interfaces.enabled", true, "Scrape interface metrics")
 	interfaceDiagnosticsEnabled = flag.Bool("ifdiag.enabled", true, "Scrape optical interface diagnostic metrics")
 	storageEnabled              = flag.Bool("storage.enabled", true, "Scrape system storage metrics")
+	accountingEnabled           = flag.Bool("accounting.enabled", false, "Scrape accounting flow metrics")
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 	configFile                  = flag.String("config.file", "", "Path to config file")
 	cfg                         *config.Config
@@ -181,6 +182,7 @@ func loadConfigFromFlags() *config.Config {
 	f.L2Circuit = *l2circuitEnabled
 	f.Routes = *routesEnabled
 	f.RoutingEngine = *routingEngineEnabled
+	f.Accounting = *accountingEnabled
 
 	return c
 }

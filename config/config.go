@@ -26,6 +26,7 @@ type Config struct {
 		InterfaceDiagnostic bool `yaml:"interface_diagnostic,omitempty"`
 		Storage             bool `yaml:"storage,omitempty"`
 		Accounting          bool `yaml:"accounting,omitempty"`
+		Ipsec               bool `yaml:"ipsec,omitempty"`
 	} `yaml:"features,omitempty"`
 }
 
@@ -61,6 +62,7 @@ func setDefaultValues(c *Config) {
 	f.Environment = true
 	f.Interfaces = true
 	f.InterfaceDiagnostic = true
+	f.Ipsec = false
 	f.OSPF = true
 	f.LDP = true
 	f.Routes = true

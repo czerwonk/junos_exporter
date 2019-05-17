@@ -49,6 +49,7 @@ var (
 	firewallEnabled             = flag.Bool("firewall.enabled", true, "Scrape Firewall count metrics")
 	interfacesEnabled           = flag.Bool("interfaces.enabled", true, "Scrape interface metrics")
 	interfaceDiagnosticsEnabled = flag.Bool("ifdiag.enabled", true, "Scrape optical interface diagnostic metrics")
+	ipsecEnabled                = flag.Bool("ipsec.enabled", false, "Scrape IPSec metrics")
 	storageEnabled              = flag.Bool("storage.enabled", true, "Scrape system storage metrics")
 	accountingEnabled           = flag.Bool("accounting.enabled", false, "Scrape accounting flow metrics")
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
@@ -175,6 +176,7 @@ func loadConfigFromFlags() *config.Config {
 	f.Firewall = *firewallEnabled
 	f.Interfaces = *interfacesEnabled
 	f.InterfaceDiagnostic = *interfaceDiagnosticsEnabled
+	f.Ipsec = *ipsecEnabled
 	f.ISIS = *isisEnabled
 	f.NAT = *natEnabled
 	f.OSPF = *ospfEnabled

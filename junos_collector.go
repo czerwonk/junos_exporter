@@ -14,6 +14,7 @@ import (
 	"github.com/czerwonk/junos_exporter/firewall"
 	"github.com/czerwonk/junos_exporter/interfacediagnostics"
 	"github.com/czerwonk/junos_exporter/interfaces"
+	"github.com/czerwonk/junos_exporter/ipsec"
 	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/l2circuit"
 	"github.com/czerwonk/junos_exporter/ldp"
@@ -75,6 +76,10 @@ func collectors() map[string]collector.RPCCollector {
 
 	if f.ISIS {
 		m["isis"] = isis.NewCollector()
+	}
+
+	if f.Ipsec {
+		m["ipsec"] = ipsec.NewCollector()
 	}
 
 	if f.LDP {

@@ -74,7 +74,5 @@ func stateToInt(state *string) int {
 		retval = 1
 	}
 
-	fmt.Printf("state: %s -> %d\n", *state, retval)
-
 	return retval
 }

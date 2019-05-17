@@ -59,7 +59,6 @@ func (c *ipsecCollector) collectForSecurityAssociation(block IpsecSecurityAssoci
 	var saName string
 	var saDesc string
 	for _, sa := range block.SecurityAssociations {
-		// saName = fmt.Sprintf("%d_%s", sa.TunnelIndex, sa.RemoteGateway)
 		saName = sa.RemoteGateway
 		saDesc = fmt.Sprintf("security association for remote gateway %s", sa.RemoteGateway)
 	}

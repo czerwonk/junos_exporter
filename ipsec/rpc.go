@@ -1,5 +1,6 @@
 package ipsec
 
+// IpsecRpc is the root element for xml unmarshalling
 type IpsecRpc struct {
 	Information struct {
 		ActiveTunnels        int                             `xml:"total-active-tunnels"`
@@ -7,11 +8,13 @@ type IpsecRpc struct {
 	} `xml:"ipsec-security-associations-information"`
 }
 
+// IpsecSecurityAssociationBlock is used for xml unmarshalling
 type IpsecSecurityAssociationBlock struct {
 	State                string                     `xml:"sa-block-state"`
 	SecurityAssociations []IpsecSecurityAssociation `xml:"ipsec-security-associations"`
 }
 
+// IpsecSecurityAssociation is used for xml unmarshalling
 type IpsecSecurityAssociation struct {
 	Direction              string `xml:"sa-direction"`
 	TunnelIndex            int64  `xml:"sa-tunnel-index"`

@@ -27,6 +27,7 @@ type Config struct {
 		Storage             bool `yaml:"storage,omitempty"`
 		Accounting          bool `yaml:"accounting,omitempty"`
 		Ipsec               bool `yaml:"ipsec,omitempty"`
+		FPC                 bool `yaml:"fpc,omitempty"`
 	} `yaml:"features,omitempty"`
 }
 
@@ -69,4 +70,5 @@ func setDefaultValues(c *Config) {
 	f.RoutingEngine = true
 	f.Storage = true
 	f.Accounting = false
+	f.FPC = false
 }

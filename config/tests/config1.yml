@@ -14,3 +14,4 @@ features:
   interfaces: false
   l2circuit: true
   storage: false
+  fpc: true

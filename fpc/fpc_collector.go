@@ -49,7 +49,7 @@ func (*fpcCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *fpcCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	r := FPCRpc{}
-	err := client.RunCommandAndParse("show chassis fpc", &r)
+	err := client.RunCommandAndParse("show chassis fpc detail", &r)
 	if err != nil {
 		return err
 	}

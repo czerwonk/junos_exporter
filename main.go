@@ -22,7 +22,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.9.1"
+const version string = "0.9.2"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -57,7 +57,7 @@ var (
 	cfg                         *config.Config
 	connManager                 *connector.SSHConnectionManager
 	reloadCh                    chan chan error
-	configMu                    sync.Mutex
+	configMu                    sync.RWMutex
 )
 
 func init() {
@@ -263,8 +263,8 @@ func updateConfiguration(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
-	configMu.Lock()
-	defer configMu.Unlock()
+	configMu.RLock()
+	defer configMu.RUnlock()
 
 	reg := prometheus.NewRegistry()
 

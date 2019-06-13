@@ -75,17 +75,17 @@ func (c *bgpCollector) bgpSessions(client *rpc.Client) ([]*BgpSession, error) {
 	sessions := make([]*BgpSession, 0)
 	for _, peer := range x.Information.Peers {
 		s := &BgpSession{
-			Ip:               peer.Ip,
+			IP:               peer.IP,
 			Up:               peer.State == "Established",
-			Asn:              peer.Asn,
+			ASN:              peer.ASN,
 			Description:      peer.Description,
 			Flaps:            float64(peer.Flaps),
 			InputMessages:    float64(peer.InputMessages),
 			OutputMessages:   float64(peer.OutputMessages),
-			AcceptedPrefixes: float64(peer.Rib.AcceptedPrefixes),
-			ActivePrefixes:   float64(peer.Rib.ActivePrefixes),
-			ReceivedPrefixes: float64(peer.Rib.ReceivedPrefixes),
-			RejectedPrefixes: float64(peer.Rib.RejectedPrefixes),
+			AcceptedPrefixes: float64(peer.RIB.AcceptedPrefixes),
+			ActivePrefixes:   float64(peer.RIB.ActivePrefixes),
+			ReceivedPrefixes: float64(peer.RIB.ReceivedPrefixes),
+			RejectedPrefixes: float64(peer.RIB.RejectedPrefixes),
 		}
 
 		sessions = append(sessions, s)
@@ -95,7 +95,7 @@ func (c *bgpCollector) bgpSessions(client *rpc.Client) ([]*BgpSession, error) {
 }
 
 func (*bgpCollector) collectForSession(s *BgpSession, ch chan<- prometheus.Metric, labelValues []string) {
-	l := append(labelValues, []string{s.Asn, s.Ip, s.Description}...)
+	l := append(labelValues, []string{s.ASN, s.IP, s.Description}...)
 
 	up := 0
 	if s.Up {

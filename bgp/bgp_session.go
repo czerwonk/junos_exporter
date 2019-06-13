@@ -1,8 +1,8 @@
 package bgp
 
 type BgpSession struct {
-	Ip               string
-	Asn              string
+	IP               string
+	ASN              string
 	Description      string
 	Up               bool
 	ReceivedPrefixes float64

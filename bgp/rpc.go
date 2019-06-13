@@ -7,14 +7,14 @@ type BgpRpc struct {
 }
 
 type BgpPeer struct {
-	Ip             string `xml:"peer-address"`
-	Asn            string `xml:"peer-as"`
+	IP             string `xml:"peer-address"`
+	ASN            string `xml:"peer-as"`
 	State          string `xml:"peer-state"`
 	Description    string `xml:"description"`
 	Flaps          int64  `xml:"flap-count"`
 	InputMessages  int64  `xml:"input-messages"`
 	OutputMessages int64  `xml:"output-messages"`
-	Rib            struct {
+	RIB            struct {
 		ActivePrefixes   int64 `xml:"active-prefix-count"`
 		ReceivedPrefixes int64 `xml:"received-prefix-count"`
 		AcceptedPrefixes int64 `xml:"accepted-prefix-count"`

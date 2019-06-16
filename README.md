@@ -120,6 +120,7 @@ features:
   routes: true
   routing_engine: true
   interface_diagnostic: true
+  fpc: true
 ```
 
 ## Third Party Components

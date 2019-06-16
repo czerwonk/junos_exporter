@@ -12,6 +12,7 @@ import (
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/czerwonk/junos_exporter/environment"
 	"github.com/czerwonk/junos_exporter/firewall"
+	"github.com/czerwonk/junos_exporter/fpc"
 	"github.com/czerwonk/junos_exporter/interfacediagnostics"
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/czerwonk/junos_exporter/ipsec"
@@ -116,6 +117,10 @@ func collectors() map[string]collector.RPCCollector {
 
 	if f.Accounting {
 		m["accounting"] = accounting.NewCollector()
+	}
+
+	if f.FPC {
+		m["fpc"] = fpc.NewCollector()
 	}
 
 	return m

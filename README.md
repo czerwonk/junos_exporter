@@ -122,7 +122,7 @@ devices:
   - host: router1
     key_file: /path/to/key
   - host: router2
-    username: junos_exporter
+    username: exporter
     password: secret
 
 features:

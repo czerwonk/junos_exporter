@@ -1,0 +1,7 @@
+devices:
+  - host: router1
+    username: keyfile_user
+    key_file: /path/to/key
+  - host: router2
+    username: password_user
+    password: secret

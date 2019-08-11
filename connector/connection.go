@@ -2,16 +2,17 @@ package connector
 
 import (
 	"bytes"
-	"github.com/pkg/errors"
 	"net"
 	"sync"
+
+	"github.com/pkg/errors"
 
 	"golang.org/x/crypto/ssh"
 )
 
 // SSHConnection encapsulates the connection to the device
 type SSHConnection struct {
-	host   string
+	device *Device
 	client *ssh.Client
 	conn   net.Conn
 	mu     sync.Mutex
@@ -71,7 +72,7 @@ func (c *SSHConnection) close() {
 	c.client = nil
 }
 
-// Host returns the hostname connected to
+// Host returns the hostname of the connected device
 func (c *SSHConnection) Host() string {
-	return c.host
+	return c.device.Host
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"strings"
 	"sync"
 	"time"
 
@@ -42,14 +41,14 @@ func init() {
 }
 
 type junosCollector struct {
-	targets           []string
+	devices           []*connector.Device
 	collectors        map[string]collector.RPCCollector
 	connectionManager *connector.SSHConnectionManager
 }
 
-func newJunosCollector(targets []string, connectionManager *connector.SSHConnectionManager) *junosCollector {
+func newJunosCollector(devices []*connector.Device, connectionManager *connector.SSHConnectionManager) *junosCollector {
 	collectors := collectors()
-	return &junosCollector{targets, collectors, connectionManager}
+	return &junosCollector{devices, collectors, connectionManager}
 }
 
 func collectors() map[string]collector.RPCCollector {
@@ -138,30 +137,29 @@ func (c *junosCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector interface
 func (c *junosCollector) Collect(ch chan<- prometheus.Metric) {
-	hosts := c.targets
 	wg := &sync.WaitGroup{}
 
-	wg.Add(len(hosts))
-	for _, h := range hosts {
-		go c.collectForHost(strings.Trim(h, " "), ch, wg)
+	wg.Add(len(c.devices))
+	for _, d := range c.devices {
+		go c.collectForHost(d, ch, wg)
 	}
 
 	wg.Wait()
 }
 
-func (c *junosCollector) collectForHost(host string, ch chan<- prometheus.Metric, wg *sync.WaitGroup) {
+func (c *junosCollector) collectForHost(device *connector.Device, ch chan<- prometheus.Metric, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	l := []string{host}
+	l := []string{device.Host}
 
 	t := time.Now()
 	defer func() {
 		ch <- prometheus.MustNewConstMetric(scrapeDurationDesc, prometheus.GaugeValue, time.Since(t).Seconds(), l...)
 	}()
 
-	conn, err := c.connectionManager.Connect(host)
+	conn, err := c.connectionManager.Connect(device)
 	if err != nil {
-		log.Errorf("Could not connect to %s: %v", host, err)
+		log.Errorf("Could not connect to %s: %v", device, err)
 		ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 0, l...)
 		return
 	}

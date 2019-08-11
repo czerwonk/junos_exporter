@@ -1,7 +1,6 @@
 package connector
 
 import (
-	"io"
 	"net"
 	"strings"
 	"sync"
@@ -41,7 +40,6 @@ func WithKeepAliveTimeout(d time.Duration) Option {
 
 // SSHConnectionManager manages SSH connections to different devices
 type SSHConnectionManager struct {
-	config            *ssh.ClientConfig
 	connections       map[string]*SSHConnection
 	reconnectInterval time.Duration
 	keepAliveInterval time.Duration
@@ -49,45 +47,14 @@ type SSHConnectionManager struct {
 	mu                sync.Mutex
 }
 
-// AuthMethod ithe method to use to authenticate agaist the device
-type AuthMethod func(*SSHConnectionManager)
-
-// AuthByPassword uses password authentication
-func AuthByPassword(password string) AuthMethod {
-	return func(m *SSHConnectionManager) {
-		m.config.Auth = append(m.config.Auth, ssh.Password(password))
-	}
-}
-
-// AuthByKey uses public key authentication
-func AuthByKey(key io.Reader) (AuthMethod, error) {
-	pk, err := loadPrivateKey(key)
-	if err != nil {
-		return nil, err
-	}
-
-	return func(m *SSHConnectionManager) {
-		m.config.Auth = append(m.config.Auth, pk)
-	}, nil
-}
-
 // NewConnectionManager creates a new connection manager
-func NewConnectionManager(user string, auth AuthMethod, opts ...Option) *SSHConnectionManager {
-	cfg := &ssh.ClientConfig{
-		User:            user,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         timeoutInSeconds * time.Second,
-	}
-
+func NewConnectionManager(opts ...Option) *SSHConnectionManager {
 	m := &SSHConnectionManager{
-		config:            cfg,
 		connections:       make(map[string]*SSHConnection),
 		reconnectInterval: 30 * time.Second,
 		keepAliveInterval: 10 * time.Second,
 		keepAliveTimeout:  15 * time.Second,
 	}
-
-	auth(m)
 
 	for _, opt := range opts {
 		opt(m)
@@ -97,15 +64,11 @@ func NewConnectionManager(user string, auth AuthMethod, opts ...Option) *SSHConn
 }
 
 // Connect connects to a device or returns an long living connection
-func (m *SSHConnectionManager) Connect(host string) (*SSHConnection, error) {
-	if !strings.Contains(host, ":") {
-		host = host + ":22"
-	}
-
+func (m *SSHConnectionManager) Connect(device *Device) (*SSHConnection, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if connection, found := m.connections[host]; found {
+	if connection, found := m.connections[device.Host]; found {
 		if !connection.isConnected() {
 			return nil, errors.New("not connected")
 		}
@@ -113,11 +76,11 @@ func (m *SSHConnectionManager) Connect(host string) (*SSHConnection, error) {
 		return connection, nil
 	}
 
-	return m.connect(host)
+	return m.connect(device)
 }
 
-func (m *SSHConnectionManager) connect(host string) (*SSHConnection, error) {
-	client, conn, err := m.connectToServer(host)
+func (m *SSHConnectionManager) connect(device *Device) (*SSHConnection, error) {
+	client, conn, err := m.connectToDevice(device)
 	if err != nil {
 		return nil, err
 	}
@@ -125,23 +88,35 @@ func (m *SSHConnectionManager) connect(host string) (*SSHConnection, error) {
 	c := &SSHConnection{
 		conn:   conn,
 		client: client,
-		host:   host,
+		device: device,
 		done:   make(chan struct{}),
 	}
 	go m.keepAlive(c)
 
-	m.connections[host] = c
+	m.connections[device.Host] = c
 
 	return c, nil
 }
 
-func (m *SSHConnectionManager) connectToServer(host string) (*ssh.Client, net.Conn, error) {
-	conn, err := net.DialTimeout("tcp", host, m.config.Timeout)
+func (m *SSHConnectionManager) connectToDevice(device *Device) (*ssh.Client, net.Conn, error) {
+	cfg := &ssh.ClientConfig{
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         timeoutInSeconds * time.Second,
+	}
+
+	device.Auth(cfg)
+
+	host := device.Host
+	if !strings.Contains(host, ":") {
+		host = host + ":22"
+	}
+
+	conn, err := net.DialTimeout("tcp", host, cfg.Timeout)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "could not open tcp connection")
 	}
 
-	c, chans, reqs, err := ssh.NewClientConn(conn, host, m.config)
+	c, chans, reqs, err := ssh.NewClientConn(conn, host, cfg)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "could not connect to device")
 	}
@@ -157,7 +132,7 @@ func (m *SSHConnectionManager) keepAlive(connection *SSHConnection) {
 			connection.conn.SetDeadline(time.Now().Add(m.keepAliveTimeout))
 			_, _, err := connection.client.SendRequest("keepalive@golang.org", true, nil)
 			if err != nil {
-				log.Infof("Lost connection to %s (%v). Trying to reconnect...", connection.Host(), err)
+				log.Infof("Lost connection to %s (%v). Trying to reconnect...", connection.device, err)
 				connection.terminate()
 				m.reconnect(connection)
 			}
@@ -169,14 +144,14 @@ func (m *SSHConnectionManager) keepAlive(connection *SSHConnection) {
 
 func (m *SSHConnectionManager) reconnect(connection *SSHConnection) {
 	for {
-		client, conn, err := m.connectToServer(connection.Host())
+		client, conn, err := m.connectToDevice(connection.device)
 		if err == nil {
 			connection.client = client
 			connection.conn = conn
 			return
 		}
 
-		log.Infof("Reconnect to %s failed: %v", connection.Host(), err)
+		log.Infof("Reconnect to %s failed: %v", connection.device, err)
 		time.Sleep(m.reconnectInterval)
 	}
 }

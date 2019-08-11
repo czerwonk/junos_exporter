@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/czerwonk/junos_exporter/connector"
-	"github.com/pkg/errors"
 
 	"github.com/czerwonk/junos_exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
@@ -22,7 +21,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.9.3"
+const version string = "0.9.4"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -56,6 +55,7 @@ var (
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 	configFile                  = flag.String("config.file", "", "Path to config file")
 	cfg                         *config.Config
+	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
 	reloadCh                    chan chan error
 	configMu                    sync.RWMutex
@@ -131,12 +131,14 @@ func initialize() error {
 	if err != nil {
 		return err
 	}
+
+	devices, err = devicesForConfig(c)
+	if err != nil {
+		return err
+	}
 	cfg = c
 
-	connManager, err = connectionManager()
-	if err != nil {
-		log.Fatalf("could initialize connection manager. %v", err)
-	}
+	connManager = connectionManager()
 
 	return nil
 }
@@ -191,43 +193,14 @@ func loadConfigFromFlags() *config.Config {
 	return c
 }
 
-func connectionManager() (*connector.SSHConnectionManager, error) {
+func connectionManager() *connector.SSHConnectionManager {
 	opts := []connector.Option{
 		connector.WithReconnectInterval(*sshReconnectInterval),
 		connector.WithKeepAliveInterval(*sshKeepAliveInterval),
 		connector.WithKeepAliveTimeout(*sshKeepAliveTimeout),
 	}
 
-	if *sshKeyFile != "" {
-		return connectionManagerWithPublicKey(opts)
-	}
-
-	if *sshPassword != "" {
-		return connector.NewConnectionManager(*sshUsername,
-			connector.AuthByPassword(*sshPassword), opts...), nil
-	}
-
-	if cfg.Password != "" {
-		return connector.NewConnectionManager(*sshUsername,
-			connector.AuthByPassword(cfg.Password), opts...), nil
-	}
-
-	return nil, errors.New("no valid authentication method available")
-}
-
-func connectionManagerWithPublicKey(opts []connector.Option) (*connector.SSHConnectionManager, error) {
-	f, err := os.Open(*sshKeyFile)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not open ssh key file")
-	}
-	defer f.Close()
-
-	auth, err := connector.AuthByKey(f)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not load ssh private key file")
-	}
-
-	return connector.NewConnectionManager(*sshUsername, auth, opts...), err
+	return connector.NewConnectionManager(opts...)
 }
 
 func startServer() {
@@ -270,13 +243,13 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 
 	reg := prometheus.NewRegistry()
 
-	targets, err := targetsForRequest(r)
+	devs, err := devicesForRequest(r)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
 	}
 
-	c := newJunosCollector(targets, connManager)
+	c := newJunosCollector(devs, connManager)
 	reg.MustRegister(c)
 
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
@@ -284,20 +257,28 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 		ErrorHandling: promhttp.ContinueOnError}).ServeHTTP(w, r)
 }
 
-func targetsForRequest(r *http.Request) ([]string, error) {
+func devicesForRequest(r *http.Request) ([]*connector.Device, error) {
 	reqTarget := r.URL.Query().Get("target")
 	if reqTarget == "" {
-		return cfg.Targets, nil
+		return devices, nil
 	}
 
-	for _, t := range cfg.Targets {
-		if t == reqTarget {
-			return []string{t}, nil
+	for _, d := range devices {
+		if d.Host == reqTarget {
+			return []*connector.Device{d}, nil
 		}
 	}
 
 	if *ignoreConfigTargets {
-		return []string{reqTarget}, nil
+		d, err := deviceFromDeviceConfig(
+			&config.DeviceConfig{
+				Host: reqTarget,
+			}, cfg)
+		if err != nil {
+			return nil, err
+		}
+
+		return []*connector.Device{d}, nil
 	}
 
 	return nil, fmt.Errorf("the target '%s' is not defined in the configuration file", reqTarget)

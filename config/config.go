@@ -9,28 +9,41 @@ import (
 
 // Config represents the configuration for the exporter
 type Config struct {
-	Password string   `yaml:"password"`
-	Targets  []string `yaml:"targets"`
-	Features struct {
-		Environment         bool `yaml:"environment,omitempty"`
-		BGP                 bool `yaml:"bgp,omitempty"`
-		OSPF                bool `yaml:"ospf,omitempty"`
-		ISIS                bool `yaml:"isis,omitempty"`
-		NAT                 bool `yaml:"nat,omitempty"`
-		L2Circuit           bool `yaml:"l2circuit,omitempty"`
-		LDP                 bool `yaml:"ldp,omitempty"`
-		Routes              bool `yaml:"routes,omitempty"`
-		RoutingEngine       bool `yaml:"routing_engine,omitempty"`
-		Firewall            bool `yaml:"firewall,omitempty"`
-		Interfaces          bool `yaml:"interfaces,omitempty"`
-		InterfaceDiagnostic bool `yaml:"interface_diagnostic,omitempty"`
-		Storage             bool `yaml:"storage,omitempty"`
-		Accounting          bool `yaml:"accounting,omitempty"`
-		Ipsec               bool `yaml:"ipsec,omitempty"`
-		FPC                 bool `yaml:"fpc,omitempty"`
-	} `yaml:"features,omitempty"`
+	Password string          `yaml:"password"`
+	Targets  []string        `yaml:"targets,omitempty"`
+	Devices  []*DeviceConfig `yaml:"devices,omitempty"`
+	Features FeatureConfig   `yaml:"features,omitempty"`
 }
 
+// DeviceConfig is the config representation of 1 device
+type DeviceConfig struct {
+	Host     string `yaml:"host"`
+	Username string `yaml:"username,omitempty"`
+	Password string `yaml:"password,omitempty"`
+	KeyFile  string `yaml:"key_file,omitempty"`
+}
+
+// FeatureConfig is the list of collectors enabled or disabled
+type FeatureConfig struct {
+	Environment         bool `yaml:"environment,omitempty"`
+	BGP                 bool `yaml:"bgp,omitempty"`
+	OSPF                bool `yaml:"ospf,omitempty"`
+	ISIS                bool `yaml:"isis,omitempty"`
+	NAT                 bool `yaml:"nat,omitempty"`
+	L2Circuit           bool `yaml:"l2circuit,omitempty"`
+	LDP                 bool `yaml:"ldp,omitempty"`
+	Routes              bool `yaml:"routes,omitempty"`
+	RoutingEngine       bool `yaml:"routing_engine,omitempty"`
+	Firewall            bool `yaml:"firewall,omitempty"`
+	Interfaces          bool `yaml:"interfaces,omitempty"`
+	InterfaceDiagnostic bool `yaml:"interface_diagnostic,omitempty"`
+	Storage             bool `yaml:"storage,omitempty"`
+	Accounting          bool `yaml:"accounting,omitempty"`
+	Ipsec               bool `yaml:"ipsec,omitempty"`
+	FPC                 bool `yaml:"fpc,omitempty"`
+}
+
+// New creates a new config
 func New() *Config {
 	c := &Config{
 		Targets: make([]string, 0),

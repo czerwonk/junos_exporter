@@ -34,7 +34,7 @@ func TestShouldParse(t *testing.T) {
 	assertFeature("Firewall", c.Features.Firewall, false, t)
 	assertFeature("InterfaceDiagnostic", c.Features.InterfaceDiagnostic, false, t)
 	assertFeature("InterfaceQueue", c.Features.InterfaceQueue, true, t)
-	assertFeature("Interfacs", c.Features.Interfaces, false, t)
+	assertFeature("Interfaces", c.Features.Interfaces, false, t)
 	assertFeature("L2Circuit", c.Features.L2Circuit, true, t)
 	assertFeature("Storage", c.Features.Storage, false, t)
 	assertFeature("FPC", c.Features.FPC, true, t)

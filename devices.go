@@ -11,7 +11,7 @@ import (
 
 func devicesForConfig(cfg *config.Config) ([]*connector.Device, error) {
 	if cfg.Devices == nil {
-		if cfg.Targets != nil {
+		if cfg.Targets == nil {
 			cfg.Targets = strings.Split(strings.Trim(*sshHosts, " "), ",")
 		}
 

@@ -25,6 +25,7 @@ var (
 	adminStatusDesc         *prometheus.Desc
 	operStatusDesc          *prometheus.Desc
 	errorStatusDesc         *prometheus.Desc
+	lastFlappedDesc         *prometheus.Desc
 	speedMap                = map[string]float64{
 		"10mbps":   float64(10000000.0),
 		"100mbps":  float64(100000000.0),
@@ -59,6 +60,7 @@ func init() {
 	adminStatusDesc = prometheus.NewDesc(prefix+"admin_up", "Admin operational status", l, nil)
 	operStatusDesc = prometheus.NewDesc(prefix+"up", "Interface operational status", l, nil)
 	errorStatusDesc = prometheus.NewDesc(prefix+"error_status", "Admin and operational status differ", l, nil)
+	lastFlappedDesc = prometheus.NewDesc(prefix+"last_flapped_seconds", "Seconds since last flapped (-1 if never)", l, nil)
 }
 
 // Collector collects interface metrics
@@ -88,6 +90,7 @@ func (*interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- adminStatusDesc
 	ch <- operStatusDesc
 	ch <- errorStatusDesc
+	ch <- lastFlappedDesc
 }
 
 // Collect collects metrics from JunOS
@@ -134,6 +137,11 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 			IPv6ReceivePackets:  float64(phy.Stats.IPv6Traffic.InputPackets),
 			IPv6TransmitBytes:   float64(phy.Stats.IPv6Traffic.OutputBytes),
 			IPv6TransmitPackets: float64(phy.Stats.IPv6Traffic.OutputPackets),
+			LastFlapped:         -1,
+		}
+
+		if phy.InterfaceFlapped.Value != "Never" {
+			s.LastFlapped = float64(phy.InterfaceFlapped.Seconds)
 		}
 
 		stats = append(stats, s)
@@ -200,5 +208,6 @@ func (*interfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prom
 		ch <- prometheus.MustNewConstMetric(receiveErrorsDesc, prometheus.GaugeValue, s.ReceiveErrors, l...)
 		ch <- prometheus.MustNewConstMetric(receiveDropsDesc, prometheus.GaugeValue, s.ReceiveDrops, l...)
 		ch <- prometheus.MustNewConstMetric(interfaceSpeedDesc, prometheus.GaugeValue, s.Speed, l...)
+		ch <- prometheus.MustNewConstMetric(lastFlappedDesc, prometheus.GaugeValue, s.LastFlapped, l...)
 	}
 }

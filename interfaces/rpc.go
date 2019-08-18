@@ -23,6 +23,10 @@ type PhyInterface struct {
 		Drops  uint64 `xml:"output-drops"`
 		Errors uint64 `xml:"output-errors"`
 	} `xml:"output-error-list"`
+	InterfaceFlapped struct {
+		Seconds uint64 `xml:"seconds,attr"`
+		Value   string `xml:",chardata"`
+	} `xml:"interface-flapped"`
 }
 
 type LogInterface struct {

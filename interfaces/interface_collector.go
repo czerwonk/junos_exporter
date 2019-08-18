@@ -208,6 +208,9 @@ func (*interfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prom
 		ch <- prometheus.MustNewConstMetric(receiveErrorsDesc, prometheus.GaugeValue, s.ReceiveErrors, l...)
 		ch <- prometheus.MustNewConstMetric(receiveDropsDesc, prometheus.GaugeValue, s.ReceiveDrops, l...)
 		ch <- prometheus.MustNewConstMetric(interfaceSpeedDesc, prometheus.GaugeValue, s.Speed, l...)
-		ch <- prometheus.MustNewConstMetric(lastFlappedDesc, prometheus.GaugeValue, s.LastFlapped, l...)
+
+		if s.LastFlapped != 0 {
+			ch <- prometheus.MustNewConstMetric(lastFlappedDesc, prometheus.GaugeValue, s.LastFlapped, l...)
+		}
 	}
 }

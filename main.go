@@ -52,6 +52,7 @@ var (
 	storageEnabled              = flag.Bool("storage.enabled", true, "Scrape system storage metrics")
 	fpcEnabled                  = flag.Bool("fpc.enabled", true, "Scrape line card metrics")
 	accountingEnabled           = flag.Bool("accounting.enabled", false, "Scrape accounting flow metrics")
+	interfaceQueuesEnabled      = flag.Bool("queues.enabled", false, "Scrape interface queue metrics")
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 	configFile                  = flag.String("config.file", "", "Path to config file")
 	cfg                         *config.Config
@@ -179,7 +180,7 @@ func loadConfigFromFlags() *config.Config {
 	f.Firewall = *firewallEnabled
 	f.Interfaces = *interfacesEnabled
 	f.InterfaceDiagnostic = *interfaceDiagnosticsEnabled
-	f.Ipsec = *ipsecEnabled
+	f.IPSec = *ipsecEnabled
 	f.ISIS = *isisEnabled
 	f.NAT = *natEnabled
 	f.OSPF = *ospfEnabled

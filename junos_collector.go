@@ -13,6 +13,7 @@ import (
 	"github.com/czerwonk/junos_exporter/firewall"
 	"github.com/czerwonk/junos_exporter/fpc"
 	"github.com/czerwonk/junos_exporter/interfacediagnostics"
+	"github.com/czerwonk/junos_exporter/interfacequeue"
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/czerwonk/junos_exporter/ipsec"
 	"github.com/czerwonk/junos_exporter/isis"
@@ -78,7 +79,7 @@ func collectors() map[string]collector.RPCCollector {
 		m["isis"] = isis.NewCollector()
 	}
 
-	if f.Ipsec {
+	if f.IPSec {
 		m["ipsec"] = ipsec.NewCollector()
 	}
 
@@ -120,6 +121,10 @@ func collectors() map[string]collector.RPCCollector {
 
 	if f.FPC {
 		m["fpc"] = fpc.NewCollector()
+	}
+
+	if f.InterfaceQueue {
+		m["interface_queue"] = interfacequeue.NewCollector()
 	}
 
 	return m

@@ -2,11 +2,12 @@ package routingengine
 
 type RoutingEngineRpc struct {
 	Information struct {
-		RouteEngine RouteEngine `xml:"route-engine"`
+		RouteEngine []RouteEngine `xml:"route-engine"`
 	} `xml:"route-engine-information"`
 }
 
 type RouteEngine struct {
+	Slot               string                 `xml:"slot"`
 	Temperature        RouteEngineTemperature `xml:"temperature"`
 	MemoryUtilization  float64                `xml:"memory-buffer-utilization"`
 	CPUTemperature     RouteEngineTemperature `xml:"cpu-temperature"`

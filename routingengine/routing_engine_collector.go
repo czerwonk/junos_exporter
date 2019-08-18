@@ -23,7 +23,7 @@ var (
 )
 
 func init() {
-	l := []string{"target"}
+	l := []string{"target", "slot"}
 	temperature = prometheus.NewDesc(prefix+"temp", "Temperature of the air flowing past the Routing Engine (in degrees C)", l, nil)
 	memoryUtilization = prometheus.NewDesc(prefix+"memory_utilization", "Percentage of Routing Engine memory being used", l, nil)
 	cpuTemperature = prometheus.NewDesc(prefix+"cpu_temp", "Temperature of the CPU (in degrees C)", l, nil)
@@ -68,19 +68,27 @@ func (c *routingEngineCollector) Collect(client *rpc.Client, ch chan<- prometheu
 		return err
 	}
 
-	stats := x.Information.RouteEngine
+	for _, re := range x.Information.RouteEngine {
+		c.collectForSlot(re, ch, labelValues)
+	}
 
-	ch <- prometheus.MustNewConstMetric(temperature, prometheus.GaugeValue, stats.Temperature.Value, labelValues...)
-	ch <- prometheus.MustNewConstMetric(memoryUtilization, prometheus.GaugeValue, stats.MemoryUtilization, labelValues...)
-	ch <- prometheus.MustNewConstMetric(cpuTemperature, prometheus.GaugeValue, stats.CPUTemperature.Value, labelValues...)
-	ch <- prometheus.MustNewConstMetric(cpuUser, prometheus.GaugeValue, stats.CPUUser, labelValues...)
-	ch <- prometheus.MustNewConstMetric(cpuBackground, prometheus.GaugeValue, stats.CPUBackground, labelValues...)
-	ch <- prometheus.MustNewConstMetric(cpuSystem, prometheus.GaugeValue, stats.CPUSystem, labelValues...)
-	ch <- prometheus.MustNewConstMetric(cpuInterrupt, prometheus.GaugeValue, stats.CPUInterrupt, labelValues...)
-	ch <- prometheus.MustNewConstMetric(cpuIdle, prometheus.GaugeValue, stats.CPUIdle, labelValues...)
-	ch <- prometheus.MustNewConstMetric(loadAverageOne, prometheus.GaugeValue, stats.LoadAverageOne, labelValues...)
-	ch <- prometheus.MustNewConstMetric(loadAverageFive, prometheus.GaugeValue, stats.LoadAverageFive, labelValues...)
-	ch <- prometheus.MustNewConstMetric(loadAverageFifteen, prometheus.GaugeValue, stats.LoadAverageFifteen, labelValues...)
+	return nil
+}
+
+func (c *routingEngineCollector) collectForSlot(re RouteEngine, ch chan<- prometheus.Metric, labelValues []string) error {
+	l := append(labelValues, re.Slot)
+
+	ch <- prometheus.MustNewConstMetric(temperature, prometheus.GaugeValue, re.Temperature.Value, l...)
+	ch <- prometheus.MustNewConstMetric(memoryUtilization, prometheus.GaugeValue, re.MemoryUtilization, l...)
+	ch <- prometheus.MustNewConstMetric(cpuTemperature, prometheus.GaugeValue, re.CPUTemperature.Value, l...)
+	ch <- prometheus.MustNewConstMetric(cpuUser, prometheus.GaugeValue, re.CPUUser, l...)
+	ch <- prometheus.MustNewConstMetric(cpuBackground, prometheus.GaugeValue, re.CPUBackground, l...)
+	ch <- prometheus.MustNewConstMetric(cpuSystem, prometheus.GaugeValue, re.CPUSystem, l...)
+	ch <- prometheus.MustNewConstMetric(cpuInterrupt, prometheus.GaugeValue, re.CPUInterrupt, l...)
+	ch <- prometheus.MustNewConstMetric(cpuIdle, prometheus.GaugeValue, re.CPUIdle, l...)
+	ch <- prometheus.MustNewConstMetric(loadAverageOne, prometheus.GaugeValue, re.LoadAverageOne, l...)
+	ch <- prometheus.MustNewConstMetric(loadAverageFive, prometheus.GaugeValue, re.LoadAverageFive, l...)
+	ch <- prometheus.MustNewConstMetric(loadAverageFifteen, prometheus.GaugeValue, re.LoadAverageFifteen, l...)
 
 	return nil
 }

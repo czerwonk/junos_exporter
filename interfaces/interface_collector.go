@@ -61,7 +61,6 @@ func init() {
 	operStatusDesc = prometheus.NewDesc(prefix+"up", "Interface operational status", l, nil)
 	errorStatusDesc = prometheus.NewDesc(prefix+"error_status", "Admin and operational status differ", l, nil)
 	lastFlappedDesc = prometheus.NewDesc(prefix+"last_flapped_seconds", "Seconds since last flapped (-1 if never)", l, nil)
-
 }
 
 // Collector collects interface metrics

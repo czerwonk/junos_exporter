@@ -33,7 +33,8 @@ func TestShouldParse(t *testing.T) {
 	assertFeature("Environment", c.Features.Environment, false, t)
 	assertFeature("Firewall", c.Features.Firewall, false, t)
 	assertFeature("InterfaceDiagnostic", c.Features.InterfaceDiagnostic, false, t)
-	assertFeature("Interfacs", c.Features.Interfaces, false, t)
+	assertFeature("InterfaceQueue", c.Features.InterfaceQueue, true, t)
+	assertFeature("Interfaces", c.Features.Interfaces, false, t)
 	assertFeature("L2Circuit", c.Features.L2Circuit, true, t)
 	assertFeature("Storage", c.Features.Storage, false, t)
 	assertFeature("FPC", c.Features.FPC, true, t)
@@ -52,16 +53,17 @@ func TestShouldUseDefaults(t *testing.T) {
 
 	assertFeature("BGP", c.Features.BGP, true, t)
 	assertFeature("OSPF", c.Features.OSPF, true, t)
-	assertFeature("ISIS", c.Features.ISIS, false, t)
+	assertFeature("ISIS", c.Features.ISIS, true, t)
 	assertFeature("Routes", c.Features.Routes, true, t)
 	assertFeature("RoutingEngine", c.Features.RoutingEngine, true, t)
 	assertFeature("Environment", c.Features.Environment, true, t)
-	assertFeature("Firewall", c.Features.Firewall, false, t)
+	assertFeature("Firewall", c.Features.Firewall, true, t)
 	assertFeature("InterfaceDiagnostic", c.Features.InterfaceDiagnostic, true, t)
 	assertFeature("Interfaces", c.Features.Interfaces, true, t)
-	assertFeature("L2Circuit", c.Features.L2Circuit, false, t)
+	assertFeature("L2Circuit", c.Features.L2Circuit, true, t)
 	assertFeature("Storage", c.Features.Storage, true, t)
-	assertFeature("FPC", c.Features.FPC, false, t)
+	assertFeature("FPC", c.Features.FPC, true, t)
+	assertFeature("InterfaceQueue", c.Features.InterfaceQueue, true, t)
 }
 
 func TestShouldParseDevices(t *testing.T) {

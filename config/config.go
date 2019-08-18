@@ -37,9 +37,10 @@ type FeatureConfig struct {
 	Firewall            bool `yaml:"firewall,omitempty"`
 	Interfaces          bool `yaml:"interfaces,omitempty"`
 	InterfaceDiagnostic bool `yaml:"interface_diagnostic,omitempty"`
+	InterfaceQueue      bool `yaml:"interface_queue,omitempty"`
 	Storage             bool `yaml:"storage,omitempty"`
 	Accounting          bool `yaml:"accounting,omitempty"`
-	Ipsec               bool `yaml:"ipsec,omitempty"`
+	IPSec               bool `yaml:"ipsec,omitempty"`
 	FPC                 bool `yaml:"fpc,omitempty"`
 }
 
@@ -76,12 +77,16 @@ func setDefaultValues(c *Config) {
 	f.Environment = true
 	f.Interfaces = true
 	f.InterfaceDiagnostic = true
-	f.Ipsec = false
+	f.InterfaceQueue = true
+	f.IPSec = true
 	f.OSPF = true
+	f.ISIS = true
 	f.LDP = true
 	f.Routes = true
+	f.Firewall = true
 	f.RoutingEngine = true
 	f.Storage = true
-	f.Accounting = false
-	f.FPC = false
+	f.Accounting = true
+	f.FPC = true
+	f.L2Circuit = true
 }

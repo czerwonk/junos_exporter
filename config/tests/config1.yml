@@ -11,7 +11,9 @@ features:
   routes: true
   routing_engine: true
   interface_diagnostic: false
+  interface_queue: true
   interfaces: false
   l2circuit: true
   storage: false
   fpc: true
+  firewall: false

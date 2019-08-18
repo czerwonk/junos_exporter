@@ -9,26 +9,30 @@ import (
 const prefix string = "junos_bgp_session_"
 
 var (
-	upDesc               *prometheus.Desc
-	receivedPrefixesDesc *prometheus.Desc
-	acceptedPrefixesDesc *prometheus.Desc
-	rejectedPrefixesDesc *prometheus.Desc
-	activePrefixesDesc   *prometheus.Desc
-	inputMessagesDesc    *prometheus.Desc
-	outputMessagesDesc   *prometheus.Desc
-	flapsDesc            *prometheus.Desc
+	upDesc                 *prometheus.Desc
+	receivedPrefixesDesc   *prometheus.Desc
+	acceptedPrefixesDesc   *prometheus.Desc
+	rejectedPrefixesDesc   *prometheus.Desc
+	activePrefixesDesc     *prometheus.Desc
+	advertisedPrefixesDesc *prometheus.Desc
+	inputMessagesDesc      *prometheus.Desc
+	outputMessagesDesc     *prometheus.Desc
+	flapsDesc              *prometheus.Desc
 )
 
 func init() {
 	l := []string{"target", "asn", "ip", "description"}
 	upDesc = prometheus.NewDesc(prefix+"up", "Session is up (1 = Established)", l, nil)
+	inputMessagesDesc = prometheus.NewDesc(prefix+"messages_input_count", "Number of received messages", l, nil)
+	outputMessagesDesc = prometheus.NewDesc(prefix+"messages_output_count", "Number of transmitted messages", l, nil)
+	flapsDesc = prometheus.NewDesc(prefix+"flap_count", "Number of session flaps", l, nil)
+
+	l = append(l, "table")
 	receivedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_received_count", "Number of received prefixes", l, nil)
 	acceptedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_accepted_count", "Number of accepted prefixes", l, nil)
 	rejectedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_rejected_count", "Number of rejected prefixes", l, nil)
 	activePrefixesDesc = prometheus.NewDesc(prefix+"prefixes_active_count", "Number of active prefixes (best route in RIB)", l, nil)
-	inputMessagesDesc = prometheus.NewDesc(prefix+"messages_input_count", "Number of received messages", l, nil)
-	outputMessagesDesc = prometheus.NewDesc(prefix+"messages_output_count", "Number of transmitted messages", l, nil)
-	flapsDesc = prometheus.NewDesc(prefix+"flap_count", "Number of session flaps", l, nil)
+	advertisedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_advertised_count", "Number of prefixes announced to peer", l, nil)
 }
 
 type bgpCollector struct {
@@ -46,6 +50,7 @@ func (*bgpCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- acceptedPrefixesDesc
 	ch <- rejectedPrefixesDesc
 	ch <- activePrefixesDesc
+	ch <- advertisedPrefixesDesc
 	ch <- inputMessagesDesc
 	ch <- outputMessagesDesc
 	ch <- flapsDesc
@@ -53,61 +58,49 @@ func (*bgpCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *bgpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	sessions, err := c.bgpSessions(client)
+	err := c.collect(client, ch, labelValues)
 	if err != nil {
 		return err
-	}
-
-	for _, s := range sessions {
-		c.collectForSession(s, ch, labelValues)
 	}
 
 	return nil
 }
 
-func (c *bgpCollector) bgpSessions(client *rpc.Client) ([]*BgpSession, error) {
-	var x = BgpRpc{}
-	err := client.RunCommandAndParse("show bgp summary", &x)
+func (c *bgpCollector) collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	var x = BGPRPC{}
+	err := client.RunCommandAndParse("show bgp neighbor", &x)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	sessions := make([]*BgpSession, 0)
 	for _, peer := range x.Information.Peers {
-		s := &BgpSession{
-			Ip:               peer.Ip,
-			Up:               peer.State == "Established",
-			Asn:              peer.Asn,
-			Description:      peer.Description,
-			Flaps:            float64(peer.Flaps),
-			InputMessages:    float64(peer.InputMessages),
-			OutputMessages:   float64(peer.OutputMessages),
-			AcceptedPrefixes: float64(peer.Rib.AcceptedPrefixes),
-			ActivePrefixes:   float64(peer.Rib.ActivePrefixes),
-			ReceivedPrefixes: float64(peer.Rib.ReceivedPrefixes),
-			RejectedPrefixes: float64(peer.Rib.RejectedPrefixes),
-		}
-
-		sessions = append(sessions, s)
+		c.collectForPeer(peer, ch, labelValues)
 	}
 
-	return sessions, nil
+	return nil
 }
 
-func (*bgpCollector) collectForSession(s *BgpSession, ch chan<- prometheus.Metric, labelValues []string) {
-	l := append(labelValues, []string{s.Asn, s.Ip, s.Description}...)
+func (c *bgpCollector) collectForPeer(p BGPPeer, ch chan<- prometheus.Metric, labelValues []string) {
+	l := append(labelValues, []string{p.ASN, p.IP, p.Description}...)
 
 	up := 0
-	if s.Up {
+	if p.State == "Established" {
 		up = 1
 	}
 
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, float64(up), l...)
-	ch <- prometheus.MustNewConstMetric(receivedPrefixesDesc, prometheus.GaugeValue, float64(s.ReceivedPrefixes), l...)
-	ch <- prometheus.MustNewConstMetric(acceptedPrefixesDesc, prometheus.GaugeValue, float64(s.AcceptedPrefixes), l...)
-	ch <- prometheus.MustNewConstMetric(rejectedPrefixesDesc, prometheus.GaugeValue, float64(s.RejectedPrefixes), l...)
-	ch <- prometheus.MustNewConstMetric(activePrefixesDesc, prometheus.GaugeValue, float64(s.ActivePrefixes), l...)
-	ch <- prometheus.MustNewConstMetric(inputMessagesDesc, prometheus.GaugeValue, float64(s.InputMessages), l...)
-	ch <- prometheus.MustNewConstMetric(outputMessagesDesc, prometheus.GaugeValue, float64(s.OutputMessages), l...)
-	ch <- prometheus.MustNewConstMetric(flapsDesc, prometheus.GaugeValue, float64(s.Flaps), l...)
+	ch <- prometheus.MustNewConstMetric(inputMessagesDesc, prometheus.GaugeValue, float64(p.InputMessages), l...)
+	ch <- prometheus.MustNewConstMetric(outputMessagesDesc, prometheus.GaugeValue, float64(p.OutputMessages), l...)
+	ch <- prometheus.MustNewConstMetric(flapsDesc, prometheus.GaugeValue, float64(p.Flaps), l...)
+
+	c.collectRIBForPeer(p, ch, l)
+}
+
+func (*bgpCollector) collectRIBForPeer(p BGPPeer, ch chan<- prometheus.Metric, labelValues []string) {
+	l := append(labelValues, p.RIB.Name)
+	ch <- prometheus.MustNewConstMetric(receivedPrefixesDesc, prometheus.GaugeValue, float64(p.RIB.ReceivedPrefixes), l...)
+	ch <- prometheus.MustNewConstMetric(acceptedPrefixesDesc, prometheus.GaugeValue, float64(p.RIB.AcceptedPrefixes), l...)
+	ch <- prometheus.MustNewConstMetric(rejectedPrefixesDesc, prometheus.GaugeValue, float64(p.RIB.RejectedPrefixes), l...)
+	ch <- prometheus.MustNewConstMetric(activePrefixesDesc, prometheus.GaugeValue, float64(p.RIB.ActivePrefixes), l...)
+	ch <- prometheus.MustNewConstMetric(advertisedPrefixesDesc, prometheus.GaugeValue, float64(p.RIB.AdvertisedPrefixes), l...)
 }

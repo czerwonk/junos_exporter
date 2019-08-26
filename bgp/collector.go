@@ -4,6 +4,8 @@ import (
 	"github.com/czerwonk/junos_exporter/collector"
 	"github.com/czerwonk/junos_exporter/rpc"
 	"github.com/prometheus/client_golang/prometheus"
+
+	"strings"
 )
 
 const prefix string = "junos_bgp_session_"
@@ -81,7 +83,8 @@ func (c *bgpCollector) collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 }
 
 func (c *bgpCollector) collectForPeer(p BGPPeer, ch chan<- prometheus.Metric, labelValues []string) {
-	l := append(labelValues, []string{p.ASN, p.IP, p.Description}...)
+	ip := strings.Split(p.IP, "+")
+	l := append(labelValues, []string{p.ASN, ip[0], p.Description}...)
 
 	up := 0
 	if p.State == "Established" {

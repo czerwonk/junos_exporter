@@ -115,6 +115,7 @@ func initChannels() {
 			case <-term:
 				log.Infoln("Closing connections to devices")
 				connManager.Close()
+				os.Exit(0)
 			}
 		}
 	}()

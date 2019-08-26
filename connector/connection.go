@@ -25,7 +25,7 @@ func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 	defer c.mu.Unlock()
 
 	if c.client == nil {
-		return nil, errors.New("not conneted")
+		return nil, errors.New("not connected")
 	}
 
 	session, err := c.client.NewSession()

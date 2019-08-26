@@ -32,13 +32,15 @@ import (
 const prefix = "junos_"
 
 var (
-	scrapeDurationDesc *prometheus.Desc
-	upDesc             *prometheus.Desc
+	scrapeCollectorDurationDesc *prometheus.Desc
+	scrapeDurationDesc          *prometheus.Desc
+	upDesc                      *prometheus.Desc
 )
 
 func init() {
 	upDesc = prometheus.NewDesc(prefix+"up", "Scrape of target was successful", []string{"target"}, nil)
 	scrapeDurationDesc = prometheus.NewDesc(prefix+"collector_duration_seconds", "Duration of a collector scrape for one target", []string{"target"}, nil)
+	scrapeCollectorDurationDesc = prometheus.NewDesc(prefix+"collect_duration_seconds", "Duration of a scrape by collector and target", []string{"target", "collector"}, nil)
 }
 
 type junosCollector struct {
@@ -134,6 +136,7 @@ func collectors() map[string]collector.RPCCollector {
 func (c *junosCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- upDesc
 	ch <- scrapeDurationDesc
+	ch <- scrapeCollectorDurationDesc
 
 	for _, col := range c.collectors {
 		col.Describe(ch)
@@ -173,9 +176,11 @@ func (c *junosCollector) collectForHost(device *connector.Device, ch chan<- prom
 
 	rpc := rpc.NewClient(conn, *debug)
 	for k, col := range c.collectors {
+		ct := time.Now()
 		err = col.Collect(rpc, ch, l)
 		if err != nil && err.Error() != "EOF" {
 			log.Errorln(k + ": " + err.Error())
 		}
+		ch <- prometheus.MustNewConstMetric(scrapeCollectorDurationDesc, prometheus.GaugeValue, time.Since(ct).Seconds(), append(l, k)...)
 	}
 }

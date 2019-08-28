@@ -55,6 +55,7 @@ var (
 	interfaceQueuesEnabled      = flag.Bool("queues.enabled", false, "Scrape interface queue metrics")
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 	configFile                  = flag.String("config.file", "", "Path to config file")
+	dynamicIfaceLabels          = flag.Bool("dynamic-interface-labels", true, "Parse interface descriptions to get labels dynamicly")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager

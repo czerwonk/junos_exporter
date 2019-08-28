@@ -76,3 +76,8 @@ func (c *SSHConnection) close() {
 func (c *SSHConnection) Host() string {
 	return c.device.Host
 }
+
+// Device returns the device information of the connected device
+func (c *SSHConnection) Device() *Device {
+	return c.device
+}

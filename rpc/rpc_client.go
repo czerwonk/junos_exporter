@@ -16,8 +16,8 @@ type Client struct {
 }
 
 // NewClient creates a new client to connect to
-func NewClient(ssh *connector.SSHConnection, debug bool) *Client {
-	rpc := &Client{conn: ssh, debug: debug}
+func NewClient(ssh *connector.SSHConnection) *Client {
+	rpc := &Client{conn: ssh}
 
 	return rpc
 }
@@ -39,4 +39,19 @@ func (c *Client) RunCommandAndParse(cmd string, obj interface{}) error {
 
 	err = xml.Unmarshal(b, obj)
 	return err
+}
+
+// Device returns device information for the connected device
+func (c *Client) Device() *connector.Device {
+	return c.conn.Device()
+}
+
+// EnableDebug enables the debug mode
+func (c *Client) EnableDebug() {
+	c.debug = true
+}
+
+// DisableDebug disables the debug mode
+func (c *Client) DisableDebug() {
+	c.debug = false
 }

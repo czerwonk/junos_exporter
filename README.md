@@ -149,6 +149,8 @@ Version 0.9.5 introduced dynamic labels retrieved from the interface description
 
 Values can contain arbitrary characters.
 
+The complete feature can be disabled by setting ``-dynamic-interface-labels`` to false.
+
 ### Examples
 Tags:
 ```

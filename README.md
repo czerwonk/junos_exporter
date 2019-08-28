@@ -37,6 +37,7 @@ The following metrics are supported by now:
 * Storage (total, available and used blocks, used percentage)
 * Firewall filters (counters and policers) - needs explicit rights beyond read-only
 * Statistics about l2circuits (tunnel state, number of tunnels)
+* Interface queue statistics
 ```   
 0:EI -- encapsulation invalid
 1:MM -- mtu mismatch
@@ -137,6 +138,29 @@ features:
   routing_engine: true
   interface_diagnostic: true
   fpc: true
+```
+
+## Dynamic Interface Labels
+Version 0.9.5 introduced dynamic labels retrieved from the interface descriptions. Flags are supported a well. The first part (label name) has to comply to the following rules:
+* must not begin with a figure
+* must only contain this charakters: A-Z,a-z,0-9,_
+* is treated lower case
+
+Values can contain arbitrary characters.
+
+### Examples
+Tags:
+```
+Description: XYZ [prod]
+Label name: prod
+Label value: 1
+```
+
+Label value pairs:
+```
+Description: XYZ [peer=202739]
+Label name: peer
+Label value: 202739
 ```
 
 ## Third Party Components

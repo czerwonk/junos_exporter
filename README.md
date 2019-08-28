@@ -145,6 +145,7 @@ Version 0.9.5 introduced dynamic labels retrieved from the interface description
 * must not begin with a figure
 * must only contain this charakters: A-Z,a-z,0-9,_
 * is treated lower case
+* must no conflict with label names used in junos_exporter
 
 Values can contain arbitrary characters.
 

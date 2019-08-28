@@ -2,6 +2,8 @@ package interfaces
 
 import (
 	"github.com/czerwonk/junos_exporter/collector"
+	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/czerwonk/junos_exporter/interfacelabels"
 	"github.com/czerwonk/junos_exporter/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -9,6 +11,25 @@ import (
 const prefix = "junos_interface_"
 
 var (
+	speedMap = map[string]float64{
+		"10mbps":   float64(10000000.0),
+		"100mbps":  float64(100000000.0),
+		"1000mbps": float64(1000000000.0),
+		"10Gbps":   float64(10000000000.0),
+		"20Gbps":   float64(20000000000.0),
+		"25Gbps":   float64(25000000000.0),
+		"40Gbps":   float64(40000000000.0),
+		"50Gbps":   float64(50000000000.0),
+		"80Gbps":   float64(80000000000.0),
+		"100Gbps":  float64(100000000000.0),
+		"200Gbps":  float64(200000000000.0),
+		"400Gbps":  float64(400000000000.0),
+	}
+)
+
+// Collector collects interface metrics
+type interfaceCollector struct {
+	labels                  *interfacelabels.DynamicLabels
 	receiveBytesDesc        *prometheus.Desc
 	receivePacketsDesc      *prometheus.Desc
 	receiveErrorsDesc       *prometheus.Desc
@@ -26,71 +47,60 @@ var (
 	operStatusDesc          *prometheus.Desc
 	errorStatusDesc         *prometheus.Desc
 	lastFlappedDesc         *prometheus.Desc
-	speedMap                = map[string]float64{
-		"10mbps":   float64(10000000.0),
-		"100mbps":  float64(100000000.0),
-		"1000mbps": float64(1000000000.0),
-		"10Gbps":   float64(10000000000.0),
-		"20Gbps":   float64(20000000000.0),
-		"25Gbps":   float64(25000000000.0),
-		"40Gbps":   float64(40000000000.0),
-		"50Gbps":   float64(50000000000.0),
-		"80Gbps":   float64(80000000000.0),
-		"100Gbps":  float64(100000000000.0),
-		"200Gbps":  float64(200000000000.0),
-		"400Gbps":  float64(400000000000.0),
-	}
-)
-
-func init() {
-	l := []string{"target", "name", "description", "mac"}
-	receiveBytesDesc = prometheus.NewDesc(prefix+"receive_bytes", "Received data in bytes", l, nil)
-	receivePacketsDesc = prometheus.NewDesc(prefix+"receive_packets_total", "Received packets", l, nil)
-	receiveErrorsDesc = prometheus.NewDesc(prefix+"receive_errors", "Number of errors caused by incoming packets", l, nil)
-	receiveDropsDesc = prometheus.NewDesc(prefix+"receive_drops", "Number of dropped incoming packets", l, nil)
-	interfaceSpeedDesc = prometheus.NewDesc(prefix+"speed", "speed in in bps", l, nil)
-	transmitBytesDesc = prometheus.NewDesc(prefix+"transmit_bytes", "Transmitted data in bytes", l, nil)
-	transmitPacketsDesc = prometheus.NewDesc(prefix+"transmit_packets_total", "Transmitted packets", l, nil)
-	transmitErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors", "Number of errors caused by outgoing packets", l, nil)
-	transmitDropsDesc = prometheus.NewDesc(prefix+"transmit_drops", "Number of dropped outgoing packets", l, nil)
-	ipv6receiveBytesDesc = prometheus.NewDesc(prefix+"IPv6_receive_bytes_total", "Received IPv6 data in bytes", l, nil)
-	ipv6receivePacketsDesc = prometheus.NewDesc(prefix+"IPv6_receive_packets_total", "Received IPv6 packets", l, nil)
-	ipv6transmitBytesDesc = prometheus.NewDesc(prefix+"IPv6_transmit_bytes_total", "Transmitted IPv6 data in bytes", l, nil)
-	ipv6transmitPacketsDesc = prometheus.NewDesc(prefix+"IPv6_transmit_packets_total", "Transmitted IPv6 packets", l, nil)
-	adminStatusDesc = prometheus.NewDesc(prefix+"admin_up", "Admin operational status", l, nil)
-	operStatusDesc = prometheus.NewDesc(prefix+"up", "Interface operational status", l, nil)
-	errorStatusDesc = prometheus.NewDesc(prefix+"error_status", "Admin and operational status differ", l, nil)
-	lastFlappedDesc = prometheus.NewDesc(prefix+"last_flapped_seconds", "Seconds since last flapped (-1 if never)", l, nil)
-}
-
-// Collector collects interface metrics
-type interfaceCollector struct {
 }
 
 // NewCollector creates a new collector
-func NewCollector() collector.RPCCollector {
-	return &interfaceCollector{}
+func NewCollector(labels *interfacelabels.DynamicLabels) collector.RPCCollector {
+	c := &interfaceCollector{
+		labels: labels,
+	}
+	c.init()
+
+	return c
+}
+
+func (c *interfaceCollector) init() {
+	l := []string{"target", "name", "description", "mac"}
+	l = append(l, c.labels.LabelNames()...)
+
+	c.receiveBytesDesc = prometheus.NewDesc(prefix+"receive_bytes", "Received data in bytes", l, nil)
+	c.receivePacketsDesc = prometheus.NewDesc(prefix+"receive_packets_total", "Received packets", l, nil)
+	c.receiveErrorsDesc = prometheus.NewDesc(prefix+"receive_errors", "Number of errors caused by incoming packets", l, nil)
+	c.receiveDropsDesc = prometheus.NewDesc(prefix+"receive_drops", "Number of dropped incoming packets", l, nil)
+	c.interfaceSpeedDesc = prometheus.NewDesc(prefix+"speed", "speed in in bps", l, nil)
+	c.transmitBytesDesc = prometheus.NewDesc(prefix+"transmit_bytes", "Transmitted data in bytes", l, nil)
+	c.transmitPacketsDesc = prometheus.NewDesc(prefix+"transmit_packets_total", "Transmitted packets", l, nil)
+	c.transmitErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors", "Number of errors caused by outgoing packets", l, nil)
+	c.transmitDropsDesc = prometheus.NewDesc(prefix+"transmit_drops", "Number of dropped outgoing packets", l, nil)
+	c.ipv6receiveBytesDesc = prometheus.NewDesc(prefix+"IPv6_receive_bytes_total", "Received IPv6 data in bytes", l, nil)
+	c.ipv6receivePacketsDesc = prometheus.NewDesc(prefix+"IPv6_receive_packets_total", "Received IPv6 packets", l, nil)
+	c.ipv6transmitBytesDesc = prometheus.NewDesc(prefix+"IPv6_transmit_bytes_total", "Transmitted IPv6 data in bytes", l, nil)
+	c.ipv6transmitPacketsDesc = prometheus.NewDesc(prefix+"IPv6_transmit_packets_total", "Transmitted IPv6 packets", l, nil)
+	c.adminStatusDesc = prometheus.NewDesc(prefix+"admin_up", "Admin operational status", l, nil)
+	c.operStatusDesc = prometheus.NewDesc(prefix+"up", "Interface operational status", l, nil)
+	c.errorStatusDesc = prometheus.NewDesc(prefix+"error_status", "Admin and operational status differ", l, nil)
+	c.lastFlappedDesc = prometheus.NewDesc(prefix+"last_flapped_seconds", "Seconds since last flapped (-1 if never)", l, nil)
 }
 
 // Describe describes the metrics
-func (*interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- receiveBytesDesc
-	ch <- receivePacketsDesc
-	ch <- receiveErrorsDesc
-	ch <- receiveDropsDesc
-	ch <- interfaceSpeedDesc
-	ch <- transmitBytesDesc
-	ch <- transmitPacketsDesc
-	ch <- transmitDropsDesc
-	ch <- transmitErrorsDesc
-	ch <- ipv6receiveBytesDesc
-	ch <- ipv6receivePacketsDesc
-	ch <- ipv6transmitBytesDesc
-	ch <- ipv6transmitPacketsDesc
-	ch <- adminStatusDesc
-	ch <- operStatusDesc
-	ch <- errorStatusDesc
-	ch <- lastFlappedDesc
+func (c *interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- c.receiveBytesDesc
+	ch <- c.receivePacketsDesc
+	ch <- c.receiveErrorsDesc
+	ch <- c.receiveDropsDesc
+	ch <- c.interfaceSpeedDesc
+	ch <- c.transmitBytesDesc
+	ch <- c.transmitPacketsDesc
+	ch <- c.transmitDropsDesc
+	ch <- c.transmitErrorsDesc
+	ch <- c.ipv6receiveBytesDesc
+	ch <- c.ipv6receivePacketsDesc
+	ch <- c.ipv6transmitBytesDesc
+	ch <- c.ipv6transmitPacketsDesc
+	ch <- c.adminStatusDesc
+	ch <- c.operStatusDesc
+	ch <- c.errorStatusDesc
+	ch <- c.lastFlappedDesc
 }
 
 // Collect collects metrics from JunOS
@@ -101,7 +111,7 @@ func (c *interfaceCollector) Collect(client *rpc.Client, ch chan<- prometheus.Me
 	}
 
 	for _, s := range stats {
-		c.collectForInterface(s, ch, labelValues)
+		c.collectForInterface(s, client.Device(), ch, labelValues)
 	}
 
 	return nil
@@ -175,16 +185,18 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 	return stats, nil
 }
 
-func (*interfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *interfaceCollector) collectForInterface(s *InterfaceStats, device *connector.Device, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, []string{s.Name, s.Description, s.Mac}...)
-	ch <- prometheus.MustNewConstMetric(receiveBytesDesc, prometheus.GaugeValue, s.ReceiveBytes, l...)
-	ch <- prometheus.MustNewConstMetric(receivePacketsDesc, prometheus.GaugeValue, s.ReceivePackets, l...)
-	ch <- prometheus.MustNewConstMetric(transmitBytesDesc, prometheus.GaugeValue, s.TransmitBytes, l...)
-	ch <- prometheus.MustNewConstMetric(transmitPacketsDesc, prometheus.GaugeValue, s.TransmitPackets, l...)
-	ch <- prometheus.MustNewConstMetric(ipv6receiveBytesDesc, prometheus.GaugeValue, s.IPv6ReceiveBytes, l...)
-	ch <- prometheus.MustNewConstMetric(ipv6receivePacketsDesc, prometheus.GaugeValue, s.IPv6ReceivePackets, l...)
-	ch <- prometheus.MustNewConstMetric(ipv6transmitBytesDesc, prometheus.GaugeValue, s.IPv6TransmitBytes, l...)
-	ch <- prometheus.MustNewConstMetric(ipv6transmitPacketsDesc, prometheus.GaugeValue, s.IPv6TransmitPackets, l...)
+	l = append(l, c.labels.ValuesForInterface(device, s.Name)...)
+
+	ch <- prometheus.MustNewConstMetric(c.receiveBytesDesc, prometheus.GaugeValue, s.ReceiveBytes, l...)
+	ch <- prometheus.MustNewConstMetric(c.receivePacketsDesc, prometheus.GaugeValue, s.ReceivePackets, l...)
+	ch <- prometheus.MustNewConstMetric(c.transmitBytesDesc, prometheus.GaugeValue, s.TransmitBytes, l...)
+	ch <- prometheus.MustNewConstMetric(c.transmitPacketsDesc, prometheus.GaugeValue, s.TransmitPackets, l...)
+	ch <- prometheus.MustNewConstMetric(c.ipv6receiveBytesDesc, prometheus.GaugeValue, s.IPv6ReceiveBytes, l...)
+	ch <- prometheus.MustNewConstMetric(c.ipv6receivePacketsDesc, prometheus.GaugeValue, s.IPv6ReceivePackets, l...)
+	ch <- prometheus.MustNewConstMetric(c.ipv6transmitBytesDesc, prometheus.GaugeValue, s.IPv6TransmitBytes, l...)
+	ch <- prometheus.MustNewConstMetric(c.ipv6transmitPacketsDesc, prometheus.GaugeValue, s.IPv6TransmitPackets, l...)
 
 	if s.IsPhysical {
 		adminUp := 0
@@ -200,17 +212,17 @@ func (*interfaceCollector) collectForInterface(s *InterfaceStats, ch chan<- prom
 			err = 1
 		}
 
-		ch <- prometheus.MustNewConstMetric(adminStatusDesc, prometheus.GaugeValue, float64(adminUp), l...)
-		ch <- prometheus.MustNewConstMetric(operStatusDesc, prometheus.GaugeValue, float64(operUp), l...)
-		ch <- prometheus.MustNewConstMetric(errorStatusDesc, prometheus.GaugeValue, float64(err), l...)
-		ch <- prometheus.MustNewConstMetric(transmitErrorsDesc, prometheus.GaugeValue, s.TransmitErrors, l...)
-		ch <- prometheus.MustNewConstMetric(transmitDropsDesc, prometheus.GaugeValue, s.TransmitDrops, l...)
-		ch <- prometheus.MustNewConstMetric(receiveErrorsDesc, prometheus.GaugeValue, s.ReceiveErrors, l...)
-		ch <- prometheus.MustNewConstMetric(receiveDropsDesc, prometheus.GaugeValue, s.ReceiveDrops, l...)
-		ch <- prometheus.MustNewConstMetric(interfaceSpeedDesc, prometheus.GaugeValue, s.Speed, l...)
+		ch <- prometheus.MustNewConstMetric(c.adminStatusDesc, prometheus.GaugeValue, float64(adminUp), l...)
+		ch <- prometheus.MustNewConstMetric(c.operStatusDesc, prometheus.GaugeValue, float64(operUp), l...)
+		ch <- prometheus.MustNewConstMetric(c.errorStatusDesc, prometheus.GaugeValue, float64(err), l...)
+		ch <- prometheus.MustNewConstMetric(c.transmitErrorsDesc, prometheus.GaugeValue, s.TransmitErrors, l...)
+		ch <- prometheus.MustNewConstMetric(c.transmitDropsDesc, prometheus.GaugeValue, s.TransmitDrops, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveErrorsDesc, prometheus.GaugeValue, s.ReceiveErrors, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveDropsDesc, prometheus.GaugeValue, s.ReceiveDrops, l...)
+		ch <- prometheus.MustNewConstMetric(c.interfaceSpeedDesc, prometheus.GaugeValue, s.Speed, l...)
 
 		if s.LastFlapped != 0 {
-			ch <- prometheus.MustNewConstMetric(lastFlappedDesc, prometheus.GaugeValue, s.LastFlapped, l...)
+			ch <- prometheus.MustNewConstMetric(c.lastFlappedDesc, prometheus.GaugeValue, s.LastFlapped, l...)
 		}
 	}
 }

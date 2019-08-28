@@ -13,6 +13,7 @@ import (
 	"github.com/czerwonk/junos_exporter/firewall"
 	"github.com/czerwonk/junos_exporter/fpc"
 	"github.com/czerwonk/junos_exporter/interfacediagnostics"
+	"github.com/czerwonk/junos_exporter/interfacelabels"
 	"github.com/czerwonk/junos_exporter/interfacequeue"
 	"github.com/czerwonk/junos_exporter/interfaces"
 	"github.com/czerwonk/junos_exporter/ipsec"
@@ -44,17 +45,57 @@ func init() {
 }
 
 type junosCollector struct {
-	devices           []*connector.Device
-	collectors        map[string]collector.RPCCollector
-	connectionManager *connector.SSHConnectionManager
+	devices    []*connector.Device
+	clients    map[*connector.Device]*rpc.Client
+	collectors map[string]collector.RPCCollector
 }
 
 func newJunosCollector(devices []*connector.Device, connectionManager *connector.SSHConnectionManager) *junosCollector {
-	collectors := collectors()
-	return &junosCollector{devices, collectors, connectionManager}
+	l := interfacelabels.NewDynamicLabels()
+
+	clients := make(map[*connector.Device]*rpc.Client)
+
+	for _, d := range devices {
+		cl, err := clientForDevice(d, connManager)
+		if err != nil {
+			log.Errorf("Could not connect to %s: %s", d, err)
+			continue
+		}
+
+		clients[d] = cl
+
+		if *dynamicIfaceLabels {
+			err = l.CollectDescriptions(d, cl)
+			if err != nil {
+				log.Errorf("Could not get interface descriptions %s: %s", d, err)
+				continue
+			}
+		}
+	}
+
+	return &junosCollector{
+		devices:    devices,
+		collectors: collectors(l),
+		clients:    clients,
+	}
 }
 
-func collectors() map[string]collector.RPCCollector {
+func clientForDevice(device *connector.Device, connManager *connector.SSHConnectionManager) (*rpc.Client, error) {
+	conn, err := connManager.Connect(device)
+	if err != nil {
+		return nil, err
+	}
+
+	c := rpc.NewClient(conn)
+
+	if *debug {
+		c.EnableDebug()
+	}
+
+	return c, nil
+}
+
+func collectors(ifaceLabels *interfacelabels.DynamicLabels) map[string]collector.RPCCollector {
 	m := map[string]collector.RPCCollector{
 		"alarm": alarm.NewCollector(*alarmFilter),
 	}
@@ -62,7 +103,7 @@ func collectors() map[string]collector.RPCCollector {
 	f := &cfg.Features
 
 	if f.Interfaces {
-		m["interfaces"] = interfaces.NewCollector()
+		m["interfaces"] = interfaces.NewCollector(ifaceLabels)
 	}
 
 	if f.Routes {
@@ -110,7 +151,7 @@ func collectors() map[string]collector.RPCCollector {
 	}
 
 	if f.InterfaceDiagnostic {
-		m["interface-diagnostics"] = interfacediagnostics.NewCollector()
+		m["interface-diagnostics"] = interfacediagnostics.NewCollector(ifaceLabels)
 	}
 
 	if f.Storage {
@@ -126,7 +167,7 @@ func collectors() map[string]collector.RPCCollector {
 	}
 
 	if f.InterfaceQueue {
-		m["interface_queue"] = interfacequeue.NewCollector()
+		m["interface_queue"] = interfacequeue.NewCollector(ifaceLabels)
 	}
 
 	return m
@@ -165,22 +206,22 @@ func (c *junosCollector) collectForHost(device *connector.Device, ch chan<- prom
 		ch <- prometheus.MustNewConstMetric(scrapeDurationDesc, prometheus.GaugeValue, time.Since(t).Seconds(), l...)
 	}()
 
-	conn, err := c.connectionManager.Connect(device)
-	if err != nil {
-		log.Errorf("Could not connect to %s: %v", device, err)
+	rpc, found := c.clients[device]
+	if !found {
 		ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 0, l...)
 		return
 	}
 
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 1, l...)
 
-	rpc := rpc.NewClient(conn, *debug)
 	for k, col := range c.collectors {
 		ct := time.Now()
-		err = col.Collect(rpc, ch, l)
+    err := col.Collect(rpc, ch, l)
+    
 		if err != nil && err.Error() != "EOF" {
 			log.Errorln(k + ": " + err.Error())
 		}
-		ch <- prometheus.MustNewConstMetric(scrapeCollectorDurationDesc, prometheus.GaugeValue, time.Since(ct).Seconds(), append(l, k)...)
+    
+    ch <- prometheus.MustNewConstMetric(scrapeCollectorDurationDesc, prometheus.GaugeValue, time.Since(ct).Seconds(), append(l, k)...)
 	}
 }

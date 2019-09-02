@@ -78,7 +78,7 @@ func setDefaultValues(c *Config) {
 	f.Interfaces = true
 	f.InterfaceDiagnostic = true
 	f.InterfaceQueue = true
-	f.IPSec = true
+	f.IPSec = false
 	f.OSPF = true
 	f.ISIS = true
 	f.LDP = true
@@ -86,7 +86,7 @@ func setDefaultValues(c *Config) {
 	f.Firewall = true
 	f.RoutingEngine = true
 	f.Storage = true
-	f.Accounting = true
-	f.FPC = true
-	f.L2Circuit = true
+	f.Accounting = false
+	f.FPC = false
+	f.L2Circuit = false
 }

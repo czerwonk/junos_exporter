@@ -60,10 +60,12 @@ func TestShouldUseDefaults(t *testing.T) {
 	assertFeature("Firewall", c.Features.Firewall, true, t)
 	assertFeature("InterfaceDiagnostic", c.Features.InterfaceDiagnostic, true, t)
 	assertFeature("Interfaces", c.Features.Interfaces, true, t)
-	assertFeature("L2Circuit", c.Features.L2Circuit, true, t)
+	assertFeature("L2Circuit", c.Features.L2Circuit, false, t)
 	assertFeature("Storage", c.Features.Storage, true, t)
-	assertFeature("FPC", c.Features.FPC, true, t)
+	assertFeature("FPC", c.Features.FPC, false, t)
 	assertFeature("InterfaceQueue", c.Features.InterfaceQueue, true, t)
+	assertFeature("IPSec", c.Features.IPSec, false, t)
+	assertFeature("Accounting", c.Features.Accounting, false, t)
 }
 
 func TestShouldParseDevices(t *testing.T) {

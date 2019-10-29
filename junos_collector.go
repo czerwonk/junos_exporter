@@ -25,6 +25,7 @@ import (
 	"github.com/czerwonk/junos_exporter/route"
 	"github.com/czerwonk/junos_exporter/routingengine"
 	"github.com/czerwonk/junos_exporter/rpc"
+	"github.com/czerwonk/junos_exporter/rpki"
 	"github.com/czerwonk/junos_exporter/storage"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
@@ -170,6 +171,10 @@ func collectors(ifaceLabels *interfacelabels.DynamicLabels) map[string]collector
 		m["interface_queue"] = interfacequeue.NewCollector(ifaceLabels)
 	}
 
+	if f.RPKI {
+		m["rpki"] = rpki.NewCollector()
+	}
+
 	return m
 }
 
@@ -216,12 +221,12 @@ func (c *junosCollector) collectForHost(device *connector.Device, ch chan<- prom
 
 	for k, col := range c.collectors {
 		ct := time.Now()
-    err := col.Collect(rpc, ch, l)
-    
+		err := col.Collect(rpc, ch, l)
+
 		if err != nil && err.Error() != "EOF" {
 			log.Errorln(k + ": " + err.Error())
 		}
-    
-    ch <- prometheus.MustNewConstMetric(scrapeCollectorDurationDesc, prometheus.GaugeValue, time.Since(ct).Seconds(), append(l, k)...)
+
+		ch <- prometheus.MustNewConstMetric(scrapeCollectorDurationDesc, prometheus.GaugeValue, time.Since(ct).Seconds(), append(l, k)...)
 	}
 }

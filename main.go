@@ -53,6 +53,7 @@ var (
 	fpcEnabled                  = flag.Bool("fpc.enabled", true, "Scrape line card metrics")
 	accountingEnabled           = flag.Bool("accounting.enabled", false, "Scrape accounting flow metrics")
 	interfaceQueuesEnabled      = flag.Bool("queues.enabled", false, "Scrape interface queue metrics")
+	rpkiEnabled                 = flag.Bool("rpki.enabled", false, "Scrape rpki metrics")
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 	configFile                  = flag.String("config.file", "", "Path to config file")
 	dynamicIfaceLabels          = flag.Bool("dynamic-interface-labels", true, "Parse interface descriptions to get labels dynamicly")
@@ -192,6 +193,7 @@ func loadConfigFromFlags() *config.Config {
 	f.RoutingEngine = *routingEngineEnabled
 	f.Accounting = *accountingEnabled
 	f.FPC = *fpcEnabled
+	f.RPKI = *rpkiEnabled
 
 	return c
 }

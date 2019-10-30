@@ -9,10 +9,11 @@ import (
 
 // Config represents the configuration for the exporter
 type Config struct {
-	Password string          `yaml:"password"`
-	Targets  []string        `yaml:"targets,omitempty"`
-	Devices  []*DeviceConfig `yaml:"devices,omitempty"`
-	Features FeatureConfig   `yaml:"features,omitempty"`
+	Password  string          `yaml:"password"`
+	Targets   []string        `yaml:"targets,omitempty"`
+	Devices   []*DeviceConfig `yaml:"devices,omitempty"`
+	Features  FeatureConfig   `yaml:"features,omitempty"`
+	LSEnabled bool            `yaml:"logical_systems,omitempty"`
 }
 
 // DeviceConfig is the config representation of 1 device
@@ -25,6 +26,7 @@ type DeviceConfig struct {
 
 // FeatureConfig is the list of collectors enabled or disabled
 type FeatureConfig struct {
+	Alarm               bool `yaml:"alarm,omitempty"`
 	Environment         bool `yaml:"environment,omitempty"`
 	BGP                 bool `yaml:"bgp,omitempty"`
 	OSPF                bool `yaml:"ospf,omitempty"`
@@ -73,7 +75,9 @@ func Load(reader io.Reader) (*Config, error) {
 
 func setDefaultValues(c *Config) {
 	c.Password = ""
+	c.LSEnabled = false
 	f := &c.Features
+	f.Alarm = true
 	f.BGP = true
 	f.Environment = true
 	f.Interfaces = true

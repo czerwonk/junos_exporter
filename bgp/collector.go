@@ -38,11 +38,12 @@ func init() {
 }
 
 type bgpCollector struct {
+	LogicalSystem string
 }
 
 // NewCollector creates a new collector
-func NewCollector() collector.RPCCollector {
-	return &bgpCollector{}
+func NewCollector(ls string) collector.RPCCollector {
+	return &bgpCollector{LogicalSystem: ls}
 }
 
 // Describe describes the metrics
@@ -70,7 +71,13 @@ func (c *bgpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 
 func (c *bgpCollector) collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = BGPRPC{}
-	err := client.RunCommandAndParse("show bgp neighbor", &x)
+	var cmd strings.Builder
+	cmd.WriteString("show bgp neighbor")
+	if c.LogicalSystem != "" {
+		cmd.WriteString(" logical-system " + c.LogicalSystem)
+	}
+
+	err := client.RunCommandAndParse(cmd.String(), &x)
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,8 @@
 package ospf
 
 import (
+	"strings"
+
 	"github.com/czerwonk/junos_exporter/collector"
 	"github.com/czerwonk/junos_exporter/rpc"
 	"github.com/prometheus/client_golang/prometheus"
@@ -28,11 +30,12 @@ func init() {
 
 // Collector collects OSPFv3 metrics
 type ospfCollector struct {
+	LogicalSystem string
 }
 
 // NewCollector creates a new collector
-func NewCollector() collector.RPCCollector {
-	return &ospfCollector{}
+func NewCollector(ls string) collector.RPCCollector {
+	return &ospfCollector{LogicalSystem: ls}
 }
 
 // Describe describes the metrics
@@ -55,7 +58,13 @@ func (c *ospfCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 
 func (c *ospfCollector) collectOSPFMetrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = OspfRpc{}
-	err := client.RunCommandAndParse("show ospf overview", &x)
+	var cmd strings.Builder
+	cmd.WriteString("show ospf overview")
+	if c.LogicalSystem != "" {
+		cmd.WriteString(" logical-system " + c.LogicalSystem)
+	}
+
+	err := client.RunCommandAndParse(cmd.String(), &x)
 	if err != nil {
 		return err
 	}
@@ -79,7 +88,13 @@ func (c *ospfCollector) collectOSPFMetrics(client *rpc.Client, ch chan<- prometh
 
 func (c *ospfCollector) collectOSPFv3Metrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = Ospf3Rpc{}
-	err := client.RunCommandAndParse("show ospf3 overview", &x)
+	var cmd strings.Builder
+	cmd.WriteString("show ospf3 overview")
+	if c.LogicalSystem != "" {
+		cmd.WriteString(" logical-system " + c.LogicalSystem)
+	}
+
+	err := client.RunCommandAndParse(cmd.String(), &x)
 	if err != nil {
 		return err
 	}

@@ -51,7 +51,7 @@ type junosCollector struct {
 	collectors map[string]collector.RPCCollector
 }
 
-func newJunosCollector(devices []*connector.Device, connectionManager *connector.SSHConnectionManager) *junosCollector {
+func newJunosCollector(devices []*connector.Device, connectionManager *connector.SSHConnectionManager, ls string) *junosCollector {
 	l := interfacelabels.NewDynamicLabels()
 
 	clients := make(map[*connector.Device]*rpc.Client)
@@ -76,7 +76,7 @@ func newJunosCollector(devices []*connector.Device, connectionManager *connector
 
 	return &junosCollector{
 		devices:    devices,
-		collectors: collectors(l),
+		collectors: collectors(l, ls),
 		clients:    clients,
 	}
 }
@@ -96,12 +96,14 @@ func clientForDevice(device *connector.Device, connManager *connector.SSHConnect
 	return c, nil
 }
 
-func collectors(ifaceLabels *interfacelabels.DynamicLabels) map[string]collector.RPCCollector {
-	m := map[string]collector.RPCCollector{
-		"alarm": alarm.NewCollector(*alarmFilter),
-	}
+func collectors(ifaceLabels *interfacelabels.DynamicLabels, ls string) map[string]collector.RPCCollector {
+	m := make(map[string]collector.RPCCollector)
 
 	f := &cfg.Features
+
+	if f.Alarm {
+		m["alarm"] = alarm.NewCollector(*alarmFilter)
+	}
 
 	if f.Interfaces {
 		m["interfaces"] = interfaces.NewCollector(ifaceLabels)
@@ -112,11 +114,11 @@ func collectors(ifaceLabels *interfacelabels.DynamicLabels) map[string]collector
 	}
 
 	if f.BGP {
-		m["bgp"] = bgp.NewCollector()
+		m["bgp"] = bgp.NewCollector(ls)
 	}
 
 	if f.OSPF {
-		m["ospf"] = ospf.NewCollector()
+		m["ospf"] = ospf.NewCollector(ls)
 	}
 
 	if f.ISIS {

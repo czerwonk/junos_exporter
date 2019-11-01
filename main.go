@@ -36,6 +36,7 @@ var (
 	sshKeepAliveInterval        = flag.Duration("ssh.keep-alive-interval", 10*time.Second, "Duration to wait between keep alive messages")
 	sshKeepAliveTimeout         = flag.Duration("ssh.keep-alive-timeout", 15*time.Second, "Duration to wait for keep alive message response")
 	debug                       = flag.Bool("debug", false, "Show verbose debug output in log")
+	alarmEnabled                = flag.Bool("alarm.enabled", true, "Scrape Alarm metrics")
 	bgpEnabled                  = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
 	ospfEnabled                 = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
 	isisEnabled                 = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
@@ -57,6 +58,7 @@ var (
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 	configFile                  = flag.String("config.file", "", "Path to config file")
 	dynamicIfaceLabels          = flag.Bool("dynamic-interface-labels", true, "Parse interface descriptions to get labels dynamicly")
+	lsEnabled                   = flag.Bool("logical-systems.enabled", false, "Enable logical systems support")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -176,8 +178,10 @@ func loadConfig() (*config.Config, error) {
 func loadConfigFromFlags() *config.Config {
 	c := config.New()
 	c.Targets = strings.Split(*sshHosts, ",")
+	c.LSEnabled = *lsEnabled
 
 	f := &c.Features
+	f.Alarm = *alarmEnabled
 	f.BGP = *bgpEnabled
 	f.Environment = *environmentEnabled
 	f.Firewall = *firewallEnabled
@@ -254,7 +258,13 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := newJunosCollector(devs, connManager)
+	ls := r.URL.Query().Get("ls")
+	if !cfg.LSEnabled && ls != "" {
+		http.Error(w, fmt.Sprintf("Logical systems not enabled but the logical system '%s' in parameters", ls), 400)
+		return
+	}
+
+	c := newJunosCollector(devs, connManager, ls)
 	reg.MustRegister(c)
 
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{

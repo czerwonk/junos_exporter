@@ -51,7 +51,7 @@ type junosCollector struct {
 	collectors map[string]collector.RPCCollector
 }
 
-func newJunosCollector(devices []*connector.Device, connectionManager *connector.SSHConnectionManager, ls string) *junosCollector {
+func newJunosCollector(devices []*connector.Device, connectionManager *connector.SSHConnectionManager, logicalSystem string) *junosCollector {
 	l := interfacelabels.NewDynamicLabels()
 
 	clients := make(map[*connector.Device]*rpc.Client)
@@ -76,7 +76,7 @@ func newJunosCollector(devices []*connector.Device, connectionManager *connector
 
 	return &junosCollector{
 		devices:    devices,
-		collectors: collectors(l, ls),
+		collectors: collectors(l, logicalSystem),
 		clients:    clients,
 	}
 }
@@ -96,7 +96,7 @@ func clientForDevice(device *connector.Device, connManager *connector.SSHConnect
 	return c, nil
 }
 
-func collectors(ifaceLabels *interfacelabels.DynamicLabels, ls string) map[string]collector.RPCCollector {
+func collectors(ifaceLabels *interfacelabels.DynamicLabels, logicalSystem string) map[string]collector.RPCCollector {
 	m := make(map[string]collector.RPCCollector)
 
 	f := &cfg.Features
@@ -114,11 +114,11 @@ func collectors(ifaceLabels *interfacelabels.DynamicLabels, ls string) map[strin
 	}
 
 	if f.BGP {
-		m["bgp"] = bgp.NewCollector(ls)
+		m["bgp"] = bgp.NewCollector(logicalSystem)
 	}
 
 	if f.OSPF {
-		m["ospf"] = ospf.NewCollector(ls)
+		m["ospf"] = ospf.NewCollector(logicalSystem)
 	}
 
 	if f.ISIS {

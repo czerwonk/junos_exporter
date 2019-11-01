@@ -34,8 +34,8 @@ type ospfCollector struct {
 }
 
 // NewCollector creates a new collector
-func NewCollector(ls string) collector.RPCCollector {
-	return &ospfCollector{LogicalSystem: ls}
+func NewCollector(logicalSystem string) collector.RPCCollector {
+	return &ospfCollector{LogicalSystem: logicalSystem}
 }
 
 // Describe describes the metrics

@@ -42,8 +42,8 @@ type bgpCollector struct {
 }
 
 // NewCollector creates a new collector
-func NewCollector(ls string) collector.RPCCollector {
-	return &bgpCollector{LogicalSystem: ls}
+func NewCollector(logicalSystem string) collector.RPCCollector {
+	return &bgpCollector{LogicalSystem: logicalSystem}
 }
 
 // Describe describes the metrics

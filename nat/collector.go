@@ -202,11 +202,32 @@ var (
 	natXlateFreeNullExtDesc                        *prometheus.Desc
 	natunsupportedIcmpTypeNaptDesc                 *prometheus.Desc
 	natunsupportedLayer4NaptDesc                   *prometheus.Desc
-
+	portsInUseDesc                                 *prometheus.Desc
+	outOfPortErrorsDesc                            *prometheus.Desc
+	parityPortErrorsDesc                           *prometheus.Desc
+	preserveRangeErrorsDesc                        *prometheus.Desc
+	maxPortsInUseDesc                              *prometheus.Desc
+	appPortErrorsDesc                              *prometheus.Desc
+	appExceedPortLimitErrorsDesc                   *prometheus.Desc
+	memAllocErrorsDesc                             *prometheus.Desc
+	maxPortBlocksUsedDesc                          *prometheus.Desc
+	blocksInUseDesc                                *prometheus.Desc
+	blockAllocationErrorsDesc                      *prometheus.Desc
+	blocksLimitExceededErrorsDesc                  *prometheus.Desc
+	usersDesc                                      *prometheus.Desc
+	eifInboundSessionCountDesc                     *prometheus.Desc
+	eifInboundLimitExceedDropDesc                  *prometheus.Desc
+	portBlockSizeDesc                              *prometheus.Desc
+	activeBlockTimeoutDesc                         *prometheus.Desc
+	maxBlocksPerAddressDesc                        *prometheus.Desc
+	effectivePortBlocksDesc                        *prometheus.Desc
+	effectivePortsDesc                             *prometheus.Desc
+	portBlockEfficiencyDesc                        *prometheus.Desc
 )
 
 func init() {
-	l := []string{"target", "name"}
+	l := []string{"target", "interface"}
+	lpool :=[]string{"target", "interface", "pool_name", "translation_type", "port_range", "port_block_type"}
 
 	nat64DfbitSetDesc =                              prometheus.NewDesc(prefix+"nat64_dfbit_set", "NAT64 - dfbit set", l, nil)
 	nat64ErrMapDstDesc =                             prometheus.NewDesc(prefix+"nat64_err_map_dst", "NAT64 error - mapping ipv6 destination", l, nil)
@@ -401,6 +422,27 @@ func init() {
 	natXlateFreeNullExtDesc =                        prometheus.NewDesc(prefix+"nat_xlate_free_null_ext", "NAT error - xlate free called with null ext", l, nil)
 	natunsupportedIcmpTypeNaptDesc =                 prometheus.NewDesc(prefix+"nat_unsupported_icmp_type_napt", "NAT unsupported icmp id for port translation", l, nil)
 	natunsupportedLayer4NaptDesc =                   prometheus.NewDesc(prefix+"nat_unsupported_layer_4_napt", "NAT unsupported layer-4 header for port translation", l, nil)
+	portsInUseDesc =                                 prometheus.NewDesc(prefix+"pool_ports_in_use", "NAT ports in use", lpool, nil)
+	outOfPortErrorsDesc =                            prometheus.NewDesc(prefix+"pool_out_of_port_errors", "NAT out of ports errors", lpool, nil)
+	parityPortErrorsDesc =                           prometheus.NewDesc(prefix+"pool_parity_port_errors", "NAT parity port errors", lpool, nil)
+	preserveRangeErrorsDesc =                        prometheus.NewDesc(prefix+"pool_preserve_range_errors", "NAT preserve range errors", lpool, nil)
+	maxPortsInUseDesc =                              prometheus.NewDesc(prefix+"pool_max_ports_in_use", "NAT maximum ports in use", lpool, nil)
+	appPortErrorsDesc =                              prometheus.NewDesc(prefix+"pool_app_port_errors", "NAT AP-P port allocation errors", lpool, nil)
+	appExceedPortLimitErrorsDesc =                   prometheus.NewDesc(prefix+"pool_app_exceed_port_limit_errors", "NAT AP-P port limit exceeded errors", lpool, nil)
+	memAllocErrorsDesc =                             prometheus.NewDesc(prefix+"pool_mem_alloc_errors", "NAT memory allocation errors", lpool, nil)
+	maxPortBlocksUsedDesc =                          prometheus.NewDesc(prefix+"pool_max_port_blocks_used", "NAT max port blocks in use", lpool, nil)
+	blocksInUseDesc =                                prometheus.NewDesc(prefix+"pool_blocks_in_use", "NAT port blocks in use", lpool, nil)
+	blockAllocationErrorsDesc =                      prometheus.NewDesc(prefix+"pool_block_allocation_errors", "NAT port block allocation errors", lpool, nil)
+	blocksLimitExceededErrorsDesc =                  prometheus.NewDesc(prefix+"pool_blocks_limit_exceeded_errors", "NAT port blocks limit exceeded errors", lpool, nil)
+	usersDesc =                                      prometheus.NewDesc(prefix+"pool_users", "NAT current users", lpool, nil)
+	eifInboundSessionCountDesc =                     prometheus.NewDesc(prefix+"pool_eif_inbound_session_count", "NAT inbound EIF sessions", lpool, nil)
+	eifInboundLimitExceedDropDesc =                  prometheus.NewDesc(prefix+"pool_eif_inbound_limit_exceed_drop", "NAT inbound EIF limit exceeded drops", lpool, nil)
+	portBlockSizeDesc =                              prometheus.NewDesc(prefix+"pool_port_block_size", "NAT Pool port block size", lpool, nil)
+	activeBlockTimeoutDesc =                         prometheus.NewDesc(prefix+"pool_active_block_timeout", "NAT Pool active-block-timeout", lpool, nil)
+	maxBlocksPerAddressDesc =                        prometheus.NewDesc(prefix+"pool_max_blocks_per_address", "NAT Pool max blocks per address", lpool, nil)
+	effectivePortBlocksDesc =                        prometheus.NewDesc(prefix+"pool_effective_port_blocks", "NAT Pool effective port blocks", lpool, nil)
+	effectivePortsDesc =                             prometheus.NewDesc(prefix+"pool_effective_ports", "NAT Pool effective ports", lpool, nil)
+	portBlockEfficiencyDesc =                        prometheus.NewDesc(prefix+"pool_port_block_efficiency", "NAT Pool port block efficiency", lpool, nil)
 
 }
 
@@ -423,9 +465,25 @@ func (c *natCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 	if err != nil {
 		return err
 	}
-
 	for _, s := range interfaces {
 		c.collectForInterface(s, ch, labelValues)
+	}
+
+	poolinterfaces, err := c.NatPoolInterfaces(client, ch, labelValues)
+	if err != nil {
+		return err
+	}
+	for _, s := range poolinterfaces {
+		c.collectForPoolInterface(s, ch, labelValues)
+	}
+
+
+	pooldetailinterfaces, err := c.NatPoolDetailInterfaces(client, ch, labelValues)
+	if err != nil {
+		return err
+	}
+	for _, s := range pooldetailinterfaces {
+		c.collectForPoolDetailInterface(s, ch, labelValues)
 	}
 
 	return nil
@@ -635,6 +693,7 @@ func (c *natCollector) NatInterfaces(client *rpc.Client) ([]*NatInterface, error
 			NatXlateFreeNullExt:                        int64(natinterface.NatXlateFreeNullExt),
 			NatunsupportedIcmpTypeNapt:                 int64(natinterface.NatunsupportedIcmpTypeNapt),
 			NatunsupportedLayer4Napt:                   int64(natinterface.NatunsupportedLayer4Napt),
+
 		}
 
 		interfaces = append(interfaces, s)
@@ -839,4 +898,82 @@ func (*natCollector) collectForInterface(s *NatInterface, ch chan<- prometheus.M
 	ch <- prometheus.MustNewConstMetric(natXlateFreeNullExtDesc, prometheus.GaugeValue, float64(s.NatXlateFreeNullExt), l...)
 	ch <- prometheus.MustNewConstMetric(natunsupportedIcmpTypeNaptDesc, prometheus.GaugeValue, float64(s.NatunsupportedIcmpTypeNapt), l...)
 	ch <- prometheus.MustNewConstMetric(natunsupportedLayer4NaptDesc, prometheus.GaugeValue, float64(s.NatunsupportedLayer4Napt), l...)
+}
+
+
+func (c *natCollector) NatPoolInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*NatPoolInterface, error) {
+	var x = NatPoolRpc{}
+	err := client.RunCommandAndParse("show services nat pool", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	interfaces := make([]*NatPoolInterface, 0)
+	for _, natpoolinterface := range x.Information.Interfaces {
+		s := &NatPoolInterface{
+			Interface:							                    natpoolinterface.Interface,
+			ServiceSetName:                             natpoolinterface.ServiceSetName,
+			ServiceNatPools:														natpoolinterface.ServiceNatPools,
+		}
+		interfaces = append(interfaces, s)
+	}
+	return interfaces, nil
+}
+
+func (c *natCollector) collectForPoolInterface(s *NatPoolInterface, ch chan<- prometheus.Metric, labelValues []string) {
+	l := append(labelValues, []string{s.Interface}...)
+
+	for _, pool := range s.ServiceNatPools {
+		lp := append(l, []string{pool.Name, pool.TranslationType, pool.PortRange, pool.PortBlockType}...)
+
+		ch <- prometheus.MustNewConstMetric(portBlockSizeDesc, prometheus.GaugeValue, float64(pool.PortBlockSize), lp...)
+		ch <- prometheus.MustNewConstMetric(activeBlockTimeoutDesc, prometheus.GaugeValue, float64(pool.ActiveBlockTimeout), lp...)
+		ch <- prometheus.MustNewConstMetric(maxBlocksPerAddressDesc, prometheus.GaugeValue, float64(pool.MaxBlocksPerAddress), lp...)
+		ch <- prometheus.MustNewConstMetric(effectivePortBlocksDesc, prometheus.GaugeValue, float64(pool.EffectivePortBlocks), lp...)
+		ch <- prometheus.MustNewConstMetric(effectivePortsDesc, prometheus.GaugeValue, float64(pool.EffectivePorts), lp...)
+		ch <- prometheus.MustNewConstMetric(portBlockEfficiencyDesc, prometheus.GaugeValue, float64(pool.PortBlockEfficiency), lp...)
+	}
+}
+
+
+func (c *natCollector) NatPoolDetailInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*NatPoolDetailInterface, error) {
+	var x = NatPoolDetailRpc{}
+	err := client.RunCommandAndParse("show services nat pool detail", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	interfacesdetail := make([]*NatPoolDetailInterface, 0)
+	for _, natpooldetailinterface := range x.Information.Interfaces {
+		s := &NatPoolDetailInterface{
+			Interface:							                    natpooldetailinterface.Interface,
+			ServiceSetName:                             natpooldetailinterface.ServiceSetName,
+			ServiceNatPoolsDetail:														natpooldetailinterface.ServiceNatPoolsDetail,
+		}
+		interfacesdetail = append(interfacesdetail, s)
+	}
+	return interfacesdetail, nil
+}
+
+func (c *natCollector) collectForPoolDetailInterface(s *NatPoolDetailInterface, ch chan<- prometheus.Metric, labelValues []string) {
+	l := append(labelValues, []string{s.Interface}...)
+
+	for _, pool := range s.ServiceNatPoolsDetail {
+		lp := append(l, []string{pool.Name, pool.TranslationType, pool.PortRange, pool.PortBlockType}...)
+		ch <- prometheus.MustNewConstMetric(portsInUseDesc, prometheus.GaugeValue, float64(pool.PortsInUse), lp...)
+		ch <- prometheus.MustNewConstMetric(outOfPortErrorsDesc, prometheus.GaugeValue, float64(pool.OutOfPortErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(parityPortErrorsDesc, prometheus.GaugeValue, float64(pool.ParityPortErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(preserveRangeErrorsDesc, prometheus.GaugeValue, float64(pool.PreserveRangeErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(maxPortsInUseDesc, prometheus.GaugeValue, float64(pool.MaxPortsInUse), lp...)
+		ch <- prometheus.MustNewConstMetric(appPortErrorsDesc, prometheus.GaugeValue, float64(pool.AppPortErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(appExceedPortLimitErrorsDesc, prometheus.GaugeValue, float64(pool.AppExceedPortLimitErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(memAllocErrorsDesc, prometheus.GaugeValue, float64(pool.MemAllocErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(maxPortBlocksUsedDesc, prometheus.GaugeValue, float64(pool.MaxPortBlocksUsed), lp...)
+		ch <- prometheus.MustNewConstMetric(blocksInUseDesc, prometheus.GaugeValue, float64(pool.BlocksInUse), lp...)
+		ch <- prometheus.MustNewConstMetric(blockAllocationErrorsDesc, prometheus.GaugeValue, float64(pool.BlockAllocationErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(blocksLimitExceededErrorsDesc, prometheus.GaugeValue, float64(pool.BlocksLimitExceededErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(usersDesc, prometheus.GaugeValue, float64(pool.Users), lp...)
+		ch <- prometheus.MustNewConstMetric(eifInboundSessionCountDesc, prometheus.GaugeValue, float64(pool.EifInboundSessionCount), lp...)
+		ch <- prometheus.MustNewConstMetric(eifInboundLimitExceedDropDesc, prometheus.GaugeValue, float64(pool.EifInboundLimitExceedDrop), lp...)
+	}
 }

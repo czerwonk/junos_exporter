@@ -199,5 +199,64 @@ type NatInterface struct {
 	NatJflowLogRateLimitFailInvalidCurrentTime         int64  `xml:"nat_jflow_log_rate_limit_fail_invalid_current_time"`
 	NatEimMappingEifCurrSessUpdateInvalid              int64  `xml:"nat_eim_mapping_eif_curr_sess_update_invalid"`
 	NatEimMappingCreatedWithoutEifSessLimit            int64  `xml:"nat_eim_mapping_created_without_eif_sess_limit"`
-
 }
+
+type NatPoolRpc struct {
+	Information struct {
+	  Interfaces []NatPoolInterface `xml:"sfw-per-service-set-nat-pool"`
+  } `xml:"service-nat-pool-information"`
+}
+
+type NatPoolInterface struct {
+	Interface                 string `xml:"interface-name"`
+	ServiceSetName            string `xml:"service-set-name"`
+	ServiceNatPools           []ServiceNatPool `xml:"service-nat-pool"`
+}
+
+type ServiceNatPool struct {
+	Name                      string  `xml:"pool-name"`
+	TranslationType           string  `xml:"description"`
+	PortRange                 string  `xml:"pool-port-range"`
+	PortBlockType             string `xml:"port-block-type"`
+	PortBlockSize             int64   `xml:"port-block-size"`
+	ActiveBlockTimeout        int64   `xml:"active-block-timeout"`
+	MaxBlocksPerAddress       int64   `xml:"max-blocks-per-address"`
+	EffectivePortBlocks       int64   `xml:"effective-port-blocks"`
+	EffectivePorts            int64   `xml:"effective-ports"`
+	PortBlockEfficiency       float64 `xml:"port-block-efficiency"`
+}
+
+type NatPoolDetailRpc struct {
+	Information struct {
+	  Interfaces []NatPoolDetailInterface `xml:"sfw-per-service-set-nat-pool"`
+  } `xml:"service-nat-pool-information"`
+}
+
+type NatPoolDetailInterface struct {
+	Interface                 string `xml:"interface-name"`
+	ServiceSetName            string `xml:"service-set-name"`
+	ServiceNatPoolsDetail           []ServiceNatPoolDetail `xml:"service-nat-pool"`
+}
+
+type ServiceNatPoolDetail struct {
+	Name                      string `xml:"pool-name"`
+	TranslationType           string `xml:"description"`
+	PortRange                 string `xml:"pool-port-range"`
+	PortsInUse                int64  `xml:"pool-ports-in-use"`
+	OutOfPortErrors           int64  `xml:"pool-out-of-port-errors"`
+	ParityPortErrors          int64  `xml:"pool-parity-port-errors"`
+	PreserveRangeErrors       int64  `xml:"pool-preserve-range-errors"`
+	MaxPortsInUse             int64  `xml:"pool-max-ports-in-use"`
+	AppPortErrors             int64  `xml:"pool-app-port-errors"`
+	AppExceedPortLimitErrors  int64  `xml:"pool-app-exceed-port-limit-errors"`
+	MemAllocErrors            int64  `xml:"pool-mem-alloc-errors"`
+	PortBlockType             string `xml:"port-block-type"`
+	MaxPortBlocksUsed         int64  `xml:"max-port-blocks-used"`
+	BlocksInUse               int64  `xml:"port-blocks-in-use"`
+	BlockAllocationErrors     int64  `xml:"port-block-allocation-errors"`
+	BlocksLimitExceededErrors int64  `xml:"port-blocks-limit-exceeded-errors"`
+	Users                     int64  `xml:"pool-users"`
+	EifInboundSessionCount    int64  `xml:"eif-inbound-session-count"`
+	EifInboundLimitExceedDrop int64  `xml:"eif-inbound-session-limit-exceed-drop"`
+}
+

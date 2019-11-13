@@ -166,6 +166,12 @@ Label name: peer
 Label value: 202739
 ```
 
+### Grafana Dashboards
+
+There is an example Grafana Dashboard included (grafana_dashboard.json), which has some basic variables to choose your device(s) / interface(s)
+
+![screenshot](grafana_screenshot.png)
+
 ## Third Party Components
 This software uses components of the following projects
 * Prometheus Go client library (https://github.com/prometheus/client_golang)

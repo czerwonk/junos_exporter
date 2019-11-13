@@ -177,7 +177,7 @@ This software uses components of the following projects
 * Prometheus Go client library (https://github.com/prometheus/client_golang)
 
 ## Contributers
-Martin (https://github.com/l3akage)
+for a full list of contributers have a look at https://github.com/czerwonk/junos_exporter/graphs/contributors
 
 ## License
 (c) Daniel Czerwonk, 2017. Licensed under [MIT](LICENSE) license.

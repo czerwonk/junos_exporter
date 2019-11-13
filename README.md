@@ -88,7 +88,7 @@ In this example we want to scrape 3 hosts:
 
 ### Docker
 ```bash
-docker run -d --restart unless-stopped -p 9326:9326 -v /opt/junos_exporter_keyfile:/ssh-keyfile:ro -v /opt/junos_exporter_config.yml:/config.yml:ro czerwonk/junos_exporter
+docker run -d --restart unless-stopped -p 9326:9326 -e SSH_KEYFILE=/ssh-keyfile -v /opt/junos_exporter_keyfile:/ssh-keyfile:ro -v /opt/junos_exporter_config.yml:/config.yml:ro czerwonk/junos_exporter
 ```
 
 ### Authentication

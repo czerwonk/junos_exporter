@@ -1,6 +1,7 @@
 package interfacediagnostics
 
 import (
+	"math"
 	"strconv"
 
 	"github.com/czerwonk/junos_exporter/interfacelabels"
@@ -106,58 +107,49 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 }
 
 func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client) ([]*InterfaceDiagnostics, error) {
-	var x = InterfaceDiagnosticsRpc{}
+	var x = InterfaceDiagnosticsRPC{}
 	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
 	if err != nil {
 		return nil, err
 	}
 
+	return interfaceDiagnosticsFromRPCResult(x), nil
+}
+
+func interfaceDiagnosticsFromRPCResult(result InterfaceDiagnosticsRPC) []*InterfaceDiagnostics {
 	diagnostics := make([]*InterfaceDiagnostics, 0)
-	for _, diag := range x.Information.Diagnostics {
+
+	for _, diag := range result.Information.Diagnostics {
 		if diag.Diagnostics.NA == "N/A" {
 			continue
 		}
+
 		d := &InterfaceDiagnostics{
-			Index:             "",
-			Name:              diag.Name,
-			LaserBiasCurrent:  float64(diag.Diagnostics.LaserBiasCurrent),
-			LaserOutputPower:  float64(diag.Diagnostics.LaserOutputPower),
-			ModuleTemperature: float64(diag.Diagnostics.ModuleTemperature.Value),
-		}
-		f, err := strconv.ParseFloat(diag.Diagnostics.LaserOutputPowerDbm, 64)
-		if err == nil {
-			d.LaserOutputPowerDbm = f
-		}
-
-		d.ModuleVoltage = float64(diag.Diagnostics.ModuleVoltage)
-		d.RxSignalAvgOpticalPower = float64(diag.Diagnostics.RxSignalAvgOpticalPower)
-		f, err = strconv.ParseFloat(diag.Diagnostics.RxSignalAvgOpticalPowerDbm, 64)
-		if err == nil {
-			d.RxSignalAvgOpticalPowerDbm = f
-		}
-		d.LaserRxOpticalPower = float64(diag.Diagnostics.LaserRxOpticalPower)
-		f, err = strconv.ParseFloat(diag.Diagnostics.LaserRxOpticalPowerDbm, 64)
-		if err == nil {
-			d.LaserRxOpticalPowerDbm = f
+			Index:                      "",
+			Name:                       diag.Name,
+			LaserBiasCurrent:           float64(diag.Diagnostics.LaserBiasCurrent),
+			LaserOutputPower:           float64(diag.Diagnostics.LaserOutputPower),
+			ModuleTemperature:          float64(diag.Diagnostics.ModuleTemperature.Value),
+			LaserOutputPowerDbm:        dbmStringToFloat(diag.Diagnostics.LaserOutputPowerDbm),
+			ModuleVoltage:              float64(diag.Diagnostics.ModuleVoltage),
+			RxSignalAvgOpticalPower:    float64(diag.Diagnostics.RxSignalAvgOpticalPower),
+			RxSignalAvgOpticalPowerDbm: dbmStringToFloat(diag.Diagnostics.RxSignalAvgOpticalPowerDbm),
+			LaserRxOpticalPower:        float64(diag.Diagnostics.LaserRxOpticalPower),
+			LaserRxOpticalPowerDbm:     dbmStringToFloat(diag.Diagnostics.LaserRxOpticalPowerDbm),
 		}
 
-		if len(diag.Diagnostics.OpticsDiagnosticsLaneValues) > 0 {
-			for _, lane := range diag.Diagnostics.OpticsDiagnosticsLaneValues {
+		if len(diag.Diagnostics.Lanes) > 0 {
+			for _, lane := range diag.Diagnostics.Lanes {
 				l := &InterfaceDiagnostics{
-					Index:            lane.LaneIndex,
-					Name:             diag.Name,
-					LaserBiasCurrent: float64(lane.LaserBiasCurrent),
-					LaserOutputPower: float64(lane.LaserOutputPower),
+					Index:                  lane.LaneIndex,
+					Name:                   diag.Name,
+					LaserBiasCurrent:       float64(lane.LaserBiasCurrent),
+					LaserOutputPower:       float64(lane.LaserOutputPower),
+					LaserOutputPowerDbm:    dbmStringToFloat(lane.LaserOutputPowerDbm),
+					LaserRxOpticalPower:    float64(lane.LaserRxOpticalPower),
+					LaserRxOpticalPowerDbm: dbmStringToFloat(lane.LaserRxOpticalPowerDbm),
 				}
-				f, err := strconv.ParseFloat(lane.LaserOutputPowerDbm, 64)
-				if err == nil {
-					l.LaserOutputPowerDbm = f
-				}
-				l.LaserRxOpticalPower = float64(lane.LaserRxOpticalPower)
-				f, err = strconv.ParseFloat(lane.LaserRxOpticalPowerDbm, 64)
-				if err == nil {
-					l.LaserRxOpticalPowerDbm = f
-				}
+
 				d.Lanes = append(d.Lanes, l)
 			}
 		}
@@ -165,5 +157,14 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client)
 		diagnostics = append(diagnostics, d)
 	}
 
-	return diagnostics, nil
+	return diagnostics
+}
+
+func dbmStringToFloat(value string) float64 {
+	f, err := strconv.ParseFloat(value, 64)
+	if err == nil {
+		return f
+	}
+
+	return math.Inf(-1)
 }

@@ -260,13 +260,13 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ls := r.URL.Query().Get("ls")
-	if !cfg.LSEnabled && ls != "" {
-		http.Error(w, fmt.Sprintf("Logical systems not enabled but the logical system '%s' in parameters", ls), 400)
+	logicalSystem := r.URL.Query().Get("ls")
+	if !cfg.LSEnabled && logicalSystem != "" {
+		http.Error(w, fmt.Sprintf("Logical systems not enabled but the logical system '%s' in parameters", logicalSystem), 400)
 		return
 	}
 
-	c := newJunosCollector(devs, connManager, ls)
+	c := newJunosCollector(devs, connManager, logicalSystem)
 	reg.MustRegister(c)
 
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{

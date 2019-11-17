@@ -27,6 +27,11 @@ func NewCollector() collector.RPCCollector {
 	return &isisCollector{}
 }
 
+// Name returns the name of the collector
+func (*isisCollector) Name() string {
+	return "ISIS"
+}
+
 // Describe describes the metrics
 func (*isisCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- upCount

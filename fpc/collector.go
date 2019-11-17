@@ -37,6 +37,11 @@ func NewCollector() collector.RPCCollector {
 	return &fpcCollector{}
 }
 
+// Name returns the name of the collector
+func (*fpcCollector) Name() string {
+	return "FPC"
+}
+
 // Describe describes the metrics
 func (*fpcCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- upDesc

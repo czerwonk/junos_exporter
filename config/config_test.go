@@ -90,6 +90,26 @@ func TestShouldParseDevices(t *testing.T) {
 	assert.Equal(t, "router2", d2.Host, "Device 2: Host")
 	assert.Equal(t, "password_user", d2.Username, "Device 2: Username")
 	assert.Equal(t, "secret", d2.Password, "Device 2: Password")
+
+	f := d2.Features
+	assertFeature("Alarm", f.Alarm, false, t)
+	assertFeature("Environment", f.Environment, true, t)
+	assertFeature("BGP", f.BGP, true, t)
+	assertFeature("OSPF", f.OSPF, true, t)
+	assertFeature("ISIS", f.ISIS, true, t)
+	assertFeature("NAT", f.NAT, true, t)
+	assertFeature("L2Circuit", f.L2Circuit, true, t)
+	assertFeature("LDP", f.LDP, true, t)
+	assertFeature("Routes", f.Routes, true, t)
+	assertFeature("RoutingEngine", f.RoutingEngine, true, t)
+	assertFeature("Firewall", f.Firewall, true, t)
+	assertFeature("Interfaces", f.Interfaces, true, t)
+	assertFeature("InterfaceDiagnostic", f.InterfaceDiagnostic, true, t)
+	assertFeature("Storage", f.Storage, true, t)
+	assertFeature("Accounting", f.Accounting, true, t)
+	assertFeature("IPSec", f.IPSec, true, t)
+	assertFeature("FPC", f.FPC, true, t)
+	assertFeature("RPKI", f.RPKI, true, t)
 }
 
 func assertFeature(name string, actual, expected bool, t *testing.T) {

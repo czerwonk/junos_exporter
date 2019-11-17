@@ -454,6 +454,11 @@ func NewCollector() collector.RPCCollector {
 	return &natCollector{}
 }
 
+// Name returns the name of the collector
+func (*natCollector) Name() string {
+	return "NAT"
+}
+
 // Describe describes the metrics
 func (*natCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- natTotalSessionInterestDesc

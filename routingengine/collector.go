@@ -45,6 +45,11 @@ func NewCollector() collector.RPCCollector {
 	return &routingEngineCollector{}
 }
 
+// Name returns the name of the collector
+func (*routingEngineCollector) Name() string {
+	return "Routing Engine"
+}
+
 // Describe describes the metrics
 func (*routingEngineCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- temperature

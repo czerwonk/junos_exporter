@@ -32,6 +32,11 @@ type interfaceQueueCollector struct {
 	totalDropBytes       *prometheus.Desc
 }
 
+// Name returns the name of the collector
+func (*interfaceQueueCollector) Name() string {
+	return "Interface Queues"
+}
+
 func (c *interfaceQueueCollector) init() {
 	l := []string{"target", "name", "description"}
 	l = append(l, c.labels.LabelNames()...)

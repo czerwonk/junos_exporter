@@ -38,6 +38,11 @@ func NewCollector() collector.RPCCollector {
 	return &ldpCollector{}
 }
 
+// Name returns the name of the collector
+func (*ldpCollector) Name() string {
+	return "LDP"
+}
+
 // Describe describes the metrics
 func (*ldpCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- ldpNeighborDesc

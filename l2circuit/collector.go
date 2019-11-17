@@ -60,6 +60,11 @@ func NewCollector() collector.RPCCollector {
 	return &l2circuitCollector{}
 }
 
+// Name returns the name of the collector
+func (*l2circuitCollector) Name() string {
+	return "L2 Circuit"
+}
+
 // Describe describes the metrics
 func (*l2circuitCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- l2circuitConnectionStateDesc

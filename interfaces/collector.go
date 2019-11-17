@@ -59,6 +59,11 @@ func NewCollector(labels *interfacelabels.DynamicLabels) collector.RPCCollector 
 	return c
 }
 
+// Name returns the name of the collector
+func (*interfaceCollector) Name() string {
+	return "Interfaces"
+}
+
 func (c *interfaceCollector) init() {
 	l := []string{"target", "name", "description", "mac"}
 	l = append(l, c.labels.LabelNames()...)

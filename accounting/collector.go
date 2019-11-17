@@ -47,6 +47,11 @@ func NewCollector() collector.RPCCollector {
 	return &accountingCollector{}
 }
 
+// Name returns the name of the collector
+func (*accountingCollector) Name() string {
+	return "Accounting"
+}
+
 // Describe describes the metrics
 func (*accountingCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- inlineActiveFlowsDesc

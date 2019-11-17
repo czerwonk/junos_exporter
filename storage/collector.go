@@ -34,6 +34,11 @@ func NewCollector() collector.RPCCollector {
 	return &storageCollector{}
 }
 
+// Name returns the name of the collector
+func (*storageCollector) Name() string {
+	return "Storage"
+}
+
 // Describe describes the metrics
 func (*storageCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- totalBlocksDesc

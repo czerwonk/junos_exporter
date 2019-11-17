@@ -40,6 +40,11 @@ func init() {
 type rpkiCollector struct {
 }
 
+// Name returns the name of the collector
+func (*rpkiCollector) Name() string {
+	return "RPKI"
+}
+
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
 	return &rpkiCollector{}

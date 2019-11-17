@@ -38,6 +38,11 @@ func NewCollector(logicalSystem string) collector.RPCCollector {
 	return &ospfCollector{LogicalSystem: logicalSystem}
 }
 
+// Name returns the name of the collector
+func (*ospfCollector) Name() string {
+	return "OSPF"
+}
+
 // Describe describes the metrics
 func (*ospfCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- ospfUpDesc

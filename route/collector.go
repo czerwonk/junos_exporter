@@ -30,6 +30,11 @@ func init() {
 type routeCollector struct {
 }
 
+// Name returns the name of the collector
+func (*routeCollector) Name() string {
+	return "Routes"
+}
+
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
 	return &routeCollector{}

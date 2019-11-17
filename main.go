@@ -187,6 +187,7 @@ func loadConfigFromFlags() *config.Config {
 	f.Firewall = *firewallEnabled
 	f.Interfaces = *interfacesEnabled
 	f.InterfaceDiagnostic = *interfaceDiagnosticsEnabled
+	f.InterfaceQueue = *interfaceQueuesEnabled
 	f.IPSec = *ipsecEnabled
 	f.ISIS = *isisEnabled
 	f.NAT = *natEnabled
@@ -198,6 +199,7 @@ func loadConfigFromFlags() *config.Config {
 	f.Accounting = *accountingEnabled
 	f.FPC = *fpcEnabled
 	f.RPKI = *rpkiEnabled
+	f.Storage = *storageEnabled
 
 	return c
 }

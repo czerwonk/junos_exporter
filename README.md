@@ -88,7 +88,7 @@ In this example we want to scrape 3 hosts:
 
 ### Docker
 ```bash
-docker run -d --restart unless-stopped -p 9326:9326 -v /opt/junos_exporter_keyfile:/ssh-keyfile:ro -v /opt/junos_exporter_config.yml:/config.yml:ro czerwonk/junos_exporter
+docker run -d --restart unless-stopped -p 9326:9326 -e SSH_KEYFILE=/ssh-keyfile -v /opt/junos_exporter_keyfile:/ssh-keyfile:ro -v /opt/junos_exporter_config.yml:/config.yml:ro czerwonk/junos_exporter
 ```
 
 ### Authentication
@@ -166,12 +166,18 @@ Label name: peer
 Label value: 202739
 ```
 
+### Grafana Dashboards
+
+There is an example Grafana Dashboard included (grafana_dashboard.json), which has some basic variables to choose your device(s) / interface(s)
+
+![screenshot](grafana_screenshot.png)
+
 ## Third Party Components
 This software uses components of the following projects
 * Prometheus Go client library (https://github.com/prometheus/client_golang)
 
 ## Contributers
-Martin (https://github.com/l3akage)
+for a full list of contributers have a look at https://github.com/czerwonk/junos_exporter/graphs/contributors
 
 ## License
 (c) Daniel Czerwonk, 2017. Licensed under [MIT](LICENSE) license.

@@ -202,205 +202,247 @@ var (
 	natXlateFreeNullExtDesc                        *prometheus.Desc
 	natunsupportedIcmpTypeNaptDesc                 *prometheus.Desc
 	natunsupportedLayer4NaptDesc                   *prometheus.Desc
-
+	portsInUseDesc                                 *prometheus.Desc
+	outOfPortErrorsDesc                            *prometheus.Desc
+	parityPortErrorsDesc                           *prometheus.Desc
+	preserveRangeErrorsDesc                        *prometheus.Desc
+	maxPortsInUseDesc                              *prometheus.Desc
+	appPortErrorsDesc                              *prometheus.Desc
+	appExceedPortLimitErrorsDesc                   *prometheus.Desc
+	memAllocErrorsDesc                             *prometheus.Desc
+	maxPortBlocksUsedDesc                          *prometheus.Desc
+	blocksInUseDesc                                *prometheus.Desc
+	blockAllocationErrorsDesc                      *prometheus.Desc
+	blocksLimitExceededErrorsDesc                  *prometheus.Desc
+	usersDesc                                      *prometheus.Desc
+	eifInboundSessionCountDesc                     *prometheus.Desc
+	eifInboundLimitExceedDropDesc                  *prometheus.Desc
+	portBlockSizeDesc                              *prometheus.Desc
+	activeBlockTimeoutDesc                         *prometheus.Desc
+	maxBlocksPerAddressDesc                        *prometheus.Desc
+	effectivePortBlocksDesc                        *prometheus.Desc
+	effectivePortsDesc                             *prometheus.Desc
+	portBlockEfficiencyDesc                        *prometheus.Desc
 )
 
 func init() {
-	l := []string{"target", "name"}
+	l := []string{"target", "interface"}
+	lpool := []string{"target", "interface", "pool_name", "translation_type", "port_range", "port_block_type"}
 
-	nat64DfbitSetDesc =                              prometheus.NewDesc(prefix+"nat64_dfbit_set", "NAT64 - dfbit set", l, nil)
-	nat64ErrMapDstDesc =                             prometheus.NewDesc(prefix+"nat64_err_map_dst", "NAT64 error - mapping ipv6 destination", l, nil)
-	nat64ErrMapSrcDesc =                             prometheus.NewDesc(prefix+"nat64_err_map_src", "NAT64 error - mapping ipv4 source", l, nil)
-	nat64ErrMtuExceedBuildDesc =                     prometheus.NewDesc(prefix+"nat64_err_mtu_exceed_build", "NAT64 error - MTU exceed build", l, nil)
-	nat64ErrMtuExceedSendDesc =                      prometheus.NewDesc(prefix+"nat64_err_mtu_exceed_send", "NAT64 error - MTU exceed send", l, nil)
-	nat64ErrTtlExceedBuildDesc =                     prometheus.NewDesc(prefix+"nat64_err_ttl_exceed_build", "NAT64 error - TTL exceed build", l, nil)
-	nat64ErrTtlExceedSendDesc =                      prometheus.NewDesc(prefix+"nat64_err_ttl_exceed_send", "NAT64 error - TTL exceed send", l, nil)
-	nat64IpoptionsDropDesc =                         prometheus.NewDesc(prefix+"nat64_ipoptions_drop", "NAT64 - IP options drop", l, nil)
-	nat64MtuExceedDesc =                             prometheus.NewDesc(prefix+"nat64_mtu_exceed", "NAT64 - MTU exceeded", l, nil)
-	nat64UdpCksumZeroDropDesc =                      prometheus.NewDesc(prefix+"nat64_udp_cksum_zero_drop", "NAT64 - UDP checksum zero drop", l, nil)
-	nat64UnsuppHdrDropDesc =                         prometheus.NewDesc(prefix+"nat64_unsupp_hdr_drop", "NAT64 - Unsupported header drop", l, nil)
-	nat64UnsuppIcmpCodeDropDesc =                    prometheus.NewDesc(prefix+"nat64_unsupp_icmp_code_drop", "NAT64 - Unsupported ICMP code drop", l, nil)
-	nat64UnsuppIcmpErrorDesc =                       prometheus.NewDesc(prefix+"nat64_unsupp_icmp_error", "NAT64 - Unsupported ICMP error", l, nil)
-	nat64UnsuppIcmpTypeDropDesc =                    prometheus.NewDesc(prefix+"nat64_unsupp_icmp_type_drop", "NAT64 - Unsupported ICMP type drop", l, nil)
-	nat64UnsuppL4DropDesc =                          prometheus.NewDesc(prefix+"nat64_unsupp_l4_drop", "NAT64 - Unsupported L4 drop", l, nil)
-	natAlgDataSessionCreatedDesc =                   prometheus.NewDesc(prefix+"nat_alg_data_session_created", "ALG Session Create", l, nil)
-	natAlgDataSessionInterestDesc =                  prometheus.NewDesc(prefix+"nat_alg_data_session_interest", "ALG Session interest", l, nil)
-	natCmEimLnodeCeletedDesc =                       prometheus.NewDesc(prefix+"nat_cm_eim_lnode_deleted", "EIM List Node Deleted", l, nil)
-	natCmEimLnodeCreatedDesc =                       prometheus.NewDesc(prefix+"nat_cm_eim_lnode_created", "EIM List Node Created", l, nil)
-	natCmSessLnodeCeletedDesc =                      prometheus.NewDesc(prefix+"nat_cm_sess_lnode_deleted", "Session List Node Deleted", l, nil)
-	natCmSessLnodeCreatedDesc =                      prometheus.NewDesc(prefix+"nat_cm_sess_lnode_created", "Session List Node Created", l, nil)
-	natCtrlSessNotXltdChldSessIgndDesc =             prometheus.NewDesc(prefix+"nat_ctrl_sess_not_xltd_chld_sess_ignd", "Control Session Not Xlated Child Sess Ignored", l, nil)
-	natDstIpv4RestorationsDesc =                     prometheus.NewDesc(prefix+"nat_dst_ipv4_restorations", "Dst  IPv4   Restorations", l, nil)
-	natDstIpv4TranslationsDesc =                     prometheus.NewDesc(prefix+"nat_dst_ipv4_translations", "Dst  IPv4   Translations", l, nil)
-	natDstIpv6RestorationsDesc =                     prometheus.NewDesc(prefix+"nat_dst_ipv6_restorations", "Dst  IPv6   Restorations", l, nil)
-	natDstIpv6TranslationsDesc =                     prometheus.NewDesc(prefix+"nat_dst_ipv6_translations", "Dst  IPv6   Translations", l, nil)
-	natDstPortRestorationsDesc =                     prometheus.NewDesc(prefix+"nat_dst_port_restorations", "Dst  Port   Restorations", l, nil)
-	natDstPortTranslationsDesc =                     prometheus.NewDesc(prefix+"nat_dst_port_translations", "Dst  Port   Translations", l, nil)
-	natEifMappingFreeDesc =                          prometheus.NewDesc(prefix+"nat_eif_mapping_free", "NAT EIF mapping Free", l, nil)
-	natEimDrainInLookupDesc =                        prometheus.NewDesc(prefix+"nat_eim_drain_in_lookup", "NAT EIM lookup timer drained", l, nil)
-	natEimDuplicateMappingDesc =                     prometheus.NewDesc(prefix+"nat_eim_duplicate_mapping", "NAT EIM mapping duplicate entry", l, nil)
-	natEimEntryDrainedDesc =                         prometheus.NewDesc(prefix+"nat_eim_entry_drained", "NAT EIM entry drained", l, nil)
-	natEimLookupClearTimerDesc =                     prometheus.NewDesc(prefix+"nat_eim_lookup_clear_timer", "NAT EIM lookup timer cleared for timeout entry", l, nil)
-	natEimLookupEntryWithoutTimerDesc =              prometheus.NewDesc(prefix+"nat_eim_lookup_entry_without_timer", "NAT EIM lookup timeout entry without timer", l, nil)
-	natEimLookupHoldSuccessDesc =                    prometheus.NewDesc(prefix+"nat_eim_lookup_hold_success", "NAT EIM lookup and hold success", l, nil)
-	natEimLookupTimeoutDesc =                        prometheus.NewDesc(prefix+"nat_eim_lookup_timeout", "NAT EIM lookup entry in timeout", l, nil)
-	natEimMappingAllocFailuresDesc =                 prometheus.NewDesc(prefix+"nat_eim_mapping_alloc_failures", "NAT EIM mapping allocation failures", l, nil)
-	natEimMappingCreateFailedDesc =                  prometheus.NewDesc(prefix+"nat_eim_mapping_create_failed", "NAT EIM mapping create failed", l, nil)
-	natEimMappingCreatedDesc =                       prometheus.NewDesc(prefix+"nat_eim_mapping_created", "NAT EIM mapping Created", l, nil)
-	natEimMappingCreatedWithoutEifSessLimitDesc =    prometheus.NewDesc(prefix+"nat_eim_mapping_created_without_eif_sess_limit", "NAT EIM mapping - created without eif sess limit", l, nil)
-	natEimMappingEifCurrSessUpdateInvalidDesc =      prometheus.NewDesc(prefix+"nat_eim_mapping_eif_curr_sess_update_invalid", "NAT EIM mapping - eif curr session update invalid", l, nil)
-	natEimMappingFreeDesc =                          prometheus.NewDesc(prefix+"nat_eim_mapping_free", "NAT EIM mapping Free", l, nil)
-	natEimMappingReusedDesc =                        prometheus.NewDesc(prefix+"nat_eim_mapping_reused", "NAT EIM mapping reused", l, nil)
-	natEimMappingUpdatedDesc =                       prometheus.NewDesc(prefix+"nat_eim_mapping_updated", "NAT EIM mapping Updated", l, nil)
-	natEimMismatchedMappingDesc =                    prometheus.NewDesc(prefix+"nat_eim_mismatched_mapping", "NAT EIM mapping mismatched entry", l, nil)
-	natEimReleaseInTimeoutDesc =                     prometheus.NewDesc(prefix+"nat_eim_release_in_timeout", "NAT EIM release entry in timeout", l, nil)
-	natEimReleaseRaceDesc =                          prometheus.NewDesc(prefix+"nat_eim_release_race", "NAT EIM release race", l, nil)
-	natEimReleaseSetTimeoutDesc =                    prometheus.NewDesc(prefix+"nat_eim_release_set_timeout", "NAT EIM release set entry for timeout", l, nil)
-	natEimReleaseWithoutEntryDesc =                  prometheus.NewDesc(prefix+"nat_eim_release_without_entry", "NAT EIM release without entry", l, nil)
-	natEimTimerEntryRefreshedDesc =                  prometheus.NewDesc(prefix+"nat_eim_timer_entry_refreshed", "NAT EIM timer entry refreshed", l, nil)
-	natEimTimerFreeMappingDesc =                     prometheus.NewDesc(prefix+"nat_eim_timer_free_mapping", "NAT EIM timer entry freed", l, nil)
-	natEimTimerStartInvalidDesc =                    prometheus.NewDesc(prefix+"nat_eim_timer_start_invalid", "NAT EIM timer invalid timer started", l, nil)
-	natEimTimerStartInvalidFailDesc =                prometheus.NewDesc(prefix+"nat_eim_timer_start_invalid_fail", "NAT EIM timer invalid timer start failed", l, nil)
-	natEimTimerUpdateTimeoutDesc =                   prometheus.NewDesc(prefix+"nat_eim_timer_update_timeout", "NAT EIM timer entry updated", l, nil)
-	natEimWaitingForInitDesc =                       prometheus.NewDesc(prefix+"nat_eim_waiting_for_init", "NAT EIM waiting for init", l, nil)
-	natEimWaitingForInitFailedDesc =                 prometheus.NewDesc(prefix+"nat_eim_waiting_for_init_failed", "NAT EIM waiting for init failed", l, nil)
-	natErrorIpVersionDesc =                          prometheus.NewDesc(prefix+"nat_error_ip_version", "NAT error - IP version", l, nil)
-	natErrorNoPolicyDesc =                           prometheus.NewDesc(prefix+"nat_error_no_policy", "NAT error - no policy", l, nil)
-	natFilteringSessionDesc =                        prometheus.NewDesc(prefix+"nat_filtering_session", "Session Created for EIF", l, nil)
-	natFreeFailOnInactiveSsetDesc =                  prometheus.NewDesc(prefix+"nat_free_fail_on_inactive_sset", "NAT Free failures while service set is not active", l, nil)
-	natGreCallIdRestorationsDesc =                   prometheus.NewDesc(prefix+"nat_gre_call_id_restorations", "GRE  CallID Restorations", l, nil)
-	natGreCallIdTranslationsDesc =                   prometheus.NewDesc(prefix+"nat_gre_call_id_translations", "GRE  CallID Translations", l, nil)
-	natIcmpAllocationFailureDesc =                   prometheus.NewDesc(prefix+"nat_icmp_allocation_failure", "ICMP Allocation Failure", l, nil)
-	natIcmpDropDesc =                                prometheus.NewDesc(prefix+"nat_icmp_drop", "ICMP Drops", l, nil)
-	natIcmpErrorDstRestoredDesc =                    prometheus.NewDesc(prefix+"nat_icmp_error_dst_restored", "DST IP restored in ICMP Error", l, nil)
-	natIcmpErrorDstXlatedDesc =                      prometheus.NewDesc(prefix+"nat_icmp_error_dst_xlated", "DST IP translated in ICMP Error", l, nil)
-	natIcmpErrorNewSrcXlatedDesc =                   prometheus.NewDesc(prefix+"nat_icmp_error_new_src_xlated", "New SRC IP translated in ICMP Error", l, nil)
-	natIcmpErrorOrgIpDstPortRestoredDesc =           prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_dst_port_restored", "Inner DST port restored in ICMP Error", l, nil)
-	natIcmpErrorOrgIpDstPortXlatedDesc =             prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_dst_port_xlated", "Inner DST port translated in ICMP Error", l, nil)
-	natIcmpErrorOrgIpDstRestoredDesc =               prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_dst_restored", "Inner DST IP restored in ICMP Error", l, nil)
-	natIcmpErrorOrgIpDstXlatedDesc =                 prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_dst_xlated", "Inner DST IP translated in ICMP Error", l, nil)
-	natIcmpErrorOrgIpSrcPortRestoredDesc =           prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_src_port_restored", "Inner SRC port restored in ICMP Error", l, nil)
-	natIcmpErrorOrgIpSrcPortXlatedDesc =             prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_src_port_xlated", "Inner SRC port translated in ICMP Error", l, nil)
-	natIcmpErrorOrgIpSrcRestoredDesc =               prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_src_restored", "Inner SRC IP restored in ICMP Error", l, nil)
-	natIcmpErrorOrgIpSrcXlatedDesc =                 prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_src_xlated", "Inner SRC IP translated in ICMP Error", l, nil)
-	natIcmpErrorSrcRestoredDesc =                    prometheus.NewDesc(prefix+"nat_icmp_error_src_restored", "SRC IP restored in ICMP Error", l, nil)
-	natIcmpErrorSrcXlatedDesc =                      prometheus.NewDesc(prefix+"nat_icmp_error_src_xlated", "SRC IP translated in ICMP Error", l, nil)
-	natIcmpErrorTranslationsDesc =                   prometheus.NewDesc(prefix+"nat_icmp_error_translations", "ICMP Error  Translations", l, nil)
-	natIcmpIdTranslationsDesc =                      prometheus.NewDesc(prefix+"nat_icmp_id_translations", "ICMP ID     Translations", l, nil)
-	natJflowLogAllocFailDesc =                       prometheus.NewDesc(prefix+"nat_jflow_log_alloc_fail", "NAT jflow-log error - memory allocation fail", l, nil)
-	natJflowLogAllocSuccessDesc =                    prometheus.NewDesc(prefix+"nat_jflow_log_alloc_success", "NAT jflow-log - memory allocation success", l, nil)
-	natJflowLogFreeFailDataDesc =                    prometheus.NewDesc(prefix+"nat_jflow_log_free_fail_data", "NAT jflow-log error - memory free fail null data", l, nil)
-	natJflowLogFreeFailRecordDesc =                  prometheus.NewDesc(prefix+"nat_jflow_log_free_fail_record", "NAT jflow-log error - memory free fail null record", l, nil)
-	natJflowLogFreeSuccessDesc =                     prometheus.NewDesc(prefix+"nat_jflow_log_free_success", "NAT jflow-log - memory free success", l, nil)
-	natJflowLogFreeSuccessFailQueuingDesc =          prometheus.NewDesc(prefix+"nat_jflow_log_free_success_fail_queuing", "NAT jflow-log - memory free success fail queuing", l, nil)
-	natJflowLogInvalidAllocErrDesc =                 prometheus.NewDesc(prefix+"nat_jflow_log_invalid_alloc_err", "NAT jflow-log - invalid allocation error type", l, nil)
-	natJflowLogInvalidInputArgsDesc =                prometheus.NewDesc(prefix+"nat_jflow_log_invalid_input_args", "NAT jflow-log - invalid input arguments", l, nil)
-	natJflowLogInvalidTransTypeDesc =                prometheus.NewDesc(prefix+"nat_jflow_log_invalid_trans_type", "NAT jflow-log error - invalid nat translation type", l, nil)
-	natJflowLogNatSextNullDesc =                     prometheus.NewDesc(prefix+"nat_jflow_log_nat_sext_null", "NAT jflow-log error - session extension get fail", l, nil)
-	natJflowLogRateLimitFailGetNatpoolDesc =         prometheus.NewDesc(prefix+"nat_jflow_log_rate_limit_fail_get_natpool", "NAT jflow-log - rate limit fail to get nat pool", l, nil)
-	natJflowLogRateLimitFailGetNatpoolGivenIdDesc =  prometheus.NewDesc(prefix+"nat_jflow_log_rate_limit_fail_get_natpool_given_id", "NAT jflow-log - rate limit fail to get pool given id", l, nil)
-	natJflowLogRateLimitFailGetServiceSetDesc =      prometheus.NewDesc(prefix+"nat_jflow_log_rate_limit_fail_get_service_set", "NAT jflow-log - rate limit fail to get service set", l, nil)
+	nat64DfbitSetDesc = prometheus.NewDesc(prefix+"nat64_dfbit_set", "NAT64 - dfbit set", l, nil)
+	nat64ErrMapDstDesc = prometheus.NewDesc(prefix+"nat64_err_map_dst", "NAT64 error - mapping ipv6 destination", l, nil)
+	nat64ErrMapSrcDesc = prometheus.NewDesc(prefix+"nat64_err_map_src", "NAT64 error - mapping ipv4 source", l, nil)
+	nat64ErrMtuExceedBuildDesc = prometheus.NewDesc(prefix+"nat64_err_mtu_exceed_build", "NAT64 error - MTU exceed build", l, nil)
+	nat64ErrMtuExceedSendDesc = prometheus.NewDesc(prefix+"nat64_err_mtu_exceed_send", "NAT64 error - MTU exceed send", l, nil)
+	nat64ErrTtlExceedBuildDesc = prometheus.NewDesc(prefix+"nat64_err_ttl_exceed_build", "NAT64 error - TTL exceed build", l, nil)
+	nat64ErrTtlExceedSendDesc = prometheus.NewDesc(prefix+"nat64_err_ttl_exceed_send", "NAT64 error - TTL exceed send", l, nil)
+	nat64IpoptionsDropDesc = prometheus.NewDesc(prefix+"nat64_ipoptions_drop", "NAT64 - IP options drop", l, nil)
+	nat64MtuExceedDesc = prometheus.NewDesc(prefix+"nat64_mtu_exceed", "NAT64 - MTU exceeded", l, nil)
+	nat64UdpCksumZeroDropDesc = prometheus.NewDesc(prefix+"nat64_udp_cksum_zero_drop", "NAT64 - UDP checksum zero drop", l, nil)
+	nat64UnsuppHdrDropDesc = prometheus.NewDesc(prefix+"nat64_unsupp_hdr_drop", "NAT64 - Unsupported header drop", l, nil)
+	nat64UnsuppIcmpCodeDropDesc = prometheus.NewDesc(prefix+"nat64_unsupp_icmp_code_drop", "NAT64 - Unsupported ICMP code drop", l, nil)
+	nat64UnsuppIcmpErrorDesc = prometheus.NewDesc(prefix+"nat64_unsupp_icmp_error", "NAT64 - Unsupported ICMP error", l, nil)
+	nat64UnsuppIcmpTypeDropDesc = prometheus.NewDesc(prefix+"nat64_unsupp_icmp_type_drop", "NAT64 - Unsupported ICMP type drop", l, nil)
+	nat64UnsuppL4DropDesc = prometheus.NewDesc(prefix+"nat64_unsupp_l4_drop", "NAT64 - Unsupported L4 drop", l, nil)
+	natAlgDataSessionCreatedDesc = prometheus.NewDesc(prefix+"nat_alg_data_session_created", "ALG Session Create", l, nil)
+	natAlgDataSessionInterestDesc = prometheus.NewDesc(prefix+"nat_alg_data_session_interest", "ALG Session interest", l, nil)
+	natCmEimLnodeCeletedDesc = prometheus.NewDesc(prefix+"nat_cm_eim_lnode_deleted", "EIM List Node Deleted", l, nil)
+	natCmEimLnodeCreatedDesc = prometheus.NewDesc(prefix+"nat_cm_eim_lnode_created", "EIM List Node Created", l, nil)
+	natCmSessLnodeCeletedDesc = prometheus.NewDesc(prefix+"nat_cm_sess_lnode_deleted", "Session List Node Deleted", l, nil)
+	natCmSessLnodeCreatedDesc = prometheus.NewDesc(prefix+"nat_cm_sess_lnode_created", "Session List Node Created", l, nil)
+	natCtrlSessNotXltdChldSessIgndDesc = prometheus.NewDesc(prefix+"nat_ctrl_sess_not_xltd_chld_sess_ignd", "Control Session Not Xlated Child Sess Ignored", l, nil)
+	natDstIpv4RestorationsDesc = prometheus.NewDesc(prefix+"nat_dst_ipv4_restorations", "Dst  IPv4   Restorations", l, nil)
+	natDstIpv4TranslationsDesc = prometheus.NewDesc(prefix+"nat_dst_ipv4_translations", "Dst  IPv4   Translations", l, nil)
+	natDstIpv6RestorationsDesc = prometheus.NewDesc(prefix+"nat_dst_ipv6_restorations", "Dst  IPv6   Restorations", l, nil)
+	natDstIpv6TranslationsDesc = prometheus.NewDesc(prefix+"nat_dst_ipv6_translations", "Dst  IPv6   Translations", l, nil)
+	natDstPortRestorationsDesc = prometheus.NewDesc(prefix+"nat_dst_port_restorations", "Dst  Port   Restorations", l, nil)
+	natDstPortTranslationsDesc = prometheus.NewDesc(prefix+"nat_dst_port_translations", "Dst  Port   Translations", l, nil)
+	natEifMappingFreeDesc = prometheus.NewDesc(prefix+"nat_eif_mapping_free", "NAT EIF mapping Free", l, nil)
+	natEimDrainInLookupDesc = prometheus.NewDesc(prefix+"nat_eim_drain_in_lookup", "NAT EIM lookup timer drained", l, nil)
+	natEimDuplicateMappingDesc = prometheus.NewDesc(prefix+"nat_eim_duplicate_mapping", "NAT EIM mapping duplicate entry", l, nil)
+	natEimEntryDrainedDesc = prometheus.NewDesc(prefix+"nat_eim_entry_drained", "NAT EIM entry drained", l, nil)
+	natEimLookupClearTimerDesc = prometheus.NewDesc(prefix+"nat_eim_lookup_clear_timer", "NAT EIM lookup timer cleared for timeout entry", l, nil)
+	natEimLookupEntryWithoutTimerDesc = prometheus.NewDesc(prefix+"nat_eim_lookup_entry_without_timer", "NAT EIM lookup timeout entry without timer", l, nil)
+	natEimLookupHoldSuccessDesc = prometheus.NewDesc(prefix+"nat_eim_lookup_hold_success", "NAT EIM lookup and hold success", l, nil)
+	natEimLookupTimeoutDesc = prometheus.NewDesc(prefix+"nat_eim_lookup_timeout", "NAT EIM lookup entry in timeout", l, nil)
+	natEimMappingAllocFailuresDesc = prometheus.NewDesc(prefix+"nat_eim_mapping_alloc_failures", "NAT EIM mapping allocation failures", l, nil)
+	natEimMappingCreateFailedDesc = prometheus.NewDesc(prefix+"nat_eim_mapping_create_failed", "NAT EIM mapping create failed", l, nil)
+	natEimMappingCreatedDesc = prometheus.NewDesc(prefix+"nat_eim_mapping_created", "NAT EIM mapping Created", l, nil)
+	natEimMappingCreatedWithoutEifSessLimitDesc = prometheus.NewDesc(prefix+"nat_eim_mapping_created_without_eif_sess_limit", "NAT EIM mapping - created without eif sess limit", l, nil)
+	natEimMappingEifCurrSessUpdateInvalidDesc = prometheus.NewDesc(prefix+"nat_eim_mapping_eif_curr_sess_update_invalid", "NAT EIM mapping - eif curr session update invalid", l, nil)
+	natEimMappingFreeDesc = prometheus.NewDesc(prefix+"nat_eim_mapping_free", "NAT EIM mapping Free", l, nil)
+	natEimMappingReusedDesc = prometheus.NewDesc(prefix+"nat_eim_mapping_reused", "NAT EIM mapping reused", l, nil)
+	natEimMappingUpdatedDesc = prometheus.NewDesc(prefix+"nat_eim_mapping_updated", "NAT EIM mapping Updated", l, nil)
+	natEimMismatchedMappingDesc = prometheus.NewDesc(prefix+"nat_eim_mismatched_mapping", "NAT EIM mapping mismatched entry", l, nil)
+	natEimReleaseInTimeoutDesc = prometheus.NewDesc(prefix+"nat_eim_release_in_timeout", "NAT EIM release entry in timeout", l, nil)
+	natEimReleaseRaceDesc = prometheus.NewDesc(prefix+"nat_eim_release_race", "NAT EIM release race", l, nil)
+	natEimReleaseSetTimeoutDesc = prometheus.NewDesc(prefix+"nat_eim_release_set_timeout", "NAT EIM release set entry for timeout", l, nil)
+	natEimReleaseWithoutEntryDesc = prometheus.NewDesc(prefix+"nat_eim_release_without_entry", "NAT EIM release without entry", l, nil)
+	natEimTimerEntryRefreshedDesc = prometheus.NewDesc(prefix+"nat_eim_timer_entry_refreshed", "NAT EIM timer entry refreshed", l, nil)
+	natEimTimerFreeMappingDesc = prometheus.NewDesc(prefix+"nat_eim_timer_free_mapping", "NAT EIM timer entry freed", l, nil)
+	natEimTimerStartInvalidDesc = prometheus.NewDesc(prefix+"nat_eim_timer_start_invalid", "NAT EIM timer invalid timer started", l, nil)
+	natEimTimerStartInvalidFailDesc = prometheus.NewDesc(prefix+"nat_eim_timer_start_invalid_fail", "NAT EIM timer invalid timer start failed", l, nil)
+	natEimTimerUpdateTimeoutDesc = prometheus.NewDesc(prefix+"nat_eim_timer_update_timeout", "NAT EIM timer entry updated", l, nil)
+	natEimWaitingForInitDesc = prometheus.NewDesc(prefix+"nat_eim_waiting_for_init", "NAT EIM waiting for init", l, nil)
+	natEimWaitingForInitFailedDesc = prometheus.NewDesc(prefix+"nat_eim_waiting_for_init_failed", "NAT EIM waiting for init failed", l, nil)
+	natErrorIpVersionDesc = prometheus.NewDesc(prefix+"nat_error_ip_version", "NAT error - IP version", l, nil)
+	natErrorNoPolicyDesc = prometheus.NewDesc(prefix+"nat_error_no_policy", "NAT error - no policy", l, nil)
+	natFilteringSessionDesc = prometheus.NewDesc(prefix+"nat_filtering_session", "Session Created for EIF", l, nil)
+	natFreeFailOnInactiveSsetDesc = prometheus.NewDesc(prefix+"nat_free_fail_on_inactive_sset", "NAT Free failures while service set is not active", l, nil)
+	natGreCallIdRestorationsDesc = prometheus.NewDesc(prefix+"nat_gre_call_id_restorations", "GRE  CallID Restorations", l, nil)
+	natGreCallIdTranslationsDesc = prometheus.NewDesc(prefix+"nat_gre_call_id_translations", "GRE  CallID Translations", l, nil)
+	natIcmpAllocationFailureDesc = prometheus.NewDesc(prefix+"nat_icmp_allocation_failure", "ICMP Allocation Failure", l, nil)
+	natIcmpDropDesc = prometheus.NewDesc(prefix+"nat_icmp_drop", "ICMP Drops", l, nil)
+	natIcmpErrorDstRestoredDesc = prometheus.NewDesc(prefix+"nat_icmp_error_dst_restored", "DST IP restored in ICMP Error", l, nil)
+	natIcmpErrorDstXlatedDesc = prometheus.NewDesc(prefix+"nat_icmp_error_dst_xlated", "DST IP translated in ICMP Error", l, nil)
+	natIcmpErrorNewSrcXlatedDesc = prometheus.NewDesc(prefix+"nat_icmp_error_new_src_xlated", "New SRC IP translated in ICMP Error", l, nil)
+	natIcmpErrorOrgIpDstPortRestoredDesc = prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_dst_port_restored", "Inner DST port restored in ICMP Error", l, nil)
+	natIcmpErrorOrgIpDstPortXlatedDesc = prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_dst_port_xlated", "Inner DST port translated in ICMP Error", l, nil)
+	natIcmpErrorOrgIpDstRestoredDesc = prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_dst_restored", "Inner DST IP restored in ICMP Error", l, nil)
+	natIcmpErrorOrgIpDstXlatedDesc = prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_dst_xlated", "Inner DST IP translated in ICMP Error", l, nil)
+	natIcmpErrorOrgIpSrcPortRestoredDesc = prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_src_port_restored", "Inner SRC port restored in ICMP Error", l, nil)
+	natIcmpErrorOrgIpSrcPortXlatedDesc = prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_src_port_xlated", "Inner SRC port translated in ICMP Error", l, nil)
+	natIcmpErrorOrgIpSrcRestoredDesc = prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_src_restored", "Inner SRC IP restored in ICMP Error", l, nil)
+	natIcmpErrorOrgIpSrcXlatedDesc = prometheus.NewDesc(prefix+"nat_icmp_error_org_ip_src_xlated", "Inner SRC IP translated in ICMP Error", l, nil)
+	natIcmpErrorSrcRestoredDesc = prometheus.NewDesc(prefix+"nat_icmp_error_src_restored", "SRC IP restored in ICMP Error", l, nil)
+	natIcmpErrorSrcXlatedDesc = prometheus.NewDesc(prefix+"nat_icmp_error_src_xlated", "SRC IP translated in ICMP Error", l, nil)
+	natIcmpErrorTranslationsDesc = prometheus.NewDesc(prefix+"nat_icmp_error_translations", "ICMP Error  Translations", l, nil)
+	natIcmpIdTranslationsDesc = prometheus.NewDesc(prefix+"nat_icmp_id_translations", "ICMP ID     Translations", l, nil)
+	natJflowLogAllocFailDesc = prometheus.NewDesc(prefix+"nat_jflow_log_alloc_fail", "NAT jflow-log error - memory allocation fail", l, nil)
+	natJflowLogAllocSuccessDesc = prometheus.NewDesc(prefix+"nat_jflow_log_alloc_success", "NAT jflow-log - memory allocation success", l, nil)
+	natJflowLogFreeFailDataDesc = prometheus.NewDesc(prefix+"nat_jflow_log_free_fail_data", "NAT jflow-log error - memory free fail null data", l, nil)
+	natJflowLogFreeFailRecordDesc = prometheus.NewDesc(prefix+"nat_jflow_log_free_fail_record", "NAT jflow-log error - memory free fail null record", l, nil)
+	natJflowLogFreeSuccessDesc = prometheus.NewDesc(prefix+"nat_jflow_log_free_success", "NAT jflow-log - memory free success", l, nil)
+	natJflowLogFreeSuccessFailQueuingDesc = prometheus.NewDesc(prefix+"nat_jflow_log_free_success_fail_queuing", "NAT jflow-log - memory free success fail queuing", l, nil)
+	natJflowLogInvalidAllocErrDesc = prometheus.NewDesc(prefix+"nat_jflow_log_invalid_alloc_err", "NAT jflow-log - invalid allocation error type", l, nil)
+	natJflowLogInvalidInputArgsDesc = prometheus.NewDesc(prefix+"nat_jflow_log_invalid_input_args", "NAT jflow-log - invalid input arguments", l, nil)
+	natJflowLogInvalidTransTypeDesc = prometheus.NewDesc(prefix+"nat_jflow_log_invalid_trans_type", "NAT jflow-log error - invalid nat translation type", l, nil)
+	natJflowLogNatSextNullDesc = prometheus.NewDesc(prefix+"nat_jflow_log_nat_sext_null", "NAT jflow-log error - session extension get fail", l, nil)
+	natJflowLogRateLimitFailGetNatpoolDesc = prometheus.NewDesc(prefix+"nat_jflow_log_rate_limit_fail_get_natpool", "NAT jflow-log - rate limit fail to get nat pool", l, nil)
+	natJflowLogRateLimitFailGetNatpoolGivenIdDesc = prometheus.NewDesc(prefix+"nat_jflow_log_rate_limit_fail_get_natpool_given_id", "NAT jflow-log - rate limit fail to get pool given id", l, nil)
+	natJflowLogRateLimitFailGetServiceSetDesc = prometheus.NewDesc(prefix+"nat_jflow_log_rate_limit_fail_get_service_set", "NAT jflow-log - rate limit fail to get service set", l, nil)
 	natJflowLogRateLimitFailInvalidCurrentTimeDesc = prometheus.NewDesc(prefix+"nat_jflow_log_rate_limit_fail_invalid_current_time", "NAT jflow-log - rate limit fail invalid current time", l, nil)
-	natJflowLogRateLimitFailGetPoolNameDesc =        prometheus.NewDesc(prefix+"nat_jflow_log_rate_limit_fail_get_pool_name", "NAT jflow-log - rate limit fail to get pool name", l, nil)
-	natMapAllocationFailuresDesc =                   prometheus.NewDesc(prefix+"nat_map_allocation_failures", "NAT allocation Failures", l, nil)
-	natMapAllocationSuccessesDesc =                  prometheus.NewDesc(prefix+"nat_map_allocation_successes", "NAT allocation Successes", l, nil)
-	natMapFreeFailuresDesc =                         prometheus.NewDesc(prefix+"nat_map_free_failures", "NAT Free Failures", l, nil)
-	natMapFreeSuccessDesc =                          prometheus.NewDesc(prefix+"nat_map_free_success", "NAT Free Successes", l, nil)
-	natMappingSessionDesc =                          prometheus.NewDesc(prefix+"nat_mapping_session", "Session Created for EIM", l, nil)
-	natNoSextInXlatePktDesc =                        prometheus.NewDesc(prefix+"no_sext_in_xlate_pkt", "No NAT session ext in xlate packet", l, nil)
-	natOcmpIdRestorationsDesc =                      prometheus.NewDesc(prefix+"nat_icmp_id_restorations", "ICMP ID     Restorations", l, nil)
-	natPktDropInBackupStateDesc =                    prometheus.NewDesc(prefix+"nat_pkt_drop_in_backup_state", "Packet drop in backup state", l, nil)
-	natPktDstInNatRouteDesc =                        prometheus.NewDesc(prefix+"nat_pkt_dst_in_nat_route", "Packet  Dst in NAT route", l, nil)
-	natPolicyAddFailedDesc =                         prometheus.NewDesc(prefix+"nat_policy_add_failed", "NAT error - policy add failed", l, nil)
-	natPolicyDeleteFailedDesc =                      prometheus.NewDesc(prefix+"nat_policy_delete_failed", "NAT error - policy delete failed", l, nil)
-	natPoolSessionCntUpdateFailOnCloseDesc =         prometheus.NewDesc(prefix+"pool_session_cnt_update_fail_on_close", "Pool session count update failed on close", l, nil)
-	natPoolSessionCntUpdateFailOnCreateDesc =        prometheus.NewDesc(prefix+"pool_session_cnt_update_fail_on_create", "Pool session count update failed on create", l, nil)
-	natPrefixFilterAllocFailedDesc =                 prometheus.NewDesc(prefix+"nat_prefix_filter_alloc_failed", "NAT error - prefix filter allocation failed", l, nil)
-	natPrefixFilterChangedDesc =                     prometheus.NewDesc(prefix+"nat_prefix_filter_changed", "NAT prefix filter changed", l, nil)
-	natPrefixFilterCreatedDesc =                     prometheus.NewDesc(prefix+"nat_prefix_filter_created", "NAT prefix filter created", l, nil)
-	natPrefixFilterCtrlFreeDesc =                    prometheus.NewDesc(prefix+"nat_prefix_filter_ctrl_free", "NAT prefix filter control free", l, nil)
-	natPrefixFilterMappingAddDesc =                  prometheus.NewDesc(prefix+"nat_prefix_filter_mapping_add", "NAT prefix filter mapping add", l, nil)
-	natPrefixFilterMappingFreeDesc =                 prometheus.NewDesc(prefix+"nat_prefix_filter_mapping_free", "NAT prefix filter mapping free", l, nil)
-	natPrefixFilterMappingRemoveDesc =               prometheus.NewDesc(prefix+"nat_prefix_filter_mapping_remove", "NAT prefix filter mapping remove", l, nil)
-	natPrefixFilterMatchDesc =                       prometheus.NewDesc(prefix+"nat_prefix_filter_match", "NAT prefix filter match", l, nil)
-	natPrefixFilterNameFailedDesc =                  prometheus.NewDesc(prefix+"nat_prefix_filter_name_failed", "NAT error - prefix filter name failed", l, nil)
-	natPrefixFilterNoMatchDesc =                     prometheus.NewDesc(prefix+"nat_prefix_filter_no_match", "NAT prefix filter no match", l, nil)
-	natPrefixFilterTreeAddFailedDesc =               prometheus.NewDesc(prefix+"nat_prefix_filter_tree_add_failed", "NAT error - prefix filter tree add failed", l, nil)
-	natPrefixFilterUnsuppIpVersionDesc =             prometheus.NewDesc(prefix+"nat_prefix_filter_unsupp_ip_version", "NAT prefix filter unsupported IP version", l, nil)
-	natPrefixListCreateFailedDesc =                  prometheus.NewDesc(prefix+"nat_prefix_list_create_failed", "NAT error - prefix list create failed", l, nil)
-	natRuleLookupFailuresDesc =                      prometheus.NewDesc(prefix+"nat_rule_lookup_failures", "NAT rule lookup failures", l, nil)
-	natRuleLookupForIcmpErrFailDesc =                prometheus.NewDesc(prefix+"nat_rule_lookup_for_icmp_err_fail", "ICMP Error  NAT rule lookup fail", l, nil)
-	natSessionExtAllocFailuresDesc =                 prometheus.NewDesc(prefix+"nat_session_ext_alloc_failures", "Session Ext Alloc Failures", l, nil)
-	natSessionExtFreeFailedDesc =                    prometheus.NewDesc(prefix+"nat_session_ext_free_failed", "NAT error - ext free failed", l, nil)
-	natSessionExtSetFailuresDesc =                   prometheus.NewDesc(prefix+"nat_session_ext_set_failures", "Session Ext Set Failures", l, nil)
-	natSessionInterestPubReqDesc =                   prometheus.NewDesc(prefix+"nat_session_interest_pub_req", "Session interest thru pub event", l, nil)
-	natSrcIpv4RestorationsDesc =                     prometheus.NewDesc(prefix+"nat_src_ipv4_restorations", "Src  IPv4   Restorations", l, nil)
-	natSrcIpv4TranslationsDesc =                     prometheus.NewDesc(prefix+"nat_src_ipv4_translations", "Src  IPv4   Translations", l, nil)
-	natSrcIpv6RestorationsDesc =                     prometheus.NewDesc(prefix+"nat_src_ipv6_restorations", "Src  IPv6   Restorations", l, nil)
-	natSrcIpv6TranslationsDesc =                     prometheus.NewDesc(prefix+"nat_src_ipv6_translations", "Src  IPv6   Translations", l, nil)
-	natSrcPortRestorationsDesc =                     prometheus.NewDesc(prefix+"nat_src_port_restorations", "Src  Port   Restorations", l, nil)
-	natSrcPortTranslationsDesc =                     prometheus.NewDesc(prefix+"nat_src_port_translations", "Src  Port   Translations", l, nil)
-	natSubsExtAllocDesc =                            prometheus.NewDesc(prefix+"nat_subs_ext_alloc", "NAT subscriber extension allocated", l, nil)
-	natSubsExtDecInvalEimCntDesc =                   prometheus.NewDesc(prefix+"nat_subs_ext_dec_inval_eim_cnt", "NAT subscriber extension dec invalid eim count", l, nil)
-	natSubsExtDecInvalSessCntDesc =                  prometheus.NewDesc(prefix+"nat_subs_ext_dec_inval_sess_cnt", "NAT subscriber extension dec invalid session count", l, nil)
-	natSubsExtDelayTimerFailDesc =                   prometheus.NewDesc(prefix+"nat_subs_ext_delay_timer_fail", "NAT subscriber extension delay timer start failed", l, nil)
-	natSubsExtDelayTimerSuccessDesc =                prometheus.NewDesc(prefix+"nat_subs_ext_delay_timer_success", "NAT subscriber extension delay timer start successful", l, nil)
-	natSubsExtErrSetStateDesc =                      prometheus.NewDesc(prefix+"nat_subs_ext_err_set_state", "NAT subscriber extension error while setting state", l, nil)
-	natSubsExtInTwDuringFreeDesc =                   prometheus.NewDesc(prefix+"nat_subs_ext_in_tw_during_free", "NAT subscriber extension is in timer wheel during free", l, nil)
-	natSubsExtIncorrectStateDesc =                   prometheus.NewDesc(prefix+"nat_subs_ext_incorrect_state", "NAT subscriber extension incorrect state", l, nil)
-	natSubsExtInlinkSuccessDesc =                    prometheus.NewDesc(prefix+"nat_subs_ext_unlink_success", "NAT subscriber extension unlink successful", l, nil)
-	natSubsExtInvalidEimrefcntDesc =                 prometheus.NewDesc(prefix+"nat_subs_ext_invalid_eimrefcnt", "NAT subscriber extension unexpected eim refcount", l, nil)
-	natSubsExtInvalidParamDesc =                     prometheus.NewDesc(prefix+"nat_subs_ext_invalid_param", "NAT subscriber extension invalid parameters", l, nil)
-	natSubsExtIsInvalidDesc =                        prometheus.NewDesc(prefix+"nat_subs_ext_is_invalid", "NAT subscriber extension is invalid", l, nil)
-	natSubsExtIsInvalidSubsInTwDesc =                prometheus.NewDesc(prefix+"nat_subs_ext_is_invalid_subs_in_tw", "NAT subscriber extension is invalid and in timer wheel", l, nil)
-	natSubsExtIsNullDesc =                           prometheus.NewDesc(prefix+"nat_subs_ext_is_null", "NAT subscriber extension is null", l, nil)
-	natSubsExtLinkExistDesc =                        prometheus.NewDesc(prefix+"nat_subs_ext_link_exist", "NAT subscriber extension link already exists", l, nil)
-	natSubsExtLinkFailDesc =                         prometheus.NewDesc(prefix+"nat_subs_ext_link_fail", "NAT subscriber extension link failed", l, nil)
-	natSubsExtLinkSuccessDesc =                      prometheus.NewDesc(prefix+"nat_subs_ext_link_success", "NAT subscriber extension link successful", l, nil)
-	natSubsExtLinkUnknownRetDesc =                   prometheus.NewDesc(prefix+"nat_subs_ext_link_unknown_ret", "NAT subscriber extension link unknown return value", l, nil)
-	natSubsExtMissingExtDesc =                       prometheus.NewDesc(prefix+"nat_subs_ext_missing_ext", "NAT subscriber extension nat extension is missing", l, nil)
-	natSubsExtNoMemDesc =                            prometheus.NewDesc(prefix+"nat_subs_ext_no_mem", "NAT subscriber extension no memory", l, nil)
-	natSubsExtPortsInUseErrDesc =                    prometheus.NewDesc(prefix+"nat_subs_ext_ports_in_use_err", "NAT subscriber extension ports in use error", l, nil)
-	natSubsExtQueueInconsistentDesc =                prometheus.NewDesc(prefix+"nat_subs_ext_queue_inconsistent", "NAT subscriber extension queue inconsistent", l, nil)
-	natSubsExtRefcountDecFailDesc =                  prometheus.NewDesc(prefix+"nat_subs_ext_refcount_dec_fail", "NAT subscriber extension refcount decrement failed", l, nil)
-	natSubsExtResourceInUseDesc =                    prometheus.NewDesc(prefix+"nat_subs_ext_resource_in_use", "NAT subscriber extension resource in use", l, nil)
-	natSubsExtReturnToPreallocErrDesc =              prometheus.NewDesc(prefix+"nat_subs_ext_return_to_prealloc_err", "NAT subscriber extension return to prealloc queue error", l, nil)
-	natSubsExtReuseFromTimerDesc =                   prometheus.NewDesc(prefix+"nat_subs_ext_reuse_from_timer", "NAT subscriber extension reuse from timer", l, nil)
-	natSubsExtSubsResetFailDesc =                    prometheus.NewDesc(prefix+"nat_subs_ext_subs_reset_fail", "NAT subscriber extension subscriber reset failed", l, nil)
-	natSubsExtSubsSessionCountUpdateIgnoreDesc =     prometheus.NewDesc(prefix+"nat_subs_ext_subs_session_count_update_ignore", "NAT subscriber extension session count update ignored", l, nil)
-	natSubsExtSvcSetIsNullDesc =                     prometheus.NewDesc(prefix+"nat_subs_ext_svc_set_is_null", "NAT subscriber extension svc set is null", l, nil)
-	natSubsExtSvcSetNotActiveDesc =                  prometheus.NewDesc(prefix+"nat_subs_ext_svc_set_not_active", "NAT subscriber extension svc set is not active", l, nil)
-	natSubsExtTimerCbDesc =                          prometheus.NewDesc(prefix+"nat_subs_ext_timer_cb", "NAT subscriber extension timer callback called", l, nil)
-	natSubsExtTimerStartFailDesc =                   prometheus.NewDesc(prefix+"nat_subs_ext_timer_start_fail", "NAT subscriber extension timer start failed", l, nil)
-	natSubsExtTimerStartSuccessDesc =                prometheus.NewDesc(prefix+"nat_subs_ext_timer_start_success", "NAT subscriber extension timer start successful", l, nil)
-	natSubsExtUnlinkBusyDesc =                       prometheus.NewDesc(prefix+"nat_subs_ext_unlink_busy", "NAT subscriber extension unlink on busy", l, nil)
-	natSubsExtUnlinkFailDesc =                       prometheus.NewDesc(prefix+"nat_subs_ext_unlink_fail", "NAT subscriber extension unlink fail", l, nil)
-	natSubsExtUnlinkUnkErrDesc =                     prometheus.NewDesc(prefix+"nat_subs_ext_unlink_unk_err", "NAT subscriber extension unknown error unlinking", l, nil)
-	natSubsExtfreeDesc =                             prometheus.NewDesc(prefix+"nat_subs_ext_free", "NAT subscriber extension freed", l, nil)
-	natTcpPortRestorationsDesc =                     prometheus.NewDesc(prefix+"nat_tcp_port_restorations", "TCP  Port   Restorations", l, nil)
-	natTcpPortTranslationsDesc =                     prometheus.NewDesc(prefix+"nat_tcp_port_translations", "TCP  Port   Translations", l, nil)
-	natTotalBytesProcessedDesc =                     prometheus.NewDesc(prefix+"nat_total_bytes_processed", "Total Bytes   Processed", l, nil)
-	natTotalPktsDiscardedDesc =                      prometheus.NewDesc(prefix+"nat_total_pkts_discarded", "Total Packets Discarded", l, nil)
-	natTotalPktsForwardedDesc =                      prometheus.NewDesc(prefix+"nat_total_pkts_forwarded", "Total Packets Forwarded", l, nil)
-	natTotalPktsProcessedDesc =                      prometheus.NewDesc(prefix+"nat_total_pkts_processed", "Total Packets Processed", l, nil)
-	natTotalPktsRestoredDesc =                       prometheus.NewDesc(prefix+"nat_total_pkts_restored", "Total Packets Restored", l, nil)
-	natTotalPktsTranslatedDesc =                     prometheus.NewDesc(prefix+"nat_total_pkts_translated", "Total Packets Translated", l, nil)
-	natTotalSessionAcceptsDesc =                     prometheus.NewDesc(prefix+"nat_total_session_accepts", "Total Session Accepts", l, nil)
-	natTotalSessionCloseDesc =                       prometheus.NewDesc(prefix+"total_session_close", "Total Session close", l, nil)
-	natTotalSessionCreateDesc =                      prometheus.NewDesc(prefix+"nat_total_session_create", "Total Session Create events", l, nil)
-	natTotalSessionDestroyDesc =                     prometheus.NewDesc(prefix+"nat_total_session_destroy", "Total Session Destroy events", l, nil)
-	natTotalSessionDiscardsDesc =                    prometheus.NewDesc(prefix+"nat_total_session_discards", "Total Session Discards", l, nil)
-	natTotalSessionIgnoresDesc =                     prometheus.NewDesc(prefix+"nat_total_session_ignores", "Total Session Ignores", l, nil)
-	natTotalSessionInterestDesc =                    prometheus.NewDesc(prefix+"nat_total_session_interest", "Total Session Interest events", l, nil)
-	natTotalSessionPubReqDesc =                      prometheus.NewDesc(prefix+"nat_total_session_pub_req", "Total Session Pub Req events", l, nil)
-	natTotalSessionTimeEventDesc =                   prometheus.NewDesc(prefix+"nat_total_session_time_event", "Total Session Time events", l, nil)
-	natUdpPortRestorationsDesc =                     prometheus.NewDesc(prefix+"nat_udp_port_restorations", "UDP  Port   Restorations", l, nil)
-	natUdpPortTranslationsDesc =                     prometheus.NewDesc(prefix+"nat_udp_port_translations", "UDP  Port   Translations", l, nil)
-	natUnexpectedProtoWithPortXlationDesc =          prometheus.NewDesc(prefix+"nat_unexpected_proto_with_port_xlation", "NAT Unexpected Protocol With Port Xlation", l, nil)
-	natUnsupportedGreProtoDesc =                     prometheus.NewDesc(prefix+"nat_unsupported_gre_proto", "GRE  Wrong protocol value", l, nil)
-	natXlateFreeNullExtDesc =                        prometheus.NewDesc(prefix+"nat_xlate_free_null_ext", "NAT error - xlate free called with null ext", l, nil)
-	natunsupportedIcmpTypeNaptDesc =                 prometheus.NewDesc(prefix+"nat_unsupported_icmp_type_napt", "NAT unsupported icmp id for port translation", l, nil)
-	natunsupportedLayer4NaptDesc =                   prometheus.NewDesc(prefix+"nat_unsupported_layer_4_napt", "NAT unsupported layer-4 header for port translation", l, nil)
+	natJflowLogRateLimitFailGetPoolNameDesc = prometheus.NewDesc(prefix+"nat_jflow_log_rate_limit_fail_get_pool_name", "NAT jflow-log - rate limit fail to get pool name", l, nil)
+	natMapAllocationFailuresDesc = prometheus.NewDesc(prefix+"nat_map_allocation_failures", "NAT allocation Failures", l, nil)
+	natMapAllocationSuccessesDesc = prometheus.NewDesc(prefix+"nat_map_allocation_successes", "NAT allocation Successes", l, nil)
+	natMapFreeFailuresDesc = prometheus.NewDesc(prefix+"nat_map_free_failures", "NAT Free Failures", l, nil)
+	natMapFreeSuccessDesc = prometheus.NewDesc(prefix+"nat_map_free_success", "NAT Free Successes", l, nil)
+	natMappingSessionDesc = prometheus.NewDesc(prefix+"nat_mapping_session", "Session Created for EIM", l, nil)
+	natNoSextInXlatePktDesc = prometheus.NewDesc(prefix+"no_sext_in_xlate_pkt", "No NAT session ext in xlate packet", l, nil)
+	natOcmpIdRestorationsDesc = prometheus.NewDesc(prefix+"nat_icmp_id_restorations", "ICMP ID     Restorations", l, nil)
+	natPktDropInBackupStateDesc = prometheus.NewDesc(prefix+"nat_pkt_drop_in_backup_state", "Packet drop in backup state", l, nil)
+	natPktDstInNatRouteDesc = prometheus.NewDesc(prefix+"nat_pkt_dst_in_nat_route", "Packet  Dst in NAT route", l, nil)
+	natPolicyAddFailedDesc = prometheus.NewDesc(prefix+"nat_policy_add_failed", "NAT error - policy add failed", l, nil)
+	natPolicyDeleteFailedDesc = prometheus.NewDesc(prefix+"nat_policy_delete_failed", "NAT error - policy delete failed", l, nil)
+	natPoolSessionCntUpdateFailOnCloseDesc = prometheus.NewDesc(prefix+"pool_session_cnt_update_fail_on_close", "Pool session count update failed on close", l, nil)
+	natPoolSessionCntUpdateFailOnCreateDesc = prometheus.NewDesc(prefix+"pool_session_cnt_update_fail_on_create", "Pool session count update failed on create", l, nil)
+	natPrefixFilterAllocFailedDesc = prometheus.NewDesc(prefix+"nat_prefix_filter_alloc_failed", "NAT error - prefix filter allocation failed", l, nil)
+	natPrefixFilterChangedDesc = prometheus.NewDesc(prefix+"nat_prefix_filter_changed", "NAT prefix filter changed", l, nil)
+	natPrefixFilterCreatedDesc = prometheus.NewDesc(prefix+"nat_prefix_filter_created", "NAT prefix filter created", l, nil)
+	natPrefixFilterCtrlFreeDesc = prometheus.NewDesc(prefix+"nat_prefix_filter_ctrl_free", "NAT prefix filter control free", l, nil)
+	natPrefixFilterMappingAddDesc = prometheus.NewDesc(prefix+"nat_prefix_filter_mapping_add", "NAT prefix filter mapping add", l, nil)
+	natPrefixFilterMappingFreeDesc = prometheus.NewDesc(prefix+"nat_prefix_filter_mapping_free", "NAT prefix filter mapping free", l, nil)
+	natPrefixFilterMappingRemoveDesc = prometheus.NewDesc(prefix+"nat_prefix_filter_mapping_remove", "NAT prefix filter mapping remove", l, nil)
+	natPrefixFilterMatchDesc = prometheus.NewDesc(prefix+"nat_prefix_filter_match", "NAT prefix filter match", l, nil)
+	natPrefixFilterNameFailedDesc = prometheus.NewDesc(prefix+"nat_prefix_filter_name_failed", "NAT error - prefix filter name failed", l, nil)
+	natPrefixFilterNoMatchDesc = prometheus.NewDesc(prefix+"nat_prefix_filter_no_match", "NAT prefix filter no match", l, nil)
+	natPrefixFilterTreeAddFailedDesc = prometheus.NewDesc(prefix+"nat_prefix_filter_tree_add_failed", "NAT error - prefix filter tree add failed", l, nil)
+	natPrefixFilterUnsuppIpVersionDesc = prometheus.NewDesc(prefix+"nat_prefix_filter_unsupp_ip_version", "NAT prefix filter unsupported IP version", l, nil)
+	natPrefixListCreateFailedDesc = prometheus.NewDesc(prefix+"nat_prefix_list_create_failed", "NAT error - prefix list create failed", l, nil)
+	natRuleLookupFailuresDesc = prometheus.NewDesc(prefix+"nat_rule_lookup_failures", "NAT rule lookup failures", l, nil)
+	natRuleLookupForIcmpErrFailDesc = prometheus.NewDesc(prefix+"nat_rule_lookup_for_icmp_err_fail", "ICMP Error  NAT rule lookup fail", l, nil)
+	natSessionExtAllocFailuresDesc = prometheus.NewDesc(prefix+"nat_session_ext_alloc_failures", "Session Ext Alloc Failures", l, nil)
+	natSessionExtFreeFailedDesc = prometheus.NewDesc(prefix+"nat_session_ext_free_failed", "NAT error - ext free failed", l, nil)
+	natSessionExtSetFailuresDesc = prometheus.NewDesc(prefix+"nat_session_ext_set_failures", "Session Ext Set Failures", l, nil)
+	natSessionInterestPubReqDesc = prometheus.NewDesc(prefix+"nat_session_interest_pub_req", "Session interest thru pub event", l, nil)
+	natSrcIpv4RestorationsDesc = prometheus.NewDesc(prefix+"nat_src_ipv4_restorations", "Src  IPv4   Restorations", l, nil)
+	natSrcIpv4TranslationsDesc = prometheus.NewDesc(prefix+"nat_src_ipv4_translations", "Src  IPv4   Translations", l, nil)
+	natSrcIpv6RestorationsDesc = prometheus.NewDesc(prefix+"nat_src_ipv6_restorations", "Src  IPv6   Restorations", l, nil)
+	natSrcIpv6TranslationsDesc = prometheus.NewDesc(prefix+"nat_src_ipv6_translations", "Src  IPv6   Translations", l, nil)
+	natSrcPortRestorationsDesc = prometheus.NewDesc(prefix+"nat_src_port_restorations", "Src  Port   Restorations", l, nil)
+	natSrcPortTranslationsDesc = prometheus.NewDesc(prefix+"nat_src_port_translations", "Src  Port   Translations", l, nil)
+	natSubsExtAllocDesc = prometheus.NewDesc(prefix+"nat_subs_ext_alloc", "NAT subscriber extension allocated", l, nil)
+	natSubsExtDecInvalEimCntDesc = prometheus.NewDesc(prefix+"nat_subs_ext_dec_inval_eim_cnt", "NAT subscriber extension dec invalid eim count", l, nil)
+	natSubsExtDecInvalSessCntDesc = prometheus.NewDesc(prefix+"nat_subs_ext_dec_inval_sess_cnt", "NAT subscriber extension dec invalid session count", l, nil)
+	natSubsExtDelayTimerFailDesc = prometheus.NewDesc(prefix+"nat_subs_ext_delay_timer_fail", "NAT subscriber extension delay timer start failed", l, nil)
+	natSubsExtDelayTimerSuccessDesc = prometheus.NewDesc(prefix+"nat_subs_ext_delay_timer_success", "NAT subscriber extension delay timer start successful", l, nil)
+	natSubsExtErrSetStateDesc = prometheus.NewDesc(prefix+"nat_subs_ext_err_set_state", "NAT subscriber extension error while setting state", l, nil)
+	natSubsExtInTwDuringFreeDesc = prometheus.NewDesc(prefix+"nat_subs_ext_in_tw_during_free", "NAT subscriber extension is in timer wheel during free", l, nil)
+	natSubsExtIncorrectStateDesc = prometheus.NewDesc(prefix+"nat_subs_ext_incorrect_state", "NAT subscriber extension incorrect state", l, nil)
+	natSubsExtInlinkSuccessDesc = prometheus.NewDesc(prefix+"nat_subs_ext_unlink_success", "NAT subscriber extension unlink successful", l, nil)
+	natSubsExtInvalidEimrefcntDesc = prometheus.NewDesc(prefix+"nat_subs_ext_invalid_eimrefcnt", "NAT subscriber extension unexpected eim refcount", l, nil)
+	natSubsExtInvalidParamDesc = prometheus.NewDesc(prefix+"nat_subs_ext_invalid_param", "NAT subscriber extension invalid parameters", l, nil)
+	natSubsExtIsInvalidDesc = prometheus.NewDesc(prefix+"nat_subs_ext_is_invalid", "NAT subscriber extension is invalid", l, nil)
+	natSubsExtIsInvalidSubsInTwDesc = prometheus.NewDesc(prefix+"nat_subs_ext_is_invalid_subs_in_tw", "NAT subscriber extension is invalid and in timer wheel", l, nil)
+	natSubsExtIsNullDesc = prometheus.NewDesc(prefix+"nat_subs_ext_is_null", "NAT subscriber extension is null", l, nil)
+	natSubsExtLinkExistDesc = prometheus.NewDesc(prefix+"nat_subs_ext_link_exist", "NAT subscriber extension link already exists", l, nil)
+	natSubsExtLinkFailDesc = prometheus.NewDesc(prefix+"nat_subs_ext_link_fail", "NAT subscriber extension link failed", l, nil)
+	natSubsExtLinkSuccessDesc = prometheus.NewDesc(prefix+"nat_subs_ext_link_success", "NAT subscriber extension link successful", l, nil)
+	natSubsExtLinkUnknownRetDesc = prometheus.NewDesc(prefix+"nat_subs_ext_link_unknown_ret", "NAT subscriber extension link unknown return value", l, nil)
+	natSubsExtMissingExtDesc = prometheus.NewDesc(prefix+"nat_subs_ext_missing_ext", "NAT subscriber extension nat extension is missing", l, nil)
+	natSubsExtNoMemDesc = prometheus.NewDesc(prefix+"nat_subs_ext_no_mem", "NAT subscriber extension no memory", l, nil)
+	natSubsExtPortsInUseErrDesc = prometheus.NewDesc(prefix+"nat_subs_ext_ports_in_use_err", "NAT subscriber extension ports in use error", l, nil)
+	natSubsExtQueueInconsistentDesc = prometheus.NewDesc(prefix+"nat_subs_ext_queue_inconsistent", "NAT subscriber extension queue inconsistent", l, nil)
+	natSubsExtRefcountDecFailDesc = prometheus.NewDesc(prefix+"nat_subs_ext_refcount_dec_fail", "NAT subscriber extension refcount decrement failed", l, nil)
+	natSubsExtResourceInUseDesc = prometheus.NewDesc(prefix+"nat_subs_ext_resource_in_use", "NAT subscriber extension resource in use", l, nil)
+	natSubsExtReturnToPreallocErrDesc = prometheus.NewDesc(prefix+"nat_subs_ext_return_to_prealloc_err", "NAT subscriber extension return to prealloc queue error", l, nil)
+	natSubsExtReuseFromTimerDesc = prometheus.NewDesc(prefix+"nat_subs_ext_reuse_from_timer", "NAT subscriber extension reuse from timer", l, nil)
+	natSubsExtSubsResetFailDesc = prometheus.NewDesc(prefix+"nat_subs_ext_subs_reset_fail", "NAT subscriber extension subscriber reset failed", l, nil)
+	natSubsExtSubsSessionCountUpdateIgnoreDesc = prometheus.NewDesc(prefix+"nat_subs_ext_subs_session_count_update_ignore", "NAT subscriber extension session count update ignored", l, nil)
+	natSubsExtSvcSetIsNullDesc = prometheus.NewDesc(prefix+"nat_subs_ext_svc_set_is_null", "NAT subscriber extension svc set is null", l, nil)
+	natSubsExtSvcSetNotActiveDesc = prometheus.NewDesc(prefix+"nat_subs_ext_svc_set_not_active", "NAT subscriber extension svc set is not active", l, nil)
+	natSubsExtTimerCbDesc = prometheus.NewDesc(prefix+"nat_subs_ext_timer_cb", "NAT subscriber extension timer callback called", l, nil)
+	natSubsExtTimerStartFailDesc = prometheus.NewDesc(prefix+"nat_subs_ext_timer_start_fail", "NAT subscriber extension timer start failed", l, nil)
+	natSubsExtTimerStartSuccessDesc = prometheus.NewDesc(prefix+"nat_subs_ext_timer_start_success", "NAT subscriber extension timer start successful", l, nil)
+	natSubsExtUnlinkBusyDesc = prometheus.NewDesc(prefix+"nat_subs_ext_unlink_busy", "NAT subscriber extension unlink on busy", l, nil)
+	natSubsExtUnlinkFailDesc = prometheus.NewDesc(prefix+"nat_subs_ext_unlink_fail", "NAT subscriber extension unlink fail", l, nil)
+	natSubsExtUnlinkUnkErrDesc = prometheus.NewDesc(prefix+"nat_subs_ext_unlink_unk_err", "NAT subscriber extension unknown error unlinking", l, nil)
+	natSubsExtfreeDesc = prometheus.NewDesc(prefix+"nat_subs_ext_free", "NAT subscriber extension freed", l, nil)
+	natTcpPortRestorationsDesc = prometheus.NewDesc(prefix+"nat_tcp_port_restorations", "TCP  Port   Restorations", l, nil)
+	natTcpPortTranslationsDesc = prometheus.NewDesc(prefix+"nat_tcp_port_translations", "TCP  Port   Translations", l, nil)
+	natTotalBytesProcessedDesc = prometheus.NewDesc(prefix+"nat_total_bytes_processed", "Total Bytes   Processed", l, nil)
+	natTotalPktsDiscardedDesc = prometheus.NewDesc(prefix+"nat_total_pkts_discarded", "Total Packets Discarded", l, nil)
+	natTotalPktsForwardedDesc = prometheus.NewDesc(prefix+"nat_total_pkts_forwarded", "Total Packets Forwarded", l, nil)
+	natTotalPktsProcessedDesc = prometheus.NewDesc(prefix+"nat_total_pkts_processed", "Total Packets Processed", l, nil)
+	natTotalPktsRestoredDesc = prometheus.NewDesc(prefix+"nat_total_pkts_restored", "Total Packets Restored", l, nil)
+	natTotalPktsTranslatedDesc = prometheus.NewDesc(prefix+"nat_total_pkts_translated", "Total Packets Translated", l, nil)
+	natTotalSessionAcceptsDesc = prometheus.NewDesc(prefix+"nat_total_session_accepts", "Total Session Accepts", l, nil)
+	natTotalSessionCloseDesc = prometheus.NewDesc(prefix+"total_session_close", "Total Session close", l, nil)
+	natTotalSessionCreateDesc = prometheus.NewDesc(prefix+"nat_total_session_create", "Total Session Create events", l, nil)
+	natTotalSessionDestroyDesc = prometheus.NewDesc(prefix+"nat_total_session_destroy", "Total Session Destroy events", l, nil)
+	natTotalSessionDiscardsDesc = prometheus.NewDesc(prefix+"nat_total_session_discards", "Total Session Discards", l, nil)
+	natTotalSessionIgnoresDesc = prometheus.NewDesc(prefix+"nat_total_session_ignores", "Total Session Ignores", l, nil)
+	natTotalSessionInterestDesc = prometheus.NewDesc(prefix+"nat_total_session_interest", "Total Session Interest events", l, nil)
+	natTotalSessionPubReqDesc = prometheus.NewDesc(prefix+"nat_total_session_pub_req", "Total Session Pub Req events", l, nil)
+	natTotalSessionTimeEventDesc = prometheus.NewDesc(prefix+"nat_total_session_time_event", "Total Session Time events", l, nil)
+	natUdpPortRestorationsDesc = prometheus.NewDesc(prefix+"nat_udp_port_restorations", "UDP  Port   Restorations", l, nil)
+	natUdpPortTranslationsDesc = prometheus.NewDesc(prefix+"nat_udp_port_translations", "UDP  Port   Translations", l, nil)
+	natUnexpectedProtoWithPortXlationDesc = prometheus.NewDesc(prefix+"nat_unexpected_proto_with_port_xlation", "NAT Unexpected Protocol With Port Xlation", l, nil)
+	natUnsupportedGreProtoDesc = prometheus.NewDesc(prefix+"nat_unsupported_gre_proto", "GRE  Wrong protocol value", l, nil)
+	natXlateFreeNullExtDesc = prometheus.NewDesc(prefix+"nat_xlate_free_null_ext", "NAT error - xlate free called with null ext", l, nil)
+	natunsupportedIcmpTypeNaptDesc = prometheus.NewDesc(prefix+"nat_unsupported_icmp_type_napt", "NAT unsupported icmp id for port translation", l, nil)
+	natunsupportedLayer4NaptDesc = prometheus.NewDesc(prefix+"nat_unsupported_layer_4_napt", "NAT unsupported layer-4 header for port translation", l, nil)
+	portsInUseDesc = prometheus.NewDesc(prefix+"pool_ports_in_use", "NAT ports in use", lpool, nil)
+	outOfPortErrorsDesc = prometheus.NewDesc(prefix+"pool_out_of_port_errors", "NAT out of ports errors", lpool, nil)
+	parityPortErrorsDesc = prometheus.NewDesc(prefix+"pool_parity_port_errors", "NAT parity port errors", lpool, nil)
+	preserveRangeErrorsDesc = prometheus.NewDesc(prefix+"pool_preserve_range_errors", "NAT preserve range errors", lpool, nil)
+	maxPortsInUseDesc = prometheus.NewDesc(prefix+"pool_max_ports_in_use", "NAT maximum ports in use", lpool, nil)
+	appPortErrorsDesc = prometheus.NewDesc(prefix+"pool_app_port_errors", "NAT AP-P port allocation errors", lpool, nil)
+	appExceedPortLimitErrorsDesc = prometheus.NewDesc(prefix+"pool_app_exceed_port_limit_errors", "NAT AP-P port limit exceeded errors", lpool, nil)
+	memAllocErrorsDesc = prometheus.NewDesc(prefix+"pool_mem_alloc_errors", "NAT memory allocation errors", lpool, nil)
+	maxPortBlocksUsedDesc = prometheus.NewDesc(prefix+"pool_max_port_blocks_used", "NAT max port blocks in use", lpool, nil)
+	blocksInUseDesc = prometheus.NewDesc(prefix+"pool_blocks_in_use", "NAT port blocks in use", lpool, nil)
+	blockAllocationErrorsDesc = prometheus.NewDesc(prefix+"pool_block_allocation_errors", "NAT port block allocation errors", lpool, nil)
+	blocksLimitExceededErrorsDesc = prometheus.NewDesc(prefix+"pool_blocks_limit_exceeded_errors", "NAT port blocks limit exceeded errors", lpool, nil)
+	usersDesc = prometheus.NewDesc(prefix+"pool_users", "NAT current users", lpool, nil)
+	eifInboundSessionCountDesc = prometheus.NewDesc(prefix+"pool_eif_inbound_session_count", "NAT inbound EIF sessions", lpool, nil)
+	eifInboundLimitExceedDropDesc = prometheus.NewDesc(prefix+"pool_eif_inbound_limit_exceed_drop", "NAT inbound EIF limit exceeded drops", lpool, nil)
+	portBlockSizeDesc = prometheus.NewDesc(prefix+"pool_port_block_size", "NAT Pool port block size", lpool, nil)
+	activeBlockTimeoutDesc = prometheus.NewDesc(prefix+"pool_active_block_timeout", "NAT Pool active-block-timeout", lpool, nil)
+	maxBlocksPerAddressDesc = prometheus.NewDesc(prefix+"pool_max_blocks_per_address", "NAT Pool max blocks per address", lpool, nil)
+	effectivePortBlocksDesc = prometheus.NewDesc(prefix+"pool_effective_port_blocks", "NAT Pool effective port blocks", lpool, nil)
+	effectivePortsDesc = prometheus.NewDesc(prefix+"pool_effective_ports", "NAT Pool effective ports", lpool, nil)
+	portBlockEfficiencyDesc = prometheus.NewDesc(prefix+"pool_port_block_efficiency", "NAT Pool port block efficiency", lpool, nil)
 
 }
 
@@ -423,9 +465,24 @@ func (c *natCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 	if err != nil {
 		return err
 	}
-
 	for _, s := range interfaces {
 		c.collectForInterface(s, ch, labelValues)
+	}
+
+	poolinterfaces, err := c.NatPoolInterfaces(client, ch, labelValues)
+	if err != nil {
+		return err
+	}
+	for _, s := range poolinterfaces {
+		c.collectForPoolInterface(s, ch, labelValues)
+	}
+
+	pooldetailinterfaces, err := c.NatPoolDetailInterfaces(client, ch, labelValues)
+	if err != nil {
+		return err
+	}
+	for _, s := range pooldetailinterfaces {
+		c.collectForPoolDetailInterface(s, ch, labelValues)
 	}
 
 	return nil
@@ -441,7 +498,7 @@ func (c *natCollector) NatInterfaces(client *rpc.Client) ([]*NatInterface, error
 	interfaces := make([]*NatInterface, 0)
 	for _, natinterface := range x.Interfaces {
 		s := &NatInterface{
-			Interface:							                    natinterface.Interface,
+			Interface:                                  natinterface.Interface,
 			Nat64DfbitSet:                              int64(natinterface.Nat64DfbitSet),
 			Nat64ErrMapDst:                             int64(natinterface.Nat64ErrMapDst),
 			Nat64ErrMapSrc:                             int64(natinterface.Nat64ErrMapSrc),
@@ -839,4 +896,80 @@ func (*natCollector) collectForInterface(s *NatInterface, ch chan<- prometheus.M
 	ch <- prometheus.MustNewConstMetric(natXlateFreeNullExtDesc, prometheus.GaugeValue, float64(s.NatXlateFreeNullExt), l...)
 	ch <- prometheus.MustNewConstMetric(natunsupportedIcmpTypeNaptDesc, prometheus.GaugeValue, float64(s.NatunsupportedIcmpTypeNapt), l...)
 	ch <- prometheus.MustNewConstMetric(natunsupportedLayer4NaptDesc, prometheus.GaugeValue, float64(s.NatunsupportedLayer4Napt), l...)
+}
+
+func (c *natCollector) NatPoolInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*NatPoolInterface, error) {
+	var x = NatPoolRpc{}
+	err := client.RunCommandAndParse("show services nat pool", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	interfaces := make([]*NatPoolInterface, 0)
+	for _, natpoolinterface := range x.Information.Interfaces {
+		s := &NatPoolInterface{
+			Interface:       natpoolinterface.Interface,
+			ServiceSetName:  natpoolinterface.ServiceSetName,
+			ServiceNatPools: natpoolinterface.ServiceNatPools,
+		}
+		interfaces = append(interfaces, s)
+	}
+	return interfaces, nil
+}
+
+func (c *natCollector) collectForPoolInterface(s *NatPoolInterface, ch chan<- prometheus.Metric, labelValues []string) {
+	l := append(labelValues, []string{s.Interface}...)
+
+	for _, pool := range s.ServiceNatPools {
+		lp := append(l, []string{pool.Name, pool.TranslationType, pool.PortRange, pool.PortBlockType}...)
+
+		ch <- prometheus.MustNewConstMetric(portBlockSizeDesc, prometheus.GaugeValue, float64(pool.PortBlockSize), lp...)
+		ch <- prometheus.MustNewConstMetric(activeBlockTimeoutDesc, prometheus.GaugeValue, float64(pool.ActiveBlockTimeout), lp...)
+		ch <- prometheus.MustNewConstMetric(maxBlocksPerAddressDesc, prometheus.GaugeValue, float64(pool.MaxBlocksPerAddress), lp...)
+		ch <- prometheus.MustNewConstMetric(effectivePortBlocksDesc, prometheus.GaugeValue, float64(pool.EffectivePortBlocks), lp...)
+		ch <- prometheus.MustNewConstMetric(effectivePortsDesc, prometheus.GaugeValue, float64(pool.EffectivePorts), lp...)
+		ch <- prometheus.MustNewConstMetric(portBlockEfficiencyDesc, prometheus.GaugeValue, float64(pool.PortBlockEfficiency), lp...)
+	}
+}
+
+func (c *natCollector) NatPoolDetailInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*NatPoolDetailInterface, error) {
+	var x = NatPoolDetailRpc{}
+	err := client.RunCommandAndParse("show services nat pool detail", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	interfacesdetail := make([]*NatPoolDetailInterface, 0)
+	for _, natpooldetailinterface := range x.Information.Interfaces {
+		s := &NatPoolDetailInterface{
+			Interface:             natpooldetailinterface.Interface,
+			ServiceSetName:        natpooldetailinterface.ServiceSetName,
+			ServiceNatPoolsDetail: natpooldetailinterface.ServiceNatPoolsDetail,
+		}
+		interfacesdetail = append(interfacesdetail, s)
+	}
+	return interfacesdetail, nil
+}
+
+func (c *natCollector) collectForPoolDetailInterface(s *NatPoolDetailInterface, ch chan<- prometheus.Metric, labelValues []string) {
+	l := append(labelValues, []string{s.Interface}...)
+
+	for _, pool := range s.ServiceNatPoolsDetail {
+		lp := append(l, []string{pool.Name, pool.TranslationType, pool.PortRange, pool.PortBlockType}...)
+		ch <- prometheus.MustNewConstMetric(portsInUseDesc, prometheus.GaugeValue, float64(pool.PortsInUse), lp...)
+		ch <- prometheus.MustNewConstMetric(outOfPortErrorsDesc, prometheus.GaugeValue, float64(pool.OutOfPortErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(parityPortErrorsDesc, prometheus.GaugeValue, float64(pool.ParityPortErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(preserveRangeErrorsDesc, prometheus.GaugeValue, float64(pool.PreserveRangeErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(maxPortsInUseDesc, prometheus.GaugeValue, float64(pool.MaxPortsInUse), lp...)
+		ch <- prometheus.MustNewConstMetric(appPortErrorsDesc, prometheus.GaugeValue, float64(pool.AppPortErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(appExceedPortLimitErrorsDesc, prometheus.GaugeValue, float64(pool.AppExceedPortLimitErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(memAllocErrorsDesc, prometheus.GaugeValue, float64(pool.MemAllocErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(maxPortBlocksUsedDesc, prometheus.GaugeValue, float64(pool.MaxPortBlocksUsed), lp...)
+		ch <- prometheus.MustNewConstMetric(blocksInUseDesc, prometheus.GaugeValue, float64(pool.BlocksInUse), lp...)
+		ch <- prometheus.MustNewConstMetric(blockAllocationErrorsDesc, prometheus.GaugeValue, float64(pool.BlockAllocationErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(blocksLimitExceededErrorsDesc, prometheus.GaugeValue, float64(pool.BlocksLimitExceededErrors), lp...)
+		ch <- prometheus.MustNewConstMetric(usersDesc, prometheus.GaugeValue, float64(pool.Users), lp...)
+		ch <- prometheus.MustNewConstMetric(eifInboundSessionCountDesc, prometheus.GaugeValue, float64(pool.EifInboundSessionCount), lp...)
+		ch <- prometheus.MustNewConstMetric(eifInboundLimitExceedDropDesc, prometheus.GaugeValue, float64(pool.EifInboundLimitExceedDrop), lp...)
+	}
 }

@@ -4,7 +4,7 @@ WORKDIR /go/src/github.com/czerwonk/junos_exporter
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
 
 FROM alpine
-ENV SSH_KEYFILE "/ssh-keyfile"
+ENV SSH_KEYFILE ""
 ENV CONFIG_FILE "/config.yml"
 ENV ALARM_FILTER ""
 RUN apk --no-cache add ca-certificates

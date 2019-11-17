@@ -18,10 +18,11 @@ type Config struct {
 
 // DeviceConfig is the config representation of 1 device
 type DeviceConfig struct {
-	Host     string `yaml:"host"`
-	Username string `yaml:"username,omitempty"`
-	Password string `yaml:"password,omitempty"`
-	KeyFile  string `yaml:"key_file,omitempty"`
+	Host     string         `yaml:"host"`
+	Username string         `yaml:"username,omitempty"`
+	Password string         `yaml:"password,omitempty"`
+	KeyFile  string         `yaml:"key_file,omitempty"`
+	Features *FeatureConfig `yaml:"features,omitempty"`
 }
 
 // FeatureConfig is the list of collectors enabled or disabled
@@ -95,4 +96,25 @@ func setDefaultValues(c *Config) {
 	f.FPC = false
 	f.L2Circuit = false
 	f.RPKI = false
+}
+
+// FeaturesForDevice gets the feature set configured for a device
+func (c *Config) FeaturesForDevice(host string) *FeatureConfig {
+	d := c.findDeviceConfig(host)
+
+	if d != nil && d.Features != nil {
+		return d.Features
+	}
+
+	return &c.Features
+}
+
+func (c *Config) findDeviceConfig(host string) *DeviceConfig {
+	for _, dc := range c.Devices {
+		if dc.Host == host {
+			return dc
+		}
+	}
+
+	return nil
 }

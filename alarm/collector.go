@@ -36,6 +36,11 @@ func NewCollector(alarmsFilter string) collector.RPCCollector {
 	return c
 }
 
+// Name returns the name of the collector
+func (*alarmCollector) Name() string {
+	return "Alarm"
+}
+
 // Describe describes the metrics
 func (*alarmCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- alarmsYellowCount

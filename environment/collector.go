@@ -30,6 +30,11 @@ func NewCollector() collector.RPCCollector {
 	return &environmentCollector{}
 }
 
+// Name returns the name of the collector
+func (*environmentCollector) Name() string {
+	return "Environment"
+}
+
 // Describe describes the metrics
 func (*environmentCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- temperaturesDesc

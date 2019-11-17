@@ -46,6 +46,11 @@ func NewCollector(logicalSystem string) collector.RPCCollector {
 	return &bgpCollector{LogicalSystem: logicalSystem}
 }
 
+// Name returns the name of the collector
+func (*bgpCollector) Name() string {
+	return "BGP"
+}
+
 // Describe describes the metrics
 func (*bgpCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- upDesc

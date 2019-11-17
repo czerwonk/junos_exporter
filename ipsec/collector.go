@@ -30,6 +30,11 @@ func NewCollector() collector.RPCCollector {
 	return &ipsecCollector{}
 }
 
+// Name returns the name of the collector
+func (*ipsecCollector) Name() string {
+	return "IPSec"
+}
+
 // Describe describes the metrics
 func (*ipsecCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- blockState

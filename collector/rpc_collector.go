@@ -8,6 +8,8 @@ import (
 
 // RPCCollector collects metrics from JunOS using rpc.Client
 type RPCCollector interface {
+	// Name returns an human readable name for logging and debugging purposes
+	Name() string
 
 	// Describe describes the metrics
 	Describe(ch chan<- *prometheus.Desc)

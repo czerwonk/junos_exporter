@@ -1,6 +1,15 @@
 package storage
 
-type StorageRpc struct {
+type MultiRoutingEngineResults struct {
+	Results []MultiRoutingEngineItem `xml:"multi-routing-engine-results"`
+}
+
+type MultiRoutingEngineItem struct {
+	Name    string             `xml:"re-name"`
+	Storage StorageInformation `xml:"multi-routing-engine-item"`
+}
+
+type StorageInformation struct {
 	Information struct {
 		Filesystems []Filesystem `xml:"filesystem"`
 	} `xml:"system-storage-information"`

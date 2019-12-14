@@ -9,6 +9,8 @@ import (
 	"github.com/czerwonk/junos_exporter/connector"
 )
 
+type Parser func([]byte) error
+
 // Client sends commands to JunOS and parses results
 type Client struct {
 	conn  *connector.SSHConnection
@@ -24,6 +26,13 @@ func NewClient(ssh *connector.SSHConnection) *Client {
 
 // RunCommandAndParse runs a command on JunOS and unmarshals the XML result
 func (c *Client) RunCommandAndParse(cmd string, obj interface{}) error {
+	return c.RunCommandAndParseWithParser(cmd, func(b []byte) error {
+		return xml.Unmarshal(b, obj)
+	})
+}
+
+// RunCommandAndParseWithParser runs a command on JunOS and uses the given parser to handle the result
+func (c *Client) RunCommandAndParseWithParser(cmd string, parser Parser) error {
 	if c.debug {
 		log.Printf("Running command on %s: %s\n", c.conn.Host(), cmd)
 	}
@@ -37,7 +46,7 @@ func (c *Client) RunCommandAndParse(cmd string, obj interface{}) error {
 		log.Printf("Output for %s: %s\n", c.conn.Host(), string(b))
 	}
 
-	err = xml.Unmarshal(b, obj)
+	err = parser(b)
 	return err
 }
 

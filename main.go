@@ -21,7 +21,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.9.5"
+const version string = "0.9.5.1"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")

@@ -23,5 +23,11 @@ type FPC struct {
 	UpTime struct {
 		Seconds uint64 `xml:"seconds,attr"`
 	} `xml:"up-time"`
-	MaxPowerConsumption uint `xml:"max-power-consumption,omitempty"`
+	MaxPowerConsumption uint  `xml:"max-power-consumption,omitempty"`
+	Pics                []PIC `xml:"pic"`
+}
+type PIC struct {
+	PicSlot  int    `xml:"pic-slot"`
+	PicState string `xml:"pic-state"`
+	PicType  string `xml:"pic-type"`
 }

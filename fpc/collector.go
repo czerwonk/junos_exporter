@@ -16,6 +16,7 @@ var (
 	memoryDesc      *prometheus.Desc
 	uptimeDesc      *prometheus.Desc
 	powerDesc       *prometheus.Desc
+	picstatusDesc   *prometheus.Desc
 )
 
 type fpcCollector struct {
@@ -30,6 +31,9 @@ func init() {
 
 	l = append(l, "memory_type")
 	memoryDesc = prometheus.NewDesc(prefix+"memory_bytes", "Memory size in bytes", l, nil)
+
+	l_pic := []string{"target", "fpc_slot", "pic_slot", "pic_type"}
+	picstatusDesc = prometheus.NewDesc(prefix+"pic_status", "Status of the PIC (1 = Online, 0 = Offline)", l_pic, nil)
 }
 
 // NewCollector creates a new collector
@@ -49,10 +53,26 @@ func (*fpcCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- memoryDesc
 	ch <- uptimeDesc
 	ch <- powerDesc
+	ch <- picstatusDesc
 }
 
 // Collect collects metrics from JunOS
 func (c *fpcCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	err := c.CollectFPC(client, ch, labelValues)
+	if err != nil {
+		return err
+	}
+
+	err = c.CollectPIC(client, ch, labelValues)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Collect collects metrics from JunOS
+func (c *fpcCollector) CollectFPC(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	r := FPCRpc{}
 	err := client.RunCommandAndParse("show chassis fpc detail", &r)
 	if err != nil {
@@ -63,6 +83,20 @@ func (c *fpcCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 		c.collectForFPC(ch, labelValues, &f)
 	}
 
+	return nil
+}
+
+func (c *fpcCollector) CollectPIC(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	r := FPCRpc{}
+	err := client.RunCommandAndParse("show chassis fpc pic-status", &r)
+	if err != nil {
+		return err
+	}
+	for _, f := range r.Information.FPCs {
+		for _, p := range f.Pics {
+			c.collectForPIC(ch, labelValues, &f, &p)
+		}
+	}
 	return nil
 }
 
@@ -96,4 +130,14 @@ func (c *fpcCollector) collectMemory(memory uint, memType string, ch chan<- prom
 		l := append(labelValues, memType)
 		ch <- prometheus.MustNewConstMetric(memoryDesc, prometheus.GaugeValue, float64(memory), l...)
 	}
+}
+
+func (c *fpcCollector) collectForPIC(ch chan<- prometheus.Metric, labelValues []string, fpc *FPC, pic *PIC) {
+	picup := 0
+	if pic.PicState == "Online" {
+		picup = 1
+	}
+
+	l_pic := append(labelValues, strconv.Itoa(fpc.Slot), strconv.Itoa(pic.PicSlot), pic.PicType)
+	ch <- prometheus.MustNewConstMetric(picstatusDesc, prometheus.GaugeValue, float64(picup), l_pic...)
 }

@@ -20,6 +20,8 @@ var (
 	loadAverageOne     *prometheus.Desc
 	loadAverageFive    *prometheus.Desc
 	loadAverageFifteen *prometheus.Desc
+	reStatus           *prometheus.Desc
+	uptime             *prometheus.Desc
 )
 
 func init() {
@@ -35,6 +37,8 @@ func init() {
 	loadAverageOne = prometheus.NewDesc(prefix+"load_average_one", "Routing Engine load averages for the last 1 minute", l, nil)
 	loadAverageFive = prometheus.NewDesc(prefix+"load_average_five", "Routing Engine load averages for the last 5 minutes", l, nil)
 	loadAverageFifteen = prometheus.NewDesc(prefix+"load_average_fifteen", "Routing Engine load averages for the last 15 minutes", l, nil)
+	uptime = prometheus.NewDesc(prefix+"uptime_seconds", "Seconds since boot", l, nil)
+	reStatus = prometheus.NewDesc(prefix+"status", "Status of routing-engine (1 OK, 2 Testing, 3 Failed, 4 Absent, 5 Present)", l, nil)
 }
 
 type routingEngineCollector struct {
@@ -63,6 +67,8 @@ func (*routingEngineCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- loadAverageOne
 	ch <- loadAverageFive
 	ch <- loadAverageFifteen
+	ch <- reStatus
+	ch <- uptime
 }
 
 // Collect collects metrics from JunOS
@@ -94,6 +100,16 @@ func (c *routingEngineCollector) collectForSlot(re RouteEngine, ch chan<- promet
 	ch <- prometheus.MustNewConstMetric(loadAverageOne, prometheus.GaugeValue, re.LoadAverageOne, l...)
 	ch <- prometheus.MustNewConstMetric(loadAverageFive, prometheus.GaugeValue, re.LoadAverageFive, l...)
 	ch <- prometheus.MustNewConstMetric(loadAverageFifteen, prometheus.GaugeValue, re.LoadAverageFifteen, l...)
+	ch <- prometheus.MustNewConstMetric(uptime, prometheus.CounterValue, float64(re.UpTime.Seconds), l...)
+
+	statusValues := map[string]int{
+		"OK":      1,
+		"Testing": 2,
+		"Failed":  3,
+		"Absent":  4,
+		"Present": 5,
+	}
+	ch <- prometheus.MustNewConstMetric(reStatus, prometheus.GaugeValue, float64(statusValues[re.Status]), l...)
 
 	return nil
 }

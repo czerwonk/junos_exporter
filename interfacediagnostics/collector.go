@@ -1,8 +1,11 @@
 package interfacediagnostics
 
 import (
+	"encoding/xml"
+	"log"
 	"math"
 	"strconv"
+	"strings"
 
 	"github.com/czerwonk/junos_exporter/interfacelabels"
 	"github.com/czerwonk/junos_exporter/rpc"
@@ -78,6 +81,13 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 		return err
 	}
 
+	diagnosticsSatellite, err := c.interfaceDiagnosticsSatellite(client)
+	if err != nil {
+		return err
+	}
+
+	diagnostics = append(diagnostics, diagnosticsSatellite...)
+
 	for _, d := range diagnostics {
 		l := append(labelValues, d.Name)
 		l = append(l, c.labels.ValuesForInterface(client.Device(), d.Name)...)
@@ -114,6 +124,63 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client) ([]*InterfaceDiagnostics, error) {
 	var x = InterfaceDiagnosticsRPC{}
 	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	return interfaceDiagnosticsFromRPCResult(x), nil
+}
+
+func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rpc.Client) ([]*InterfaceDiagnostics, error) {
+	var x = InterfaceDiagnosticsRPC{}
+
+	// NOTE: Junos is broken and delivers incorrect XML
+	// 2020/01/06 12:25:24 Output for X.X.X.X: <rpc-reply xmlns:junos="http://xml.juniper.net/junos/17.3R3/junos">
+	//  <interface-information xmlns="http://xml.juniper.net/junos/17.3R3/junos-interface" junos:style="normal">
+	//      <interface-information xmlns="http://xml.juniper.net/junos/17.3R3/junos-interface" junos:style="normal">
+	//         [..]
+	//         </physical-interface>
+	//      </interface-information>
+	//      <cli>
+	//          <banner>{master}</banner>
+	//      </cli>
+	//  </rpc-reply>
+
+	// workaround: go through all lines of the XML and remove identical, consecutive lines
+	err := client.RunCommandAndParseWithParser("show interfaces diagnostics optics satellite", func(b []byte) error {
+		var (
+			lines     []string = strings.Split(string(b[:]), "\n")
+			lineIndex int
+			tmpByte   []byte
+		)
+
+		// check if satellite is enabled
+		if string(b[:]) == "\nerror: syntax error, expecting <command>: satellite\n" {
+			log.Printf("system doesn't seem to have satellite enabled")
+			return nil
+		}
+
+		for lineIndex = range lines {
+			if lineIndex == 0 {
+				// add good lines to new byte buffer
+				tmpByte = append(tmpByte, lines[lineIndex]...)
+				continue
+			}
+
+			// check if two consecutive lines are identical (except whitespaces)
+			if strings.TrimSpace(lines[lineIndex]) == strings.TrimSpace(lines[lineIndex-1]) {
+				// skip the duplicate line
+				continue
+
+			} else {
+				// add good lines to new byte buffer
+				tmpByte = append(tmpByte, lines[lineIndex]...)
+			}
+		}
+
+		return xml.Unmarshal(tmpByte, &x)
+	})
+
 	if err != nil {
 		return nil, err
 	}

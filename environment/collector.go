@@ -1,6 +1,8 @@
 package environment
 
 import (
+	"encoding/xml"
+	"log"
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/collector"
@@ -74,6 +76,25 @@ func (c *environmentCollector) environmentItems(client *rpc.Client) ([]*temperat
 	err := client.RunCommandAndParse("show chassis environment", &x)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	// gather satellite data
+	if client.Satellite {
+		var y = EnvironmentRpc{}
+		err = client.RunCommandAndParseWithParser("show chassis environment satellite", func(b []byte) error {
+			if string(b[:]) == "\nerror: syntax error, expecting <command>: satellite\n" {
+				log.Printf("system doesn't seem to have satellite enabled")
+				return nil
+			}
+
+			return xml.Unmarshal(b, &y)
+		})
+		if err != nil {
+			return nil, nil, err
+		} else {
+			// add satellite details
+			x.Information.Items = append(x.Information.Items, y.Information.Items...)
+		}
 	}
 
 	// remove duplicates

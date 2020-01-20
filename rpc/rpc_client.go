@@ -10,11 +10,15 @@ import (
 )
 
 type Parser func([]byte) error
+type ClientCfg struct {
+	SatelliteEnabled bool
+}
 
 // Client sends commands to JunOS and parses results
 type Client struct {
-	conn  *connector.SSHConnection
-	debug bool
+	conn      *connector.SSHConnection
+	debug     bool
+	Satellite bool
 }
 
 // NewClient creates a new client to connect to
@@ -63,4 +67,9 @@ func (c *Client) EnableDebug() {
 // DisableDebug disables the debug mode
 func (c *Client) DisableDebug() {
 	c.debug = false
+}
+
+// EnableSatellite enables satellite device metrics gathering
+func (c *Client) EnableSatellite() {
+	c.Satellite = true
 }

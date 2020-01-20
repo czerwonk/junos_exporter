@@ -81,12 +81,15 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 		return err
 	}
 
-	diagnosticsSatellite, err := c.interfaceDiagnosticsSatellite(client)
-	if err != nil {
-		return err
-	}
+	// add satellite details if feature is enabled
+	if client.Satellite {
+		diagnosticsSatellite, err := c.interfaceDiagnosticsSatellite(client)
+		if err != nil {
+			return err
+		}
 
-	diagnostics = append(diagnostics, diagnosticsSatellite...)
+		diagnostics = append(diagnostics, diagnosticsSatellite...)
+	}
 
 	for _, d := range diagnostics {
 		l := append(labelValues, d.Name)

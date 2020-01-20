@@ -79,20 +79,22 @@ func (c *environmentCollector) environmentItems(client *rpc.Client) ([]*temperat
 	}
 
 	// gather satellite data
-	var y = EnvironmentRpc{}
-	err = client.RunCommandAndParseWithParser("show chassis environment satellite", func(b []byte) error {
-		if string(b[:]) == "\nerror: syntax error, expecting <command>: satellite\n" {
-			log.Printf("system doesn't seem to have satellite enabled")
-			return nil
-		}
+	if client.Satellite {
+		var y = EnvironmentRpc{}
+		err = client.RunCommandAndParseWithParser("show chassis environment satellite", func(b []byte) error {
+			if string(b[:]) == "\nerror: syntax error, expecting <command>: satellite\n" {
+				log.Printf("system doesn't seem to have satellite enabled")
+				return nil
+			}
 
-		return xml.Unmarshal(b, &y)
-	})
-	if err != nil {
-		return nil, nil, err
-	} else {
-		// add satellite details
-		x.Information.Items = append(x.Information.Items, y.Information.Items...)
+			return xml.Unmarshal(b, &y)
+		})
+		if err != nil {
+			return nil, nil, err
+		} else {
+			// add satellite details
+			x.Information.Items = append(x.Information.Items, y.Information.Items...)
+		}
 	}
 
 	// remove duplicates

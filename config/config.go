@@ -46,6 +46,7 @@ type FeatureConfig struct {
 	IPSec               bool `yaml:"ipsec,omitempty"`
 	FPC                 bool `yaml:"fpc,omitempty"`
 	RPKI                bool `yaml:"rpki,omitempty"`
+	Satellite           bool `yaml:"satellite,omitempty"`
 }
 
 // New creates a new config
@@ -96,6 +97,7 @@ func setDefaultValues(c *Config) {
 	f.FPC = false
 	f.L2Circuit = false
 	f.RPKI = false
+	f.Satellite = false
 }
 
 // FeaturesForDevice gets the feature set configured for a device

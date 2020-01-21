@@ -1,5 +1,5 @@
-
-tations": {
+{
+  "annotations": {
     "list": [
       {
         "builtIn": 1,
@@ -15,8 +15,8 @@ tations": {
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 28,
-  "iteration": 1573493675211,
+  "id": 25,
+  "iteration": 1579602513643,
   "links": [],
   "panels": [
     {
@@ -233,7 +233,7 @@ tations": {
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "6.4.4",
+      "pluginVersion": "6.5.2",
       "targets": [
         {
           "expr": "junos_storage_used_percent{mountpoint=~\"/\",target=~\"$device\"}",
@@ -352,6 +352,7 @@ tations": {
         "x": 0,
         "y": 5
       },
+      "hiddenSeries": false,
       "id": 10,
       "legend": {
         "alignAsTable": false,
@@ -380,8 +381,8 @@ tations": {
       "scopedVars": {
         "int_desc": {
           "selected": true,
-          "text": "  ### 012684 Veon (BICS) (Equinix Cable ID: 20831062) ### ",
-          "value": "  ### 012684 Veon (BICS) (Equinix Cable ID: 20831062) ### "
+          "text": "lo0",
+          "value": "lo0"
         }
       },
       "seriesOverrides": [
@@ -451,7 +452,7 @@ tations": {
     }
   ],
   "refresh": false,
-  "schemaVersion": 20,
+  "schemaVersion": 21,
   "style": "dark",
   "tags": [
     "newtelco"
@@ -461,10 +462,11 @@ tations": {
       {
         "allValue": null,
         "current": {
+          "selected": false,
           "tags": [],
-          "text": "  ### 012684 Veon (BICS) (Equinix Cable ID: 20831062) ### ",
+          "text": "lo0",
           "value": [
-            "  ### 012684 Veon (BICS) (Equinix Cable ID: 20831062) ### "
+            "lo0"
           ]
         },
         "datasource": "Prometheus",
@@ -477,7 +479,7 @@ tations": {
         "options": [],
         "query": "junos_interface_up",
         "refresh": 1,
-        "regex": "/.*description=\"([^\"]*).*/",
+        "regex": "/.*name=\"([^\"]*).*/",
         "skipUrlSync": false,
         "sort": 1,
         "tagValuesQuery": "",
@@ -489,11 +491,9 @@ tations": {
       {
         "allValue": null,
         "current": {
-          "tags": [],
-          "text": "172.16.4.101",
-          "value": [
-            "172.16.4.101"
-          ]
+          "selected": false,
+          "text": "srx.enskede.local",
+          "value": "srx.enskede.local"
         },
         "datasource": "Prometheus",
         "definition": "junos_up",
@@ -502,60 +502,9 @@ tations": {
         "label": "device",
         "multi": true,
         "name": "device",
-        "options": [
-          {
-            "selected": false,
-            "text": "172.16.4.100",
-            "value": "172.16.4.100"
-          },
-          {
-            "selected": true,
-            "text": "172.16.4.101",
-            "value": "172.16.4.101"
-          },
-          {
-            "selected": false,
-            "text": "172.16.4.110",
-            "value": "172.16.4.110"
-          },
-          {
-            "selected": false,
-            "text": "172.16.4.120",
-            "value": "172.16.4.120"
-          },
-          {
-            "selected": false,
-            "text": "172.16.4.130",
-            "value": "172.16.4.130"
-          },
-          {
-            "selected": false,
-            "text": "172.16.4.140",
-            "value": "172.16.4.140"
-          },
-          {
-            "selected": false,
-            "text": "172.16.4.150",
-            "value": "172.16.4.150"
-          },
-          {
-            "selected": false,
-            "text": "172.16.4.160",
-            "value": "172.16.4.160"
-          },
-          {
-            "selected": false,
-            "text": "172.16.4.170",
-            "value": "172.16.4.170"
-          },
-          {
-            "selected": false,
-            "text": "172.16.4.180",
-            "value": "172.16.4.180"
-          }
-        ],
+        "options": [],
         "query": "junos_up",
-        "refresh": 0,
+        "refresh": 1,
         "regex": "/.*target=\"([^\"]*).*/",
         "skipUrlSync": false,
         "sort": 3,
@@ -588,5 +537,5 @@ tations": {
   "timezone": "",
   "title": "Juniper",
   "uid": "7N11201Zk",
-  "version": 15
+  "version": 2
 }

@@ -47,6 +47,7 @@ type FeatureConfig struct {
 	FPC                 bool `yaml:"fpc,omitempty"`
 	RPKI                bool `yaml:"rpki,omitempty"`
 	Satellite           bool `yaml:"satellite,omitempty"`
+	System              bool `yaml:"system,omitempty"`
 }
 
 // New creates a new config

@@ -1,17 +1,19 @@
 package system
 
 type BuffersRPC struct {
+	// some versions don't provide parsed output
+	Output           string `xml:"output"`
 	MemoryStatistics struct {
 		MbufsCurrent int `xml:"current-mbufs"`
 		MbufsCache   int `xml:"cached-mbufs"`
 		MbufsTotal   int `xml:"total-mbufs"`
 		MbufsDenied  int `xml:"mbuf-failures"`
 
-		MbufClustersCurrent    int `xml:"current-mbuf-clusters"`
-		MbufClustersCache      int `xml:"cached-mbuf-clusters"`
-		MbufClustersTotal      int `xml:"total-mbuf-clusters"`
-		MbufClustersMax        int `xml:"max-mbuf-clusters"`
-		MbufClustersDeniedDesc int `xml:"cluster-failures"`
+		MbufClustersCurrent int `xml:"current-mbuf-clusters"`
+		MbufClustersCache   int `xml:"cached-mbuf-clusters"`
+		MbufClustersTotal   int `xml:"total-mbuf-clusters"`
+		MbufClustersMax     int `xml:"max-mbuf-clusters"`
+		MbufClustersDenied  int `xml:"cluster-failures"`
 
 		MbufClustersFromPacketZoneCurrent int `xml:"packet-count"`
 		MbufClustersFromPacketZoneCache   int `xml:"packet-free"`
@@ -41,6 +43,7 @@ type BuffersRPC struct {
 		SfbufsDenied  int `xml:"sfbuf-requests-denied"`
 		SfbufsDelayed int `xml:"sfbuf-requests-delayed"`
 
-		IoInit int `xml:"io-initiated"`
+		MbufAndClustersDenied int `xml:"packet-failures"`
+		IoInit                int `xml:"io-initiated"`
 	} `xml:"memory-statistics"`
 }

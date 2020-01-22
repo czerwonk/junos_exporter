@@ -1,6 +1,10 @@
 package system
 
 import (
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/czerwonk/junos_exporter/collector"
 	"github.com/czerwonk/junos_exporter/rpc"
 	"github.com/prometheus/client_golang/prometheus"
@@ -36,7 +40,15 @@ var (
 	sfbufsDeniedDesc  *prometheus.Desc
 	sfbufsDelayedDesc *prometheus.Desc
 
-	ioInitDesc *prometheus.Desc
+	mbufAndClustersDeniedDesc *prometheus.Desc
+	ioInitDesc                *prometheus.Desc
+
+	// regex
+	regex1Ints        *regexp.Regexp = regexp.MustCompile(`^(\d+).*`)
+	regex2Ints        *regexp.Regexp = regexp.MustCompile(`^(\d+)\/(\d+).*`)
+	regex3Ints        *regexp.Regexp = regexp.MustCompile(`^(\d+)\/(\d+)\/(\d+).*`)
+	regex4Ints        *regexp.Regexp = regexp.MustCompile(`^(\d+)\/(\d+)\/(\d+)\/(\d+).*`)
+	regexNetworkAlloc *regexp.Regexp = regexp.MustCompile(`^(\d+)K\/(\d+)K\/(\d+)K.*`)
 )
 
 type systemCollector struct {
@@ -76,6 +88,7 @@ func init() {
 	sfbufsDelayedDesc = prometheus.NewDesc(prefix+"sfbufs_delayed_count", "Number of sfbuf requests delayed", l, nil)
 
 	ioInitDesc = prometheus.NewDesc(prefix+"io_requests_count", "Number of I/O requests initiated", l, nil)
+	mbufAndClustersDeniedDesc = prometheus.NewDesc(prefix+"mbuf_and_clusters_denied_count", "Number of mbuf+cluster requests denied", l, nil)
 }
 
 // NewCollector creates a new collector
@@ -130,9 +143,12 @@ func (c *systemCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metri
 
 func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var (
-		r   *BuffersRPC
-		l   []string
-		err error
+		r       *BuffersRPC
+		l       []string
+		err     error
+		lines   []string
+		matches [][]string
+		i       int
 	)
 
 	r = new(BuffersRPC)
@@ -140,6 +156,113 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 	err = client.RunCommandAndParse("show system buffers", r)
 	if err != nil {
 		return err
+	}
+
+	if r.Output != "" {
+		// this data still needs to be parsed
+		lines = strings.Split(r.Output, "\n")
+
+		for i = range lines {
+			lines[i] = strings.TrimSpace(lines[i])
+		}
+
+		// trim away empty lines
+		lines = lines[1 : len(lines)-1]
+
+		// NOTE: matches[0][0] is always the whole line
+
+		// "3216/15519/18735 mbufs in use (current/cache/total)"
+		matches = regex3Ints.FindAllStringSubmatch(lines[0], 1)
+		if len(matches) >= 1 && len(matches[0]) >= 4 {
+			r.MemoryStatistics.MbufsCurrent, _ = strconv.Atoi(matches[0][1])
+			r.MemoryStatistics.MbufsCache, _ = strconv.Atoi(matches[0][2])
+			r.MemoryStatistics.MbufsTotal, _ = strconv.Atoi(matches[0][3])
+		}
+
+		// "3074/14458/17532/2039110 mbuf clusters in use (current/cache/total/max)"
+		matches = regex4Ints.FindAllStringSubmatch(lines[1], 1)
+		if len(matches) >= 1 && len(matches[0]) >= 5 {
+			r.MemoryStatistics.MbufClustersCurrent, _ = strconv.Atoi(matches[0][1])
+			r.MemoryStatistics.MbufClustersCache, _ = strconv.Atoi(matches[0][2])
+			r.MemoryStatistics.MbufClustersTotal, _ = strconv.Atoi(matches[0][3])
+			r.MemoryStatistics.MbufClustersMax, _ = strconv.Atoi(matches[0][4])
+		}
+
+		// "3069/7557 mbuf+clusters out of packet secondary zone in use (current/cache)"
+		matches = regex2Ints.FindAllStringSubmatch(lines[2], 1)
+		if len(matches) >= 1 && len(matches[0]) >= 3 {
+			r.MemoryStatistics.MbufClustersFromPacketZoneCurrent, _ = strconv.Atoi(matches[0][1])
+			r.MemoryStatistics.MbufClustersFromPacketZoneCache, _ = strconv.Atoi(matches[0][2])
+		}
+
+		// "0/1101/1101/1019555 4k (page size) jumbo clusters in use (current/cache/total/max)"
+		matches = regex4Ints.FindAllStringSubmatch(lines[3], 1)
+		if len(matches) >= 1 && len(matches[0]) >= 5 {
+			r.MemoryStatistics.JumboClustersCurrent4K, _ = strconv.Atoi(matches[0][1])
+			r.MemoryStatistics.JumboClustersCache4K, _ = strconv.Atoi(matches[0][2])
+			r.MemoryStatistics.JumboClustersTotal4K, _ = strconv.Atoi(matches[0][3])
+			r.MemoryStatistics.JumboClustersMax4K, _ = strconv.Atoi(matches[0][4])
+		}
+
+		// "0/1101/1101/1019555 9k (page size) jumbo clusters in use (current/cache/total/max)"
+		matches = regex4Ints.FindAllStringSubmatch(lines[4], 1)
+		if len(matches) >= 1 && len(matches[0]) >= 5 {
+			r.MemoryStatistics.JumboClustersCurrent9K, _ = strconv.Atoi(matches[0][1])
+			r.MemoryStatistics.JumboClustersCache9K, _ = strconv.Atoi(matches[0][2])
+			r.MemoryStatistics.JumboClustersTotal9K, _ = strconv.Atoi(matches[0][3])
+			r.MemoryStatistics.JumboClustersMax9K, _ = strconv.Atoi(matches[0][4])
+		}
+
+		// "0/1101/1101/1019555 16k (page size) jumbo clusters in use (current/cache/total/max)"
+		matches = regex4Ints.FindAllStringSubmatch(lines[5], 1)
+		if len(matches) >= 1 && len(matches[0]) >= 5 {
+			r.MemoryStatistics.JumboClustersCurrent16K, _ = strconv.Atoi(matches[0][1])
+			r.MemoryStatistics.JumboClustersCache16K, _ = strconv.Atoi(matches[0][2])
+			r.MemoryStatistics.JumboClustersTotal16K, _ = strconv.Atoi(matches[0][3])
+			r.MemoryStatistics.JumboClustersMax16K, _ = strconv.Atoi(matches[0][4])
+		}
+
+		// "6952K/37199K/44152K bytes allocated to network (current/cache/total)"
+		matches = regexNetworkAlloc.FindAllStringSubmatch(lines[6], 1)
+		if len(matches) >= 1 && len(matches[0]) >= 4 {
+			r.MemoryStatistics.NetworkAllocCurrent, _ = strconv.Atoi(matches[0][1])
+			r.MemoryStatistics.NetworkAllocCache, _ = strconv.Atoi(matches[0][2])
+			r.MemoryStatistics.NetworkAllocTotal, _ = strconv.Atoi(matches[0][3])
+		}
+
+		// "0/0/0 requests for mbufs denied (mbufs/clusters/mbuf+clusters)"
+		matches = regex3Ints.FindAllStringSubmatch(lines[7], 1)
+		if len(matches) >= 1 && len(matches[0]) >= 4 {
+			r.MemoryStatistics.MbufsDenied, _ = strconv.Atoi(matches[0][1])
+			r.MemoryStatistics.MbufClustersDenied, _ = strconv.Atoi(matches[0][2])
+			r.MemoryStatistics.MbufAndClustersDenied, _ = strconv.Atoi(matches[0][2])
+		}
+
+		// "0/0/0 requests for jumbo clusters denied (4k/9k/16k)"
+		matches = regex3Ints.FindAllStringSubmatch(lines[8], 1)
+		if len(matches) >= 1 && len(matches[0]) >= 4 {
+			r.MemoryStatistics.JumboClustersDenied4K, _ = strconv.Atoi(matches[0][1])
+			r.MemoryStatistics.JumboClustersDenied9K, _ = strconv.Atoi(matches[0][2])
+			r.MemoryStatistics.JumboClustersDenied16K, _ = strconv.Atoi(matches[0][3])
+		}
+
+		// "0 requests for sfbufs denied"
+		matches = regex1Ints.FindAllStringSubmatch(lines[9], 1)
+		if len(matches) >= 1 && len(matches[0]) >= 2 {
+			r.MemoryStatistics.SfbufsDenied, _ = strconv.Atoi(matches[0][1])
+		}
+
+		// "0 requests for sfbufs delayed"
+		matches = regex1Ints.FindAllStringSubmatch(lines[10], 1)
+		if len(matches) >= 1 {
+			r.MemoryStatistics.SfbufsDelayed, _ = strconv.Atoi(matches[0][1])
+		}
+
+		// "0 requests for I/O initiated by sendfile"
+		matches = regex1Ints.FindAllStringSubmatch(lines[11], 1)
+		if len(matches) >= 1 {
+			r.MemoryStatistics.IoInit, _ = strconv.Atoi(matches[0][1])
+		}
 	}
 
 	ch <- prometheus.MustNewConstMetric(mbufsCurrentDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufsCurrent), labelValues...)
@@ -151,7 +274,7 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 	ch <- prometheus.MustNewConstMetric(mbufClustersCacheDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersCache), labelValues...)
 	ch <- prometheus.MustNewConstMetric(mbufClustersTotalDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersTotal), labelValues...)
 	ch <- prometheus.MustNewConstMetric(mbufClustersMaxDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersMax), labelValues...)
-	ch <- prometheus.MustNewConstMetric(mbufClustersDeniedDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersDeniedDesc), labelValues...)
+	ch <- prometheus.MustNewConstMetric(mbufClustersDeniedDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersDenied), labelValues...)
 
 	ch <- prometheus.MustNewConstMetric(mbufClustersFromPacketZoneCurrentDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersFromPacketZoneCurrent), labelValues...)
 	ch <- prometheus.MustNewConstMetric(mbufClustersFromPacketZoneCacheDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersFromPacketZoneCache), labelValues...)
@@ -179,6 +302,8 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 
 	ch <- prometheus.MustNewConstMetric(sfbufsDeniedDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.SfbufsDenied), labelValues...)
 	ch <- prometheus.MustNewConstMetric(sfbufsDelayedDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.SfbufsDelayed), labelValues...)
+
+	ch <- prometheus.MustNewConstMetric(mbufAndClustersDeniedDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufAndClustersDenied), labelValues...)
 	ch <- prometheus.MustNewConstMetric(ioInitDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.IoInit), labelValues...)
 
 	// network alloc values seem to be Kb

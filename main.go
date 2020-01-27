@@ -21,7 +21,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-const version string = "0.9.5.6"
+const version string = "0.9.5.7"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -55,6 +55,8 @@ var (
 	accountingEnabled           = flag.Bool("accounting.enabled", false, "Scrape accounting flow metrics")
 	interfaceQueuesEnabled      = flag.Bool("queues.enabled", false, "Scrape interface queue metrics")
 	rpkiEnabled                 = flag.Bool("rpki.enabled", false, "Scrape rpki metrics")
+	satelliteEnabled            = flag.Bool("satellite.enabled", false, "Scrape metrics from satellite devices")
+	systemEnabled               = flag.Bool("system.enabled", false, "Scrape system metrics")
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 	configFile                  = flag.String("config.file", "", "Path to config file")
 	dynamicIfaceLabels          = flag.Bool("dynamic-interface-labels", true, "Parse interface descriptions to get labels dynamicly")
@@ -200,6 +202,8 @@ func loadConfigFromFlags() *config.Config {
 	f.FPC = *fpcEnabled
 	f.RPKI = *rpkiEnabled
 	f.Storage = *storageEnabled
+	f.Satellite = *satelliteEnabled
+	f.System = *systemEnabled
 
 	return c
 }

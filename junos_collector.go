@@ -73,6 +73,10 @@ func clientForDevice(device *connector.Device, connManager *connector.SSHConnect
 		c.EnableDebug()
 	}
 
+	if cfg.Features.Satellite {
+		c.EnableSatellite()
+	}
+
 	return c, nil
 }
 

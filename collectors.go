@@ -23,6 +23,7 @@ import (
 	"github.com/czerwonk/junos_exporter/route"
 	"github.com/czerwonk/junos_exporter/routingengine"
 	"github.com/czerwonk/junos_exporter/rpki"
+	"github.com/czerwonk/junos_exporter/rpm"
 	"github.com/czerwonk/junos_exporter/storage"
 	"github.com/czerwonk/junos_exporter/system"
 )
@@ -86,6 +87,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "routes", f.Routes, route.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "routingengine", f.RoutingEngine, routingengine.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "rpki", f.RPKI, rpki.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "rpm", f.RPM, rpm.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "storage", f.Storage, storage.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "system", f.System, system.NewCollector)
 }

@@ -47,3 +47,25 @@ type BuffersRPC struct {
 		IoInit                int `xml:"io-initiated"`
 	} `xml:"memory-statistics"`
 }
+
+type SystemInformationRPC struct {
+	SysInfo struct {
+		Model     string `xml:"hardware-model"`
+		OS        string `xml:"os-name"`
+		OSVersion string `xml:"os-version"`
+		Serial    string `xml:"serial-number"`
+		Hostname  string `xml:"host-name"`
+	} `xml:"system-information"`
+}
+
+type SatelliteChassisRPC struct {
+	SatelliteInfo struct {
+		Satellite []struct {
+			Alias  string `xml:"satellite-alias"`
+			SlotId int    `xml:"slot-id"`
+			State  string `xml:"operation-state"`
+			Model  string `xml:"product-model"`
+			Serial string `xml:"serial-number"`
+		} `xml:"satellite"`
+	} `xml:"satellite-information"`
+}

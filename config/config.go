@@ -46,6 +46,7 @@ type FeatureConfig struct {
 	IPSec               bool `yaml:"ipsec,omitempty"`
 	FPC                 bool `yaml:"fpc,omitempty"`
 	RPKI                bool `yaml:"rpki,omitempty"`
+	RPM                 bool `yaml:"rpm,omitempty"`
 	Satellite           bool `yaml:"satellite,omitempty"`
 	System              bool `yaml:"system,omitempty"`
 }
@@ -98,6 +99,7 @@ func setDefaultValues(c *Config) {
 	f.FPC = false
 	f.L2Circuit = false
 	f.RPKI = false
+	f.RPM = false
 	f.Satellite = false
 }
 

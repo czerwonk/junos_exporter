@@ -43,6 +43,8 @@ var (
 	mbufAndClustersDeniedDesc *prometheus.Desc
 	ioInitDesc                *prometheus.Desc
 
+	hardwareInfoDesc *prometheus.Desc
+
 	// regex
 	regex1Ints        *regexp.Regexp = regexp.MustCompile(`^(\d+).*`)
 	regex2Ints        *regexp.Regexp = regexp.MustCompile(`^(\d+)\/(\d+).*`)
@@ -89,6 +91,9 @@ func init() {
 
 	ioInitDesc = prometheus.NewDesc(prefix+"io_requests_count", "Number of I/O requests initiated", l, nil)
 	mbufAndClustersDeniedDesc = prometheus.NewDesc(prefix+"mbuf_and_clusters_denied_count", "Number of mbuf+cluster requests denied", l, nil)
+
+	l = append(l, "model", "os", "os_version", "serial", "hostname", "alias", "slot_id", "state", "satellite")
+	hardwareInfoDesc = prometheus.NewDesc(prefix+"hardware_info", "Hardware information about this system", l, nil)
 }
 
 // NewCollector creates a new collector
@@ -125,6 +130,7 @@ func (*systemCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- sfbufsDeniedDesc
 	ch <- sfbufsDelayedDesc
 	ch <- ioInitDesc
+	ch <- hardwareInfoDesc
 }
 
 // Collect collects metrics from JunOS
@@ -143,12 +149,15 @@ func (c *systemCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metri
 
 func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var (
-		r       *BuffersRPC
-		l       []string
-		err     error
-		lines   []string
-		matches [][]string
-		i       int
+		r              *BuffersRPC
+		r2             *SystemInformationRPC
+		r3             *SatelliteChassisRPC
+		l              []string
+		err            error
+		lines          []string
+		matches        [][]string
+		i              int
+		hardwareLabels = make([]string, 0)
 	)
 
 	r = new(BuffersRPC)
@@ -262,6 +271,53 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 		matches = regex1Ints.FindAllStringSubmatch(lines[11], 1)
 		if len(matches) >= 1 {
 			r.MemoryStatistics.IoInit, _ = strconv.Atoi(matches[0][1])
+		}
+
+	}
+
+	// system information
+	r2 = new(SystemInformationRPC)
+	err = client.RunCommandAndParse("show system information", r2)
+	if err != nil {
+		return err
+	}
+
+	// create LabelSet (target, "model", "os", "os_version", "serial", "hostname", "alias", "slot_id", "state", "satellite")
+	hardwareLabels = append(labelValues,
+		r2.SysInfo.Model,
+		r2.SysInfo.OS,
+		r2.SysInfo.OSVersion,
+		r2.SysInfo.Serial,
+		r2.SysInfo.Hostname,
+		"", "", "", "")
+
+	ch <- prometheus.MustNewConstMetric(hardwareInfoDesc, prometheus.GaugeValue, float64(1), hardwareLabels...)
+
+	// gather satellite data
+	if client.Satellite {
+
+		// system information of satellites
+		r3 = new(SatelliteChassisRPC)
+		err = client.RunCommandAndParse("show chassis satellite detail", r3)
+		// there are various error messages when satellite is not enabled; thus here we just ignore the error and continue
+		if err == nil {
+			for i = range r3.SatelliteInfo.Satellite {
+				// reset labels
+				hardwareLabels = make([]string, 0)
+				// create LabelSet (target, "model", "os", "os_version", "serial", "hostname", "alias", "slot_id", "state", "satellite")
+				hardwareLabels = append(labelValues,
+					r3.SatelliteInfo.Satellite[i].Model,
+					"",
+					"",
+					r3.SatelliteInfo.Satellite[i].Serial,
+					"",
+					r3.SatelliteInfo.Satellite[i].Alias,
+					strconv.Itoa(r3.SatelliteInfo.Satellite[i].SlotId),
+					r3.SatelliteInfo.Satellite[i].State,
+					"true")
+
+				ch <- prometheus.MustNewConstMetric(hardwareInfoDesc, prometheus.GaugeValue, float64(1), hardwareLabels...)
+			}
 		}
 	}
 

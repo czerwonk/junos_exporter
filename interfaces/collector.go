@@ -167,10 +167,10 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 
 		for _, log := range phy.LogicalInterfaces {
 			var s TrafficStat
-			if len(log.LagStats.Links) > 0 {
-				s = log.LagStats.Stats
-			} else {
+			if (log.Stats != TrafficStat{}) {
 				s = log.Stats
+			} else {
+				s = log.LagStats.Stats
 			}
 			sl := &InterfaceStats{
 				IsPhysical:          false,

@@ -2,7 +2,6 @@ package connector
 
 import (
 	"net"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -14,6 +13,7 @@ import (
 )
 
 const timeoutInSeconds = 5
+const defaultPort = "22"
 
 // Option defines options for the manager which are applied on creation
 type Option func(*SSHConnectionManager)
@@ -107,32 +107,7 @@ func (m *SSHConnectionManager) connectToDevice(device *Device) (*ssh.Client, net
 
 	device.Auth(cfg)
 
-	host := device.Host
-
-	switch strings.Count(host, ":") {
-	case 0:
-		// either legacy IP or hostname without port
-		host = host + ":22"
-
-	case 1:
-		// either legacy IP or hostname with port
-		break
-
-	default:
-		// must ipv6 address with more than 1 colon
-		if !strings.Contains(host, "[") || !strings.Contains(host, "]") {
-			// This assumes that nobody tried to write '[2001:db8::1' or '2001:db8::1]' where brackes are not properly opened
-			// and/or closed. Since that would be simply wrong anyway and not expected to work, this special case is not
-			// covered here. Instead it's assumed if brackets are missing, they are left our intentionally thus adding them
-			// including the default ssh port.
-			host = "[" + host + "]:22"
-		} else {
-			// Here the port might be missing. If the last char is not a digit, then the port hasn't been specified.
-			if _, err := strconv.ParseInt(string(host[len(host)-1]), 10, 64); err != nil {
-				host = host + ":22"
-			}
-		}
-	}
+	host := m.tcpAddressForHost(device.Host)
 
 	conn, err := net.DialTimeout("tcp", host, cfg.Timeout)
 	if err != nil {
@@ -148,32 +123,30 @@ func (m *SSHConnectionManager) connectToDevice(device *Device) (*ssh.Client, net
 }
 
 func (m *SSHConnectionManager) tcpAddressForHost(host string) string {
-	switch strings.Count(host, ":") {
-	case 0:
+	colonCount := strings.Count(host, ":")
+
+	if colonCount == 0 {
 		// either legacy IP or hostname without port
-		host = host + ":22"
-
-	case 1:
-		// either legacy IP or hostname with port
-		break
-
-	default:
-		// must ipv6 address with more than 1 colon
-		if !strings.Contains(host, "[") || !strings.Contains(host, "]") {
-			// This assumes that nobody tried to write '[2001:db8::1' or '2001:db8::1]' where brackes are not properly opened
-			// and/or closed. Since that would be simply wrong anyway and not expected to work, this special case is not
-			// covered here. Instead it's assumed if brackets are missing, they are left our intentionally thus adding them
-			// including the default ssh port.
-			host = "[" + host + "]:22"
-		} else {
-			// Here the port might be missing. If the last char is not a digit, then the port hasn't been specified.
-			if _, err := strconv.ParseInt(string(host[len(host)-1]), 10, 64); err != nil {
-				host = host + ":22"
-			}
-		}
+		return host + ":" + defaultPort
 	}
 
-	return host
+	h, p, err := net.SplitHostPort(host)
+	if err == nil {
+		return m.formatHost(h) + ":" + p
+	}
+
+	return m.formatHost(host) + ":" + defaultPort
+}
+
+func (m *SSHConnectionManager) formatHost(host string) string {
+	ip := net.ParseIP(host)
+
+	if ip == nil || ip.To4() != nil {
+		// not an IP or IPv4 address
+		return host
+	}
+
+	return "[" + host + "]"
 }
 
 func (m *SSHConnectionManager) keepAlive(connection *SSHConnection) {

@@ -38,6 +38,11 @@ func TestTCPAddressForHost(t *testing.T) {
 			expected: "[2001:678:1e0:f00::1]:22",
 		},
 		{
+			name:     "IPv6 without port and brackets",
+			host:     "2001:678:1e0:f00::1",
+			expected: "[2001:678:1e0:f00::1]:22",
+		},
+		{
 			name:     "IPv6 with port",
 			host:     "[2001:678:1e0:f00::1]:22",
 			expected: "[2001:678:1e0:f00::1]:22",

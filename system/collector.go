@@ -92,7 +92,7 @@ func init() {
 	ioInitDesc = prometheus.NewDesc(prefix+"io_requests_count", "Number of I/O requests initiated", l, nil)
 	mbufAndClustersDeniedDesc = prometheus.NewDesc(prefix+"mbuf_and_clusters_denied_count", "Number of mbuf+cluster requests denied", l, nil)
 
-	l = append(l, "model", "os", "os_version", "serial", "hostname", "alias", "slot_id", "state", "satellite")
+	l = append(l, "model", "os", "os_version", "serial", "hostname", "alias", "slot_id", "state")
 	hardwareInfoDesc = prometheus.NewDesc(prefix+"hardware_info", "Hardware information about this system", l, nil)
 }
 
@@ -282,14 +282,14 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 		return err
 	}
 
-	// create LabelSet (target, "model", "os", "os_version", "serial", "hostname", "alias", "slot_id", "state", "satellite")
+	// create LabelSet (target, "model", "os", "os_version", "serial", "hostname", "alias", "slot_id", "state")
 	hardwareLabels = append(labelValues,
 		r2.SysInfo.Model,
 		r2.SysInfo.OS,
 		r2.SysInfo.OSVersion,
 		r2.SysInfo.Serial,
 		r2.SysInfo.Hostname,
-		"", "", "", "")
+		"", "", "")
 
 	ch <- prometheus.MustNewConstMetric(hardwareInfoDesc, prometheus.GaugeValue, float64(1), hardwareLabels...)
 
@@ -304,17 +304,16 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 			for i = range r3.SatelliteInfo.Satellite {
 				// reset labels
 				hardwareLabels = make([]string, 0)
-				// create LabelSet (target, "model", "os", "os_version", "serial", "hostname", "alias", "slot_id", "state", "satellite")
+				// create LabelSet (target, "model", "os", "os_version", "serial", "hostname", "alias", "slot_id", "state")
 				hardwareLabels = append(labelValues,
-					r3.SatelliteInfo.Satellite[i].Model,
-					"",
-					"",
+					strings.ToLower(r3.SatelliteInfo.Satellite[i].Model),
+					"satellite",
+					r3.SatelliteInfo.Satellite[i].Version,
 					r3.SatelliteInfo.Satellite[i].Serial,
 					"",
 					r3.SatelliteInfo.Satellite[i].Alias,
 					strconv.Itoa(r3.SatelliteInfo.Satellite[i].SlotId),
-					r3.SatelliteInfo.Satellite[i].State,
-					"true")
+					strings.ToLower(r3.SatelliteInfo.Satellite[i].State))
 
 				ch <- prometheus.MustNewConstMetric(hardwareInfoDesc, prometheus.GaugeValue, float64(1), hardwareLabels...)
 			}

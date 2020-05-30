@@ -69,6 +69,7 @@ func (c *alarmCollector) alarmCounter(client *rpc.Client) (*AlarmCounter, error)
 		"show chassis alarms",
 	}
 
+	messages := make(map[string]interface{})
 	for _, cmd := range cmds {
 		var a = AlarmRpc{}
 		err := client.RunCommandAndParse(cmd, &a)
@@ -77,6 +78,10 @@ func (c *alarmCollector) alarmCounter(client *rpc.Client) (*AlarmCounter, error)
 		}
 
 		for _, d := range a.Information.Details {
+			if _, found := messages[d.Description]; found {
+				continue
+			}
+
 			if c.shouldFilterAlarm(&d) {
 				continue
 			}
@@ -86,6 +91,8 @@ func (c *alarmCollector) alarmCounter(client *rpc.Client) (*AlarmCounter, error)
 			} else if d.Class == "Minor" {
 				yellow++
 			}
+
+			messages[d.Description] = nil
 		}
 	}
 

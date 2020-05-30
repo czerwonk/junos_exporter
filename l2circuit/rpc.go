@@ -17,5 +17,4 @@ type l2circuitConnection struct {
 	ID           string `xml:"connection-id"`
 	Type         string `xml:"connection-type"`
 	StatusString string `xml:"connection-status"`
-	Transitions  int    `xml:"up-transitions,omitempty"`
 }

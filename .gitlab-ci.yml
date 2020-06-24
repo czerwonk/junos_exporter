@@ -1,4 +1,4 @@
-image: docker:latest
+image: docker:19.03.8
 services:
   - docker:18.09.7-dind
 variables:
@@ -26,5 +26,7 @@ publish:
     - docker build -t $IMAGE_NAME .
     - docker tag $IMAGE_NAME "eu.gcr.io/$GCLOUD_PROJECT_ID/$IMAGE_NAME"
     - docker push "eu.gcr.io/$GCLOUD_PROJECT_ID/$IMAGE_NAME:latest"
+    - docker tag $IMAGE_NAME "eu.gcr.io/$GCLOUD_PROJECT_ID/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA"
+    - docker push "eu.gcr.io/$GCLOUD_PROJECT_ID/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA"
   only:
     - master

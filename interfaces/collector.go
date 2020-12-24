@@ -110,7 +110,7 @@ func (c *interfaceCollector) Collect(client *rpc.Client, ch chan<- prometheus.Me
 
 func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceStats, error) {
 	var x = InterfaceRpc{}
-	err := client.RunCommandAndParse("show interfaces statistics detail", &x)
+	err := client.RunCommandAndParse("show interfaces statistics detail \"*-*\"", &x)
 	if err != nil {
 		return nil, err
 	}

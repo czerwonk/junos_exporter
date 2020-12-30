@@ -259,3 +259,16 @@ type ServiceNatPoolDetail struct {
 	EifInboundSessionCount    int64  `xml:"eif-inbound-session-count"`
 	EifInboundLimitExceedDrop int64  `xml:"eif-inbound-session-limit-exceed-drop"`
 }
+
+
+type ServiceSetsCpuRpc struct {
+	Information struct {
+		Interfaces []ServiceSetsCpuInterface `xml:"service-set-cpu-statistics"`
+	} `xml:"service-set-cpu-statistics-information"`
+}
+
+type ServiceSetsCpuInterface struct {
+	Interface             string                 `xml:"interface-name"`
+	ServiceSetName        string                 `xml:"service-set-name"`
+	CpuUtilizationPercent float64 				 `xml:"cpu-utilization-percent"`
+}

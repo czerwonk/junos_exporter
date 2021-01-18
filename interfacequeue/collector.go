@@ -98,6 +98,6 @@ func (c *interfaceQueueCollector) collectForQueue(queue Queue, ch chan<- prometh
 	ch <- prometheus.MustNewConstMetric(c.transferedBytes, prometheus.CounterValue, float64(queue.TransferedBytes), l...)
 	ch <- prometheus.MustNewConstMetric(c.rateLimitDropPackets, prometheus.CounterValue, float64(queue.RateLimitDropPackets), l...)
 	ch <- prometheus.MustNewConstMetric(c.rateLimitDropBytes, prometheus.CounterValue, float64(queue.RateLimitDropBytes), l...)
-	ch <- prometheus.MustNewConstMetric(c.totalDropBytes, prometheus.CounterValue, float64(queue.TotalDropPackets), l...)
-	ch <- prometheus.MustNewConstMetric(c.totalDropPackets, prometheus.CounterValue, float64(queue.TotalDropBytes), l...)
+	ch <- prometheus.MustNewConstMetric(c.totalDropPackets, prometheus.CounterValue, float64(queue.TotalDropPackets), l...)
+	ch <- prometheus.MustNewConstMetric(c.totalDropBytes, prometheus.CounterValue, float64(queue.TotalDropBytes), l...)
 }

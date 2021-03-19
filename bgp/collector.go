@@ -23,7 +23,7 @@ var (
 )
 
 func init() {
-	l := []string{"target", "asn", "ip", "description"}
+	l := []string{"target", "asn", "ip", "description", "group"}
 	upDesc = prometheus.NewDesc(prefix+"up", "Session is up (1 = Established)", l, nil)
 	inputMessagesDesc = prometheus.NewDesc(prefix+"messages_input_count", "Number of received messages", l, nil)
 	outputMessagesDesc = prometheus.NewDesc(prefix+"messages_output_count", "Number of transmitted messages", l, nil)
@@ -96,7 +96,7 @@ func (c *bgpCollector) collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 
 func (c *bgpCollector) collectForPeer(p BGPPeer, ch chan<- prometheus.Metric, labelValues []string) {
 	ip := strings.Split(p.IP, "+")
-	l := append(labelValues, []string{p.ASN, ip[0], p.Description}...)
+	l := append(labelValues, []string{p.ASN, ip[0], p.Description, p.Group}...)
 
 	up := 0
 	if p.State == "Established" {

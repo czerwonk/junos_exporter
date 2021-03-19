@@ -1,0 +1,20 @@
+dist: artifacts
+before:
+   hooks:
+     - go mod download
+builds:
+  - env:
+    - CGO_ENABLED=0
+    goos:
+    - linux
+    - darwin
+    - freebsd
+    goarch:
+    - amd64
+    - arm
+    - arm64
+    ignore:
+    - goos: freebsd
+      goarch: arm64
+    ldflags: -s -w -X main.version={{.Version}}
+    binary: junos_exporter 

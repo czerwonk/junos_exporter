@@ -6,6 +6,7 @@ on:
     branches:
       - master
 
+name: Test
 jobs:
   test:
     strategy:
@@ -24,4 +25,4 @@ jobs:
     - name: Build
       run: go build
     - name: Run tests
-      run: go test -v -covermode=count
+      run: go test ./... -v -covermode=count

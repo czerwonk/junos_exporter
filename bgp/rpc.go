@@ -10,6 +10,7 @@ type BGPPeer struct {
 	IP             string `xml:"peer-address"`
 	ASN            string `xml:"peer-as"`
 	State          string `xml:"peer-state"`
+	Group          string `xml:"peer-group"`
 	Description    string `xml:"description"`
 	Flaps          int64  `xml:"flap-count"`
 	InputMessages  int64  `xml:"input-messages"`

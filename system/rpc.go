@@ -61,11 +61,12 @@ type SystemInformationRPC struct {
 type SatelliteChassisRPC struct {
 	SatelliteInfo struct {
 		Satellite []struct {
-			Alias  string `xml:"satellite-alias"`
-			SlotId int    `xml:"slot-id"`
-			State  string `xml:"operation-state"`
-			Model  string `xml:"product-model"`
-			Serial string `xml:"serial-number"`
+			Alias   string `xml:"satellite-alias"`
+			SlotId  int    `xml:"slot-id"`
+			State   string `xml:"operation-state"`
+			Model   string `xml:"product-model"`
+			Serial  string `xml:"serial-number"`
+			Version string `xml:"version"`
 		} `xml:"satellite"`
 	} `xml:"satellite-information"`
 }

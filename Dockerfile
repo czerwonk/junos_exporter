@@ -7,8 +7,9 @@ FROM alpine
 ENV SSH_KEYFILE ""
 ENV CONFIG_FILE "/config.yml"
 ENV ALARM_FILTER ""
+ENV CMD_FLAGS ""
 RUN apk --no-cache add ca-certificates
 WORKDIR /app
 COPY --from=builder /go/bin/junos_exporter .
-CMD ./junos_exporter -ssh.keyfile=$SSH_KEYFILE -config.file=$CONFIG_FILE -alarms.filter=$ALARM_FILTER
+CMD ./junos_exporter -ssh.keyfile=$SSH_KEYFILE -config.file=$CONFIG_FILE -alarms.filter=$ALARM_FILTER $CMD_FLAGS
 EXPOSE 9326

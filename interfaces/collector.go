@@ -1,6 +1,9 @@
 package interfaces
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/czerwonk/junos_exporter/collector"
 	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/czerwonk/junos_exporter/interfacelabels"
@@ -9,27 +12,6 @@ import (
 )
 
 const prefix = "junos_interface_"
-
-var (
-	speedMap = map[string]float64{
-		"10mbps":   float64(10000000.0),
-		"100mbps":  float64(100000000.0),
-		"1000mbps": float64(1000000000.0),
-		"10Gbps":   float64(10000000000.0),
-		"20Gbps":   float64(20000000000.0),
-		"25Gbps":   float64(25000000000.0),
-		"30Gbps":   float64(30000000000.0),
-		"40Gbps":   float64(40000000000.0),
-		"50Gbps":   float64(50000000000.0),
-		"60Gbps":   float64(60000000000.0),
-		"70Gbps":   float64(70000000000.0),
-		"80Gbps":   float64(80000000000.0),
-		"90Gbps":   float64(90000000000.0),
-		"100Gbps":  float64(100000000000.0),
-		"200Gbps":  float64(200000000000.0),
-		"400Gbps":  float64(400000000000.0),
-	}
-)
 
 // Collector collects interface metrics
 type interfaceCollector struct {
@@ -147,7 +129,7 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 			ReceiveErrors:       float64(phy.InputErrors.Errors),
 			ReceiveBytes:        float64(phy.Stats.InputBytes),
 			ReceivePackets:      float64(phy.Stats.InputPackets),
-			Speed:               speedMap[phy.Speed],
+			Speed:               phy.Speed,
 			TransmitDrops:       float64(phy.OutputErrors.Drops),
 			TransmitErrors:      float64(phy.OutputErrors.Errors),
 			TransmitBytes:       float64(phy.Stats.OutputBytes),
@@ -221,6 +203,30 @@ func (c *interfaceCollector) collectForInterface(s *InterfaceStats, device *conn
 			err = 1
 		}
 
+		speed := "0"
+		if strings.Contains(s.Speed, "mbps") {
+			speed = strings.Replace(s.Speed, "mbps", "000000", 1)
+		}
+		if strings.Contains(s.Speed, "Gbps") {
+			speed = strings.Replace(s.Speed, "Gbps", "000000000", 1)
+		}
+		if strings.Contains(s.Speed, "Auto") || strings.Contains(s.Speed, "Unspecified") {
+			//some cards have just 'Auto' as speed, let's check if it's Gigabit
+			if strings.Contains(s.Name, "ge-") {
+				speed = "1000000000"
+			} else if strings.Contains(s.Name, "xe-") {
+				speed = "10000000000"
+			} else {
+				speed = strings.Replace(s.Speed, "Auto", "0", 1)
+				speed = strings.Replace(s.Speed, "Unspecified", "0", 1)
+			}
+		}
+		if strings.Contains(s.Speed, "Unlimited") {
+			speed = strings.Replace(s.Speed, "Unlimited", "0", 1)
+		}
+
+		sp64, _ := strconv.ParseFloat(speed, 64)
+
 		ch <- prometheus.MustNewConstMetric(c.adminStatusDesc, prometheus.GaugeValue, float64(adminUp), l...)
 		ch <- prometheus.MustNewConstMetric(c.operStatusDesc, prometheus.GaugeValue, float64(operUp), l...)
 		ch <- prometheus.MustNewConstMetric(c.errorStatusDesc, prometheus.GaugeValue, float64(err), l...)
@@ -228,7 +234,7 @@ func (c *interfaceCollector) collectForInterface(s *InterfaceStats, device *conn
 		ch <- prometheus.MustNewConstMetric(c.transmitDropsDesc, prometheus.GaugeValue, s.TransmitDrops, l...)
 		ch <- prometheus.MustNewConstMetric(c.receiveErrorsDesc, prometheus.GaugeValue, s.ReceiveErrors, l...)
 		ch <- prometheus.MustNewConstMetric(c.receiveDropsDesc, prometheus.GaugeValue, s.ReceiveDrops, l...)
-		ch <- prometheus.MustNewConstMetric(c.interfaceSpeedDesc, prometheus.GaugeValue, s.Speed, l...)
+		ch <- prometheus.MustNewConstMetric(c.interfaceSpeedDesc, prometheus.GaugeValue, float64(sp64), l...)
 
 		if s.LastFlapped != 0 {
 			ch <- prometheus.MustNewConstMetric(c.lastFlappedDesc, prometheus.GaugeValue, s.LastFlapped, l...)

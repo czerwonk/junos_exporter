@@ -1,7 +1,9 @@
 package ipsec
 
 import (
+	"encoding/xml"
 	"fmt"
+	"strings"
 
 	"github.com/czerwonk/junos_exporter/collector"
 	"github.com/czerwonk/junos_exporter/rpc"
@@ -11,15 +13,17 @@ import (
 const prefix string = "junos_ipsec_security_associations_"
 
 var (
-	blockState    *prometheus.Desc
-	activeTunnels *prometheus.Desc
+	blockState        *prometheus.Desc
+	activeTunnels     *prometheus.Desc
+	configuredTunnels *prometheus.Desc
 )
 
 func init() {
-	l := []string{"target", "description", "name"}
+	l := []string{"target", "re_name", "description", "name"}
 
 	blockState = prometheus.NewDesc(prefix+"state", "State of the Security Association", l, nil)
 	activeTunnels = prometheus.NewDesc(prefix+"active_tunnels", "Total active tunnels", l, nil)
+	configuredTunnels = prometheus.NewDesc("junos_ipsec_configured_tunnels", "Total configured tunnels", l, nil)
 }
 
 type ipsecCollector struct {
@@ -39,22 +43,34 @@ func (*ipsecCollector) Name() string {
 func (*ipsecCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- blockState
 	ch <- activeTunnels
+	ch <- configuredTunnels
 }
 
 // Collect collects metrics from JunOS
 func (c *ipsecCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = IpsecRpc{}
+	var x = RpcReply{}
 	err := client.RunCommandAndParse("show security ipsec security-associations", &x)
 	if err != nil {
 		return err
 	}
 
-	ls := append(labelValues, "active tunnels", "")
-	ch <- prometheus.MustNewConstMetric(activeTunnels, prometheus.GaugeValue, float64(x.Information.ActiveTunnels), ls...)
+	for _, re := range x.MultiRoutingEngineResults.RoutingEngine {
+		ls := append(labelValues, re.Name, "active tunnels", "")
+		ch <- prometheus.MustNewConstMetric(activeTunnels, prometheus.GaugeValue, float64(re.IpSec.ActiveTunnels), ls...)
 
-	for _, block := range x.Information.SecurityAssociations {
-		c.collectForSecurityAssociation(block, ch, labelValues)
+		for _, block := range re.IpSec.SecurityAssociations {
+			c.collectForSecurityAssociation(block, ch, append(labelValues, re.Name))
+		}
 	}
+
+	var conf = ConfigurationSecurityIpsec{}
+	err = client.RunCommandAndParse("show configuration security ipsec", &conf)
+	if err != nil {
+		return err
+	}
+
+	cls := append(labelValues, "N/A", "configured tunnels", "")
+	ch <- prometheus.MustNewConstMetric(configuredTunnels, prometheus.GaugeValue, float64(len(conf.Configuration.Security.Ipsec.Vpn)), cls...)
 
 	return nil
 }
@@ -80,4 +96,25 @@ func stateToInt(state *string) int {
 	}
 
 	return retval
+}
+
+func parseXML(b []byte, res *RpcReply) error {
+	if strings.Contains(string(b), "multi-routing-engine-results") {
+		return xml.Unmarshal(b, res)
+	}
+
+	fi := RpcReplyNoRE{}
+
+	err := xml.Unmarshal(b, &fi)
+	if err != nil {
+		return err
+	}
+
+	res.MultiRoutingEngineResults.RoutingEngine = []RoutingEngine{
+		RoutingEngine{
+			Name:  "N/A",
+			IpSec: fi.IpSec,
+		},
+	}
+	return nil
 }

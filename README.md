@@ -1,5 +1,5 @@
 # junos_exporter
-[![Docker Build Statu](https://img.shields.io/docker/build/czerwonk/junos_exporter.svg)](https://hub.docker.com/r/czerwonk/junos_exporter/builds)
+[![Docker Build Status](https://img.shields.io/docker/cloud/build/czerwonk/junos_exporter.svg)](https://hub.docker.com/r/czerwonk/junos_exporter/builds)
 [![Go Report Card](https://goreportcard.com/badge/github.com/czerwonk/junos_exporter)](https://goreportcard.com/report/github.com/czerwonk/junos_exporter)
 
 Exporter for metrics from devices running JunOS (via SSH) https://prometheus.io/

@@ -79,3 +79,48 @@ func TestParseMultiREOutput(t *testing.T) {
 	assert.Equal(t, int64(1667792), f.UsedBlocks, "used-blocks")
 	assert.Equal(t, "/.mount", f.MountedOn, "mounted-on")
 }
+
+func TestParseNoMultiREOutput(t *testing.T) {
+	body := `<rpc-reply xmlns:junos="http://xml.juniper.net/junos/18.2R1/junos">
+    <system-storage-information junos:style="brief">
+        <filesystem>
+            <filesystem-name>/dev/md0.uzip</filesystem-name>
+            <total-blocks junos:format="21M">43628</total-blocks>
+            <used-blocks junos:format="21M">43628</used-blocks>
+            <available-blocks junos:format="0B">0</available-blocks>
+            <used-percent>100</used-percent>
+            <mounted-on>/</mounted-on>
+        </filesystem>
+        <filesystem>
+            <filesystem-name>/var/log</filesystem-name>
+            <total-blocks junos:format="21G">44306520</total-blocks>
+            <used-blocks junos:format="11G">23882504</used-blocks>
+            <available-blocks junos:format="8.0G">16879496</available-blocks>
+            <used-percent> 59</used-percent>
+            <mounted-on>/.mount/packages/mnt/jweb-xxx/jail/var/log</mounted-on>
+        </filesystem>
+    </system-storage-information>
+    <cli>
+        <banner>{backup}</banner>
+    </cli>
+</rpc-reply>`
+
+	rpc := RpcReply{}
+	err := parseXML([]byte(body), &rpc)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.NotEmpty(t, rpc.MultiRoutingEngineResults.RoutingEngine[0].StorageInformation)
+
+	assert.Equal(t, "N/A", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
+
+	f := rpc.MultiRoutingEngineResults.RoutingEngine[0].StorageInformation.Filesystems[1]
+
+	assert.Equal(t, "/var/log", f.FilesystemName, "filesystem-name")
+	assert.Equal(t, int64(44306520), f.TotalBlocks, "total-blocks")
+	assert.Equal(t, int64(23882504), f.UsedBlocks, "used-blocks")
+	assert.Equal(t, " 59", f.UsedPercent, "used-percent")
+	assert.Equal(t, "/.mount/packages/mnt/jweb-xxx/jail/var/log", f.MountedOn, "mounted-on")
+}

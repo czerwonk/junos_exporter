@@ -50,7 +50,7 @@ func (*storageCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *storageCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = MultiRoutingEngineResults{}
+	var x = RpcReply{}
 	err := client.RunCommandAndParseWithParser("show system storage", func(b []byte) error {
 		return parseXML(b, &x)
 	})
@@ -58,8 +58,8 @@ func (c *storageCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metr
 		return err
 	}
 
-	for _, re := range x.Results {
-		for _, f := range re.Storage.Information.Filesystems {
+	for _, re := range x.MultiRoutingEngineResults.RoutingEngine {
+		for _, f := range re.StorageInformation.Filesystems {
 			l := append(labelValues, f.FilesystemName, re.Name, f.MountedOn)
 
 			ch <- prometheus.MustNewConstMetric(totalBlocksDesc, prometheus.GaugeValue, float64(f.TotalBlocks), l...)
@@ -77,21 +77,22 @@ func (c *storageCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metr
 	return nil
 }
 
-func parseXML(b []byte, res *MultiRoutingEngineResults) error {
+func parseXML(b []byte, res *RpcReply) error {
 	if strings.Contains(string(b), "multi-routing-engine-results") {
 		return xml.Unmarshal(b, res)
 	}
 
-	si := StorageInformation{}
-	err := xml.Unmarshal(b, &si)
+	fi := RpcReplyNoRE{}
+
+	err := xml.Unmarshal(b, &fi)
 	if err != nil {
 		return err
 	}
 
-	res.Results = []MultiRoutingEngineItem{
-		MultiRoutingEngineItem{
-			Name:    "",
-			Storage: si,
+	res.MultiRoutingEngineResults.RoutingEngine = []RoutingEngine{
+		RoutingEngine{
+			Name:               "N/A",
+			StorageInformation: fi.StorageInformation,
 		},
 	}
 	return nil

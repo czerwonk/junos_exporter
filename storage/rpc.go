@@ -1,18 +1,23 @@
 package storage
 
-type MultiRoutingEngineResults struct {
-	Results []MultiRoutingEngineItem `xml:"multi-routing-engine-results"`
+import "encoding/xml"
+
+type RpcReply struct {
+	XMLName                   xml.Name                  `xml:"rpc-reply"`
+	MultiRoutingEngineResults MultiRoutingEngineResults `xml:"multi-routing-engine-results"`
 }
 
-type MultiRoutingEngineItem struct {
-	Name    string             `xml:"re-name"`
-	Storage StorageInformation `xml:"multi-routing-engine-item"`
+type MultiRoutingEngineResults struct {
+	RoutingEngine []RoutingEngine `xml:"multi-routing-engine-item"`
+}
+
+type RoutingEngine struct {
+	Name               string             `xml:"re-name"`
+	StorageInformation StorageInformation `xml:"system-storage-information"`
 }
 
 type StorageInformation struct {
-	Information struct {
-		Filesystems []Filesystem `xml:"filesystem"`
-	} `xml:"system-storage-information"`
+	Filesystems []Filesystem `xml:"filesystem"`
 }
 
 type Filesystem struct {
@@ -22,4 +27,9 @@ type Filesystem struct {
 	AvailableBlocks int64  `xml:"available-blocks"`
 	UsedPercent     string `xml:"used-percent"`
 	MountedOn       string `xml:"mounted-on"`
+}
+
+type RpcReplyNoRE struct {
+	XMLName            xml.Name           `xml:"rpc-reply"`
+	StorageInformation StorageInformation `xml:"system-storage-information"`
 }

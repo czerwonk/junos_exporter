@@ -20,6 +20,7 @@ import (
 	"github.com/czerwonk/junos_exporter/ldp"
 	"github.com/czerwonk/junos_exporter/nat"
 	"github.com/czerwonk/junos_exporter/ospf"
+	"github.com/czerwonk/junos_exporter/power"
 	"github.com/czerwonk/junos_exporter/route"
 	"github.com/czerwonk/junos_exporter/routingengine"
 	"github.com/czerwonk/junos_exporter/rpki"
@@ -90,6 +91,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "rpm", f.RPM, rpm.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "storage", f.Storage, storage.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "system", f.System, system.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "power", f.Power, power.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

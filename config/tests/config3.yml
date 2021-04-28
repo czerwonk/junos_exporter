@@ -24,4 +24,4 @@ devices:
       accounting: true
       ipsec: true
       rpki: true
-
+      power: true

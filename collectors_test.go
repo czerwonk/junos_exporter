@@ -32,6 +32,7 @@ func TestCollectorsRegistered(t *testing.T) {
 			IPSec:               true,
 			FPC:                 true,
 			RPKI:                true,
+			Power:               true,
 		},
 	}
 
@@ -64,6 +65,7 @@ func TestCollectorsForDevices(t *testing.T) {
 			IPSec:               true,
 			FPC:                 true,
 			RPKI:                true,
+			Power:               true,
 		},
 		Devices: []*config.DeviceConfig{
 			&config.DeviceConfig{

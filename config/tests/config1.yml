@@ -17,3 +17,4 @@ features:
   storage: false
   fpc: true
   firewall: false
+  environment: true

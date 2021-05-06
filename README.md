@@ -31,12 +31,13 @@ The following metrics are supported by now:
 * Interface diagnostics (optical signals)
 * ISIS (number of adjacencies, total number of routers)
 * NAT (all available statistics from services nat)
-* Environment (temperatures)
+* Environment (temperatures, fans and PEM power statistics)
 * Routing engine statistics
 * Storage (total, available and used blocks, used percentage)
 * Firewall filters (counters and policers) - needs explicit rights beyond read-only
 * Statistics about l2circuits (tunnel state, number of tunnels)
 * Interface queue statistics
+* Power (Power usage)
 ```   
 0:EI -- encapsulation invalid
 1:MM -- mtu mismatch
@@ -137,6 +138,7 @@ features:
   routing_engine: true
   interface_diagnostic: true
   fpc: true
+  power: true
 ```
 
 ## Dynamic Interface Labels

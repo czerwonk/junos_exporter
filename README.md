@@ -127,17 +127,28 @@ devices:
     password: secret
 
 features:
-  bgp: true
-  ospf: false
-  isis: false
-  nat: false
-  ldp: false
-  l2circuit: false
+  alarm: true
   environment: true
+  bgp: true
+  ospf: true
+  isis: true
+  nat: true
+  l2circuit: true
+  ldp: true
   routes: true
   routing_engine: true
+  firewall: false
+  interfaces: true
   interface_diagnostic: true
+  interface_queue: true
+  storage: true
+  accounting: true
+  ipsec: true
   fpc: true
+  rpki: true
+  rpm: false
+  satellite: true
+  system: true
   power: true
 ```
 

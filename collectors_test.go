@@ -32,6 +32,7 @@ func TestCollectorsRegistered(t *testing.T) {
 			IPSec:               true,
 			FPC:                 true,
 			RPKI:                true,
+			Power:               true,
 		},
 	}
 
@@ -39,7 +40,7 @@ func TestCollectorsRegistered(t *testing.T) {
 		Host: "::1",
 	}}, c, "", interfacelabels.NewDynamicLabels())
 
-	assert.Equal(t, 19, len(cols.collectors), "collector count")
+	assert.Equal(t, 20, len(cols.collectors), "collector count")
 }
 
 func TestCollectorsForDevices(t *testing.T) {
@@ -64,6 +65,7 @@ func TestCollectorsForDevices(t *testing.T) {
 			IPSec:               true,
 			FPC:                 true,
 			RPKI:                true,
+			Power:               true,
 		},
 		Devices: []*config.DeviceConfig{
 			&config.DeviceConfig{
@@ -86,7 +88,7 @@ func TestCollectorsForDevices(t *testing.T) {
 	}
 	cols := collectorsForDevices([]*connector.Device{d1, d2}, c, "", interfacelabels.NewDynamicLabels())
 
-	assert.Equal(t, 19, len(cols.collectorsForDevice(d1)), "device 1 collector count")
+	assert.Equal(t, 20, len(cols.collectorsForDevice(d1)), "device 1 collector count")
 
 	cd2 := cols.collectorsForDevice(d2)
 	assert.Equal(t, 1, len(cd2), "device 2 collector count")

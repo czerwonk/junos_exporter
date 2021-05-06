@@ -37,6 +37,7 @@ configyml: |-
       routes: true
       routing_engine: true
       interface_diagnostic: true
+      power: true
 
 #serviceMonitor.scapeTimeout needs to be high since junos_exporter uses ssh
 #serviceMonitor.interval needs to be higher than scrapeTimeout

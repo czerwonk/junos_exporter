@@ -49,6 +49,7 @@ type FeatureConfig struct {
 	RPM                 bool `yaml:"rpm,omitempty"`
 	Satellite           bool `yaml:"satellite,omitempty"`
 	System              bool `yaml:"system,omitempty"`
+	Power               bool `yaml:"power,omitempty"`
 }
 
 // New creates a new config
@@ -101,6 +102,7 @@ func setDefaultValues(c *Config) {
 	f.RPKI = false
 	f.RPM = false
 	f.Satellite = false
+	f.Power = true
 }
 
 // FeaturesForDevice gets the feature set configured for a device

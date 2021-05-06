@@ -61,6 +61,7 @@ var (
 	configFile                  = flag.String("config.file", "", "Path to config file")
 	dynamicIfaceLabels          = flag.Bool("dynamic-interface-labels", true, "Parse interface descriptions to get labels dynamicly")
 	lsEnabled                   = flag.Bool("logical-systems.enabled", false, "Enable logical systems support")
+	powerEnabled                = flag.Bool("power.enabled", true, "Scrape power metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -204,6 +205,7 @@ func loadConfigFromFlags() *config.Config {
 	f.Storage = *storageEnabled
 	f.Satellite = *satelliteEnabled
 	f.System = *systemEnabled
+	f.Power = *powerEnabled
 
 	return c
 }

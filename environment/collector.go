@@ -94,7 +94,7 @@ func (c *environmentCollector) environmentItems(client *rpc.Client, ch chan<- pr
 				return nil
 			}
 
-			return parseXML(b, &x)
+			return parseXML(b, &y)
 		})
 		if err != nil {
 			return nil

@@ -112,10 +112,12 @@ func (c *bgpCollector) collectForPeer(p BGPPeer, ch chan<- prometheus.Metric, la
 }
 
 func (*bgpCollector) collectRIBForPeer(p BGPPeer, ch chan<- prometheus.Metric, labelValues []string) {
-	l := append(labelValues, p.RIB.Name)
-	ch <- prometheus.MustNewConstMetric(receivedPrefixesDesc, prometheus.GaugeValue, float64(p.RIB.ReceivedPrefixes), l...)
-	ch <- prometheus.MustNewConstMetric(acceptedPrefixesDesc, prometheus.GaugeValue, float64(p.RIB.AcceptedPrefixes), l...)
-	ch <- prometheus.MustNewConstMetric(rejectedPrefixesDesc, prometheus.GaugeValue, float64(p.RIB.RejectedPrefixes), l...)
-	ch <- prometheus.MustNewConstMetric(activePrefixesDesc, prometheus.GaugeValue, float64(p.RIB.ActivePrefixes), l...)
-	ch <- prometheus.MustNewConstMetric(advertisedPrefixesDesc, prometheus.GaugeValue, float64(p.RIB.AdvertisedPrefixes), l...)
+	for _, rib := range p.RIBs {
+		l := append(labelValues, rib.Name)
+		ch <- prometheus.MustNewConstMetric(receivedPrefixesDesc, prometheus.GaugeValue, float64(rib.ReceivedPrefixes), l...)
+		ch <- prometheus.MustNewConstMetric(acceptedPrefixesDesc, prometheus.GaugeValue, float64(rib.AcceptedPrefixes), l...)
+		ch <- prometheus.MustNewConstMetric(rejectedPrefixesDesc, prometheus.GaugeValue, float64(rib.RejectedPrefixes), l...)
+		ch <- prometheus.MustNewConstMetric(activePrefixesDesc, prometheus.GaugeValue, float64(rib.ActivePrefixes), l...)
+		ch <- prometheus.MustNewConstMetric(advertisedPrefixesDesc, prometheus.GaugeValue, float64(rib.AdvertisedPrefixes), l...)
+	}
 }

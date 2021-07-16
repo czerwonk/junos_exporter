@@ -375,7 +375,6 @@ func interfaceDiagnosticsFromRPCResult(result InterfaceDiagnosticsRPC) []*Interf
 			LaserRxOpticalPowerHighWarnThresholdDbm:  dbmStringToFloat(diag.Diagnostics.LaserRxOpticalPowerHighWarnThresholdDbm),
 			LaserRxOpticalPowerLowWarnThresholdDbm:   dbmStringToFloat(diag.Diagnostics.LaserRxOpticalPowerLowWarnThresholdDbm),
 		}
-		log.Printf("Low alarm threshold: %v", d.LaserOutputPowerLowAlarmThresholdDbm)
 
 		if len(diag.Diagnostics.Lanes) > 0 {
 			for _, lane := range diag.Diagnostics.Lanes {

@@ -18,7 +18,7 @@ import (
 	"github.com/czerwonk/junos_exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 )
 
 const version string = "0.9.10"
@@ -275,8 +275,11 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	c := newJunosCollector(devs, connManager, logicalSystem)
 	reg.MustRegister(c)
 
+	l := log.New()
+	l.Level = log.ErrorLevel
+
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
-		ErrorLog:      log.NewErrorLogger(),
+		ErrorLog:      l,
 		ErrorHandling: promhttp.ContinueOnError}).ServeHTTP(w, r)
 }
 

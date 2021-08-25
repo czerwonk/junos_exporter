@@ -99,8 +99,10 @@ func (c *environmentCollector) environmentItems(client *rpc.Client, ch chan<- pr
 		if err != nil {
 			return nil
 		} else {
-			// add satellite details
-			x.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items = append(x.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items, y.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items...)
+			// add satellite details (only if y.MultiRoutingEngineResults.RoutingEngine has elements)
+			if len(y.MultiRoutingEngineResults.RoutingEngine) > 0 {
+				x.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items = append(x.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items, y.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items...)
+			}
 		}
 	}
 

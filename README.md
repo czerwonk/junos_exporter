@@ -95,6 +95,7 @@ docker run -d --restart unless-stopped -p 9326:9326 -e SSH_KEYFILE=/ssh-keyfile 
 junos_exporter supports SSH authentication via key or password based authentication.
 `-ssh.keyfile=<file>` enables key based authentication. `-ssh.password=<password-string>` enables password based authenticaton, this can also be enabled via the config file in the form of a `password: <password-string>` entry.
 Authentication order is ssh key, if none is found the cli flag is checked, the config file is checked last. If no valid auth method is specified junos_exporter exits with an error.
+Specify the ssh username with the cli flag `-ssh.user`, with the `username` key under the configuration file or use the default username of `junos_exporter`.
 
 ### Target Parameter
 By default, all configured targets will be scrapped when `/metrics` is hit. As an alternative, it is possible to scrape a specific target by passing the target's hostname/IP address to the target parameter - e.g. ` http://localhost:9326/metrics?target=1.2.3.4`. The specific target must be present in the configuration file or passed in with the ssh.targets flag, you can also specify the `-config.ignore-targets` flag if you don't want to specify targets in the config or commandline, if none of this matches the request will be denied. This can be used with the below example Prometheus config:

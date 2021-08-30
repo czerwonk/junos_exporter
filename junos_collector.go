@@ -8,7 +8,7 @@ import (
 	"github.com/czerwonk/junos_exporter/interfacelabels"
 	"github.com/czerwonk/junos_exporter/rpc"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 )
 
 const prefix = "junos_"

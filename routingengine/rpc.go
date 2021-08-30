@@ -31,6 +31,21 @@ type RouteEngine struct {
 	CPUSystem         float64                `xml:"cpu-system"`
 	CPUInterrupt      float64                `xml:"cpu-interrupt"`
 	CPUIdle           float64                `xml:"cpu-idle"`
+	CPUUser1          float64                `xml:"cpu-user1"`
+	CPUBackground1    float64                `xml:"cpu-background1"`
+	CPUSystem1        float64                `xml:"cpu-system1"`
+	CPUInterrupt1     float64                `xml:"cpu-interrupt1"`
+	CPUIdle1          float64                `xml:"cpu-idle1"`
+	CPUUser2          float64                `xml:"cpu-user2"`
+	CPUBackground2    float64                `xml:"cpu-background2"`
+	CPUSystem2        float64                `xml:"cpu-system2"`
+	CPUInterrupt2     float64                `xml:"cpu-interrupt2"`
+	CPUIdle2          float64                `xml:"cpu-idle2"`
+	CPUUser3          float64                `xml:"cpu-user3"`
+	CPUBackground3    float64                `xml:"cpu-background3"`
+	CPUSystem3        float64                `xml:"cpu-system3"`
+	CPUInterrupt3     float64                `xml:"cpu-interrupt3"`
+	CPUIdle3          float64                `xml:"cpu-idle3"`
 	UpTime            struct {
 		Seconds uint64 `xml:"seconds,attr"`
 	} `xml:"up-time"`

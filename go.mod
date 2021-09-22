@@ -7,6 +7,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v1.0.0
+	github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common v0.6.0
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2

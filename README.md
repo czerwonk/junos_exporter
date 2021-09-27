@@ -136,13 +136,15 @@ devices:
   - host: router2
     username: exporter
     password: secret
+    features:
+      isis: true
 
 features:
   alarm: true
   environment: true
   bgp: true
   ospf: true
-  isis: true
+  isis: false
   nat: true
   l2circuit: true
   ldp: true

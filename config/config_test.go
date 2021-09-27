@@ -38,6 +38,7 @@ func TestShouldParse(t *testing.T) {
 	assertFeature("L2Circuit", c.Features.L2Circuit, true, t)
 	assertFeature("Storage", c.Features.Storage, false, t)
 	assertFeature("FPC", c.Features.FPC, true, t)
+	assertFeature("Power", c.Features.Power, true, t)
 }
 
 func TestShouldUseDefaults(t *testing.T) {
@@ -66,6 +67,7 @@ func TestShouldUseDefaults(t *testing.T) {
 	assertFeature("InterfaceQueue", c.Features.InterfaceQueue, true, t)
 	assertFeature("IPSec", c.Features.IPSec, false, t)
 	assertFeature("Accounting", c.Features.Accounting, false, t)
+	assertFeature("Power", c.Features.Power, true, t)
 }
 
 func TestShouldParseDevices(t *testing.T) {
@@ -110,6 +112,7 @@ func TestShouldParseDevices(t *testing.T) {
 	assertFeature("IPSec", f.IPSec, true, t)
 	assertFeature("FPC", f.FPC, true, t)
 	assertFeature("RPKI", f.RPKI, true, t)
+	assertFeature("Power", f.Power, true, t)
 }
 
 func assertFeature(name string, actual, expected bool, t *testing.T) {

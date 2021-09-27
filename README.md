@@ -31,12 +31,13 @@ The following metrics are supported by now:
 * Interface diagnostics (optical signals)
 * ISIS (number of adjacencies, total number of routers)
 * NAT (all available statistics from services nat)
-* Environment (temperatures)
+* Environment (temperatures, fans and PEM power statistics)
 * Routing engine statistics
 * Storage (total, available and used blocks, used percentage)
 * Firewall filters (counters and policers) - needs explicit rights beyond read-only
 * Statistics about l2circuits (tunnel state, number of tunnels)
 * Interface queue statistics
+* Power (Power usage)
 ```   
 0:EI -- encapsulation invalid
 1:MM -- mtu mismatch
@@ -104,6 +105,7 @@ docker run -d --restart unless-stopped -p 9326:9326 -e SSH_KEYFILE=/ssh-keyfile 
 junos_exporter supports SSH authentication via key or password based authentication.
 `-ssh.keyfile=<file>` enables key based authentication. `-ssh.password=<password-string>` enables password based authenticaton, this can also be enabled via the config file in the form of a `password: <password-string>` entry.
 Authentication order is ssh key, if none is found the cli flag is checked, the config file is checked last. If no valid auth method is specified junos_exporter exits with an error.
+Specify the ssh username with the cli flag `-ssh.user`, with the `username` key under the configuration file or use the default username of `junos_exporter`.
 
 ### Target Parameter
 By default, all configured targets will be scrapped when `/metrics` is hit. As an alternative, it is possible to scrape a specific target by passing the target's hostname/IP address to the target parameter - e.g. ` http://localhost:9326/metrics?target=1.2.3.4`. The specific target must be present in the configuration file or passed in with the ssh.targets flag, you can also specify the `-config.ignore-targets` flag if you don't want to specify targets in the config or commandline, if none of this matches the request will be denied. This can be used with the below example Prometheus config:
@@ -136,17 +138,29 @@ devices:
     password: secret
 
 features:
-  bgp: true
-  ospf: false
-  isis: false
-  nat: false
-  ldp: false
-  l2circuit: false
+  alarm: true
   environment: true
+  bgp: true
+  ospf: true
+  isis: true
+  nat: true
+  l2circuit: true
+  ldp: true
   routes: true
   routing_engine: true
+  firewall: false
+  interfaces: true
   interface_diagnostic: true
+  interface_queue: true
+  storage: true
+  accounting: true
+  ipsec: true
   fpc: true
+  rpki: true
+  rpm: false
+  satellite: true
+  system: true
+  power: true
 ```
 
 ## Dynamic Interface Labels

@@ -18,10 +18,10 @@ import (
 	"github.com/czerwonk/junos_exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 )
 
-const version string = "0.9.9"
+const version string = "0.9.11"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -61,6 +61,7 @@ var (
 	configFile                  = flag.String("config.file", "", "Path to config file")
 	dynamicIfaceLabels          = flag.Bool("dynamic-interface-labels", true, "Parse interface descriptions to get labels dynamicly")
 	lsEnabled                   = flag.Bool("logical-systems.enabled", false, "Enable logical systems support")
+	powerEnabled                = flag.Bool("power.enabled", true, "Scrape power metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -204,6 +205,7 @@ func loadConfigFromFlags() *config.Config {
 	f.Storage = *storageEnabled
 	f.Satellite = *satelliteEnabled
 	f.System = *systemEnabled
+	f.Power = *powerEnabled
 
 	return c
 }
@@ -273,8 +275,11 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	c := newJunosCollector(devs, connManager, logicalSystem)
 	reg.MustRegister(c)
 
+	l := log.New()
+	l.Level = log.ErrorLevel
+
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
-		ErrorLog:      log.NewErrorLogger(),
+		ErrorLog:      l,
 		ErrorHandling: promhttp.ContinueOnError}).ServeHTTP(w, r)
 }
 

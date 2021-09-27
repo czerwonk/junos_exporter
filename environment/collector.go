@@ -187,7 +187,7 @@ func parseXML(b []byte, res *RpcReply) error {
 	}
 
 	res.MultiRoutingEngineResults.RoutingEngine = []RoutingEngine{
-		RoutingEngine{
+		{
 			Name:                            "N/A",
 			EnvironmentComponentInformation: fi.EnvironmentComponentInformation,
 			EnvironmentInformation:          fi.EnvironmentInformation,

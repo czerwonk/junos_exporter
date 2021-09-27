@@ -990,7 +990,6 @@ func (c *natCollector) collectForPoolDetailInterface(s *NatPoolDetailInterface, 
 	}
 }
 
-
 func (c *natCollector) ServiceSetsCpuInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*ServiceSetsCpuInterface, error) {
 	var x = ServiceSetsCpuRpc{}
 	err := client.RunCommandAndParse("show services service-sets cpu-usage", &x)

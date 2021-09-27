@@ -36,7 +36,7 @@ func TestCollectorsRegistered(t *testing.T) {
 		},
 	}
 
-	cols := collectorsForDevices([]*connector.Device{&connector.Device{
+	cols := collectorsForDevices([]*connector.Device{{
 		Host: "::1",
 	}}, c, "", interfacelabels.NewDynamicLabels())
 
@@ -68,10 +68,10 @@ func TestCollectorsForDevices(t *testing.T) {
 			Power:               true,
 		},
 		Devices: []*config.DeviceConfig{
-			&config.DeviceConfig{
+			{
 				Host: "2001:678:1e0::1",
 			},
-			&config.DeviceConfig{
+			{
 				Host: "2001:678:1e0::2",
 				Features: &config.FeatureConfig{
 					Interfaces: true,

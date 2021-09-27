@@ -24,7 +24,7 @@ var (
 
 func init() {
 	lSession := []string{"target", "ip"}
-	upDesc = prometheus.NewDesc(prefix+"session_state", "Session is up (1 = Up)", lSession, nil)
+	upDesc = prometheus.NewDesc(prefix+"session_state", "Session is (0 = Down, 1 = Up, 2 = Connect, 3 = Ex-Incr, 4 = Ex-Start, 5 = Ex-Full)", lSession, nil)
 	flapsDesc = prometheus.NewDesc(prefix+"session_flap_count", "Number of session flaps", lSession, nil)
 	ipv4PrefixCountDesc = prometheus.NewDesc(prefix+"session_ipv4_prefix_count", "Number of IPv4 route validation records", lSession, nil)
 	ipv6PrefixCountDesc = prometheus.NewDesc(prefix+"session_ipv6_prefix_count", "Number of IPv6 route validation records", lSession, nil)
@@ -92,14 +92,35 @@ func (c *rpkiCollector) collectSessions(client *rpc.Client, ch chan<- prometheus
 }
 
 func (c *rpkiCollector) collectForSession(s RpkiSession, ch chan<- prometheus.Metric, labelValues []string) {
+	type SessionState int
+	var state SessionState
+	const (
+		Down = iota
+		Up
+		Connect
+		Ex_Start
+		Ex_Incr
+		Ex_Full
+	)
+
 	l := append(labelValues, []string{s.IpAddress}...)
 
-	up := 0
-	if s.SessionState == "Up" {
-		up = 1
+	switch s.SessionState {
+	case "Up":
+		state = Up
+	case "Connect":
+		state = Connect
+	case "Ex-Start":
+		state = Ex_Start
+	case "Ex-Incr":
+		state = Ex_Incr
+	case "Ex-Full":
+		state = Ex_Full
+	default:
+		state = Down
 	}
 
-	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, float64(up), l...)
+	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, float64(state), l...)
 	ch <- prometheus.MustNewConstMetric(flapsDesc, prometheus.GaugeValue, float64(s.SessionFlaps), l...)
 	ch <- prometheus.MustNewConstMetric(ipv4PrefixCountDesc, prometheus.GaugeValue, float64(s.Ipv4PrefixCount), l...)
 	ch <- prometheus.MustNewConstMetric(ipv6PrefixCountDesc, prometheus.GaugeValue, float64(s.Ipv6PrefixCount), l...)

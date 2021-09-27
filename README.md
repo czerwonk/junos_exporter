@@ -69,6 +69,16 @@ States map to human readable names like this:
 0: "Nonexistant"
 1: "Operational"
 ```
+* RPKI Session Information
+States map to human readable names like this:
+```
+0 = "Down"
+1 = "Up"
+2 = "Connect"
+3 = "Ex-Start"
+4 = "Ex-Incr"
+5 = "Ex-Full"
+```
 
 ## Install
 ```bash

@@ -95,14 +95,14 @@ func setDefaultValues(c *Config) {
 	f.Routes = true
 	f.Firewall = true
 	f.RoutingEngine = true
-	f.Storage = true
+	f.Storage = false
 	f.Accounting = false
 	f.FPC = false
 	f.L2Circuit = false
 	f.RPKI = false
 	f.RPM = false
 	f.Satellite = false
-	f.Power = true
+	f.Power = false
 }
 
 // FeaturesForDevice gets the feature set configured for a device

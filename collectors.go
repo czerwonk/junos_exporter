@@ -27,6 +27,7 @@ import (
 	"github.com/czerwonk/junos_exporter/rpm"
 	"github.com/czerwonk/junos_exporter/storage"
 	"github.com/czerwonk/junos_exporter/system"
+	"github.com/czerwonk/junos_exporter/vrrp"
 )
 
 type collectors struct {
@@ -92,6 +93,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "storage", f.Storage, storage.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "system", f.System, system.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "power", f.Power, power.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "vrrp", f.VRRP, vrrp.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

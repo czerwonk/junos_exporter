@@ -22,4 +22,12 @@ type InterfaceStats struct {
 	IPv6TransmitBytes   float64
 	IPv6TransmitPackets float64
 	LastFlapped         float64
+	ReceiveUnicasts     float64
+	ReceiveBroadcasts   float64
+	ReceiveMulticasts   float64
+	ReceiveCrcErrors    float64
+	TransmitUnicasts     float64
+	TransmitBroadcasts   float64
+	TransmitMulticasts   float64
+	TransmitCrcErrors    float64
 }

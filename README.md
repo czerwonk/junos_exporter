@@ -136,9 +136,13 @@ devices:
   - host: router2
     username: exporter
     password: secret
+    # Optional
+    # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
     features:
       isis: true
 
+# Optional
+# interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
 features:
   alarm: true
   environment: true
@@ -190,6 +194,14 @@ Description: XYZ [peer=202739]
 Label name: peer
 Label value: 202739
 ```
+
+### Custom Label RegEx
+
+To override the default behavior a `interface_description_regex` can be supplied.  
+#### Example
+The default regex `\[([^=\]]+)(=[^\]]+)?\]` would match interface descriptions like `"Description [foo] [bar=123]".  
+If we use `[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]` we can now match for `Description [foo, bar=123]` instead.  
+
 
 ### Grafana Dashboards
 

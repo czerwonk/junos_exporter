@@ -11,12 +11,10 @@ import (
 )
 
 var (
-	re     *regexp.Regexp
 	nameRe *regexp.Regexp
 )
 
 func init() {
-	re = regexp.MustCompile(`\[([^=\]]+)(=[^\]]+)?\]`)
 	nameRe = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]*$`)
 }
 
@@ -47,14 +45,14 @@ type interfaceLabel struct {
 }
 
 // CollectDescriptions collects labels from descriptions
-func (l *DynamicLabels) CollectDescriptions(device *connector.Device, client *rpc.Client) error {
+func (l *DynamicLabels) CollectDescriptions(device *connector.Device, client *rpc.Client, ifDescReg *regexp.Regexp) error {
 	r := &InterfaceRPC{}
 	err := client.RunCommandAndParse("show interfaces descriptions", r)
 	if err != nil {
 		return errors.Wrap(err, "could not retrieve interface descriptions for "+device.Host)
 	}
 
-	l.parseDescriptions(device, r.Information.Interfaces)
+	l.parseDescriptions(device, r.Information.Interfaces, ifDescReg)
 
 	return nil
 }
@@ -87,12 +85,12 @@ func (l *DynamicLabels) ValuesForInterface(device *connector.Device, ifaceName s
 	return labels
 }
 
-func (l *DynamicLabels) parseDescriptions(device *connector.Device, ifaces []PhyInterface) {
+func (l *DynamicLabels) parseDescriptions(device *connector.Device, ifaces []PhyInterface, ifDescReg *regexp.Regexp) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	for _, in := range ifaces {
-		labels := l.parseDescription(in)
+		labels := l.parseDescription(in, ifDescReg)
 
 		for _, la := range labels {
 			if _, found := l.labelNames[la.name]; !found {
@@ -106,14 +104,14 @@ func (l *DynamicLabels) parseDescriptions(device *connector.Device, ifaces []Phy
 	}
 }
 
-func (l *DynamicLabels) parseDescription(iface PhyInterface) []*interfaceLabel {
+func (l *DynamicLabels) parseDescription(iface PhyInterface, ifDescReg *regexp.Regexp) []*interfaceLabel {
 	labels := make([]*interfaceLabel, 0)
 
 	if len(iface.Description) == 0 {
 		return labels
 	}
 
-	matches := re.FindAllStringSubmatch(iface.Description, -1)
+	matches := ifDescReg.FindAllStringSubmatch(iface.Description, -1)
 	for _, m := range matches {
 		n := strings.ToLower(m[1])
 

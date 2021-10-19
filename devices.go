@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/config"
@@ -45,6 +46,13 @@ func deviceFromDeviceConfig(device *config.DeviceConfig, cfg *config.Config) (*c
 	auth, err := authForDevice(device, cfg)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not initialize config for device %s", device.Host)
+	}
+
+	// check whether there is a device specific regex otherwise fallback to global regex
+	if len(device.IfDescReg) == 0 {
+		device.IfDescReg = cfg.IfDescReg
+	} else {
+		regexp.MustCompile(device.IfDescReg)
 	}
 
 	return &connector.Device{

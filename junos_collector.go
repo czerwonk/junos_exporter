@@ -1,6 +1,7 @@
 package main
 
 import (
+	"regexp"
 	"sync"
 	"time"
 
@@ -17,12 +18,14 @@ var (
 	scrapeCollectorDurationDesc *prometheus.Desc
 	scrapeDurationDesc          *prometheus.Desc
 	upDesc                      *prometheus.Desc
+	defaultIfDescReg            *regexp.Regexp
 )
 
 func init() {
 	upDesc = prometheus.NewDesc(prefix+"up", "Scrape of target was successful", []string{"target"}, nil)
 	scrapeDurationDesc = prometheus.NewDesc(prefix+"collector_duration_seconds", "Duration of a collector scrape for one target", []string{"target"}, nil)
 	scrapeCollectorDurationDesc = prometheus.NewDesc(prefix+"collect_duration_seconds", "Duration of a scrape by collector and target", []string{"target", "collector"}, nil)
+	defaultIfDescReg = regexp.MustCompile(`\[([^=\]]+)(=[^\]]+)?\]`)
 }
 
 type junosCollector struct {
@@ -36,7 +39,7 @@ func newJunosCollector(devices []*connector.Device, connectionManager *connector
 
 	clients := make(map[*connector.Device]*rpc.Client)
 
-	for _, d := range devices {
+	for index, d := range devices {
 		cl, err := clientForDevice(d, connManager)
 		if err != nil {
 			log.Errorf("Could not connect to %s: %s", d, err)
@@ -46,7 +49,15 @@ func newJunosCollector(devices []*connector.Device, connectionManager *connector
 		clients[d] = cl
 
 		if *dynamicIfaceLabels {
-			err = l.CollectDescriptions(d, cl)
+			regex := defaultIfDescReg
+			if cfg.Devices[index].IfDescReg != "" {
+				regex = regexp.MustCompile(cfg.Devices[index].IfDescReg)
+			} else if cfg.IfDescReg != "" {
+				regex = regexp.MustCompile(cfg.IfDescReg)
+			}
+
+			err = l.CollectDescriptions(d, cl, regex)
+
 			if err != nil {
 				log.Errorf("Could not get interface descriptions %s: %s", d, err)
 				continue

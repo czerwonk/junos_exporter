@@ -52,6 +52,7 @@ type FeatureConfig struct {
 	Satellite           bool `yaml:"satellite,omitempty"`
 	System              bool `yaml:"system,omitempty"`
 	Power               bool `yaml:"power,omitempty"`
+	MAC                 bool `yaml:"mac,omitempty"`
 	VRRP                bool `yaml:"vrrp,omitempty"`
 }
 
@@ -107,6 +108,7 @@ func setDefaultValues(c *Config) {
 	f.RPM = false
 	f.Satellite = false
 	f.Power = false
+	f.MAC = false
 	f.VRRP = false
 }
 

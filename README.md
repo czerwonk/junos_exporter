@@ -79,6 +79,13 @@ States map to human readable names like this:
 4 = "Ex-Incr"
 5 = "Ex-Full"
 ```
+* VRRP (state per interface)
+States map to human readable names like this:
+```   
+1: "init"
+2: "backup"
+3: "master"
+```
 
 ## Install
 ```bash

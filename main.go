@@ -61,6 +61,7 @@ var (
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 	configFile                  = flag.String("config.file", "", "Path to config file")
 	dynamicIfaceLabels          = flag.Bool("dynamic-interface-labels", true, "Parse interface descriptions to get labels dynamicly")
+	interfaceDescriptionRegex   = flag.String("interface-description-regex", "", "give a regex to retrieve the interface description labels")
 	lsEnabled                   = flag.Bool("logical-systems.enabled", false, "Enable logical systems support")
 	powerEnabled                = flag.Bool("power.enabled", true, "Scrape power metrics")
 	cfg                         *config.Config
@@ -183,6 +184,7 @@ func loadConfigFromFlags() *config.Config {
 	c := config.New()
 	c.Targets = strings.Split(*sshHosts, ",")
 	c.LSEnabled = *lsEnabled
+	c.IfDescReg = *interfaceDescriptionRegex
 
 	f := &c.Features
 	f.Alarm = *alarmEnabled

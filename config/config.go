@@ -14,15 +14,17 @@ type Config struct {
 	Devices   []*DeviceConfig `yaml:"devices,omitempty"`
 	Features  FeatureConfig   `yaml:"features,omitempty"`
 	LSEnabled bool            `yaml:"logical_systems,omitempty"`
+	IfDescReg string          `yaml:"interface_description_regex,omitempty"`
 }
 
 // DeviceConfig is the config representation of 1 device
 type DeviceConfig struct {
-	Host     string         `yaml:"host"`
-	Username string         `yaml:"username,omitempty"`
-	Password string         `yaml:"password,omitempty"`
-	KeyFile  string         `yaml:"key_file,omitempty"`
-	Features *FeatureConfig `yaml:"features,omitempty"`
+	Host      string         `yaml:"host"`
+	Username  string         `yaml:"username,omitempty"`
+	Password  string         `yaml:"password,omitempty"`
+	KeyFile   string         `yaml:"key_file,omitempty"`
+	Features  *FeatureConfig `yaml:"features,omitempty"`
+	IfDescReg string         `yaml:"interface_description_regex,omitempty"`
 }
 
 // FeatureConfig is the list of collectors enabled or disabled
@@ -51,6 +53,7 @@ type FeatureConfig struct {
 	System              bool `yaml:"system,omitempty"`
 	Power               bool `yaml:"power,omitempty"`
 	MAC                 bool `yaml:"mac,omitempty"`
+	VRRP                bool `yaml:"vrrp,omitempty"`
 }
 
 // New creates a new config
@@ -82,6 +85,7 @@ func Load(reader io.Reader) (*Config, error) {
 func setDefaultValues(c *Config) {
 	c.Password = ""
 	c.LSEnabled = false
+	c.IfDescReg = ""
 	f := &c.Features
 	f.Alarm = true
 	f.BGP = true
@@ -105,6 +109,7 @@ func setDefaultValues(c *Config) {
 	f.Satellite = false
 	f.Power = false
 	f.MAC = false
+	f.VRRP = false
 }
 
 // FeaturesForDevice gets the feature set configured for a device

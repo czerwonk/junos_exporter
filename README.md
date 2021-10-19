@@ -79,6 +79,13 @@ States map to human readable names like this:
 4 = "Ex-Incr"
 5 = "Ex-Full"
 ```
+* VRRP (state per interface)
+States map to human readable names like this:
+```   
+1: "init"
+2: "backup"
+3: "master"
+```
 
 ## Install
 ```bash
@@ -136,9 +143,13 @@ devices:
   - host: router2
     username: exporter
     password: secret
+    # Optional
+    # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
     features:
       isis: true
 
+# Optional
+# interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
 features:
   alarm: true
   environment: true
@@ -190,6 +201,14 @@ Description: XYZ [peer=202739]
 Label name: peer
 Label value: 202739
 ```
+
+### Custom Label RegEx
+
+To override the default behavior a `interface_description_regex` can be supplied.  
+#### Example
+The default regex `\[([^=\]]+)(=[^\]]+)?\]` would match interface descriptions like `"Description [foo] [bar=123]".  
+If we use `[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]` we can now match for `Description [foo, bar=123]` instead.  
+
 
 ### Grafana Dashboards
 

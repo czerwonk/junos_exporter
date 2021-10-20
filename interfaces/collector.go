@@ -79,14 +79,14 @@ func (c *interfaceCollector) init() {
 	c.operStatusDesc = prometheus.NewDesc(prefix+"up", "Interface operational status", l, nil)
 	c.errorStatusDesc = prometheus.NewDesc(prefix+"error_status", "Admin and operational status differ", l, nil)
 	c.lastFlappedDesc = prometheus.NewDesc(prefix+"last_flapped_seconds", "Seconds since last flapped (-1 if never)", l, nil)
-	c.receiveUnicastsDesc = prometheus.NewDesc(prefix+"receive_unicasts", "Received unicast packets", l, nil)
-	c.receiveBroadcastsDesc = prometheus.NewDesc(prefix+"receive_broadcasts", "Received broadcast packets", l, nil)
-	c.receiveMulticastsDesc = prometheus.NewDesc(prefix+"receive_multicasts", "Received multicast packets", l, nil)
-	c.receiveCrcErrorsDesc = prometheus.NewDesc(prefix+"receive_errors_crc", "Number of CRC error incoming packets", l, nil)
-	c.transmitUnicastsDesc = prometheus.NewDesc(prefix+"transmit_unicasts", "Transmitted unicast packets", l, nil)
-	c.transmitBroadcastsDesc = prometheus.NewDesc(prefix+"transmit_broadcasts", "Transmitted broadcast packets", l, nil)
-	c.transmitMulticastsDesc = prometheus.NewDesc(prefix+"transmit_multicasts", "Transmitted multicast packets", l, nil)
-	c.transmitCrcErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors_crc", "Number of CRC error outgoing packets", l, nil)
+        c.receiveUnicastsDesc = prometheus.NewDesc(prefix+"receive_unicasts_packets", "Received unicast packets", l, nil)
+	c.receiveBroadcastsDesc = prometheus.NewDesc(prefix+"receive_broadcasts_packets", "Received broadcast packets", l, nil)
+	c.receiveMulticastsDesc = prometheus.NewDesc(prefix+"receive_multicasts_packets", "Received multicast packets", l, nil)
+	c.receiveCrcErrorsDesc = prometheus.NewDesc(prefix+"receive_errors_crc_packets", "Number of CRC error incoming packets", l, nil)
+	c.transmitUnicastsDesc = prometheus.NewDesc(prefix+"transmit_unicasts_packets", "Transmitted unicast packets", l, nil)
+	c.transmitBroadcastsDesc = prometheus.NewDesc(prefix+"transmit_broadcasts_packets", "Transmitted broadcast packets", l, nil)
+	c.transmitMulticastsDesc = prometheus.NewDesc(prefix+"transmit_multicasts_packets", "Transmitted multicast packets", l, nil)
+	c.transmitCrcErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors_crc_packets", "Number of CRC error outgoing packets", l, nil)
 }
 
 // Describe describes the metrics

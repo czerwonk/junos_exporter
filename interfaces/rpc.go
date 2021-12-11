@@ -27,6 +27,7 @@ type PhyInterface struct {
 		Seconds uint64 `xml:"seconds,attr"`
 		Value   string `xml:",chardata"`
 	} `xml:"interface-flapped"`
+        EthernetMacStatistics EthernetMacStat `xml:"ethernet-mac-statistics"`
 }
 
 type LogInterface struct {
@@ -56,4 +57,15 @@ type LagTrafficStat struct {
 	Links []struct {
 		Name string `xml:"name"`
 	} `xml:"lag-link"`
+}
+
+type EthernetMacStat struct {
+	InputUnicasts    uint64 `xml:"input-unicasts"`
+	InputBroadcasts  uint64 `xml:"input-broadcasts"`
+	InputMulticasts  uint64 `xml:"input-multicasts"`
+	InputCrcErrors   uint64 `xml:"input-crc-errors"`
+	OutputUnicasts   uint64 `xml:"output-unicasts"`
+	OutputBroadcasts uint64 `xml:"output-broadcasts"`
+	OutputMulticasts uint64 `xml:"output-multicasts"`
+	OutputCrcErrors  uint64 `xml:"output-crc-errors"`
 }

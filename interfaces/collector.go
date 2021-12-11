@@ -33,6 +33,14 @@ type interfaceCollector struct {
 	operStatusDesc          *prometheus.Desc
 	errorStatusDesc         *prometheus.Desc
 	lastFlappedDesc         *prometheus.Desc
+	receiveUnicastsDesc     *prometheus.Desc
+	receiveBroadcastsDesc   *prometheus.Desc
+	receiveMulticastsDesc   *prometheus.Desc
+	receiveCrcErrorsDesc    *prometheus.Desc
+	transmitUnicastsDesc    *prometheus.Desc
+	transmitBroadcastsDesc  *prometheus.Desc
+	transmitMulticastsDesc  *prometheus.Desc
+	transmitCrcErrorsDesc   *prometheus.Desc
 }
 
 // NewCollector creates a new collector
@@ -71,6 +79,14 @@ func (c *interfaceCollector) init() {
 	c.operStatusDesc = prometheus.NewDesc(prefix+"up", "Interface operational status", l, nil)
 	c.errorStatusDesc = prometheus.NewDesc(prefix+"error_status", "Admin and operational status differ", l, nil)
 	c.lastFlappedDesc = prometheus.NewDesc(prefix+"last_flapped_seconds", "Seconds since last flapped (-1 if never)", l, nil)
+        c.receiveUnicastsDesc = prometheus.NewDesc(prefix+"receive_unicasts_packets", "Received unicast packets", l, nil)
+	c.receiveBroadcastsDesc = prometheus.NewDesc(prefix+"receive_broadcasts_packets", "Received broadcast packets", l, nil)
+	c.receiveMulticastsDesc = prometheus.NewDesc(prefix+"receive_multicasts_packets", "Received multicast packets", l, nil)
+	c.receiveCrcErrorsDesc = prometheus.NewDesc(prefix+"receive_errors_crc_packets", "Number of CRC error incoming packets", l, nil)
+	c.transmitUnicastsDesc = prometheus.NewDesc(prefix+"transmit_unicasts_packets", "Transmitted unicast packets", l, nil)
+	c.transmitBroadcastsDesc = prometheus.NewDesc(prefix+"transmit_broadcasts_packets", "Transmitted broadcast packets", l, nil)
+	c.transmitMulticastsDesc = prometheus.NewDesc(prefix+"transmit_multicasts_packets", "Transmitted multicast packets", l, nil)
+	c.transmitCrcErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors_crc_packets", "Number of CRC error outgoing packets", l, nil)
 }
 
 // Describe describes the metrics
@@ -92,6 +108,14 @@ func (c *interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.operStatusDesc
 	ch <- c.errorStatusDesc
 	ch <- c.lastFlappedDesc
+	ch <- c.receiveUnicastsDesc
+	ch <- c.receiveBroadcastsDesc
+	ch <- c.receiveMulticastsDesc
+	ch <- c.receiveCrcErrorsDesc
+	ch <- c.transmitUnicastsDesc
+	ch <- c.transmitBroadcastsDesc
+	ch <- c.transmitMulticastsDesc
+	ch <- c.transmitCrcErrorsDesc
 }
 
 // Collect collects metrics from JunOS
@@ -110,7 +134,7 @@ func (c *interfaceCollector) Collect(client *rpc.Client, ch chan<- prometheus.Me
 
 func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceStats, error) {
 	var x = InterfaceRpc{}
-	err := client.RunCommandAndParse("show interfaces statistics detail", &x)
+	err := client.RunCommandAndParse("show interfaces extensive", &x)
 	if err != nil {
 		return nil, err
 	}
@@ -139,6 +163,14 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 			IPv6TransmitBytes:   float64(phy.Stats.IPv6Traffic.OutputBytes),
 			IPv6TransmitPackets: float64(phy.Stats.IPv6Traffic.OutputPackets),
 			LastFlapped:         -1,
+			ReceiveUnicasts:     float64(phy.EthernetMacStatistics.InputUnicasts),
+			ReceiveBroadcasts:   float64(phy.EthernetMacStatistics.InputBroadcasts),
+			ReceiveMulticasts:   float64(phy.EthernetMacStatistics.InputMulticasts),
+			ReceiveCrcErrors:    float64(phy.EthernetMacStatistics.InputCrcErrors),
+			TransmitUnicasts:    float64(phy.EthernetMacStatistics.OutputUnicasts),
+			TransmitBroadcasts:  float64(phy.EthernetMacStatistics.OutputBroadcasts),
+			TransmitMulticasts:  float64(phy.EthernetMacStatistics.OutputMulticasts),
+			TransmitCrcErrors:   float64(phy.EthernetMacStatistics.OutputCrcErrors),
 		}
 
 		if phy.InterfaceFlapped.Value != "Never" {
@@ -239,5 +271,14 @@ func (c *interfaceCollector) collectForInterface(s *InterfaceStats, device *conn
 		if s.LastFlapped != 0 {
 			ch <- prometheus.MustNewConstMetric(c.lastFlappedDesc, prometheus.GaugeValue, s.LastFlapped, l...)
 		}
+
+	        ch <- prometheus.MustNewConstMetric(c.receiveUnicastsDesc, prometheus.GaugeValue, s.ReceiveUnicasts, l...)
+	        ch <- prometheus.MustNewConstMetric(c.receiveBroadcastsDesc, prometheus.GaugeValue, s.ReceiveBroadcasts, l...)
+	        ch <- prometheus.MustNewConstMetric(c.receiveMulticastsDesc, prometheus.GaugeValue, s.ReceiveMulticasts, l...)
+	        ch <- prometheus.MustNewConstMetric(c.receiveCrcErrorsDesc, prometheus.GaugeValue, s.ReceiveCrcErrors, l...)
+	        ch <- prometheus.MustNewConstMetric(c.transmitUnicastsDesc, prometheus.GaugeValue, s.TransmitUnicasts, l...)
+	        ch <- prometheus.MustNewConstMetric(c.transmitBroadcastsDesc, prometheus.GaugeValue, s.TransmitBroadcasts, l...)
+	        ch <- prometheus.MustNewConstMetric(c.transmitMulticastsDesc, prometheus.GaugeValue, s.TransmitMulticasts, l...)
+	        ch <- prometheus.MustNewConstMetric(c.transmitCrcErrorsDesc, prometheus.GaugeValue, s.TransmitCrcErrors, l...)
 	}
 }

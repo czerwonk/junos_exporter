@@ -39,7 +39,7 @@ func init() {
 	uptimeDesc = prometheus.NewDesc(prefix+"uptime_seconds", "Seconds since boot", l, nil)
 	powerDesc = prometheus.NewDesc(prefix+"max_power_consumption_watt", "Maximum power consumption in Watt", l, nil)
 
-	cpuTotalDesc = prometheus.NewDesc(prefix+"cpu_total", "Number of CPUs", l, nil)
+	cpuTotalDesc = prometheus.NewDesc(prefix+"cpu_total", "Overall CPU utilization in percent", l, nil)
 	cpuInterruptDesc = prometheus.NewDesc(prefix+"cpu_interrupts", "Number of CPU interrupts", l, nil)
 	memoryHeapUtilizationDesc = prometheus.NewDesc(prefix+"mem_heap_utilization_percent", "Heap usage percent", l, nil)
 	memoryBufferUtilizationDesc = prometheus.NewDesc(prefix+"mem_buffers_utilization_percent", "Buffers usage percent", l, nil)

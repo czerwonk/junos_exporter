@@ -13,12 +13,15 @@ const prefix = "junos_alarms_"
 var (
 	alarmsYellowCount *prometheus.Desc
 	alarmsRedCount    *prometheus.Desc
+	alarmDetails      *prometheus.Desc
 )
 
 func init() {
 	l := []string{"target"}
 	alarmsYellowCount = prometheus.NewDesc(prefix+"yellow_count", "Number of yollow alarms (not silenced)", l, nil)
 	alarmsRedCount = prometheus.NewDesc(prefix+"red_count", "Number of red alarms (not silenced)", l, nil)
+	l = append(l, "class", "type", "description")
+	alarmDetails = prometheus.NewDesc(prefix+"set", "Alarm active with the details provided in labels", l, nil)
 }
 
 type alarmCollector struct {
@@ -49,18 +52,24 @@ func (*alarmCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *alarmCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	counter, err := c.alarmCounter(client)
+	counter, alarms, err := c.alarmCounter(client)
 	if err != nil {
 		return err
 	}
 
 	ch <- prometheus.MustNewConstMetric(alarmsYellowCount, prometheus.GaugeValue, counter.YellowCount, labelValues...)
 	ch <- prometheus.MustNewConstMetric(alarmsRedCount, prometheus.GaugeValue, counter.RedCount, labelValues...)
+	if alarms != nil {
+		for _, alarm := range *alarms {
+			localLabelvalues := append(labelValues, alarm.Class, alarm.Type, alarm.Description)
+			ch <- prometheus.MustNewConstMetric(alarmDetails, prometheus.GaugeValue, 1, localLabelvalues...)
+		}
+	}
 
 	return nil
 }
 
-func (c *alarmCollector) alarmCounter(client *rpc.Client) (*AlarmCounter, error) {
+func (c *alarmCollector) alarmCounter(client *rpc.Client) (*AlarmCounter, *[]AlarmDetails, error) {
 	red := 0
 	yellow := 0
 
@@ -69,18 +78,22 @@ func (c *alarmCollector) alarmCounter(client *rpc.Client) (*AlarmCounter, error)
 		"show chassis alarms",
 	}
 
+	var alarms []AlarmDetails
+
 	messages := make(map[string]interface{})
 	for _, cmd := range cmds {
 		var a = AlarmRpc{}
 		err := client.RunCommandAndParse(cmd, &a)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		for _, d := range a.Information.Details {
 			if _, found := messages[d.Description]; found {
 				continue
 			}
+
+			alarms = append(alarms, d)
 
 			if c.shouldFilterAlarm(&d) {
 				continue
@@ -96,7 +109,7 @@ func (c *alarmCollector) alarmCounter(client *rpc.Client) (*AlarmCounter, error)
 		}
 	}
 
-	return &AlarmCounter{RedCount: float64(red), YellowCount: float64(yellow)}, nil
+	return &AlarmCounter{RedCount: float64(red), YellowCount: float64(yellow)}, &alarms, nil
 }
 
 func (c *alarmCollector) shouldFilterAlarm(a *AlarmDetails) bool {

@@ -20,6 +20,7 @@ import (
 	"github.com/czerwonk/junos_exporter/ldp"
 	"github.com/czerwonk/junos_exporter/mac"
 	"github.com/czerwonk/junos_exporter/nat"
+	"github.com/czerwonk/junos_exporter/nat2"
 	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/power"
 	"github.com/czerwonk/junos_exporter/route"
@@ -85,6 +86,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "l2c", f.L2Circuit, l2circuit.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "ldp", f.LDP, ldp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "nat", f.NAT, nat.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "nat2", f.NAT2, nat2.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "ospf", f.OSPF, func() collector.RPCCollector {
 		return ospf.NewCollector(c.logicalSystem)
 	})

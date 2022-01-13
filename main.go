@@ -42,6 +42,7 @@ var (
 	isisEnabled                 = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
 	l2circuitEnabled            = flag.Bool("l2circuit.enabled", false, "Scrape l2circuit metrics")
 	natEnabled                  = flag.Bool("nat.enabled", false, "Scrape NAT metrics")
+	nat2Enabled                 = flag.Bool("nat2.enabled", false, "Scrape NAT2 metrics")
 	ldpEnabled                  = flag.Bool("ldp.enabled", true, "Scrape ldp metrics")
 	routingEngineEnabled        = flag.Bool("routingengine.enabled", true, "Scrape Routing Engine metrics")
 	routesEnabled               = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
@@ -197,6 +198,7 @@ func loadConfigFromFlags() *config.Config {
 	f.IPSec = *ipsecEnabled
 	f.ISIS = *isisEnabled
 	f.NAT = *natEnabled
+	f.NAT2 = *nat2Enabled
 	f.OSPF = *ospfEnabled
 	f.LDP = *ldpEnabled
 	f.L2Circuit = *l2circuitEnabled

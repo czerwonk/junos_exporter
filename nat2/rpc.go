@@ -42,14 +42,12 @@ type NatInterface struct {
 	NatJflowLogRateLimitFailInvalidCurrentTime int64  `xml:"nat-jflow-log-rate-limit-fail-invalid-current-time"`
 }
 
-
 type SrcNatPoolRpc struct {
 	Information struct {
-		TotalSourcePools string `xml:"total-source-pools"`
-		Pools []SrcNatPool `xml:"source-nat-pool-info-entry"`
+		TotalSourcePools string       `xml:"total-source-pools"`
+		Pools            []SrcNatPool `xml:"source-nat-pool-info-entry"`
 	} `xml:"source-nat-pool-detail-information"`
 }
-
 
 type SrcNatPool struct {
 	Interface               string `xml:"interface-name"`
@@ -78,38 +76,29 @@ type SrcNatPool struct {
 	EifInboundFlowsCount    int64  `xml:"source-pool-eif-inbound-flows-count"`
 	EifFlowLimitExceedDrops int64  `xml:"source-pool-eif-flow-limit-exceed-drops"`
 
-//     []SrcPoolAddressRange `xml:"source-pool-address-range"` //Annoying Junos implementation: same xml 'categories' multiple times
+	//     []SrcPoolAddressRange `xml:"source-pool-address-range"` //Annoying Junos implementation: same xml 'categories' multiple times
 	SrcPoolAddressRanges struct {
-		AddressRangeLow          []string `xml:"address-range-low"`
-		AddressRangeHigh         []string `xml:"address-range-high"`
-		SinglePort               []int64  `xml:"single-port"`
-        }`xml:"source-pool-address-range"`
+		AddressRangeLow  []string `xml:"address-range-low"`
+		AddressRangeHigh []string `xml:"address-range-high"`
+		SinglePort       []int64  `xml:"single-port"`
+	} `xml:"source-pool-address-range"`
 
 	SrcPoolAddressRangeSum struct {
-		SinglePortSum           int64  `xml:"single-port-sum"`
+		SinglePortSum int64 `xml:"single-port-sum"`
 	} `xml:"source-pool-address-range-sum"`
 	SrcPoolErrorCounters struct {
-		OutOfPortError           int64  `xml:"out-of-port-error"`
-		OutOfAddrError           int64  `xml:"out-of-addr-error"`
-		ParityPortError          int64  `xml:"parity-port-error"`
-		PreserveRangeError       int64  `xml:"preserve-range-error"`
-		AppOutOfPortError        int64  `xml:"app-out-of-port-error"`
-		AppExceedPortLimitError  int64  `xml:"app-exceed-port-limit-error"`
-		OutOfBlkError            int64  `xml:"out-of-blk-error"`
-		BlkExceedLimitError      int64  `xml:"blk-exceed-limit-error"`
-		BlkOutOfPortError        int64  `xml:"blk-out-of-port-error"`
-		BlkMemAllocError         int64  `xml:"blk-mem-alloc-error"`
-        } `xml:"source-pool-error-counters"`
+		OutOfPortError          int64 `xml:"out-of-port-error"`
+		OutOfAddrError          int64 `xml:"out-of-addr-error"`
+		ParityPortError         int64 `xml:"parity-port-error"`
+		PreserveRangeError      int64 `xml:"preserve-range-error"`
+		AppOutOfPortError       int64 `xml:"app-out-of-port-error"`
+		AppExceedPortLimitError int64 `xml:"app-exceed-port-limit-error"`
+		OutOfBlkError           int64 `xml:"out-of-blk-error"`
+		BlkExceedLimitError     int64 `xml:"blk-exceed-limit-error"`
+		BlkOutOfPortError       int64 `xml:"blk-out-of-port-error"`
+		BlkMemAllocError        int64 `xml:"blk-mem-alloc-error"`
+	} `xml:"source-pool-error-counters"`
 }
-
-
-//type SrcPoolAddressRange struct{ 
-//	AddressRangeLow          string `xml:"address-range-low"`
-//	AddressRangeHigh         string `xml:"address-range-high"`
-//	SinglePort               int64  `xml:"single-port"`
-//}
-
-
 
 type ServiceSetsCpuRpc struct {
 	Information struct {

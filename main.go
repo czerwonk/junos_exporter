@@ -51,6 +51,7 @@ var (
 	interfacesEnabled           = flag.Bool("interfaces.enabled", true, "Scrape interface metrics")
 	interfaceDiagnosticsEnabled = flag.Bool("ifdiag.enabled", true, "Scrape optical interface diagnostic metrics")
 	ipsecEnabled                = flag.Bool("ipsec.enabled", false, "Scrape IPSec metrics")
+	securityEnabled             = flag.Bool("security.enabled", false, "Scrape security metrics")
 	storageEnabled              = flag.Bool("storage.enabled", true, "Scrape system storage metrics")
 	fpcEnabled                  = flag.Bool("fpc.enabled", true, "Scrape line card metrics")
 	accountingEnabled           = flag.Bool("accounting.enabled", false, "Scrape accounting flow metrics")
@@ -196,6 +197,7 @@ func loadConfigFromFlags() *config.Config {
 	f.InterfaceDiagnostic = *interfaceDiagnosticsEnabled
 	f.InterfaceQueue = *interfaceQueuesEnabled
 	f.IPSec = *ipsecEnabled
+	f.Security = *securityEnabled
 	f.ISIS = *isisEnabled
 	f.NAT = *natEnabled
 	f.NAT2 = *nat2Enabled

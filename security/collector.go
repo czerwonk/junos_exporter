@@ -24,7 +24,6 @@ var (
 
 func init() {
 	l := []string{"target", "re_name"}
-	//l := []string{"target", "re_name", "description", "name"}
 
 	fpcNumber = prometheus.NewDesc(prefix+"fpc_number", "FPC number", l, nil)
 	picNumber = prometheus.NewDesc(prefix+"pic_number", "PIC number", l, nil)

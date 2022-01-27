@@ -168,6 +168,7 @@ features:
   storage: true
   accounting: true
   ipsec: true
+  security: true
   fpc: true
   rpki: true
   rpm: false

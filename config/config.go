@@ -47,6 +47,7 @@ type FeatureConfig struct {
 	Storage             bool `yaml:"storage,omitempty"`
 	Accounting          bool `yaml:"accounting,omitempty"`
 	IPSec               bool `yaml:"ipsec,omitempty"`
+	Security            bool `yaml:"security,omitempty"`
 	FPC                 bool `yaml:"fpc,omitempty"`
 	RPKI                bool `yaml:"rpki,omitempty"`
 	RPM                 bool `yaml:"rpm,omitempty"`
@@ -101,6 +102,7 @@ func setDefaultValues(c *Config) {
 	f.Routes = true
 	f.Firewall = true
 	f.RoutingEngine = true
+	f.Security = false
 	f.Storage = false
 	f.Accounting = false
 	f.FPC = false

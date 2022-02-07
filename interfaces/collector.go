@@ -79,7 +79,7 @@ func (c *interfaceCollector) init() {
 	c.operStatusDesc = prometheus.NewDesc(prefix+"up", "Interface operational status", l, nil)
 	c.errorStatusDesc = prometheus.NewDesc(prefix+"error_status", "Admin and operational status differ", l, nil)
 	c.lastFlappedDesc = prometheus.NewDesc(prefix+"last_flapped_seconds", "Seconds since last flapped (-1 if never)", l, nil)
-        c.receiveUnicastsDesc = prometheus.NewDesc(prefix+"receive_unicasts_packets", "Received unicast packets", l, nil)
+	c.receiveUnicastsDesc = prometheus.NewDesc(prefix+"receive_unicasts_packets", "Received unicast packets", l, nil)
 	c.receiveBroadcastsDesc = prometheus.NewDesc(prefix+"receive_broadcasts_packets", "Received broadcast packets", l, nil)
 	c.receiveMulticastsDesc = prometheus.NewDesc(prefix+"receive_multicasts_packets", "Received multicast packets", l, nil)
 	c.receiveCrcErrorsDesc = prometheus.NewDesc(prefix+"receive_errors_crc_packets", "Number of CRC error incoming packets", l, nil)
@@ -212,14 +212,14 @@ func (c *interfaceCollector) collectForInterface(s *InterfaceStats, device *conn
 	l := append(labelValues, []string{s.Name, s.Description, s.Mac}...)
 	l = append(l, c.labels.ValuesForInterface(device, s.Name)...)
 
-	ch <- prometheus.MustNewConstMetric(c.receiveBytesDesc, prometheus.GaugeValue, s.ReceiveBytes, l...)
-	ch <- prometheus.MustNewConstMetric(c.receivePacketsDesc, prometheus.GaugeValue, s.ReceivePackets, l...)
-	ch <- prometheus.MustNewConstMetric(c.transmitBytesDesc, prometheus.GaugeValue, s.TransmitBytes, l...)
-	ch <- prometheus.MustNewConstMetric(c.transmitPacketsDesc, prometheus.GaugeValue, s.TransmitPackets, l...)
-	ch <- prometheus.MustNewConstMetric(c.ipv6receiveBytesDesc, prometheus.GaugeValue, s.IPv6ReceiveBytes, l...)
-	ch <- prometheus.MustNewConstMetric(c.ipv6receivePacketsDesc, prometheus.GaugeValue, s.IPv6ReceivePackets, l...)
-	ch <- prometheus.MustNewConstMetric(c.ipv6transmitBytesDesc, prometheus.GaugeValue, s.IPv6TransmitBytes, l...)
-	ch <- prometheus.MustNewConstMetric(c.ipv6transmitPacketsDesc, prometheus.GaugeValue, s.IPv6TransmitPackets, l...)
+	ch <- prometheus.MustNewConstMetric(c.receiveBytesDesc, prometheus.CounterValue, s.ReceiveBytes, l...)
+	ch <- prometheus.MustNewConstMetric(c.receivePacketsDesc, prometheus.CounterValue, s.ReceivePackets, l...)
+	ch <- prometheus.MustNewConstMetric(c.transmitBytesDesc, prometheus.CounterValue, s.TransmitBytes, l...)
+	ch <- prometheus.MustNewConstMetric(c.transmitPacketsDesc, prometheus.CounterValue, s.TransmitPackets, l...)
+	ch <- prometheus.MustNewConstMetric(c.ipv6receiveBytesDesc, prometheus.CounterValue, s.IPv6ReceiveBytes, l...)
+	ch <- prometheus.MustNewConstMetric(c.ipv6receivePacketsDesc, prometheus.CounterValue, s.IPv6ReceivePackets, l...)
+	ch <- prometheus.MustNewConstMetric(c.ipv6transmitBytesDesc, prometheus.CounterValue, s.IPv6TransmitBytes, l...)
+	ch <- prometheus.MustNewConstMetric(c.ipv6transmitPacketsDesc, prometheus.CounterValue, s.IPv6TransmitPackets, l...)
 
 	if s.IsPhysical {
 		adminUp := 0
@@ -262,23 +262,23 @@ func (c *interfaceCollector) collectForInterface(s *InterfaceStats, device *conn
 		ch <- prometheus.MustNewConstMetric(c.adminStatusDesc, prometheus.GaugeValue, float64(adminUp), l...)
 		ch <- prometheus.MustNewConstMetric(c.operStatusDesc, prometheus.GaugeValue, float64(operUp), l...)
 		ch <- prometheus.MustNewConstMetric(c.errorStatusDesc, prometheus.GaugeValue, float64(err), l...)
-		ch <- prometheus.MustNewConstMetric(c.transmitErrorsDesc, prometheus.GaugeValue, s.TransmitErrors, l...)
-		ch <- prometheus.MustNewConstMetric(c.transmitDropsDesc, prometheus.GaugeValue, s.TransmitDrops, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveErrorsDesc, prometheus.GaugeValue, s.ReceiveErrors, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveDropsDesc, prometheus.GaugeValue, s.ReceiveDrops, l...)
+		ch <- prometheus.MustNewConstMetric(c.transmitErrorsDesc, prometheus.CounterValue, s.TransmitErrors, l...)
+		ch <- prometheus.MustNewConstMetric(c.transmitDropsDesc, prometheus.CounterValue, s.TransmitDrops, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveErrorsDesc, prometheus.CounterValue, s.ReceiveErrors, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveDropsDesc, prometheus.CounterValue, s.ReceiveDrops, l...)
 		ch <- prometheus.MustNewConstMetric(c.interfaceSpeedDesc, prometheus.GaugeValue, float64(sp64), l...)
 
 		if s.LastFlapped != 0 {
 			ch <- prometheus.MustNewConstMetric(c.lastFlappedDesc, prometheus.GaugeValue, s.LastFlapped, l...)
 		}
 
-	        ch <- prometheus.MustNewConstMetric(c.receiveUnicastsDesc, prometheus.GaugeValue, s.ReceiveUnicasts, l...)
-	        ch <- prometheus.MustNewConstMetric(c.receiveBroadcastsDesc, prometheus.GaugeValue, s.ReceiveBroadcasts, l...)
-	        ch <- prometheus.MustNewConstMetric(c.receiveMulticastsDesc, prometheus.GaugeValue, s.ReceiveMulticasts, l...)
-	        ch <- prometheus.MustNewConstMetric(c.receiveCrcErrorsDesc, prometheus.GaugeValue, s.ReceiveCrcErrors, l...)
-	        ch <- prometheus.MustNewConstMetric(c.transmitUnicastsDesc, prometheus.GaugeValue, s.TransmitUnicasts, l...)
-	        ch <- prometheus.MustNewConstMetric(c.transmitBroadcastsDesc, prometheus.GaugeValue, s.TransmitBroadcasts, l...)
-	        ch <- prometheus.MustNewConstMetric(c.transmitMulticastsDesc, prometheus.GaugeValue, s.TransmitMulticasts, l...)
-	        ch <- prometheus.MustNewConstMetric(c.transmitCrcErrorsDesc, prometheus.GaugeValue, s.TransmitCrcErrors, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveUnicastsDesc, prometheus.CounterValue, s.ReceiveUnicasts, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveBroadcastsDesc, prometheus.CounterValue, s.ReceiveBroadcasts, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveMulticastsDesc, prometheus.CounterValue, s.ReceiveMulticasts, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveCrcErrorsDesc, prometheus.CounterValue, s.ReceiveCrcErrors, l...)
+		ch <- prometheus.MustNewConstMetric(c.transmitUnicastsDesc, prometheus.CounterValue, s.TransmitUnicasts, l...)
+		ch <- prometheus.MustNewConstMetric(c.transmitBroadcastsDesc, prometheus.CounterValue, s.TransmitBroadcasts, l...)
+		ch <- prometheus.MustNewConstMetric(c.transmitMulticastsDesc, prometheus.CounterValue, s.TransmitMulticasts, l...)
+		ch <- prometheus.MustNewConstMetric(c.transmitCrcErrorsDesc, prometheus.CounterValue, s.TransmitCrcErrors, l...)
 	}
 }

@@ -183,10 +183,10 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 			TransmitBroadcasts:  float64(phy.EthernetMacStatistics.OutputBroadcasts),
 			TransmitMulticasts:  float64(phy.EthernetMacStatistics.OutputMulticasts),
 			TransmitCrcErrors:   float64(phy.EthernetMacStatistics.OutputCrcErrors),
-			fecCcwCount:	     float64(phy.EthernetFecStatistics.NumberfecCcwCount),
-			fecNccwCount:        float64(phy.EthernetFecStatistics.NumberfecNccwCount),
-			fecCcwErrorRate:     float64(phy.EthernetFecStatistics.NumberfecCcwErrorRate),
-			fecNccwErrorRate:    float64(phy.EthernetFecStatistics.NumberfecNccwErrorRate),
+			FecCcwCount:	     float64(phy.EthernetFecStatistics.NumberfecCcwCount),
+			FecNccwCount:        float64(phy.EthernetFecStatistics.NumberfecNccwCount),
+			FecCcwErrorRate:     float64(phy.EthernetFecStatistics.NumberfecCcwErrorRate),
+			FecNccwErrorRate:    float64(phy.EthernetFecStatistics.NumberfecNccwErrorRate),
 		}
 
 		if phy.InterfaceFlapped.Value != "Never" {

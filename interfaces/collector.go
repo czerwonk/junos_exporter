@@ -183,10 +183,10 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 			TransmitBroadcasts:  float64(phy.EthernetMacStatistics.OutputBroadcasts),
 			TransmitMulticasts:  float64(phy.EthernetMacStatistics.OutputMulticasts),
 			TransmitCrcErrors:   float64(phy.EthernetMacStatistics.OutputCrcErrors),
-			fecCcwCount:	     float64(phy.EthernetFecStatistics.NumberfecCcwCount),
-			fecNccwCount:        float64(phy.EthernetFecStatistics.NumberfecNccwCount),
-			fecCcwErrorRate:     float64(phy.EthernetFecStatistics.NumberfecCcwErrorRate),
-			fecNccwErrorRate:    float64(phy.EthernetFecStatistics.NumberfecNccwErrorRate),
+			FecCcwCount:	     float64(phy.EthernetFecStatistics.NumberfecCcwCount),
+			FecNccwCount:        float64(phy.EthernetFecStatistics.NumberfecNccwCount),
+			FecCcwErrorRate:     float64(phy.EthernetFecStatistics.NumberfecCcwErrorRate),
+			FecNccwErrorRate:    float64(phy.EthernetFecStatistics.NumberfecNccwErrorRate),
 		}
 
 		if phy.InterfaceFlapped.Value != "Never" {
@@ -236,10 +236,6 @@ func (c *interfaceCollector) collectForInterface(s *InterfaceStats, device *conn
 	ch <- prometheus.MustNewConstMetric(c.ipv6receivePacketsDesc, prometheus.CounterValue, s.IPv6ReceivePackets, l...)
 	ch <- prometheus.MustNewConstMetric(c.ipv6transmitBytesDesc, prometheus.CounterValue, s.IPv6TransmitBytes, l...)
 	ch <- prometheus.MustNewConstMetric(c.ipv6transmitPacketsDesc, prometheus.CounterValue, s.IPv6TransmitPackets, l...)
-	ch <- prometheus.MustNewConstMetric(c.fecCcwCountDesc, prometheus.CounterValue, s.fecCcwCount, l...)
-	ch <- prometheus.MustNewConstMetric(c.fecNccwCountDesc, prometheus.CounterValue, s.fecNccwCount, l...)
-	ch <- prometheus.MustNewConstMetric(c.fecCcwErrorRateDesc, prometheus.CounterValue, s.fecCcwErrorRate, l...)
-	ch <- prometheus.MustNewConstMetric(c.fecNccwErrorRateDesc, prometheus.CounterValue, s.fecNccwErrorRate, l...)
 
 	if s.IsPhysical {
 		adminUp := 0

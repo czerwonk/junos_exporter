@@ -41,6 +41,10 @@ type interfaceCollector struct {
 	transmitBroadcastsDesc  *prometheus.Desc
 	transmitMulticastsDesc  *prometheus.Desc
 	transmitCrcErrorsDesc   *prometheus.Desc
+	fecCcwCountDesc   	*prometheus.Desc
+	fecNccwCountDesc  	*prometheus.Desc
+	fecCcwErrorRateDesc  	*prometheus.Desc
+	fecNccwErrorRateDesc   	*prometheus.Desc
 }
 
 // NewCollector creates a new collector
@@ -87,6 +91,10 @@ func (c *interfaceCollector) init() {
 	c.transmitBroadcastsDesc = prometheus.NewDesc(prefix+"transmit_broadcasts_packets", "Transmitted broadcast packets", l, nil)
 	c.transmitMulticastsDesc = prometheus.NewDesc(prefix+"transmit_multicasts_packets", "Transmitted multicast packets", l, nil)
 	c.transmitCrcErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors_crc_packets", "Number of CRC error outgoing packets", l, nil)
+	c.fecCcwCountDesc = prometheus.NewDesc(prefix+"fec_ccw_count", "Number FEC Corrected Errors", l, nil)
+	c.fecNccwCountDesc = prometheus.NewDesc(prefix+"fec_nccw_count", "Number FEC Uncorrected Errors", l, nil)
+	c.fecCcwErrorRateDesc = prometheus.NewDesc(prefix+"fec_ccw_error_rate", "Number FEC Corrected Errors Rate", l, nil)
+	c.fecNccwErrorRateDesc = prometheus.NewDesc(prefix+"fec_nccw_error_rate", "Number FEC Uncorrected Errors Rate", l, nil)
 }
 
 // Describe describes the metrics
@@ -116,6 +124,10 @@ func (c *interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.transmitBroadcastsDesc
 	ch <- c.transmitMulticastsDesc
 	ch <- c.transmitCrcErrorsDesc
+	ch <- c.fecCcwCountDesc
+	ch <- c.fecNccwCountDesc
+	ch <- c.fecCcwErrorRateDesc
+	ch <- c.fecNccwErrorRateDesc
 }
 
 // Collect collects metrics from JunOS
@@ -171,6 +183,10 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 			TransmitBroadcasts:  float64(phy.EthernetMacStatistics.OutputBroadcasts),
 			TransmitMulticasts:  float64(phy.EthernetMacStatistics.OutputMulticasts),
 			TransmitCrcErrors:   float64(phy.EthernetMacStatistics.OutputCrcErrors),
+			FecCcwCount:	     float64(phy.EthernetFecStatistics.NumberfecCcwCount),
+			FecNccwCount:        float64(phy.EthernetFecStatistics.NumberfecNccwCount),
+			FecCcwErrorRate:     float64(phy.EthernetFecStatistics.NumberfecCcwErrorRate),
+			FecNccwErrorRate:    float64(phy.EthernetFecStatistics.NumberfecNccwErrorRate),
 		}
 
 		if phy.InterfaceFlapped.Value != "Never" {
@@ -280,5 +296,9 @@ func (c *interfaceCollector) collectForInterface(s *InterfaceStats, device *conn
 		ch <- prometheus.MustNewConstMetric(c.transmitBroadcastsDesc, prometheus.CounterValue, s.TransmitBroadcasts, l...)
 		ch <- prometheus.MustNewConstMetric(c.transmitMulticastsDesc, prometheus.CounterValue, s.TransmitMulticasts, l...)
 		ch <- prometheus.MustNewConstMetric(c.transmitCrcErrorsDesc, prometheus.CounterValue, s.TransmitCrcErrors, l...)
+		ch <- prometheus.MustNewConstMetric(c.fecCcwCountDesc, prometheus.CounterValue, s.FecCcwCount, l...)
+		ch <- prometheus.MustNewConstMetric(c.fecNccwCountDesc, prometheus.CounterValue, s.FecNccwCount, l...)
+		ch <- prometheus.MustNewConstMetric(c.fecCcwErrorRateDesc, prometheus.CounterValue, s.FecCcwErrorRate, l...)
+		ch <- prometheus.MustNewConstMetric(c.fecNccwErrorRateDesc, prometheus.CounterValue, s.FecNccwErrorRate, l...)
 	}
 }

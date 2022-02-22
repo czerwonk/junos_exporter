@@ -30,4 +30,8 @@ type InterfaceStats struct {
 	TransmitBroadcasts   float64
 	TransmitMulticasts   float64
 	TransmitCrcErrors    float64
+	FecCcwCount         float64
+	FecNccwCount        float64
+	FecCcwErrorRate     float64
+	FecNccwErrorRate    float64
 }

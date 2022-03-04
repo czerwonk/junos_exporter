@@ -207,8 +207,8 @@ Label value: 202739
 
 To override the default behavior a `interface_description_regex` can be supplied.  
 #### Example
-The default regex `\[([^=\]]+)(=[^\]]+)?\]` would match interface descriptions like `"Description [foo] [bar=123]".  
-If we use `[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]` we can now match for `Description [foo, bar=123]` instead.  
+The default regex `\[([^=\]]+)(=[^\]]+)?\]` would match interface descriptions like `"Description [foo] [bar=123]"`.  
+If we use `[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]` we can now match for `"Description [foo, bar=123]"` instead.  
 
 
 ### Grafana Dashboards

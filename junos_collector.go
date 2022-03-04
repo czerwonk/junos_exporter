@@ -50,10 +50,20 @@ func newJunosCollector(devices []*connector.Device, connectionManager *connector
 
 		if *dynamicIfaceLabels {
 			regex := defaultIfDescReg
-			if cfg.Devices[index].IfDescReg != "" {
-				regex = regexp.MustCompile(cfg.Devices[index].IfDescReg)
-			} else if cfg.IfDescReg != "" {
-				regex = regexp.MustCompile(cfg.IfDescReg)
+			if cfg.IfDescReg != "" {
+				regex, err = regexp.Compile(cfg.IfDescReg)
+				if err != nil {
+				        log.Errorf("Global dynamic label regex invalid: %s", cfg.IfDescReg)
+			                regex = defaultIfDescReg
+				}
+			} else if !(*ignoreConfigTargets) && index <= len(cfg.Devices) {
+				if cfg.Devices[index].IfDescReg != "" {
+				    regex, err = regexp.Compile(cfg.Devices[index].IfDescReg)
+				    if err != nil {
+				         log.Errorf("Device specific dynamic label regex invalid: %s", cfg.Devices[index].IfDescReg)
+			                 regex = defaultIfDescReg
+				    }
+				}
 			}
 
 			err = l.CollectDescriptions(d, cl, regex)

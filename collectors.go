@@ -33,6 +33,7 @@ import (
 	"github.com/czerwonk/junos_exporter/storage"
 	"github.com/czerwonk/junos_exporter/system"
 	"github.com/czerwonk/junos_exporter/vrrp"
+	"github.com/czerwonk/junos_exporter/vpws"
 )
 
 type collectors struct {
@@ -104,6 +105,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "power", f.Power, power.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "mac", f.MAC, mac.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "vrrp", f.VRRP, vrrp.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "vpws", f.VPWS, vpws.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

@@ -31,6 +31,7 @@ type DeviceConfig struct {
 type FeatureConfig struct {
 	Alarm               bool `yaml:"alarm,omitempty"`
 	Environment         bool `yaml:"environment,omitempty"`
+	BFD                 bool `yaml:"bfd,omitempty"`
 	BGP                 bool `yaml:"bgp,omitempty"`
 	OSPF                bool `yaml:"ospf,omitempty"`
 	ISIS                bool `yaml:"isis,omitempty"`

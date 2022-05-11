@@ -67,6 +67,7 @@ var (
 	lsEnabled                   = flag.Bool("logical-systems.enabled", false, "Enable logical systems support")
 	powerEnabled                = flag.Bool("power.enabled", true, "Scrape power metrics")
 	lacpEnabled                 = flag.Bool("lacp.enabled", true, "Scrape lacp metrics")
+	bfdEnabled                  = flag.Bool("bfd.enabled", true, "Scrape bfd metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager

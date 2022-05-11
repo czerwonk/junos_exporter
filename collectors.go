@@ -17,6 +17,7 @@ import (
 	"github.com/czerwonk/junos_exporter/ipsec"
 	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/l2circuit"
+	"github.com/czerwonk/junos_exporter/lacp"
 	"github.com/czerwonk/junos_exporter/ldp"
 	"github.com/czerwonk/junos_exporter/mac"
 	"github.com/czerwonk/junos_exporter/nat"
@@ -85,6 +86,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "ipsec", f.IPSec, ipsec.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "isis", f.ISIS, isis.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "l2c", f.L2Circuit, l2circuit.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "lacp", f.LACP, lacp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "ldp", f.LDP, ldp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "nat", f.NAT, nat.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "nat2", f.NAT2, nat2.NewCollector)

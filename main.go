@@ -69,6 +69,7 @@ var (
 	lacpEnabled                 = flag.Bool("lacp.enabled", true, "Scrape lacp metrics")
 	bfdEnabled                  = flag.Bool("bfd.enabled", true, "Scrape bfd metrics")
 	vpwsEnabled                 = flag.Bool("vpws.enabled", true, "Scrape evpn vpws metrics")
+	mpls_lspEnabled             = flag.Bool("mpls_lsp.enabled", true, "Scrape mpls LSP metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager

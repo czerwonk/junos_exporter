@@ -21,6 +21,7 @@ import (
 	"github.com/czerwonk/junos_exporter/lacp"
 	"github.com/czerwonk/junos_exporter/ldp"
 	"github.com/czerwonk/junos_exporter/mac"
+	"github.com/czerwonk/junos_exporter/mpls_lsp"
 	"github.com/czerwonk/junos_exporter/nat"
 	"github.com/czerwonk/junos_exporter/nat2"
 	"github.com/czerwonk/junos_exporter/ospf"
@@ -106,6 +107,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "mac", f.MAC, mac.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "vrrp", f.VRRP, vrrp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "vpws", f.VPWS, vpws.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "mpls_lsp", f.MPLS_LSP, mpls_lsp.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

@@ -57,6 +57,7 @@ type FeatureConfig struct {
 	System              bool `yaml:"system,omitempty"`
 	Power               bool `yaml:"power,omitempty"`
 	MAC                 bool `yaml:"mac,omitempty"`
+	MPLS_LSP            bool `yaml:"mpls_lsp,omitempty"`
 	VPWS                bool `yaml:"vpws,omitempty"`
 	VRRP                bool `yaml:"vrrp,omitempty"`
 }

@@ -78,7 +78,8 @@ func (c *environmentCollector) environmentItems(client *rpc.Client, ch chan<- pr
 		"Present": 5,
 	}
 
-	err := client.RunCommandAndParseWithParser("show chassis environment", func(b []byte) error {
+//	err := client.RunCommandAndParseWithParser("show chassis environment", func(b []byte) error {
+	err := client.RunCommandAndParseWithParser("<get-environment-information/>", func(b []byte) error {
 		return parseXML(b, &x)
 	})
 	if err != nil {
@@ -132,7 +133,8 @@ func (c *environmentCollector) environmentPEMItems(client *rpc.Client, ch chan<-
 		"Empty":   3,
 	}
 
-	err := client.RunCommandAndParseWithParser("show chassis environment pem", func(b []byte) error {
+//	err := client.RunCommandAndParseWithParser("show chassis environment pem", func(b []byte) error {
+	err := client.RunCommandAndParseWithParser("<get-environment-pem-information/>", func(b []byte) error {
 		return parseXML(b, &x)
 	})
 	if err != nil {

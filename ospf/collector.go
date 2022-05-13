@@ -64,10 +64,12 @@ func (c *ospfCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 func (c *ospfCollector) collectOSPFMetrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = OspfRpc{}
 	var cmd strings.Builder
-	cmd.WriteString("show ospf overview")
-	if c.LogicalSystem != "" {
-		cmd.WriteString(" logical-system " + c.LogicalSystem)
-	}
+//	cmd.WriteString("show ospf overview")
+//	cmd.WriteString("show ospf overview")
+//	if c.LogicalSystem != "" {
+//		cmd.WriteString(" logical-system " + c.LogicalSystem)
+//	}
+	cmd.WriteString("<get-ospf-overview-information/>")
 
 	err := client.RunCommandAndParse(cmd.String(), &x)
 	if err != nil {

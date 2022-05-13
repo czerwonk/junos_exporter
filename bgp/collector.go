@@ -77,10 +77,11 @@ func (c *bgpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 func (c *bgpCollector) collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = BGPRPC{}
 	var cmd strings.Builder
-	cmd.WriteString("show bgp neighbor")
-	if c.LogicalSystem != "" {
-		cmd.WriteString(" logical-system " + c.LogicalSystem)
-	}
+//	cmd.WriteString("show bgp neighbor")
+//	if c.LogicalSystem != "" {
+//		cmd.WriteString(" logical-system " + c.LogicalSystem)
+//	}
+	cmd.WriteString("<get-bgp-neighbor-information/>")
 
 	err := client.RunCommandAndParse(cmd.String(), &x)
 	if err != nil {

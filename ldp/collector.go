@@ -62,7 +62,8 @@ func (c *ldpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 
 func (c *ldpCollector) collectLDPMetrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = LDPRpc{}
-	err := client.RunCommandAndParse("show ldp neighbor", &x)
+//	err := client.RunCommandAndParse("show ldp neighbor", &x)
+	err := client.RunCommandAndParse("<get-ldp-session-information/>", &x)
 	if err != nil {
 		return err
 	}

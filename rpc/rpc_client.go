@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"encoding/xml"
-	"fmt"
 
 	"log"
 
@@ -41,7 +40,7 @@ func (c *Client) RunCommandAndParseWithParser(cmd string, parser Parser) error {
 		log.Printf("Running command on %s: %s\n", c.conn.Host(), cmd)
 	}
 
-	b, err := c.conn.RunCommand(fmt.Sprintf("%s | display xml", cmd))
+	b, err := c.conn.RunCommand(cmd)
 	if err != nil {
 		return err
 	}

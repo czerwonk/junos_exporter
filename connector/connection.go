@@ -1,19 +1,18 @@
 package connector
 
 import (
-	"bytes"
 	"net"
 	"sync"
 
 	"github.com/pkg/errors"
 
-	"golang.org/x/crypto/ssh"
+	"github.com/Juniper/go-netconf/netconf"
 )
 
 // SSHConnection encapsulates the connection to the device
 type SSHConnection struct {
 	device *Device
-	client *ssh.Client
+	session *netconf.Session
 	conn   net.Conn
 	mu     sync.Mutex
 	done   chan struct{}
@@ -24,25 +23,16 @@ func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if c.client == nil {
+	if c.session == nil {
 		return nil, errors.New("not connected")
 	}
 
-	session, err := c.client.NewSession()
-	if err != nil {
-		return nil, errors.Wrap(err, "could not open session")
-	}
-	defer session.Close()
-
-	var b = &bytes.Buffer{}
-	session.Stdout = b
-
-	err = session.Run(cmd)
+	reply, err := c.session.Exec(netconf.RawMethod(cmd))
 	if err != nil {
 		return nil, errors.Wrap(err, "could not run command")
 	}
 
-	return b.Bytes(), nil
+	return []byte(reply.RawReply), nil
 }
 
 func (c *SSHConnection) isConnected() bool {
@@ -55,7 +45,7 @@ func (c *SSHConnection) terminate() {
 
 	c.conn.Close()
 
-	c.client = nil
+	c.session = nil
 	c.conn = nil
 }
 
@@ -63,13 +53,13 @@ func (c *SSHConnection) close() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if c.client != nil {
-		c.client.Close()
+	if c.session != nil {
+		c.session.Close()
 	}
 
 	c.done <- struct{}{}
 	c.conn = nil
-	c.client = nil
+	c.session = nil
 }
 
 // Host returns the hostname of the connected device

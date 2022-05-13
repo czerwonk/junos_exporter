@@ -56,7 +56,8 @@ func (c *isisCollector) isisAdjancies(client *rpc.Client) (*IsisAdjacencies, err
 	total := 0
 
 	var x = IsisRpc{}
-	err := client.RunCommandAndParse("show isis adjacency", &x)
+//	err := client.RunCommandAndParse("show isis adjacency", &x)
+	err := client.RunCommandAndParse("<get-isis-adjacency-information/>", &x)
 	if err != nil {
 		return nil, err
 	}

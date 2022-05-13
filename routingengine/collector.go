@@ -168,7 +168,8 @@ func (*routingEngineCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *routingEngineCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = RpcReply{}
-	err := client.RunCommandAndParseWithParser("show chassis routing-engine", func(b []byte) error {
+//	err := client.RunCommandAndParseWithParser("show chassis routing-engine", func(b []byte) error {
+	err := client.RunCommandAndParseWithParser("<get-route-engine-information/>", func(b []byte) error {
 		return parseXML(b, &x)
 	})
 	if err != nil {

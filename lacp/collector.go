@@ -47,7 +47,8 @@ func (*lacpCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *lacpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
         var x = lacpRpc{}
-        err := client.RunCommandAndParse("show lacp interfaces", &x)
+//        err := client.RunCommandAndParse("show lacp interfaces", &x)
+        err := client.RunCommandAndParse("<get-lacp-interface-information/>", &x)
 	if err != nil {
 		return err
 	}

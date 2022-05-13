@@ -68,7 +68,8 @@ func (c *rpmCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 func (c *rpmCollector) collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = RPMRPC{}
 
-	err := client.RunCommandAndParse("show services rpm probe-results", &x)
+//	err := client.RunCommandAndParse("show services rpm probe-results", &x)
+	err := client.RunCommandAndParse("<get-probe-results/>", &x)
 	if err != nil {
 		return err
 	}

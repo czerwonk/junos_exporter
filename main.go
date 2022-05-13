@@ -225,7 +225,6 @@ func loadConfigFromFlags() *config.Config {
 func connectionManager() *connector.SSHConnectionManager {
 	opts := []connector.Option{
 		connector.WithReconnectInterval(*sshReconnectInterval),
-		connector.WithKeepAliveInterval(*sshKeepAliveInterval),
 		connector.WithKeepAliveTimeout(*sshKeepAliveTimeout),
 	}
 

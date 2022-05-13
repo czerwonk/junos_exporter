@@ -44,7 +44,8 @@ func (*bfdCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *bfdCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
         var x = bfdRpc{}
-        err := client.RunCommandAndParse("show bfd session extensive", &x)
+//        err := client.RunCommandAndParse("show bfd session extensive", &x)
+        err := client.RunCommandAndParse("<get-bfd-session-information><extensive/></get-bfd-session-information>", &x)
 	if err != nil {
 		return err
 	}

@@ -162,7 +162,8 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 
 	r = new(BuffersRPC)
 
-	err = client.RunCommandAndParse("show system buffers", r)
+//	err = client.RunCommandAndParse("show system buffers", r)
+	err = client.RunCommandAndParse("<get-buffer-informations/>", r)
 	if err != nil {
 		return err
 	}
@@ -277,7 +278,8 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 
 	// system information
 	r2 = new(SystemInformationRPC)
-	err = client.RunCommandAndParse("show system information", r2)
+//	err = client.RunCommandAndParse("show system information", r2)
+	err = client.RunCommandAndParse("<get-system-information/>", r2)
 	if err != nil {
 		return err
 	}

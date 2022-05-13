@@ -45,7 +45,8 @@ func (c *vrrpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 	}
 
         var x = VrrpRpc{}
-        err := client.RunCommandAndParse("show vrrp summary", &x)
+//        err := client.RunCommandAndParse("show vrrp summary", &x)
+        err := client.RunCommandAndParse("<get-vrrp-information/>", &x)
 	if err != nil {
 		return err
 	}

@@ -255,7 +255,8 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 
 func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client) ([]*InterfaceDiagnostics, error) {
 	var x = InterfaceDiagnosticsRPC{}
-	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
+//	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
+	err := client.RunCommandAndParse("<get-interface-optics-diagnostics-information/>", &x)
 	if err != nil {
 		return nil, err
 	}

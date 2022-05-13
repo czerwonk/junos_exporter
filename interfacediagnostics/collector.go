@@ -280,7 +280,8 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rp
 	//  </rpc-reply>
 
 	// workaround: go through all lines of the XML and remove identical, consecutive lines
-	err := client.RunCommandAndParseWithParser("show interfaces diagnostics optics satellite", func(b []byte) error {
+//	err := client.RunCommandAndParseWithParser("show interfaces diagnostics optics satellite", func(b []byte) error {
+	err := client.RunCommandAndParseWithParser("<show-interface-optics-diagnostics-satellite/>", func(b []byte) error {
 		var (
 			lines     []string = strings.Split(string(b[:]), "\n")
 			lineIndex int

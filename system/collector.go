@@ -300,7 +300,8 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 
 		// system information of satellites
 		r3 = new(SatelliteChassisRPC)
-		err = client.RunCommandAndParse("show chassis satellite detail", r3)
+//		err = client.RunCommandAndParse("show chassis satellite detail", r3)
+		err = client.RunCommandAndParse("<get-chassis-satellite-information><detail/></get-chassis-satellite-information>", r3)
 		// there are various error messages when satellite is not enabled; thus here we just ignore the error and continue
 		if err == nil {
 			for i = range r3.SatelliteInfo.Satellite {

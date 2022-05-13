@@ -122,7 +122,8 @@ func (c *fpcCollector) CollectFPCDetail(client *rpc.Client, ch chan<- prometheus
 // Collect collects metrics from JunOS
 func (c *fpcCollector) CollectFPC(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	r := RpcReply{}
-	err := client.RunCommandAndParseWithParser("show chassis fpc", func(b []byte) error {
+//	err := client.RunCommandAndParseWithParser("show chassis fpc", func(b []byte) error {
+	err := client.RunCommandAndParseWithParser("<get-fpc-information/>", func(b []byte) error {
 		return parseXML(b, &r)
 	})
 	if err != nil {
@@ -140,7 +141,8 @@ func (c *fpcCollector) CollectFPC(client *rpc.Client, ch chan<- prometheus.Metri
 
 func (c *fpcCollector) CollectPIC(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	r := RpcReply{}
-	err := client.RunCommandAndParseWithParser("show chassis fpc pic-status", func(b []byte) error {
+//	err := client.RunCommandAndParseWithParser("show chassis fpc pic-status", func(b []byte) error {
+	err := client.RunCommandAndParseWithParser("<get-pic-information/>", func(b []byte) error {
 		return parseXML(b, &r)
 	})
 	if err != nil {

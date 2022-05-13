@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"encoding/xml"
-
+	"bytes"
 	"log"
 
 	"github.com/czerwonk/junos_exporter/connector"
@@ -30,7 +30,8 @@ func NewClient(ssh *connector.SSHConnection) *Client {
 // RunCommandAndParse runs a command on JunOS and unmarshals the XML result
 func (c *Client) RunCommandAndParse(cmd string, obj interface{}) error {
 	return c.RunCommandAndParseWithParser(cmd, func(b []byte) error {
-		return xml.Unmarshal(b, obj)
+		//in junos the xml interfaces contains line returns in the values
+		return xml.Unmarshal(bytes.ReplaceAll(b, []byte("\n"), []byte("")), obj)
 	})
 }
 

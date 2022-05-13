@@ -89,7 +89,7 @@ func (c *environmentCollector) environmentItems(client *rpc.Client, ch chan<- pr
 	// gather satellite data
 	if client.Satellite {
 		var y = RpcReply{}
-		err = client.RunCommandAndParseWithParser("show chassis environment satellite", func(b []byte) error {
+		err = client.RunCommandAndParseWithParser("<get-chassis-environment-satellite-information/>", func(b []byte) error {
 			if string(b[:]) == "\nerror: syntax error, expecting <command>: satellite\n" {
 				log.Printf("system doesn't seem to have satellite enabled")
 				return nil

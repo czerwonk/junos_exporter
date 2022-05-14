@@ -47,7 +47,8 @@ func (*macCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *macCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = MacRpc{}
-	err := client.RunCommandAndParse("show ethernet-switching table summary", &x)
+//	err := client.RunCommandAndParse("show ethernet-switching table summary", &x)
+	err := client.RunCommandAndParse("<get-ethernet-switching-table-information><summary/></get-ethernet-switching-table-information>", &x)
 	if err != nil {
 		return err
 	}

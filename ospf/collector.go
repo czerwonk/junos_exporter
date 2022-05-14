@@ -96,10 +96,11 @@ func (c *ospfCollector) collectOSPFMetrics(client *rpc.Client, ch chan<- prometh
 func (c *ospfCollector) collectOSPFv3Metrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = Ospf3Rpc{}
 	var cmd strings.Builder
-	cmd.WriteString("show ospf3 overview")
-	if c.LogicalSystem != "" {
-		cmd.WriteString(" logical-system " + c.LogicalSystem)
-	}
+//	cmd.WriteString("show ospf3 overview")
+	cmd.WriteString("<get-ospf3-overview-information/>")
+//	if c.LogicalSystem != "" {
+//		cmd.WriteString(" logical-system " + c.LogicalSystem)
+//	}
 
 	err := client.RunCommandAndParse(cmd.String(), &x)
 	if err != nil {

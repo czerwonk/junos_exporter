@@ -321,7 +321,8 @@ func (*natCollector) collectForInterface(s *NatInterface, ch chan<- prometheus.M
 
 func (c *natCollector) SrcNatPools(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]SrcNatPool, error) {
 	var x = SrcNatPoolRpc{}
-	err := client.RunCommandAndParse("show services nat source pool all", &x)
+//	err := client.RunCommandAndParse("show services nat source pool all", &x)
+	err := client.RunCommandAndParse("<retrieve-srv-source-nat-pool-information><all/></retrieve-srv-source-nat-pool-information>", &x)
 	if err != nil {
 		return nil, err
 	}
@@ -393,7 +394,8 @@ func (c *natCollector) collectForSrcNatPool(s []SrcNatPool, ch chan<- prometheus
 
 func (c *natCollector) ServiceSetsCpuInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*ServiceSetsCpuInterface, error) {
 	var x = ServiceSetsCpuRpc{}
-	err := client.RunCommandAndParse("show services service-sets cpu-usage", &x)
+//	err := client.RunCommandAndParse("show services service-sets cpu-usage", &x)
+	err := client.RunCommandAndParse("<get-service-set-cpu-statistics/>", &x)
 	if err != nil {
 		return nil, err
 	}

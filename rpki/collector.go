@@ -79,7 +79,8 @@ func (c *rpkiCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 
 func (c *rpkiCollector) collectSessions(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = RpkiSessionRpc{}
-	err := client.RunCommandAndParse("show validation session", &x)
+//	err := client.RunCommandAndParse("show validation session", &x)
+	err := client.RunCommandAndParse("<get-validation-session-information/>", &x)
 	if err != nil {
 		return err
 	}
@@ -129,7 +130,8 @@ func (c *rpkiCollector) collectForSession(s RpkiSession, ch chan<- prometheus.Me
 func (c *rpkiCollector) collectStatistics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = RpkiStatisticsRpc{}
 
-	err := client.RunCommandAndParse("show validation statistics", &x)
+//	err := client.RunCommandAndParse("show validation statistics", &x)
+	err := client.RunCommandAndParse("<get-validation-statistics-information/>", &x)
 	if err != nil {
 		return err
 	}

@@ -49,7 +49,8 @@ func (*ipsecCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *ipsecCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = RpcReply{}
-	err := client.RunCommandAndParse("show security ipsec security-associations", &x)
+//	err := client.RunCommandAndParse("show security ipsec security-associations", &x)
+	err := client.RunCommandAndParse("<get-security-associations-information/>", &x)
 	if err != nil {
 		return err
 	}
@@ -64,7 +65,8 @@ func (c *ipsecCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric
 	}
 
 	var conf = ConfigurationSecurityIpsec{}
-	err = client.RunCommandAndParse("show configuration security ipsec", &conf)
+//	err = client.RunCommandAndParse("show configuration security ipsec", &conf)
+	err = client.RunCommandAndParse("<get-configuration><filter type='sub-tree'><security><ipsec></ipsec></security></filter></get-configuration>", &conf)
 	if err != nil {
 		return err
 	}

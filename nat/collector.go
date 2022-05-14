@@ -506,7 +506,8 @@ func (c *natCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 
 func (c *natCollector) NatInterfaces(client *rpc.Client) ([]*NatInterface, error) {
 	var x = NatRpc{}
-	err := client.RunCommandAndParse("show services nat statistics", &x)
+//	err := client.RunCommandAndParse("show services nat statistics", &x)
+	err := client.RunCommandAndParse("<get-service-nat-statistics-information/>", &x)
 	if err != nil {
 		return nil, err
 	}

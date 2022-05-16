@@ -41,6 +41,7 @@ type FeatureConfig struct {
 	NAT                 bool `yaml:"nat,omitempty"`
 	NAT2                bool `yaml:"nat2,omitempty"`
 	L2Circuit           bool `yaml:"l2circuit,omitempty"`
+	LACP                bool `yaml:"lacp,omitempty"`
 	LDP                 bool `yaml:"ldp,omitempty"`
 	Routes              bool `yaml:"routes,omitempty"`
 	RoutingEngine       bool `yaml:"routing_engine,omitempty"`
@@ -59,6 +60,8 @@ type FeatureConfig struct {
 	System              bool `yaml:"system,omitempty"`
 	Power               bool `yaml:"power,omitempty"`
 	MAC                 bool `yaml:"mac,omitempty"`
+	MPLS_LSP            bool `yaml:"mpls_lsp,omitempty"`
+	VPWS                bool `yaml:"vpws,omitempty"`
 	VRRP                bool `yaml:"vrrp,omitempty"`
 }
 

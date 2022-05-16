@@ -18,4 +18,3 @@ type MacTableEntry struct {
 	DynamicCount int64 `xml:"mac-table-dynamic-count"`
 	FloodCount   int64 `xml:"mac-table-flood-count"`
 }
-

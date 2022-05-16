@@ -21,7 +21,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "0.9.14"
+const version string = "0.9.15"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -66,10 +66,10 @@ var (
 	interfaceDescriptionRegex   = flag.String("interface-description-regex", "", "give a regex to retrieve the interface description labels")
 	lsEnabled                   = flag.Bool("logical-systems.enabled", false, "Enable logical systems support")
 	powerEnabled                = flag.Bool("power.enabled", true, "Scrape power metrics")
-	lacpEnabled                 = flag.Bool("lacp.enabled", false, "Scrape lacp metrics")
-	bfdEnabled                  = flag.Bool("bfd.enabled", false, "Scrape bfd metrics")
-	vpwsEnabled                 = flag.Bool("vpws.enabled", false, "Scrape evpn vpws metrics")
-	mpls_lspEnabled             = flag.Bool("mpls_lsp.enabled", false, "Scrape mpls LSP metrics")
+	lacpEnabled                 = flag.Bool("lacp.enabled", false, "Scrape LACP metrics")
+	bfdEnabled                  = flag.Bool("bfd.enabled", false, "Scrape BFD metrics")
+	vpwsEnabled                 = flag.Bool("vpws.enabled", false, "Scrape EVPN VPWS metrics")
+	mpls_lspEnabled             = flag.Bool("mpls_lsp.enabled", false, "Scrape MPLS LSP metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager

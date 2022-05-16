@@ -9,19 +9,18 @@ import (
 const prefix = "junos_vpws_"
 
 var (
-	vpwsStatus    *prometheus.Desc
+	vpwsStatus *prometheus.Desc
 	vpwsSid    *prometheus.Desc
 
 	vpwsStatusMap = map[string]int{
-	"Down":          0,
-	"Up":      1,
+		"Down": 0,
+		"Up":   1,
 	}
 
 	vpwsSidMap = map[string]int{
-	"Unresolved":          0,
-	"Resolved":      1,
+		"Unresolved": 0,
+		"Resolved":   1,
 	}
-
 )
 
 func init() {
@@ -51,28 +50,27 @@ func (*vpwsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- vpwsSid
 }
 
-
 // Collect collects metrics from JunOS
 func (c *vpwsCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-        var x = vpwsRpc{}
-        err := client.RunCommandAndParse("show evpn vpws-instance", &x)
+	var x = vpwsRpc{}
+	err := client.RunCommandAndParse("show evpn vpws-instance", &x)
 	if err != nil {
 		return err
 	}
 
 	for _, vInst := range x.Information.VpwsInstances {
 		for _, vIf := range vInst.VpwsInterfaces {
-	                l := append(labelValues, vInst.Name, vInst.RD, vIf.Name, vIf.Esi, vIf.Mode, vIf.Role  )
-	                ch <- prometheus.MustNewConstMetric(vpwsStatus, prometheus.GaugeValue, float64(vpwsStatusMap[vIf.Status]), l...)
+			l := append(labelValues, vInst.Name, vInst.RD, vIf.Name, vIf.Esi, vIf.Mode, vIf.Role)
+			ch <- prometheus.MustNewConstMetric(vpwsStatus, prometheus.GaugeValue, float64(vpwsStatusMap[vIf.Status]), l...)
 
 			for _, vSid := range vIf.LocalStatus.SidPeInfo {
-		                l := append(labelValues, vInst.Name, vInst.RD, vIf.Name, "local", vIf.LocalStatus.Sid, vSid.IP, vSid.Esi, vSid.Mode, vSid.Role  )
-		                ch <- prometheus.MustNewConstMetric(vpwsSid, prometheus.GaugeValue, float64(vpwsSidMap[vSid.Status]), l...)
+				l := append(labelValues, vInst.Name, vInst.RD, vIf.Name, "local", vIf.LocalStatus.Sid, vSid.IP, vSid.Esi, vSid.Mode, vSid.Role)
+				ch <- prometheus.MustNewConstMetric(vpwsSid, prometheus.GaugeValue, float64(vpwsSidMap[vSid.Status]), l...)
 			}
 
 			for _, vSid := range vIf.RemoteStatus.SidPeInfo {
-		                l := append(labelValues, vInst.Name, vInst.RD, vIf.Name, "remote", vIf.RemoteStatus.Sid, vSid.IP, vSid.Esi, vSid.Mode, vSid.Role  )
-		                ch <- prometheus.MustNewConstMetric(vpwsSid, prometheus.GaugeValue, float64(vpwsSidMap[vSid.Status]), l...)
+				l := append(labelValues, vInst.Name, vInst.RD, vIf.Name, "remote", vIf.RemoteStatus.Sid, vSid.IP, vSid.Esi, vSid.Mode, vSid.Role)
+				ch <- prometheus.MustNewConstMetric(vpwsSid, prometheus.GaugeValue, float64(vpwsSidMap[vSid.Status]), l...)
 			}
 
 		}

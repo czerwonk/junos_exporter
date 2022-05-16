@@ -132,6 +132,7 @@ func setDefaultValues(c *Config) {
 	f.MPLS_LSP = false
 	f.VPWS = false
 	f.VRRP = false
+	f.BFD = false
 }
 
 // FeaturesForDevice gets the feature set configured for a device

@@ -129,6 +129,8 @@ func setDefaultValues(c *Config) {
 	f.Satellite = false
 	f.Power = false
 	f.MAC = false
+	f.MPLS_LSP = false
+	f.VPWS = false
 	f.VRRP = false
 }
 

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/czerwonk/junos_exporter/accounting"
 	"github.com/czerwonk/junos_exporter/alarm"
+	"github.com/czerwonk/junos_exporter/bfd"
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/collector"
 	"github.com/czerwonk/junos_exporter/config"
@@ -67,6 +68,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "alarm", f.Alarm, func() collector.RPCCollector {
 		return alarm.NewCollector(*alarmFilter)
 	})
+	c.addCollectorIfEnabledForDevice(device, "bfd", f.BFD, bfd.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "bgp", f.BGP, func() collector.RPCCollector {
 		return bgp.NewCollector(c.logicalSystem)
 	})

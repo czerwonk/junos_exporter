@@ -3,8 +3,8 @@ package bfd
 type bfdRpc struct {
 	Information struct {
 		BfdSessions []bfdSession `xml:"bfd-session"`
-		sessions    int64 `xml:"sessions"`
-		clients     int64 `xml:"clients"`
+		Sessions    int64 `xml:"sessions"`
+		Clients     int64 `xml:"clients"`
 		CumTransRate  float64 `xml:"cumulative-transmission-rate"`
 		CumRecRate  float64 `xml:"cumulative-reception-rate"`
 	} `xml:"bfd-session-information"`

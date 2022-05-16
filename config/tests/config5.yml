@@ -1,0 +1,3 @@
+devices:
+  - host: asw[a-z]3}\k+-\d+
+    host_pattern: true

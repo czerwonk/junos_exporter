@@ -87,6 +87,7 @@ func TestShouldParseDevices(t *testing.T) {
 	assert.Equal(t, "router1", d1.Host, "Device 1: Host")
 	assert.Equal(t, "keyfile_user", d1.Username, "Device 1: Username")
 	assert.Equal(t, "/path/to/key", d1.KeyFile, "Device 1: Keyfile")
+	assert.Equal(t, false, d1.IsHostPattern, "Device 1: Host pattern")
 
 	d2 := c.Devices[1]
 	assert.Equal(t, "router2", d2.Host, "Device 2: Host")
@@ -115,8 +116,95 @@ func TestShouldParseDevices(t *testing.T) {
 	assertFeature("Power", f.Power, true, t)
 }
 
+func TestShouldParseDevicesWithPattern(t *testing.T) {
+	b, err := ioutil.ReadFile("tests/config4.yml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	c, err := Load(bytes.NewReader(b))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, 2, len(c.Devices), "devices")
+
+	d2 := c.Devices[1]
+	assert.Equal(t, "switch\\-[a-z]{3}\\d+", d2.Host, "Device 1: Host")
+	assert.Equal(t, true, d2.IsHostPattern, "Device 1: Host pattern")
+	assert.Equal(t, "switch", d2.Username, "Device 1: Username")
+	assert.Equal(t, "secret", d2.Password, "Device 1: Keyfile")
+
+	f := d2.Features
+	assertFeature("Alarm", f.Alarm, false, t)
+	assertFeature("Environment", f.Environment, true, t)
+	assertFeature("BGP", f.BGP, false, t)
+	assertFeature("OSPF", f.OSPF, false, t)
+	assertFeature("ISIS", f.ISIS, false, t)
+	assertFeature("NAT", f.NAT, false, t)
+	assertFeature("L2Circuit", f.L2Circuit, false, t)
+	assertFeature("LDP", f.LDP, false, t)
+	assertFeature("Routes", f.Routes, false, t)
+	assertFeature("RoutingEngine", f.RoutingEngine, false, t)
+	assertFeature("Firewall", f.Firewall, false, t)
+	assertFeature("Interfaces", f.Interfaces, true, t)
+	assertFeature("InterfaceDiagnostic", f.InterfaceDiagnostic, true, t)
+	assertFeature("Storage", f.Storage, false, t)
+	assertFeature("Accounting", f.Accounting, false, t)
+	assertFeature("IPSec", f.IPSec, false, t)
+	assertFeature("FPC", f.FPC, false, t)
+	assertFeature("RPKI", f.RPKI, false, t)
+	assertFeature("Power", f.Power, true, t)
+}
+
+func TestShouldParseDevicesWithPatternInvalid(t *testing.T) {
+	b, err := ioutil.ReadFile("tests/config5.yml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	c, err := Load(bytes.NewReader(b))
+	if c != nil {
+		t.Fatal("Parsing should fail because of invalid pattern")
+	}
+	if err.Error() != "error parsing regexp: invalid escape sequence: `\\k`" {
+		t.Fatalf("Unexpected error: %s", err.Error())
+	}
+}
+
 func assertFeature(name string, actual, expected bool, t *testing.T) {
 	if actual != expected {
 		t.Fatalf("feature %s should be %v, but is %v", name, expected, actual)
+	}
+}
+
+func TestFindDeviceConfig(t *testing.T) {
+	b, err := ioutil.ReadFile("tests/config4.yml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := Load(bytes.NewReader(b))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	device1 := c.findDeviceConfig("router1")
+	if device1.Username != "router" {
+		t.Fatalf("Unexpected username for router1: %s", device1.Username)
+	}
+
+	device2 := c.findDeviceConfig("router2")
+	if device2 != nil {
+		t.Fatal("Unexpected device for router2")
+	}
+
+	device3 := c.findDeviceConfig("switch-ber01")
+	if device3.Username != "switch" {
+		t.Fatalf("Unexpected username for switch-ber01: %s", device1.Username)
+	}
+
+	device4 := c.findDeviceConfig("switch-oob")
+	if device4 != nil {
+		t.Fatal("Unexpected device for switch-oob")
 	}
 }

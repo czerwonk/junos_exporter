@@ -11,10 +11,9 @@ const prefix = "junos_bfd_"
 var (
 	bfdState    *prometheus.Desc
 	bfdStateMap = map[string]int{
-	"Down":          0,
-	"Up":            1,
+		"Down": 0,
+		"Up":   1,
 	}
-
 )
 
 func init() {
@@ -40,7 +39,6 @@ func (*bfdCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- bfdState
 }
 
-
 // Collect collects metrics from JunOS
 func (c *bfdCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
         var x = bfdRpc{}
@@ -51,8 +49,8 @@ func (c *bfdCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 	}
 
 	for _, bfds := range x.Information.BfdSessions {
-                l := append(labelValues, bfds.Neighbor, bfds.Interface, bfds.Client.Name)
-                ch <- prometheus.MustNewConstMetric(bfdState, prometheus.GaugeValue, float64(bfdStateMap[bfds.State]), l...)
+		l := append(labelValues, bfds.Neighbor, bfds.Interface, bfds.Client.Name)
+		ch <- prometheus.MustNewConstMetric(bfdState, prometheus.GaugeValue, float64(bfdStateMap[bfds.State]), l...)
 	}
 
 	return nil

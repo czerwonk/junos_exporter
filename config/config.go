@@ -3,6 +3,7 @@ package config
 import (
 	"io"
 	"io/ioutil"
+	"regexp"
 
 	"gopkg.in/yaml.v2"
 )
@@ -19,12 +20,14 @@ type Config struct {
 
 // DeviceConfig is the config representation of 1 device
 type DeviceConfig struct {
-	Host      string         `yaml:"host"`
-	Username  string         `yaml:"username,omitempty"`
-	Password  string         `yaml:"password,omitempty"`
-	KeyFile   string         `yaml:"key_file,omitempty"`
-	Features  *FeatureConfig `yaml:"features,omitempty"`
-	IfDescReg string         `yaml:"interface_description_regex,omitempty"`
+	Host          string         `yaml:"host"`
+	Username      string         `yaml:"username,omitempty"`
+	Password      string         `yaml:"password,omitempty"`
+	KeyFile       string         `yaml:"key_file,omitempty"`
+	Features      *FeatureConfig `yaml:"features,omitempty"`
+	IfDescReg     string         `yaml:"interface_description_regex,omitempty"`
+	IsHostPattern bool           `yaml:"host_pattern,omitempty"`
+	HostPattern   *regexp.Regexp
 }
 
 // FeatureConfig is the list of collectors enabled or disabled
@@ -85,6 +88,16 @@ func Load(reader io.Reader) (*Config, error) {
 		return nil, err
 	}
 
+	for _, device := range c.Devices {
+		if device.IsHostPattern {
+			hostPattern, err := regexp.Compile(device.Host)
+			if err != nil {
+				return nil, err
+			}
+			device.HostPattern = hostPattern
+		}
+	}
+
 	return c, nil
 }
 
@@ -119,6 +132,7 @@ func setDefaultValues(c *Config) {
 	f.MPLS_LSP = false
 	f.VPWS = false
 	f.VRRP = false
+	f.BFD = false
 }
 
 // FeaturesForDevice gets the feature set configured for a device
@@ -134,8 +148,14 @@ func (c *Config) FeaturesForDevice(host string) *FeatureConfig {
 
 func (c *Config) findDeviceConfig(host string) *DeviceConfig {
 	for _, dc := range c.Devices {
-		if dc.Host == host {
-			return dc
+		if dc.HostPattern != nil {
+			if dc.HostPattern.MatchString(host) {
+				return dc
+			}
+		} else {
+			if dc.Host == host {
+				return dc
+			}
 		}
 	}
 

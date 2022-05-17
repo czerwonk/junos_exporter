@@ -27,7 +27,7 @@ type PhyInterface struct {
 		Seconds uint64 `xml:"seconds,attr"`
 		Value   string `xml:",chardata"`
 	} `xml:"interface-flapped"`
-        EthernetMacStatistics EthernetMacStat `xml:"ethernet-mac-statistics"`
+	EthernetMacStatistics EthernetMacStat `xml:"ethernet-mac-statistics"`
 	EthernetFecStatistics EthernetFecStat `xml:"ethernet-fec-statistics"`
 }
 
@@ -72,8 +72,8 @@ type EthernetMacStat struct {
 }
 
 type EthernetFecStat struct {
-	NumberfecCcwCount    	uint64 `xml:"fec_ccw_count"`
-	NumberfecNccwCount  	uint64 `xml:"fec_nccw_count"`
-	NumberfecCcwErrorRate 	uint64 `xml:"fec_ccw_error_rate"`
-	NumberfecNccwErrorRate  uint64 `xml:"fec_nccw_error_rate"`
+	NumberfecCcwCount      uint64 `xml:"fec_ccw_count"`
+	NumberfecNccwCount     uint64 `xml:"fec_nccw_count"`
+	NumberfecCcwErrorRate  uint64 `xml:"fec_ccw_error_rate"`
+	NumberfecNccwErrorRate uint64 `xml:"fec_nccw_error_rate"`
 }

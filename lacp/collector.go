@@ -21,7 +21,7 @@ var (
 )
 
 func init() {
-	l := []string{"target", "name", "member"}
+	l := []string{"target", "aggregate", "name"}
 	lacpMuxState = prometheus.NewDesc(prefix+"muxstate", "lacp mux state (1: detached, 2: waiting, 3: attached, 4: collecting, 5: distributing, 6: collecting distribuging)", l, nil)
 }
 

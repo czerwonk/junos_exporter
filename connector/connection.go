@@ -36,7 +36,7 @@ func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 }
 
 func (c *SSHConnection) isConnected() bool {
-	return c.conn != nil
+	return c.session != nil
 }
 
 func (c *SSHConnection) terminate() {

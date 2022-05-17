@@ -9,10 +9,10 @@ import (
 const prefix string = "junos_mac_table_"
 
 var (
-	totalCount    *prometheus.Desc
-	recieveCount  *prometheus.Desc
-	dynamicCount  *prometheus.Desc
-	floodCount    *prometheus.Desc
+	totalCount   *prometheus.Desc
+	recieveCount *prometheus.Desc
+	dynamicCount *prometheus.Desc
+	floodCount   *prometheus.Desc
 )
 
 func init() {

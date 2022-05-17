@@ -11,13 +11,13 @@ const prefix = "junos_lacp_"
 var (
 	lacpMuxState    *prometheus.Desc
 	lacpMuxStateMap = map[string]int{
-	"Detached":                  1,
-	"Waiting":                   2,
-	"Attached":                  3,
-	"Collecting":                4,
-	"Distributing":              5,
-	"Collecting distributing":   6,
-}
+		"Detached":                1,
+		"Waiting":                 2,
+		"Attached":                3,
+		"Collecting":              4,
+		"Distributing":            5,
+		"Collecting distributing": 6,
+	}
 )
 
 func init() {
@@ -43,7 +43,6 @@ func (*lacpCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- lacpMuxState
 }
 
-
 // Collect collects metrics from JunOS
 func (c *lacpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
         var x = lacpRpc{}
@@ -55,10 +54,10 @@ func (c *lacpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 
 	for _, iface := range x.Information.LacpInterfaces {
 
-                for _, member := range iface.LagLacpProtocols {
-                    l := append(labelValues, iface.LagLacpHeader.Name, member.Member)
-                    ch <- prometheus.MustNewConstMetric(lacpMuxState, prometheus.GaugeValue, float64(lacpMuxStateMap[member.LacpMuxState]), l...)
-                }
+		for _, member := range iface.LagLacpProtocols {
+			l := append(labelValues, iface.LagLacpHeader.Name, member.Member)
+			ch <- prometheus.MustNewConstMetric(lacpMuxState, prometheus.GaugeValue, float64(lacpMuxStateMap[member.LacpMuxState]), l...)
+		}
 
 	}
 

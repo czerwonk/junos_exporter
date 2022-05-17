@@ -8,18 +8,16 @@ type lacpRpc struct {
 
 type lacpInterface struct {
 	LagLacpHeader struct {
-		Name         string `xml:"aggregate-name"`
-        } `xml:"lag-lacp-header"`
-	LagLacpStates        []LagLacpStateStruct      `xml:"lag-lacp-state"`
-	LagLacpProtocols     []LagLacpProtocolStruct   `xml:"lag-lacp-protocol"`
+		Name string `xml:"aggregate-name"`
+	} `xml:"lag-lacp-header"`
+	LagLacpStates    []LagLacpStateStruct    `xml:"lag-lacp-state"`
+	LagLacpProtocols []LagLacpProtocolStruct `xml:"lag-lacp-protocol"`
 }
 
-
-type LagLacpStateStruct struct{
+type LagLacpStateStruct struct {
 }
 
-type LagLacpProtocolStruct struct{
-	Member                string  `xml:"name"`
-	LacpMuxState          string  `xml:"lacp-mux-state"`
+type LagLacpProtocolStruct struct {
+	Member       string `xml:"name"`
+	LacpMuxState string `xml:"lacp-mux-state"`
 }
-

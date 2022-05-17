@@ -9,7 +9,7 @@ type VrrpRpc struct {
 type VrrpInterface struct {
 	Interface             string `xml:"interface"`
 	InterfaceState        string `xml:"interface-state"`
-        Group                 string `xml:"group"`
+	Group                 string `xml:"group"`
 	VrrpState             string `xml:"vrrp-state"`
 	VrrpMode              string `xml:"vrrp-mode"`
 	LocalInterfaceAddress string `xml:"local-interface-address"`

@@ -147,6 +147,13 @@ devices:
     # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
     features:
       isis: true
+  - host: switch\d+
+    # Tell the exporter that this hostname should be used as a pattern when loading
+    # device-specific configurations. This example would match against a hostname
+    # like "switch123".
+    host_pattern: true
+    features:
+      bgp: false
 
 # Optional
 # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'

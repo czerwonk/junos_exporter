@@ -66,7 +66,7 @@ func (c *ipsecCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric
 
 	var conf = ConfigurationSecurityIpsec{}
 //	err = client.RunCommandAndParse("show configuration security ipsec", &conf)
-	err = client.RunCommandAndParse("<get-configuration><filter type='sub-tree'><security><ipsec></ipsec></security></filter></get-configuration>", &conf)
+	err = client.RunCommandAndParse("<get-config><source><running/></source><filter type='subtree'><configuration><security><ipsec></ipsec></security></configuration></filter></get-config>", &conf)
 	if err != nil {
 		return err
 	}

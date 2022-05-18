@@ -21,8 +21,8 @@ type SSHConnection struct {
 
 // RunCommand runs a command against the device
 func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+//	c.mu.Lock()
+//	defer c.mu.Unlock()
 
 	if c.client == nil {
 		return nil, errors.New("not connected")

@@ -66,8 +66,8 @@ func NewConnectionManager(opts ...Option) *SSHConnectionManager {
 
 // Connect connects to a device or returns an long living connection
 func (m *SSHConnectionManager) Connect(device *Device) (*SSHConnection, error) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+//	m.mu.Lock()
+//	defer m.mu.Unlock()
 
 	if connection, found := m.connections[device.Host]; found {
 		if !connection.isConnected() {

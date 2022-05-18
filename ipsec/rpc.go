@@ -55,7 +55,7 @@ type ConfigurationSecurityIpsec struct {
 	Configuration struct {
 		Security struct {
 			Ipsec struct {
-				Proposal struct {
+				Proposal []struct {
 					Text                    string `xml:",chardata"`
 					Name                    string `xml:"name"`
 					Protocol                string `xml:"protocol"`
@@ -63,7 +63,7 @@ type ConfigurationSecurityIpsec struct {
 					EncryptionAlgorithm     string `xml:"encryption-algorithm"`
 					LifetimeSeconds         string `xml:"lifetime-seconds"`
 				} `xml:"proposal"`
-				Policy struct {
+				Policy []struct {
 					Name      string `xml:"name"`
 					Proposals string `xml:"proposals"`
 				} `xml:"policy"`
@@ -78,5 +78,5 @@ type ConfigurationSecurityIpsec struct {
 				} `xml:"vpn"`
 			} `xml:"ipsec"`
 		} `xml:"security"`
-	} `xml:"configuration"`
+	} `xml:"data>configuration"`
 }

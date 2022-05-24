@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"strconv"
 	"strings"
+	"bytes"
 
 	"github.com/czerwonk/junos_exporter/collector"
 	"github.com/czerwonk/junos_exporter/rpc"
@@ -53,7 +54,7 @@ func (c *storageCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metr
 	var x = RpcReply{}
 	if client.Netconf {
 		err := client.RunCommandAndParseWithParser("<get-system-storage/>", func(b []byte) error {
-			return parseXML(b, &x)
+			return parseXMLnetconf(b, &x)
 		})
 		if err != nil {
 			return err
@@ -94,6 +95,27 @@ func parseXML(b []byte, res *RpcReply) error {
 	fi := RpcReplyNoRE{}
 
 	err := xml.Unmarshal(b, &fi)
+	if err != nil {
+		return err
+	}
+
+	res.MultiRoutingEngineResults.RoutingEngine = []RoutingEngine{
+		{
+			Name:               "N/A",
+			StorageInformation: fi.StorageInformation,
+		},
+	}
+	return nil
+}
+
+func parseXMLnetconf(b []byte, res *RpcReply) error {
+	if strings.Contains(string(b), "multi-routing-engine-results") {
+		return xml.Unmarshal(b, res)
+	}
+
+	fi := RpcReplyNoRE{}
+
+	err := xml.Unmarshal(bytes.ReplaceAll(b, []byte("\n"), []byte("")), &fi)
 	if err != nil {
 		return err
 	}

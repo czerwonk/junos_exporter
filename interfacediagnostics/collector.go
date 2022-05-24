@@ -294,12 +294,6 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rp
 				tmpByte   []byte
 			)
 
-			// check if satellite is enabled
-			if string(b[:]) == "\nerror: syntax error, expecting <command>: satellite\n" {
-				log.Printf("system doesn't seem to have satellite enabled")
-				return nil
-			}
-
 			for lineIndex = range lines {
 				if lineIndex == 0 {
 					// add good lines to new byte buffer
@@ -322,7 +316,8 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rp
 		})
 
 		if err != nil {
-			return nil, err
+			log.Printf("system doesn't seem to have satellite enabled")
+			return nil,nil
 		}
 	} else {
 		err := client.RunCommandAndParseWithParser("show interfaces diagnostics optics satellite", func(b []byte) error {

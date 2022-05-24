@@ -98,7 +98,8 @@ func (c *environmentCollector) environmentItems(client *rpc.Client, ch chan<- pr
 				return parseXML(b, &y)
 			})
 			if err != nil {
-				return nil
+				// probably no satellite, but let's continue the task
+				//return nil
 			} else {
 				// add satellite details (only if y.MultiRoutingEngineResults.RoutingEngine has elements)
 				if len(y.MultiRoutingEngineResults.RoutingEngine) > 0 {

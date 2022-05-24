@@ -1,6 +1,7 @@
 package connector
 
 import (
+	"bytes"
 	"net"
 	"sync"
 
@@ -17,6 +18,7 @@ type SSHConnection struct {
 	conn   net.Conn
 	mu     sync.Mutex
 	done   chan struct{}
+	netconf bool
 }
 
 type TransportSSH struct {
@@ -28,6 +30,40 @@ type TransportSSH struct {
 
 // RunCommand runs a command against the device
 func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
+	if c.netconf	{
+		return c.RunCommandNETCONF(cmd)
+	} else {
+		return c.RunCommandSSH(cmd)
+	}
+}
+
+func (c *SSHConnection) RunCommandSSH(cmd string) ([]byte, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.client == nil {
+		return nil, errors.New("not connected")
+	}
+
+	session, err := c.client.NewSession()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not open session")
+	}
+	defer session.Close()
+
+	var b = &bytes.Buffer{}
+	session.Stdout = b
+
+	err = session.Run(cmd)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not run command")
+	}
+
+	return b.Bytes(), nil
+}
+
+
+func (c *SSHConnection) RunCommandNETCONF(cmd string) ([]byte, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	var err error

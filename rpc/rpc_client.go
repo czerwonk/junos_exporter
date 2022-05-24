@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"encoding/xml"
+	"fmt"
 	"bytes"
 	"log"
 
@@ -30,10 +31,16 @@ func NewClient(ssh *connector.SSHConnection) *Client {
 
 // RunCommandAndParse runs a command on JunOS and unmarshals the XML result
 func (c *Client) RunCommandAndParse(cmd string, obj interface{}) error {
-	return c.RunCommandAndParseWithParser(cmd, func(b []byte) error {
-		//in junos the xml interfaces contains line returns in the values
-		return xml.Unmarshal(bytes.ReplaceAll(b, []byte("\n"), []byte("")), obj)
-	})
+	if c.Netconf {
+		return c.RunCommandAndParseWithParser(cmd, func(b []byte) error {
+			//in junos the xml interfaces contains line returns in the values
+			return xml.Unmarshal(bytes.ReplaceAll(b, []byte("\n"), []byte("")), obj)
+		})
+	} else {
+		return c.RunCommandAndParseWithParser(cmd, func(b []byte) error {
+			return xml.Unmarshal(b, obj)
+		})
+	}
 }
 
 // RunCommandAndParseWithParser runs a command on JunOS and uses the given parser to handle the result
@@ -42,7 +49,15 @@ func (c *Client) RunCommandAndParseWithParser(cmd string, parser Parser) error {
 		log.Printf("Running command on %s: %s\n", c.conn.Host(), cmd)
 	}
 
-	b, err := c.conn.RunCommand(cmd)
+	var err error
+	var b []byte
+
+	if c.Netconf {
+		b, err = c.conn.RunCommand(cmd)
+	} else {
+		b, err = c.conn.RunCommand(fmt.Sprintf("%s | display xml", cmd))
+	}
+
 	if err != nil {
 		return err
 	}

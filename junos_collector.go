@@ -81,7 +81,7 @@ func newJunosCollector(devices []*connector.Device, connectionManager *connector
 }
 
 func clientForDevice(device *connector.Device, connManager *connector.SSHConnectionManager) (*rpc.Client, error) {
-	conn, err := connManager.Connect(device)
+	conn, err := connManager.Connect(device, cfg.Features.Netconf)
 	if err != nil {
 		return nil, err
 	}

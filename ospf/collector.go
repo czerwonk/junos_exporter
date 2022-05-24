@@ -69,7 +69,6 @@ func (c *ospfCollector) collectOSPFMetrics(client *rpc.Client, ch chan<- prometh
 		cmd.WriteString("<get-ospf-overview-information/>")
 	} else {
 		cmd.WriteString("show ospf overview")
-		cmd.WriteString("show ospf overview")
 		if c.LogicalSystem != "" {
 			cmd.WriteString(" logical-system " + c.LogicalSystem)
 		}

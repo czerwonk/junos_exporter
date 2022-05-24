@@ -5,7 +5,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"fmt"
 
 	log "github.com/sirupsen/logrus"
 
@@ -88,10 +87,9 @@ func (m *SSHConnectionManager) connect(device *Device) (*SSHConnection, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(client,conn)
 
 	c := &SSHConnection{
-		conn: conn,
+		conn:   conn,
 		client: client,
 		device: device,
 		done:   make(chan struct{}),
@@ -154,21 +152,21 @@ func (m *SSHConnectionManager) formatHost(host string) string {
 }
 
 func (m *SSHConnectionManager) keepAlive(connection *SSHConnection) {
-    for {
-	select {
-	case <-time.After(m.keepAliveInterval):
-	    log.Debugf("Sending keepalive for ")
-	    connection.conn.SetDeadline(time.Now().Add(m.keepAliveTimeout))
-	    _, _, err := connection.client.SendRequest("keepalive@golang.org", true, nil)
-	    if err != nil {
-		log.Infof("Lost connection to %s (%v). Trying to reconnect...", connection.device, err)
-		connection.terminate()
-		m.reconnect(connection)
-	    }
-	case <-connection.done:
-	    return
+	for {
+		select {
+		case <-time.After(m.keepAliveInterval):
+			log.Debugf("Sending keepalive for ")
+			connection.conn.SetDeadline(time.Now().Add(m.keepAliveTimeout))
+			_, _, err := connection.client.SendRequest("keepalive@golang.org", true, nil)
+		if err != nil {
+			log.Infof("Lost connection to %s (%v). Trying to reconnect...", connection.device, err)
+			connection.terminate()
+			m.reconnect(connection)
+		}
+		case <-connection.done:
+			return
+		}
 	}
-    }
 }
 
 func (m *SSHConnectionManager) reconnect(connection *SSHConnection) {

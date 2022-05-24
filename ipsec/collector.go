@@ -70,22 +70,24 @@ func (c *ipsecCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric
 		}
 	}
 
-	var conf = ConfigurationSecurityIpsec{}
 	if client.Netconf {
+		var conf = ConfigurationSecurityIpsecnetconf{}
 		err := client.RunCommandAndParse("<get-config><source><running/></source><filter type='subtree'><configuration><security><ipsec></ipsec></security></configuration></filter></get-config>", &conf)
 		if err != nil {
 			return err
 		}
+		cls := append(labelValues, "N/A", "configured tunnels", "")
+		ch <- prometheus.MustNewConstMetric(configuredTunnels, prometheus.GaugeValue, float64(len(conf.Configuration.Security.Ipsec.Vpn)), cls...)
 	} else {
-		conf = ConfigurationSecurityIpsec{}
+		var conf = ConfigurationSecurityIpsec{}
 		err := client.RunCommandAndParse("show configuration security ipsec", &conf)
 		if err != nil {
 			return err
 		}
+		cls := append(labelValues, "N/A", "configured tunnels", "")
+		ch <- prometheus.MustNewConstMetric(configuredTunnels, prometheus.GaugeValue, float64(len(conf.Configuration.Security.Ipsec.Vpn)), cls...)
 	}
 
-	cls := append(labelValues, "N/A", "configured tunnels", "")
-	ch <- prometheus.MustNewConstMetric(configuredTunnels, prometheus.GaugeValue, float64(len(conf.Configuration.Security.Ipsec.Vpn)), cls...)
 
 	return nil
 }

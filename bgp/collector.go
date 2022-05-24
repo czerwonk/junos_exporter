@@ -79,19 +79,16 @@ func (c *bgpCollector) collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 	var cmd strings.Builder
 	if client.Netconf {
 		cmd.WriteString("<get-bgp-neighbor-information/>")
-		err := client.RunCommandAndParse(cmd.String(), &x)
-		if err != nil {
-			return err
-		}
 	} else {
 		cmd.WriteString("show bgp neighbor")
 		if c.LogicalSystem != "" {
 			cmd.WriteString(" logical-system " + c.LogicalSystem)
 		}
-		err := client.RunCommandAndParse(cmd.String(), &x)
-		if err != nil {
-			return err
-		}
+	}
+
+	err := client.RunCommandAndParse(cmd.String(), &x)
+	if err != nil {
+		return err
 	}
 
 

@@ -139,5 +139,5 @@ type ConfigurationSecurityIpsecNetconf struct {
 				} `xml:"vpn"`
 			} `xml:"ipsec"`
 		} `xml:"security"`
-	} `xml:"data>configuration"`
+	} `xml:"data,omitempty>configuration"`
 }

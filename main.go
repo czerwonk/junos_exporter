@@ -58,6 +58,7 @@ var (
 	interfaceQueuesEnabled      = flag.Bool("queues.enabled", false, "Scrape interface queue metrics")
 	rpkiEnabled                 = flag.Bool("rpki.enabled", false, "Scrape rpki metrics")
 	satelliteEnabled            = flag.Bool("satellite.enabled", false, "Scrape metrics from satellite devices")
+	netconfEnabled              = flag.Bool("netconf.enabled", false, "enable netconf rpc query style")
 	systemEnabled               = flag.Bool("system.enabled", false, "Scrape system metrics")
 	macEnabled                  = flag.Bool("mac.enabled", false, "Scrape MAC address table metrics")
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
@@ -215,6 +216,7 @@ func loadConfigFromFlags() *config.Config {
 	f.RPKI = *rpkiEnabled
 	f.Storage = *storageEnabled
 	f.Satellite = *satelliteEnabled
+	f.Netconf = *netconfEnabled
 	f.System = *systemEnabled
 	f.Power = *powerEnabled
 	f.MAC = *macEnabled
@@ -225,6 +227,7 @@ func loadConfigFromFlags() *config.Config {
 func connectionManager() *connector.SSHConnectionManager {
 	opts := []connector.Option{
 		connector.WithReconnectInterval(*sshReconnectInterval),
+		connector.WithKeepAliveInterval(*sshKeepAliveInterval),
 		connector.WithKeepAliveTimeout(*sshKeepAliveTimeout),
 	}
 

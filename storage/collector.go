@@ -51,12 +51,20 @@ func (*storageCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *storageCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = RpcReply{}
-//	err := client.RunCommandAndParseWithParser("show system storage", func(b []byte) error {
-	err := client.RunCommandAndParseWithParser("<get-system-storage/>", func(b []byte) error {
-		return parseXML(b, &x)
-	})
-	if err != nil {
-		return err
+	if client.Netconf {
+		err := client.RunCommandAndParseWithParser("<get-system-storage/>", func(b []byte) error {
+			return parseXML(b, &x)
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		err := client.RunCommandAndParseWithParser("show system storage", func(b []byte) error {
+			return parseXML(b, &x)
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, re := range x.MultiRoutingEngineResults.RoutingEngine {

@@ -79,10 +79,16 @@ func (c *rpkiCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 
 func (c *rpkiCollector) collectSessions(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = RpkiSessionRpc{}
-//	err := client.RunCommandAndParse("show validation session", &x)
-	err := client.RunCommandAndParse("<get-validation-session-information/>", &x)
-	if err != nil {
-		return err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-validation-session-information/>", &x)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := client.RunCommandAndParse("show validation session", &x)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, session := range x.Information.RpkiSessions {
@@ -130,10 +136,16 @@ func (c *rpkiCollector) collectForSession(s RpkiSession, ch chan<- prometheus.Me
 func (c *rpkiCollector) collectStatistics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = RpkiStatisticsRpc{}
 
-//	err := client.RunCommandAndParse("show validation statistics", &x)
-	err := client.RunCommandAndParse("<get-validation-statistics-information/>", &x)
-	if err != nil {
-		return err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-validation-statistics-information/>", &x)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := client.RunCommandAndParse("show validation statistics", &x)
+		if err != nil {
+			return err
+		}
 	}
 
 	ch <- prometheus.MustNewConstMetric(memoryUtilizationDesc, prometheus.GaugeValue, float64(x.Information.Statistics.MemoryUtilization), labelValues...)

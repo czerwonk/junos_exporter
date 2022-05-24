@@ -18,6 +18,7 @@ type Client struct {
 	conn      *connector.SSHConnection
 	debug     bool
 	Satellite bool
+	Netconf   bool
 }
 
 // NewClient creates a new client to connect to
@@ -72,4 +73,9 @@ func (c *Client) DisableDebug() {
 // EnableSatellite enables satellite device metrics gathering
 func (c *Client) EnableSatellite() {
 	c.Satellite = true
+}
+
+// EnableNetconf enables netconf RPCs instead of SSH-CLI
+func (c *Client) EnableNetconf() {
+	c.Netconf = true
 }

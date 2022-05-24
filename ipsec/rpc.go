@@ -78,5 +78,66 @@ type ConfigurationSecurityIpsec struct {
 				} `xml:"vpn"`
 			} `xml:"ipsec"`
 		} `xml:"security"`
+	} `xml:"configuration"`
+}
+
+type ConfigurationSecurityIpsecSSH struct {
+	Configuration struct {
+		Security struct {
+			Ipsec struct {
+				Proposal []struct {
+					Text                    string `xml:",chardata"`
+					Name                    string `xml:"name"`
+					Protocol                string `xml:"protocol"`
+					AuthenticationAlgorithm string `xml:"authentication-algorithm"`
+					EncryptionAlgorithm     string `xml:"encryption-algorithm"`
+					LifetimeSeconds         string `xml:"lifetime-seconds"`
+				} `xml:"proposal"`
+				Policy []struct {
+					Name      string `xml:"name"`
+					Proposals string `xml:"proposals"`
+				} `xml:"policy"`
+				Vpn []struct {
+					Name          string `xml:"name"`
+					BindInterface string `xml:"bind-interface"`
+					Ike           struct {
+						Gateway     string `xml:"gateway"`
+						IpsecPolicy string `xml:"ipsec-policy"`
+					} `xml:"ike"`
+					EstablishTunnels string `xml:"establish-tunnels"`
+				} `xml:"vpn"`
+			} `xml:"ipsec"`
+		} `xml:"security"`
+	} `xml:"configuration"`
+}
+
+
+type ConfigurationSecurityIpsecNetconf struct {
+	Configuration struct {
+		Security struct {
+			Ipsec struct {
+				Proposal []struct {
+					Text                    string `xml:",chardata"`
+					Name                    string `xml:"name"`
+					Protocol                string `xml:"protocol"`
+					AuthenticationAlgorithm string `xml:"authentication-algorithm"`
+					EncryptionAlgorithm     string `xml:"encryption-algorithm"`
+					LifetimeSeconds         string `xml:"lifetime-seconds"`
+				} `xml:"proposal"`
+				Policy []struct {
+					Name      string `xml:"name"`
+					Proposals string `xml:"proposals"`
+				} `xml:"policy"`
+				Vpn []struct {
+					Name          string `xml:"name"`
+					BindInterface string `xml:"bind-interface"`
+					Ike           struct {
+						Gateway     string `xml:"gateway"`
+						IpsecPolicy string `xml:"ipsec-policy"`
+					} `xml:"ike"`
+					EstablishTunnels string `xml:"establish-tunnels"`
+				} `xml:"vpn"`
+			} `xml:"ipsec"`
+		} `xml:"security"`
 	} `xml:"data>configuration"`
 }

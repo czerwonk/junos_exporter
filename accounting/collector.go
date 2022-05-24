@@ -96,10 +96,16 @@ func (c *accountingCollector) Collect(client *rpc.Client, ch chan<- prometheus.M
 
 func (c *accountingCollector) accountingFlows(client *rpc.Client) (*AccountingFlow, error) {
 	var x = AccountingFlowRpc{}
-//	err := client.RunCommandAndParse("show services accounting flow inline-jflow", &x)
-	err := client.RunCommandAndParse("<get-service-accounting-error-inline-jflow-information></get-service-accounting-error-inline-jflow-information>", &x)
-	if err != nil {
-		return nil, err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-service-accounting-error-inline-jflow-information></get-service-accounting-error-inline-jflow-information>", &x)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := client.RunCommandAndParse("show services accounting flow inline-jflow", &x)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if x.Error.Message != "" {

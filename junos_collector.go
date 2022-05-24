@@ -96,6 +96,10 @@ func clientForDevice(device *connector.Device, connManager *connector.SSHConnect
 		c.EnableSatellite()
 	}
 
+	if cfg.Features.Netconf {
+		c.EnableNetconf()
+	}
+
 	return c, nil
 }
 

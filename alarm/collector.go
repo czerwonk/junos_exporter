@@ -74,8 +74,15 @@ func (c *alarmCollector) alarmCounter(client *rpc.Client) (*AlarmCounter, *[]Ala
 	yellow := 0
 
 	cmds := []string{
-		"<get-system-alarm-information/>",
-		"<get-alarm-information/>",
+		"show system alarms",
+		"show chassis alarms",
+	}
+
+	if client.Netconf {
+		cmds = []string{
+			"<get-system-alarm-information/>",
+			"<get-alarm-information/>",
+		}
 	}
 
 	var alarms []AlarmDetails

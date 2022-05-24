@@ -100,13 +100,20 @@ func (c *fpcCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 // CollectFPC collects metrics from JunOS
 func (c *fpcCollector) CollectFPCDetail(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	r := RpcReply{}
-//	err := client.RunCommandAndParseWithParser("show chassis fpc detail", func(b []byte) error {
-	err := client.RunCommandAndParseWithParser("<get-fpc-information><detail/></get-fpc-information>", func(b []byte) error {
-		return parseXML(b, &r)
-	})
-
-	if err != nil {
-		return err
+	if client.Netconf {
+		err := client.RunCommandAndParseWithParser("<get-fpc-information><detail/></get-fpc-information>", func(b []byte) error {
+			return parseXML(b, &r)
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		err := client.RunCommandAndParseWithParser("show chassis fpc detail", func(b []byte) error {
+			return parseXML(b, &r)
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, r := range r.MultiRoutingEngineResults.RoutingEngine {

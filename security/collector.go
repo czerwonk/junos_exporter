@@ -63,10 +63,16 @@ func (*securityCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *securityCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = RpcReply{}
-//	err := client.RunCommandAndParse("show security monitoring", &x)
-	err := client.RunCommandAndParse("<get-performance-summary-information/>", &x)
-	if err != nil {
-		return err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-performance-summary-information/>", &x)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := client.RunCommandAndParse("show security monitoring", &x)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, re := range x.MultiRoutingEngineResults.RoutingEngine {

@@ -1,6 +1,7 @@
 package nat
 
 import (
+	"fmt"
 	"github.com/czerwonk/junos_exporter/collector"
 	"github.com/czerwonk/junos_exporter/rpc"
 	"github.com/prometheus/client_golang/prometheus"
@@ -506,10 +507,16 @@ func (c *natCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 
 func (c *natCollector) NatInterfaces(client *rpc.Client) ([]*NatInterface, error) {
 	var x = NatRpc{}
-//	err := client.RunCommandAndParse("show services nat statistics", &x)
-	err := client.RunCommandAndParse("<get-service-nat-statistics-information/>", &x)
-	if err != nil {
-		return nil, err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-service-nat-statistics-information/>", &x)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := client.RunCommandAndParse("show services nat statistics", &x)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	interfaces := make([]*NatInterface, 0)
@@ -917,9 +924,14 @@ func (*natCollector) collectForInterface(s *NatInterface, ch chan<- prometheus.M
 
 func (c *natCollector) NatPoolInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*NatPoolInterface, error) {
 	var x = NatPoolRpc{}
-	err := client.RunCommandAndParse("show services nat pool", &x)
-	if err != nil {
-		return nil, err
+	if client.Netconf {
+		//TODO
+		return nil, fmt.Errorf("not implemented")
+	} else {
+		err := client.RunCommandAndParse("show services nat pool", &x)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	interfaces := make([]*NatPoolInterface, 0)
@@ -951,9 +963,14 @@ func (c *natCollector) collectForPoolInterface(s *NatPoolInterface, ch chan<- pr
 
 func (c *natCollector) NatPoolDetailInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*NatPoolDetailInterface, error) {
 	var x = NatPoolDetailRpc{}
-	err := client.RunCommandAndParse("show services nat pool detail", &x)
-	if err != nil {
-		return nil, err
+	if client.Netconf {
+		//TODO
+		return nil, fmt.Errorf("not implemented")
+	} else {
+		err := client.RunCommandAndParse("show services nat pool detail", &x)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	interfacesdetail := make([]*NatPoolDetailInterface, 0)
@@ -993,9 +1010,16 @@ func (c *natCollector) collectForPoolDetailInterface(s *NatPoolDetailInterface, 
 
 func (c *natCollector) ServiceSetsCpuInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*ServiceSetsCpuInterface, error) {
 	var x = ServiceSetsCpuRpc{}
-	err := client.RunCommandAndParse("show services service-sets cpu-usage", &x)
-	if err != nil {
-		return nil, err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-service-set-cpu-statistics/>", &x)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := client.RunCommandAndParse("show services service-sets cpu-usage", &x)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	interfacesdetail := make([]*ServiceSetsCpuInterface, 0)

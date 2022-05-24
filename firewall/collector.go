@@ -48,10 +48,17 @@ func (*firewallCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *firewallCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = FirewallRpc{}
-//	err := client.RunCommandAndParse("show firewall filter regex .*", &x)
-	err := client.RunCommandAndParse("<get-firewall-filter-regex-information><filtername>.*</filtername></get-firewall-filter-regex-information>", &x)
-	if err != nil {
-		return err
+
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-firewall-filter-regex-information><filtername>.*</filtername></get-firewall-filter-regex-information>", &x)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := client.RunCommandAndParse("show firewall filter regex .*", &x)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, t := range x.Information.Filters {

@@ -53,10 +53,16 @@ func (*vpwsCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *vpwsCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
         var x = vpwsRpc{}
-//        err := client.RunCommandAndParse("show evpn vpws-instance", &x)
-        err := client.RunCommandAndParse("<get-evpn-vpws-information/>", &x)
-	if err != nil {
-		return err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-evpn-vpws-information/>", &x)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := client.RunCommandAndParse("show evpn vpws-instance", &x)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, vInst := range x.Information.VpwsInstances {

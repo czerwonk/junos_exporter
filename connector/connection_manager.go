@@ -5,12 +5,12 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
-	"github.com/Juniper/go-netconf/netconf"
 )
 
 const timeoutInSeconds = 5
@@ -26,6 +26,14 @@ func WithReconnectInterval(d time.Duration) Option {
 	}
 }
 
+// WithKeepAliveInterval sets the keep alive interval (default 10 seconds)
+func WithKeepAliveInterval(d time.Duration) Option {
+	return func(m *SSHConnectionManager) {
+		m.keepAliveInterval = d
+	}
+}
+
+
 // WithKeepAliveTimeout sets the timeout after an ssh connection to be determined dead (default 15 seconds)
 func WithKeepAliveTimeout(d time.Duration) Option {
 	return func(m *SSHConnectionManager) {
@@ -38,8 +46,8 @@ func WithKeepAliveTimeout(d time.Duration) Option {
 type SSHConnectionManager struct {
 	connections       map[string]*SSHConnection
 	reconnectInterval time.Duration
+	keepAliveInterval time.Duration
 	keepAliveTimeout  time.Duration
-
 	mu                sync.Mutex
 }
 
@@ -48,7 +56,8 @@ func NewConnectionManager(opts ...Option) *SSHConnectionManager {
 	m := &SSHConnectionManager{
 		connections:       make(map[string]*SSHConnection),
 		reconnectInterval: 30 * time.Second,
-		keepAliveTimeout:  20 * time.Second,
+		keepAliveInterval: 10 * time.Second,
+		keepAliveTimeout:  15 * time.Second,
 	}
 
 	for _, opt := range opts {
@@ -75,23 +84,26 @@ func (m *SSHConnectionManager) Connect(device *Device) (*SSHConnection, error) {
 }
 
 func (m *SSHConnectionManager) connect(device *Device) (*SSHConnection, error) {
-	session, err := m.connectToDevice(device)
+	client, conn, err := m.connectToDevice(device)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(client,conn)
 
 	c := &SSHConnection{
-		session: session,
+		conn: conn,
+		client: client,
 		device: device,
 		done:   make(chan struct{}),
 	}
+	go m.keepAlive(c)
 
 	m.connections[device.Host] = c
 
 	return c, nil
 }
 
-func (m *SSHConnectionManager) connectToDevice(device *Device) (*netconf.Session, error) {
+func (m *SSHConnectionManager) connectToDevice(device *Device) (*ssh.Client, net.Conn, error) {
 	cfg := &ssh.ClientConfig{
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         timeoutInSeconds * time.Second,
@@ -101,12 +113,17 @@ func (m *SSHConnectionManager) connectToDevice(device *Device) (*netconf.Session
 
 	host := m.tcpAddressForHost(device.Host)
 
-	session,err := netconf.DialSSHTimeout(host,cfg,m.keepAliveTimeout)
+	conn, err := net.DialTimeout("tcp", host, cfg.Timeout)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not connect to device")
+		return nil, nil, errors.Wrap(err, "could not open tcp connection")
 	}
 
-	return session, nil
+	c, chans, reqs, err := ssh.NewClientConn(conn, host, cfg)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "could not connect to device")
+	}
+
+	return ssh.NewClient(c, chans, reqs), conn, nil
 }
 
 func (m *SSHConnectionManager) tcpAddressForHost(host string) string {
@@ -136,12 +153,30 @@ func (m *SSHConnectionManager) formatHost(host string) string {
 	return "[" + host + "]"
 }
 
+func (m *SSHConnectionManager) keepAlive(connection *SSHConnection) {
+    for {
+	select {
+	case <-time.After(m.keepAliveInterval):
+	    log.Debugf("Sending keepalive for ")
+	    connection.conn.SetDeadline(time.Now().Add(m.keepAliveTimeout))
+	    _, _, err := connection.client.SendRequest("keepalive@golang.org", true, nil)
+	    if err != nil {
+		log.Infof("Lost connection to %s (%v). Trying to reconnect...", connection.device, err)
+		connection.terminate()
+		m.reconnect(connection)
+	    }
+	case <-connection.done:
+	    return
+	}
+    }
+}
 
 func (m *SSHConnectionManager) reconnect(connection *SSHConnection) {
 	for {
-		session, err := m.connectToDevice(connection.device)
+		client, conn, err := m.connectToDevice(connection.device)
 		if err == nil {
-			connection.session = session
+			connection.client = client
+			connection.conn = conn
 			return
 		}
 

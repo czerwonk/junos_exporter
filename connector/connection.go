@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"net"
 	"sync"
-
+	"fmt"
+	"io"
 	"github.com/pkg/errors"
 
 	"golang.org/x/crypto/ssh"
@@ -19,6 +20,7 @@ type SSHConnection struct {
 	mu     sync.Mutex
 	done   chan struct{}
 	netconf bool
+	netconfsession *netconf.Session
 }
 
 type TransportSSH struct {
@@ -73,29 +75,36 @@ func (c *SSHConnection) RunCommandNETCONF(cmd string) ([]byte, error) {
 	}
 
 	t := &TransportSSH{}
-	t.sshSession, err = c.client.NewSession()
-	if err != nil {
-		return nil, errors.Wrap(err, "could not open session")
+	if c.netconfsession == nil {
+		t.sshSession, err = c.client.NewSession()
+		if err != nil {
+			return nil, errors.Wrap(err, "could not open session")
+		}
+
+		writer, err := t.sshSession.StdinPipe()
+		if err != nil {
+			return nil, errors.Wrap(err, "could not open session stdin")
+		}
+
+		reader, err := t.sshSession.StdoutPipe()
+		if err != nil {
+			return nil, errors.Wrap(err, "could not open session stdout")
+		}
+
+		t.ReadWriteCloser = netconf.NewReadWriteCloser(reader, writer)
+		t.sshSession.RequestSubsystem("netconf")
+		c.netconfsession = netconf.NewSession(t)
 	}
-	defer t.sshSession.Close()
 
-	writer, err := t.sshSession.StdinPipe()
+	reply, err := c.netconfsession.Exec(netconf.RawMethod(cmd))
+
 	if err != nil {
-		return nil, errors.Wrap(err, "could not open session stdin")
-	}
-
-	reader, err := t.sshSession.StdoutPipe()
-	if err != nil {
-		return nil, errors.Wrap(err, "could not open session stdout")
-	}
-
-	t.ReadWriteCloser = netconf.NewReadWriteCloser(reader, writer)
-	t.sshSession.RequestSubsystem("netconf")
-	session := netconf.NewSession(t)
-
-
-	reply, err := session.Exec(netconf.RawMethod(cmd))
-	if err != nil {
+		if err == io.EOF {
+			//probably lost the session, closing to force a reopen
+			fmt.Println("Error - Closing")
+			c.netconfsession.Close()
+			c.netconfsession = nil
+		}
 		return nil, errors.Wrap(err, "could not run command")
 	}
 

@@ -1,4 +1,6 @@
+project_name: prometheus-junos-exporter
 dist: artifacts
+
 before:
    hooks:
      - go mod download
@@ -17,4 +19,21 @@ builds:
     - goos: freebsd
       goarch: arm64
     ldflags: -s -w -X main.version={{.Version}}
-    binary: junos_exporter 
+    binary: junos_exporter
+
+nfpms:
+  - homepage:  https://github.com/czerwonk/junos_exporter
+    description: JunOS Exporter for Prometheus
+    maintainer: Daniel Czerwonk
+    license: MIT License
+    contents:
+      - src: .packaging/defaults
+        dst: /etc/default/prometheus-junos-exporter
+      - src: .packaging/prometheus-junos-exporter.service
+        dst: /usr/lib/systemd/system/prometheus-junos-exporter.service
+    formats:
+      - deb
+    dependencies:
+      - systemd
+    scripts:
+        postinstall: .packaging/postinstall.sh

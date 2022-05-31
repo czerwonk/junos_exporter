@@ -19,3 +19,5 @@
 
 junos_exporter
 config.yml
+
+artifacts

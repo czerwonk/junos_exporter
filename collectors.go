@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/czerwonk/junos_exporter/accounting"
 	"github.com/czerwonk/junos_exporter/alarm"
+	"github.com/czerwonk/junos_exporter/bfd"
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/collector"
 	"github.com/czerwonk/junos_exporter/config"
@@ -17,8 +18,10 @@ import (
 	"github.com/czerwonk/junos_exporter/ipsec"
 	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/l2circuit"
+	"github.com/czerwonk/junos_exporter/lacp"
 	"github.com/czerwonk/junos_exporter/ldp"
 	"github.com/czerwonk/junos_exporter/mac"
+	"github.com/czerwonk/junos_exporter/mpls_lsp"
 	"github.com/czerwonk/junos_exporter/nat"
 	"github.com/czerwonk/junos_exporter/nat2"
 	"github.com/czerwonk/junos_exporter/ospf"
@@ -31,6 +34,7 @@ import (
 	"github.com/czerwonk/junos_exporter/storage"
 	"github.com/czerwonk/junos_exporter/system"
 	"github.com/czerwonk/junos_exporter/vrrp"
+	"github.com/czerwonk/junos_exporter/vpws"
 )
 
 type collectors struct {
@@ -67,6 +71,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "alarm", f.Alarm, func() collector.RPCCollector {
 		return alarm.NewCollector(*alarmFilter)
 	})
+	c.addCollectorIfEnabledForDevice(device, "bfd", f.BFD, bfd.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "bgp", f.BGP, func() collector.RPCCollector {
 		return bgp.NewCollector(c.logicalSystem)
 	})
@@ -85,6 +90,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "ipsec", f.IPSec, ipsec.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "isis", f.ISIS, isis.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "l2c", f.L2Circuit, l2circuit.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "lacp", f.LACP, lacp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "ldp", f.LDP, ldp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "nat", f.NAT, nat.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "nat2", f.NAT2, nat2.NewCollector)
@@ -100,6 +106,8 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "power", f.Power, power.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "mac", f.MAC, mac.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "vrrp", f.VRRP, vrrp.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "vpws", f.VPWS, vpws.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "mpls_lsp", f.MPLS_LSP, mpls_lsp.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

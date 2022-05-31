@@ -147,6 +147,13 @@ devices:
     # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
     features:
       isis: true
+  - host: switch\d+
+    # Tell the exporter that this hostname should be used as a pattern when loading
+    # device-specific configurations. This example would match against a hostname
+    # like "switch123".
+    host_pattern: true
+    features:
+      bgp: false
 
 # Optional
 # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
@@ -205,10 +212,11 @@ Label value: 202739
 
 ### Custom Label RegEx
 
-To override the default behavior a `interface_description_regex` can be supplied.  
+To override the default behavior a `interface_description_regex` can be supplied. This parameter can be given at a global level or per device. To use per-device regexes the target devices need to be defined in the exporter config. Per-device regex cannot be used in combination with `-config.ignore-targets`.
+ 
 #### Example
-The default regex `\[([^=\]]+)(=[^\]]+)?\]` would match interface descriptions like `"Description [foo] [bar=123]".  
-If we use `[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]` we can now match for `Description [foo, bar=123]` instead.  
+The default regex `\[([^=\]]+)(=[^\]]+)?\]` would match interface descriptions like `"Description [foo] [bar=123]"`.  
+If we use `[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]` we can now match for `"Description [foo, bar=123]"` instead.  
 
 
 ### Grafana Dashboards

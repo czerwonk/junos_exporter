@@ -33,6 +33,7 @@ import (
 	"github.com/czerwonk/junos_exporter/security"
 	"github.com/czerwonk/junos_exporter/storage"
 	"github.com/czerwonk/junos_exporter/system"
+	"github.com/czerwonk/junos_exporter/virtualchassis"
 	"github.com/czerwonk/junos_exporter/vrrp"
 	"github.com/czerwonk/junos_exporter/vpws"
 )
@@ -105,6 +106,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "system", f.System, system.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "power", f.Power, power.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "mac", f.MAC, mac.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "virtualchassis", f.VirtualChassis, virtualchassis.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "vrrp", f.VRRP, vrrp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "vpws", f.VPWS, vpws.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "mpls_lsp", f.MPLS_LSP, mpls_lsp.NewCollector)

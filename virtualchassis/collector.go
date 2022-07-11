@@ -53,7 +53,6 @@ func (c *virtualchassisCollector) Collect(client *rpc.Client, ch chan<- promethe
 		if err != nil {
 			return err
 		}
-	}
 
 	for _, m := range x.VirtualChassisInformation.MemberList.Member {
 		l := labelValues

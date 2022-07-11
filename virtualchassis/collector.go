@@ -43,9 +43,16 @@ func (c *virtualchassisCollector) Collect(client *rpc.Client, ch chan<- promethe
 	}
 
 	var x = virtualChassisRpc{}
-	err := client.RunCommandAndParse("show virtual-chassis", &x)
-	if err != nil {
-		return err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-virtual-chassis-information/>", &x)
+		if err != nil {
+			return nil
+		}
+	} else {
+		err := client.RunCommandAndParse("show virtual-chassis", &x)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, m := range x.VirtualChassisInformation.MemberList.Member {

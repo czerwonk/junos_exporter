@@ -3,6 +3,7 @@ package config
 import (
 	"io"
 	"io/ioutil"
+	"regexp"
 
 	"gopkg.in/yaml.v2"
 )
@@ -19,24 +20,28 @@ type Config struct {
 
 // DeviceConfig is the config representation of 1 device
 type DeviceConfig struct {
-	Host      string         `yaml:"host"`
-	Username  string         `yaml:"username,omitempty"`
-	Password  string         `yaml:"password,omitempty"`
-	KeyFile   string         `yaml:"key_file,omitempty"`
-	Features  *FeatureConfig `yaml:"features,omitempty"`
-	IfDescReg string         `yaml:"interface_description_regex,omitempty"`
+	Host          string         `yaml:"host"`
+	Username      string         `yaml:"username,omitempty"`
+	Password      string         `yaml:"password,omitempty"`
+	KeyFile       string         `yaml:"key_file,omitempty"`
+	Features      *FeatureConfig `yaml:"features,omitempty"`
+	IfDescReg     string         `yaml:"interface_description_regex,omitempty"`
+	IsHostPattern bool           `yaml:"host_pattern,omitempty"`
+	HostPattern   *regexp.Regexp
 }
 
 // FeatureConfig is the list of collectors enabled or disabled
 type FeatureConfig struct {
 	Alarm               bool `yaml:"alarm,omitempty"`
 	Environment         bool `yaml:"environment,omitempty"`
+	BFD                 bool `yaml:"bfd,omitempty"`
 	BGP                 bool `yaml:"bgp,omitempty"`
 	OSPF                bool `yaml:"ospf,omitempty"`
 	ISIS                bool `yaml:"isis,omitempty"`
 	NAT                 bool `yaml:"nat,omitempty"`
 	NAT2                bool `yaml:"nat2,omitempty"`
 	L2Circuit           bool `yaml:"l2circuit,omitempty"`
+	LACP                bool `yaml:"lacp,omitempty"`
 	LDP                 bool `yaml:"ldp,omitempty"`
 	Routes              bool `yaml:"routes,omitempty"`
 	RoutingEngine       bool `yaml:"routing_engine,omitempty"`
@@ -55,6 +60,8 @@ type FeatureConfig struct {
 	System              bool `yaml:"system,omitempty"`
 	Power               bool `yaml:"power,omitempty"`
 	MAC                 bool `yaml:"mac,omitempty"`
+	MPLS_LSP            bool `yaml:"mpls_lsp,omitempty"`
+	VPWS                bool `yaml:"vpws,omitempty"`
 	VRRP                bool `yaml:"vrrp,omitempty"`
 }
 
@@ -79,6 +86,16 @@ func Load(reader io.Reader) (*Config, error) {
 	err = yaml.Unmarshal(b, c)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, device := range c.Devices {
+		if device.IsHostPattern {
+			hostPattern, err := regexp.Compile(device.Host)
+			if err != nil {
+				return nil, err
+			}
+			device.HostPattern = hostPattern
+		}
 	}
 
 	return c, nil
@@ -112,7 +129,10 @@ func setDefaultValues(c *Config) {
 	f.Satellite = false
 	f.Power = false
 	f.MAC = false
+	f.MPLS_LSP = false
+	f.VPWS = false
 	f.VRRP = false
+	f.BFD = false
 }
 
 // FeaturesForDevice gets the feature set configured for a device
@@ -128,8 +148,14 @@ func (c *Config) FeaturesForDevice(host string) *FeatureConfig {
 
 func (c *Config) findDeviceConfig(host string) *DeviceConfig {
 	for _, dc := range c.Devices {
-		if dc.Host == host {
-			return dc
+		if dc.HostPattern != nil {
+			if dc.HostPattern.MatchString(host) {
+				return dc
+			}
+		} else {
+			if dc.Host == host {
+				return dc
+			}
 		}
 	}
 

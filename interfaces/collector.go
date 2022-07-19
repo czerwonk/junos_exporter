@@ -41,10 +41,10 @@ type interfaceCollector struct {
 	transmitBroadcastsDesc  *prometheus.Desc
 	transmitMulticastsDesc  *prometheus.Desc
 	transmitCrcErrorsDesc   *prometheus.Desc
-	fecCcwCountDesc   	*prometheus.Desc
-	fecNccwCountDesc  	*prometheus.Desc
-	fecCcwErrorRateDesc  	*prometheus.Desc
-	fecNccwErrorRateDesc   	*prometheus.Desc
+	fecCcwCountDesc         *prometheus.Desc
+	fecNccwCountDesc        *prometheus.Desc
+	fecCcwErrorRateDesc     *prometheus.Desc
+	fecNccwErrorRateDesc    *prometheus.Desc
 }
 
 // NewCollector creates a new collector
@@ -183,7 +183,7 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 			TransmitBroadcasts:  float64(phy.EthernetMacStatistics.OutputBroadcasts),
 			TransmitMulticasts:  float64(phy.EthernetMacStatistics.OutputMulticasts),
 			TransmitCrcErrors:   float64(phy.EthernetMacStatistics.OutputCrcErrors),
-			FecCcwCount:	     float64(phy.EthernetFecStatistics.NumberfecCcwCount),
+			FecCcwCount:         float64(phy.EthernetFecStatistics.NumberfecCcwCount),
 			FecNccwCount:        float64(phy.EthernetFecStatistics.NumberfecNccwCount),
 			FecCcwErrorRate:     float64(phy.EthernetFecStatistics.NumberfecCcwErrorRate),
 			FecNccwErrorRate:    float64(phy.EthernetFecStatistics.NumberfecNccwErrorRate),

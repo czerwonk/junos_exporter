@@ -9,7 +9,7 @@ import (
 const prefix = "junos_vrrp_"
 
 var (
-	vrrpState  *prometheus.Desc
+	vrrpState *prometheus.Desc
 )
 
 func init() {
@@ -35,25 +35,24 @@ func (*vrrpCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- vrrpState
 }
 
-
 // Collect collects metrics from JunOS
 func (c *vrrpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-        statusValues := map[string]int{
+	statusValues := map[string]int{
 		"init":   1,
 		"backup": 2,
 		"master": 3,
 	}
 
-        var x = VrrpRpc{}
-        err := client.RunCommandAndParse("show vrrp summary", &x)
+	var x = VrrpRpc{}
+	err := client.RunCommandAndParse("show vrrp summary", &x)
 	if err != nil {
 		return err
 	}
 
 	for _, iface := range x.Information.Interfaces {
-                l := labelValues
-                l = append(l, iface.Interface, iface.Group, iface.LocalInterfaceAddress, iface.VirtualIpAddress)
-                ch <- prometheus.MustNewConstMetric(vrrpState, prometheus.GaugeValue, float64(statusValues[iface.VrrpState]), l...)
+		l := labelValues
+		l = append(l, iface.Interface, iface.Group, iface.LocalInterfaceAddress, iface.VirtualIpAddress)
+		ch <- prometheus.MustNewConstMetric(vrrpState, prometheus.GaugeValue, float64(statusValues[iface.VrrpState]), l...)
 	}
 
 	return nil

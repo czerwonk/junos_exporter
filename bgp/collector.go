@@ -20,6 +20,7 @@ var (
 	inputMessagesDesc      *prometheus.Desc
 	outputMessagesDesc     *prometheus.Desc
 	flapsDesc              *prometheus.Desc
+	prefixLimitCountDesc   *prometheus.Desc
 )
 
 func init() {
@@ -28,8 +29,10 @@ func init() {
 	inputMessagesDesc = prometheus.NewDesc(prefix+"messages_input_count", "Number of received messages", l, nil)
 	outputMessagesDesc = prometheus.NewDesc(prefix+"messages_output_count", "Number of transmitted messages", l, nil)
 	flapsDesc = prometheus.NewDesc(prefix+"flap_count", "Number of session flaps", l, nil)
+	prefixLimitCountDesc = prometheus.NewDesc(prefix+"prefix_limit_count", "prefix-count variable set in prefix-limit", l, nil)
 
 	l = append(l, "table")
+
 	receivedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_received_count", "Number of received prefixes", l, nil)
 	acceptedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_accepted_count", "Number of accepted prefixes", l, nil)
 	rejectedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_rejected_count", "Number of rejected prefixes", l, nil)
@@ -62,6 +65,7 @@ func (*bgpCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- inputMessagesDesc
 	ch <- outputMessagesDesc
 	ch <- flapsDesc
+	ch <- prefixLimitCountDesc
 }
 
 // Collect collects metrics from JunOS
@@ -109,6 +113,8 @@ func (c *bgpCollector) collectForPeer(p BGPPeer, ch chan<- prometheus.Metric, la
 	ch <- prometheus.MustNewConstMetric(flapsDesc, prometheus.GaugeValue, float64(p.Flaps), l...)
 
 	c.collectRIBForPeer(p, ch, l)
+
+	c.collectPrefixLimitCountForPeer(p, ch, l)
 }
 
 func (*bgpCollector) collectRIBForPeer(p BGPPeer, ch chan<- prometheus.Metric, labelValues []string) {
@@ -120,4 +126,8 @@ func (*bgpCollector) collectRIBForPeer(p BGPPeer, ch chan<- prometheus.Metric, l
 		ch <- prometheus.MustNewConstMetric(activePrefixesDesc, prometheus.GaugeValue, float64(rib.ActivePrefixes), l...)
 		ch <- prometheus.MustNewConstMetric(advertisedPrefixesDesc, prometheus.GaugeValue, float64(rib.AdvertisedPrefixes), l...)
 	}
+}
+
+func (*bgpCollector) collectPrefixLimitCountForPeer(p BGPPeer, ch chan<- prometheus.Metric, labelValues []string) {
+	ch <- prometheus.MustNewConstMetric(prefixLimitCountDesc, prometheus.GaugeValue, float64(p.BGPOI.PrefixLimit.PrefixCount), labelValues...)
 }

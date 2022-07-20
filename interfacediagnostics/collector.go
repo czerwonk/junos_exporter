@@ -281,7 +281,7 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rp
 	// workaround: go through all lines of the XML and remove identical, consecutive lines
 	err := client.RunCommandAndParseWithParser("show interfaces diagnostics optics satellite", func(b []byte) error {
 		var (
-			lines     []string = strings.Split(string(b[:]), "\n")
+			lines     = strings.Split(string(b[:]), "\n")
 			lineIndex int
 			tmpByte   []byte
 		)
@@ -390,6 +390,16 @@ func interfaceDiagnosticsFromRPCResult(result InterfaceDiagnosticsRPC) []*Interf
 
 				d.Lanes = append(d.Lanes, l)
 			}
+
+			/* For some interfaces with 0 lanes there sometimes is  <rx-signal-avg-optical-power> instead of
+			<laser-rx-optical-power> in the xml/json response and vice-versa.*/
+		} else if diag.Diagnostics.LaserRxOpticalPowerDbm == "" {
+			d.LaserRxOpticalPower = d.RxSignalAvgOpticalPower
+			d.LaserRxOpticalPowerDbm = d.RxSignalAvgOpticalPowerDbm
+
+		} else if diag.Diagnostics.RxSignalAvgOpticalPowerDbm == "" {
+			d.RxSignalAvgOpticalPower = d.LaserRxOpticalPower
+			d.RxSignalAvgOpticalPowerDbm = d.LaserRxOpticalPowerDbm
 		}
 
 		diagnostics = append(diagnostics, d)

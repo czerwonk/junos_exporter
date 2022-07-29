@@ -56,8 +56,19 @@ func (c *isisCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 		for _, adj := range adjancies.Adjacencies {
 			localLabelvalues := append(labelValues, adj.InterfaceName, adj.SystemName, strconv.Itoa(int(adj.Level)))
 			state := 0.0
-			if adj.AdjacencyState == "Up" {
+			switch adj.AdjacencyState {
+			case "Down":
+				state = 0.0
+			case "Up":
 				state = 1.0
+			case "New":
+				state = 2.0
+			case "One-way":
+				state = 3.0
+			case "Initializing":
+				state = 4.0
+			case "Rejected":
+				state = 5.0
 			}
 			ch <- prometheus.MustNewConstMetric(adjState, prometheus.GaugeValue, state, localLabelvalues...)
 		}

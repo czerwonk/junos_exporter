@@ -21,7 +21,7 @@ func init() {
 	upCount = prometheus.NewDesc(prefix+"up_count", "Number of ISIS Adjacencies in state up", l, nil)
 	totalCount = prometheus.NewDesc(prefix+"total_count", "Number of ISIS Adjacencies", l, nil)
 	l = append(l, "interface_name", "sysem_name", "level")
-	adjState = prometheus.NewDesc(prefix+"adjacency_state", "The ISIS Adjacency state (1 = UP, 0 = DOWN)", l, nil)
+	adjState = prometheus.NewDesc(prefix+"adjacency_state", "The ISIS Adjacency state (0 = DOWN, 1 = UP, 2 = NEW, 3 = ONE-WAY, 4 =INITIALIZING , 5 = REJECTED)", l, nil)
 }
 
 type isisCollector struct {

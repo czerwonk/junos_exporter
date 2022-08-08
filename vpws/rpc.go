@@ -28,8 +28,10 @@ type vpwsInterface struct {
 	} `xml:"evpn-vpws-service-id-local-status-table>evpn-vpws-sid-local"`
 
 	RemoteStatus struct {
-		Sid       string          `xml:"evpn-vpws-sid-remote-value"`
-		SidPeInfo []vpwsSidPeInfo `xml:"evpn-vpws-sid-pe-status-table>evpn-vpws-sid-pe-info"`
+		Sid                      string `xml:"evpn-vpws-sid-remote-value"`
+		LocalInterfaceName       string `xml:"evpn-vpws-sid-local-interface-name"`
+		LocalInterfaceStatus     string `xml:"evpn-vpws-sid-local-interface-status"`
+		SidPeInfo        []vpwsSidPeInfo `xml:"evpn-vpws-sid-pe-status-table>evpn-vpws-sid-pe-info"`
 	} `xml:"evpn-vpws-service-id-remote-status-table>evpn-vpws-sid-remote"`
 }
 

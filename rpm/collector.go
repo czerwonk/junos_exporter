@@ -9,20 +9,22 @@ import (
 const prefix string = "junos_rpm_probe_results_"
 
 var (
-	currRTTMinDesc    *prometheus.Desc
-	currRTTMaxDesc    *prometheus.Desc
-	currRTTAvgDesc    *prometheus.Desc
-	currRTTJitterDesc *prometheus.Desc
-	currRTTStddevDesc *prometheus.Desc
-	currRTTSumDesc    *prometheus.Desc
-	totalSentDesc     *prometheus.Desc
-	totalReceivedDesc *prometheus.Desc
+	currLossPercentDesc *prometheus.Desc
+	currRTTMinDesc      *prometheus.Desc
+	currRTTMaxDesc      *prometheus.Desc
+	currRTTAvgDesc      *prometheus.Desc
+	currRTTJitterDesc   *prometheus.Desc
+	currRTTStddevDesc   *prometheus.Desc
+	currRTTSumDesc      *prometheus.Desc
+	totalSentDesc       *prometheus.Desc
+	totalReceivedDesc   *prometheus.Desc
 )
 
 func init() {
 	l := []string{"target", "owner", "name", "address", "type", "interface"}
 	totalSentDesc = prometheus.NewDesc(prefix+"sent_total", "Number of probes sent within the current test", l, nil)
 	totalReceivedDesc = prometheus.NewDesc(prefix+"received_total", "Number of probe responses received within the current test", l, nil)
+	currLossPercentDesc = prometheus.NewDesc(prefix+"loss_percent_current", "Percentage of probes lost during the most recently completed test", l, nil)
 	currRTTMinDesc = prometheus.NewDesc(prefix+"rtt_min_current", "Minimum RTT for the most recently completed test, in microseconds", l, nil)
 	currRTTMaxDesc = prometheus.NewDesc(prefix+"rtt_max_current", "Maximum RTT for the most recently completed test, in microseconds", l, nil)
 	currRTTAvgDesc = prometheus.NewDesc(prefix+"rtt_avg_current", "Average RTT for the most recently completed test, in microseconds", l, nil)
@@ -47,6 +49,7 @@ func (*rpmCollector) Name() string {
 func (*rpmCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- totalSentDesc
 	ch <- totalReceivedDesc
+	ch <- currLossPercentDesc
 	ch <- currRTTMinDesc
 	ch <- currRTTMaxDesc
 	ch <- currRTTAvgDesc
@@ -85,6 +88,7 @@ func (c *rpmCollector) collectForProbe(p RPMProbe, ch chan<- prometheus.Metric, 
 
 	ch <- prometheus.MustNewConstMetric(totalSentDesc, prometheus.GaugeValue, float64(p.Global.Results.Sent), l...)
 	ch <- prometheus.MustNewConstMetric(totalReceivedDesc, prometheus.GaugeValue, float64(p.Global.Results.Responses), l...)
+	ch <- prometheus.MustNewConstMetric(currLossPercentDesc, prometheus.GaugeValue, p.Last.Results.LossPercent, l...)
 	ch <- prometheus.MustNewConstMetric(currRTTMinDesc, prometheus.GaugeValue, float64(p.Last.Results.RTT.Summary.Min), l...)
 	ch <- prometheus.MustNewConstMetric(currRTTMaxDesc, prometheus.GaugeValue, float64(p.Last.Results.RTT.Summary.Max), l...)
 	ch <- prometheus.MustNewConstMetric(currRTTAvgDesc, prometheus.GaugeValue, float64(p.Last.Results.RTT.Summary.Avg), l...)

@@ -79,6 +79,11 @@ States map to human readable names like this:
 4 = "Ex-Incr"
 5 = "Ex-Full"
 ```
+* VirtualChassis (status of members)
+```
+0 = "NotPrsnt"
+1 = "NotPrsnt"
+```
 * VRRP (state per interface)
 States map to human readable names like this:
 ```   

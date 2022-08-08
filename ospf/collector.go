@@ -64,9 +64,14 @@ func (c *ospfCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 func (c *ospfCollector) collectOSPFMetrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = OspfRpc{}
 	var cmd strings.Builder
-	cmd.WriteString("show ospf overview")
-	if c.LogicalSystem != "" {
-		cmd.WriteString(" logical-system " + c.LogicalSystem)
+
+	if client.Netconf {
+		cmd.WriteString("<get-ospf-overview-information/>")
+	} else {
+		cmd.WriteString("show ospf overview")
+		if c.LogicalSystem != "" {
+			cmd.WriteString(" logical-system " + c.LogicalSystem)
+		}
 	}
 
 	err := client.RunCommandAndParse(cmd.String(), &x)
@@ -94,9 +99,14 @@ func (c *ospfCollector) collectOSPFMetrics(client *rpc.Client, ch chan<- prometh
 func (c *ospfCollector) collectOSPFv3Metrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = Ospf3Rpc{}
 	var cmd strings.Builder
-	cmd.WriteString("show ospf3 overview")
-	if c.LogicalSystem != "" {
-		cmd.WriteString(" logical-system " + c.LogicalSystem)
+
+	if client.Netconf {
+		cmd.WriteString("<get-ospf3-overview-information/>")
+	} else {
+		cmd.WriteString("show ospf3 overview")
+		if c.LogicalSystem != "" {
+			cmd.WriteString(" logical-system " + c.LogicalSystem)
+		}
 	}
 
 	err := client.RunCommandAndParse(cmd.String(), &x)

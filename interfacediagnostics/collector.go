@@ -255,9 +255,16 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 
 func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client) ([]*InterfaceDiagnostics, error) {
 	var x = InterfaceDiagnosticsRPC{}
-	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
-	if err != nil {
-		return nil, err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-interface-optics-diagnostics-information/>", &x)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return interfaceDiagnosticsFromRPCResult(x), nil
@@ -279,42 +286,77 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rp
 	//  </rpc-reply>
 
 	// workaround: go through all lines of the XML and remove identical, consecutive lines
-	err := client.RunCommandAndParseWithParser("show interfaces diagnostics optics satellite", func(b []byte) error {
-		var (
-			lines     []string = strings.Split(string(b[:]), "\n")
-			lineIndex int
-			tmpByte   []byte
-		)
+	if client.Netconf {
+		err := client.RunCommandAndParseWithParser("<show-interface-optics-diagnostics-satellite/>", func(b []byte) error {
+			var (
+				lines     []string = strings.Split(string(b[:]), "\n")
+				lineIndex int
+				tmpByte   []byte
+			)
 
-		// check if satellite is enabled
-		if string(b[:]) == "\nerror: syntax error, expecting <command>: satellite\n" {
+			for lineIndex = range lines {
+				if lineIndex == 0 {
+					// add good lines to new byte buffer
+					tmpByte = append(tmpByte, lines[lineIndex]...)
+					continue
+				}
+
+				// check if two consecutive lines are identical (except whitespaces)
+				if strings.TrimSpace(lines[lineIndex]) == strings.TrimSpace(lines[lineIndex-1]) {
+					// skip the duplicate line
+					continue
+
+				} else {
+					// add good lines to new byte buffer
+					tmpByte = append(tmpByte, lines[lineIndex]...)
+				}
+			}
+
+			return xml.Unmarshal(tmpByte, &x)
+		})
+
+		if err != nil {
 			log.Printf("system doesn't seem to have satellite enabled")
-			return nil
+			return nil,nil
 		}
+	} else {
+		err := client.RunCommandAndParseWithParser("show interfaces diagnostics optics satellite", func(b []byte) error {
+			var (
+				lines     []string = strings.Split(string(b[:]), "\n")
+				lineIndex int
+				tmpByte   []byte
+			)
 
-		for lineIndex = range lines {
-			if lineIndex == 0 {
-				// add good lines to new byte buffer
-				tmpByte = append(tmpByte, lines[lineIndex]...)
-				continue
+			// check if satellite is enabled
+			if string(b[:]) == "\nerror: syntax error, expecting <command>: satellite\n" {
+				log.Printf("system doesn't seem to have satellite enabled")
+				return nil
 			}
 
-			// check if two consecutive lines are identical (except whitespaces)
-			if strings.TrimSpace(lines[lineIndex]) == strings.TrimSpace(lines[lineIndex-1]) {
-				// skip the duplicate line
-				continue
+			for lineIndex = range lines {
+				if lineIndex == 0 {
+					// add good lines to new byte buffer
+					tmpByte = append(tmpByte, lines[lineIndex]...)
+					continue
+				}
 
-			} else {
-				// add good lines to new byte buffer
-				tmpByte = append(tmpByte, lines[lineIndex]...)
+				// check if two consecutive lines are identical (except whitespaces)
+				if strings.TrimSpace(lines[lineIndex]) == strings.TrimSpace(lines[lineIndex-1]) {
+					// skip the duplicate line
+					continue
+
+				} else {
+					// add good lines to new byte buffer
+					tmpByte = append(tmpByte, lines[lineIndex]...)
+				}
 			}
+
+			return xml.Unmarshal(tmpByte, &x)
+		})
+
+		if err != nil {
+			return nil, err
 		}
-
-		return xml.Unmarshal(tmpByte, &x)
-	})
-
-	if err != nil {
-		return nil, err
 	}
 
 	return interfaceDiagnosticsFromRPCResult(x), nil

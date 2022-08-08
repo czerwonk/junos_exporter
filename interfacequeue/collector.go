@@ -101,9 +101,16 @@ func (c *interfaceQueueCollector) Describe(ch chan<- *prometheus.Desc) {
 func (c *interfaceQueueCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	q := InterfaceQueueRPC{}
 
-	err := client.RunCommandAndParse("show interfaces queue", &q)
-	if err != nil {
-		return err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-interface-queue-information/>", &q)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := client.RunCommandAndParse("show interfaces queue", &q)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, iface := range q.InterfaceInformation.Interfaces {

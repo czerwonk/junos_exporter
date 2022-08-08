@@ -78,30 +78,61 @@ func (c *environmentCollector) environmentItems(client *rpc.Client, ch chan<- pr
 		"Present": 5,
 	}
 
-	err := client.RunCommandAndParseWithParser("show chassis environment", func(b []byte) error {
-		return parseXML(b, &x)
-	})
-	if err != nil {
-		return nil
-	}
-
-	// gather satellite data
-	if client.Satellite {
-		var y = RpcReply{}
-		err = client.RunCommandAndParseWithParser("show chassis environment satellite", func(b []byte) error {
-			if string(b[:]) == "\nerror: syntax error, expecting <command>: satellite\n" {
-				log.Printf("system doesn't seem to have satellite enabled")
-				return nil
-			}
-
-			return parseXML(b, &y)
+	if client.Netconf {
+		err := client.RunCommandAndParseWithParser("<get-environment-information/>", func(b []byte) error {
+			return parseXML(b, &x)
 		})
 		if err != nil {
 			return nil
-		} else {
-			// add satellite details (only if y.MultiRoutingEngineResults.RoutingEngine has elements)
-			if len(y.MultiRoutingEngineResults.RoutingEngine) > 0 {
-				x.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items = append(x.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items, y.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items...)
+		}
+
+		// gather satellite data
+		if client.Satellite {
+			var y = RpcReply{}
+			err = client.RunCommandAndParseWithParser("<get-chassis-environment-satellite-information/>", func(b []byte) error {
+				if string(b[:]) == "\nerror: syntax error, expecting <command>: satellite\n" {
+					log.Printf("system doesn't seem to have satellite enabled")
+					return nil
+				}
+
+				return parseXML(b, &y)
+			})
+			if err != nil {
+				// probably no satellite, but let's continue the task
+				//return nil
+			} else {
+				// add satellite details (only if y.MultiRoutingEngineResults.RoutingEngine has elements)
+				if len(y.MultiRoutingEngineResults.RoutingEngine) > 0 {
+					x.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items = append(x.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items, y.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items...)
+				}
+			}
+		}
+	} else {
+		err := client.RunCommandAndParseWithParser("show chassis environment", func(b []byte) error {
+			return parseXML(b, &x)
+		})
+		if err != nil {
+			return nil
+		}
+
+		// gather satellite data
+		if client.Satellite {
+			var y = RpcReply{}
+			err = client.RunCommandAndParseWithParser("show chassis environment satellite", func(b []byte) error {
+				if string(b[:]) == "\nerror: syntax error, expecting <command>: satellite\n" {
+					log.Printf("system doesn't seem to have satellite enabled")
+					return nil
+				}
+
+				return parseXML(b, &y)
+			})
+			if err != nil {
+				return nil
+			} else {
+				// add satellite details (only if y.MultiRoutingEngineResults.RoutingEngine has elements)
+				if len(y.MultiRoutingEngineResults.RoutingEngine) > 0 {
+					x.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items = append(x.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items, y.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items...)
+				}
 			}
 		}
 	}
@@ -132,11 +163,20 @@ func (c *environmentCollector) environmentPEMItems(client *rpc.Client, ch chan<-
 		"Empty":   3,
 	}
 
-	err := client.RunCommandAndParseWithParser("show chassis environment pem", func(b []byte) error {
-		return parseXML(b, &x)
-	})
-	if err != nil {
-		return err
+	if client.Netconf {
+		err := client.RunCommandAndParseWithParser("<get-environment-pem-information/>", func(b []byte) error {
+			return parseXML(b, &x)
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		err := client.RunCommandAndParseWithParser("show chassis environment pem", func(b []byte) error {
+			return parseXML(b, &x)
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, re := range x.MultiRoutingEngineResults.RoutingEngine {

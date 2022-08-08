@@ -146,9 +146,16 @@ func (c *interfaceCollector) Collect(client *rpc.Client, ch chan<- prometheus.Me
 
 func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceStats, error) {
 	var x = InterfaceRpc{}
-	err := client.RunCommandAndParse("show interfaces extensive", &x)
-	if err != nil {
-		return nil, err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-interface-information><extensive/></get-interface-information>", &x)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := client.RunCommandAndParse("show interfaces extensive", &x)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	stats := make([]*InterfaceStats, 0)

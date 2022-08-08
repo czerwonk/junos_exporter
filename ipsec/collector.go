@@ -49,9 +49,16 @@ func (*ipsecCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *ipsecCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = RpcReply{}
-	err := client.RunCommandAndParse("show security ipsec security-associations", &x)
-	if err != nil {
-		return err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-security-associations-information/>", &x)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := client.RunCommandAndParse("show security ipsec security-associations", &x)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, re := range x.MultiRoutingEngineResults.RoutingEngine {
@@ -63,14 +70,24 @@ func (c *ipsecCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric
 		}
 	}
 
-	var conf = ConfigurationSecurityIpsec{}
-	err = client.RunCommandAndParse("show configuration security ipsec", &conf)
-	if err != nil {
-		return err
+	if client.Netconf {
+		var conf = ConfigurationSecurityIpsecnetconf{}
+		err := client.RunCommandAndParse("<get-config><source><running/></source><filter type='subtree'><configuration><security><ipsec></ipsec></security></configuration></filter></get-config>", &conf)
+		if err != nil {
+			return err
+		}
+		cls := append(labelValues, "N/A", "configured tunnels", "")
+		ch <- prometheus.MustNewConstMetric(configuredTunnels, prometheus.GaugeValue, float64(len(conf.Configuration.Security.Ipsec.Vpn)), cls...)
+	} else {
+		var conf = ConfigurationSecurityIpsec{}
+		err := client.RunCommandAndParse("show configuration security ipsec", &conf)
+		if err != nil {
+			return err
+		}
+		cls := append(labelValues, "N/A", "configured tunnels", "")
+		ch <- prometheus.MustNewConstMetric(configuredTunnels, prometheus.GaugeValue, float64(len(conf.Configuration.Security.Ipsec.Vpn)), cls...)
 	}
 
-	cls := append(labelValues, "N/A", "configured tunnels", "")
-	ch <- prometheus.MustNewConstMetric(configuredTunnels, prometheus.GaugeValue, float64(len(conf.Configuration.Security.Ipsec.Vpn)), cls...)
 
 	return nil
 }

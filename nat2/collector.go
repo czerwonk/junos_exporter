@@ -225,9 +225,16 @@ func (c *natCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 
 func (c *natCollector) NatInterfaces(client *rpc.Client) ([]*NatInterface, error) {
 	var x = NatRpc{}
-	err := client.RunCommandAndParse("show services nat statistics", &x)
-	if err != nil {
-		return nil, err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-service-nat-statistics-information/>", &x)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := client.RunCommandAndParse("show services nat statistics", &x)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	interfaces := make([]*NatInterface, 0)
@@ -320,9 +327,16 @@ func (*natCollector) collectForInterface(s *NatInterface, ch chan<- prometheus.M
 
 func (c *natCollector) SrcNatPools(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]SrcNatPool, error) {
 	var x = SrcNatPoolRpc{}
-	err := client.RunCommandAndParse("show services nat source pool all", &x)
-	if err != nil {
-		return nil, err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<retrieve-srv-source-nat-pool-information><all/></retrieve-srv-source-nat-pool-information>", &x)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := client.RunCommandAndParse("show services nat source pool all", &x)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return x.Information.Pools[:], nil
@@ -392,9 +406,16 @@ func (c *natCollector) collectForSrcNatPool(s []SrcNatPool, ch chan<- prometheus
 
 func (c *natCollector) ServiceSetsCpuInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*ServiceSetsCpuInterface, error) {
 	var x = ServiceSetsCpuRpc{}
-	err := client.RunCommandAndParse("show services service-sets cpu-usage", &x)
-	if err != nil {
-		return nil, err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-service-set-cpu-statistics/>", &x)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := client.RunCommandAndParse("show services service-sets cpu-usage", &x)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	interfacesdetail := make([]*ServiceSetsCpuInterface, 0)

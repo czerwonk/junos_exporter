@@ -162,9 +162,16 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 
 	r = new(BuffersRPC)
 
-	err = client.RunCommandAndParse("show system buffers", r)
-	if err != nil {
-		return err
+	if client.Netconf {
+		err = client.RunCommandAndParse("<get-buffer-informations/>", r)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = client.RunCommandAndParse("show system buffers", r)
+		if err != nil {
+			return err
+		}
 	}
 
 	if r.Output != "" {
@@ -277,9 +284,16 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 
 	// system information
 	r2 = new(SystemInformationRPC)
-	err = client.RunCommandAndParse("show system information", r2)
-	if err != nil {
-		return err
+	if client.Netconf {
+		err = client.RunCommandAndParse("<get-system-information/>", r2)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = client.RunCommandAndParse("show system information", r2)
+		if err != nil {
+			return err
+		}
 	}
 
 	// create LabelSet (target, "model", "os", "os_version", "serial", "hostname", "alias", "slot_id", "state")
@@ -298,7 +312,11 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 
 		// system information of satellites
 		r3 = new(SatelliteChassisRPC)
-		err = client.RunCommandAndParse("show chassis satellite detail", r3)
+		if client.Netconf {
+			err = client.RunCommandAndParse("<get-chassis-satellite-information><detail/></get-chassis-satellite-information>", r3)
+		} else {
+			err = client.RunCommandAndParse("show chassis satellite detail", r3)
+		}
 		// there are various error messages when satellite is not enabled; thus here we just ignore the error and continue
 		if err == nil {
 			for i = range r3.SatelliteInfo.Satellite {

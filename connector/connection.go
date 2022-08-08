@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"net"
 	"sync"
-
+	"fmt"
+	"io"
 	"github.com/pkg/errors"
 
 	"golang.org/x/crypto/ssh"
+	"github.com/Juniper/go-netconf/netconf"
 )
 
 // SSHConnection encapsulates the connection to the device
@@ -17,10 +19,27 @@ type SSHConnection struct {
 	conn   net.Conn
 	mu     sync.Mutex
 	done   chan struct{}
+	netconf bool
+	netconfsession *netconf.Session
 }
+
+type TransportSSH struct {
+    transportBasicIO
+    sshClient  *ssh.Client
+    sshSession *ssh.Session
+}
+
 
 // RunCommand runs a command against the device
 func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
+	if c.netconf	{
+		return c.RunCommandNETCONF(cmd)
+	} else {
+		return c.RunCommandSSH(cmd)
+	}
+}
+
+func (c *SSHConnection) RunCommandSSH(cmd string) ([]byte, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -43,6 +62,53 @@ func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 	}
 
 	return b.Bytes(), nil
+}
+
+
+func (c *SSHConnection) RunCommandNETCONF(cmd string) ([]byte, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	var err error
+
+	if c.client == nil {
+		return nil, errors.New("not connected")
+	}
+
+	t := &TransportSSH{}
+	if c.netconfsession == nil {
+		t.sshSession, err = c.client.NewSession()
+		if err != nil {
+			return nil, errors.Wrap(err, "could not open session")
+		}
+
+		writer, err := t.sshSession.StdinPipe()
+		if err != nil {
+			return nil, errors.Wrap(err, "could not open session stdin")
+		}
+
+		reader, err := t.sshSession.StdoutPipe()
+		if err != nil {
+			return nil, errors.Wrap(err, "could not open session stdout")
+		}
+
+		t.ReadWriteCloser = netconf.NewReadWriteCloser(reader, writer)
+		t.sshSession.RequestSubsystem("netconf")
+		c.netconfsession = netconf.NewSession(t)
+	}
+
+	reply, err := c.netconfsession.Exec(netconf.RawMethod(cmd))
+
+	if err != nil {
+		if err == io.EOF {
+			//probably lost the session, closing to force a reopen
+			fmt.Println("Error - Closing")
+			c.netconfsession.Close()
+			c.netconfsession = nil
+		}
+		return nil, errors.Wrap(err, "could not run command")
+	}
+
+	return []byte(reply.RawReply), nil
 }
 
 func (c *SSHConnection) isConnected() bool {

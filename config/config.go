@@ -57,10 +57,12 @@ type FeatureConfig struct {
 	RPKI                bool `yaml:"rpki,omitempty"`
 	RPM                 bool `yaml:"rpm,omitempty"`
 	Satellite           bool `yaml:"satellite,omitempty"`
+	Netconf             bool `yaml:"netconf,omitempty"`
 	System              bool `yaml:"system,omitempty"`
 	Power               bool `yaml:"power,omitempty"`
 	MAC                 bool `yaml:"mac,omitempty"`
 	MPLS_LSP            bool `yaml:"mpls_lsp,omitempty"`
+	VirtualChassis      bool `yaml:"virtualchassis,omitempty"`
 	VPWS                bool `yaml:"vpws,omitempty"`
 	VRRP                bool `yaml:"vrrp,omitempty"`
 }
@@ -127,9 +129,11 @@ func setDefaultValues(c *Config) {
 	f.RPKI = false
 	f.RPM = false
 	f.Satellite = false
+	f.Netconf = false
 	f.Power = false
 	f.MAC = false
 	f.MPLS_LSP = false
+	f.VirtualChassis = false
 	f.VPWS = false
 	f.VRRP = false
 	f.BFD = false

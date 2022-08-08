@@ -78,9 +78,16 @@ func (c *l2circuitCollector) Collect(client *rpc.Client, ch chan<- prometheus.Me
 
 func (c *l2circuitCollector) collectL2circuitMetrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = L2circuitRpc{}
-	err := client.RunCommandAndParse("show l2circuit connections brief", &x)
-	if err != nil {
-		return err
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-l2ckt-connection-information><brief/></get-l2ckt-connection-information>", &x)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := client.RunCommandAndParse("show l2circuit connections brief", &x)
+		if err != nil {
+			return err
+		}
 	}
 
 	neighbors := x.Information.Neighbors

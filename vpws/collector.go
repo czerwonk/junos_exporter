@@ -52,10 +52,17 @@ func (*vpwsCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *vpwsCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = vpwsRpc{}
-	err := client.RunCommandAndParse("show evpn vpws-instance", &x)
-	if err != nil {
-		return err
+        var x = vpwsRpc{}
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-evpn-vpws-information/>", &x)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := client.RunCommandAndParse("show evpn vpws-instance", &x)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, vInst := range x.Information.VpwsInstances {
@@ -66,6 +73,12 @@ func (c *vpwsCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 			for _, vSid := range vIf.LocalStatus.SidPeInfo {
 				l := append(labelValues, vInst.Name, vInst.RD, vIf.Name, "local", vIf.LocalStatus.Sid, vSid.IP, vSid.Esi, vSid.Mode, vSid.Role)
 				ch <- prometheus.MustNewConstMetric(vpwsSid, prometheus.GaugeValue, float64(vpwsSidMap[vSid.Status]), l...)
+			}
+
+
+			if vIf.RemoteStatus.LocalInterfaceName != "" {
+				l := append(labelValues, vInst.Name, vInst.RD, vIf.Name, "remote", vIf.RemoteStatus.Sid, vIf.RemoteStatus.LocalInterfaceName, "", "local", "")
+				ch <- prometheus.MustNewConstMetric(vpwsSid, prometheus.GaugeValue, float64(vpwsStatusMap[vIf.RemoteStatus.LocalInterfaceStatus]), l...)
 			}
 
 			for _, vSid := range vIf.RemoteStatus.SidPeInfo {

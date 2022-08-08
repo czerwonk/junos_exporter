@@ -32,12 +32,14 @@ func WithKeepAliveInterval(d time.Duration) Option {
 	}
 }
 
+
 // WithKeepAliveTimeout sets the timeout after an ssh connection to be determined dead (default 15 seconds)
 func WithKeepAliveTimeout(d time.Duration) Option {
 	return func(m *SSHConnectionManager) {
 		m.keepAliveTimeout = d
 	}
 }
+
 
 // SSHConnectionManager manages SSH connections to different devices
 type SSHConnectionManager struct {
@@ -65,7 +67,7 @@ func NewConnectionManager(opts ...Option) *SSHConnectionManager {
 }
 
 // Connect connects to a device or returns an long living connection
-func (m *SSHConnectionManager) Connect(device *Device) (*SSHConnection, error) {
+func (m *SSHConnectionManager) Connect(device *Device, netconf bool) (*SSHConnection, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -77,10 +79,10 @@ func (m *SSHConnectionManager) Connect(device *Device) (*SSHConnection, error) {
 		return connection, nil
 	}
 
-	return m.connect(device)
+	return m.connect(device, netconf)
 }
 
-func (m *SSHConnectionManager) connect(device *Device) (*SSHConnection, error) {
+func (m *SSHConnectionManager) connect(device *Device, netconf bool) (*SSHConnection, error) {
 	client, conn, err := m.connectToDevice(device)
 	if err != nil {
 		return nil, err
@@ -91,6 +93,7 @@ func (m *SSHConnectionManager) connect(device *Device) (*SSHConnection, error) {
 		client: client,
 		device: device,
 		done:   make(chan struct{}),
+		netconf: netconf,
 	}
 	go m.keepAlive(c)
 

@@ -48,10 +48,17 @@ func (*mpls_lspCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *mpls_lspCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = mpls_lspRpc{}
-	err := client.RunCommandAndParse("show mpls lsp ingress extensive", &x) //ingress:Display LSPs originating at this router
-	if err != nil {
-		return err
+        var x = mpls_lspRpc{}
+	if client.Netconf {
+		err := client.RunCommandAndParse("<get-mpls-lsp-information><ingress/><extensive/></get-mpls-lsp-information>", &x) //ingress:Display LSPs originating at this router
+		if err != nil {
+			return err
+		}
+	} else {
+		err := client.RunCommandAndParse("show mpls lsp ingress extensive", &x) //ingress:Display LSPs originating at this router
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, lsp := range x.Information.Sessions {

@@ -88,11 +88,20 @@ func (c *powerCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric
 	}
 
 	var x = RpcReply{}
-	err := client.RunCommandAndParseWithParser("show chassis power", func(b []byte) error {
-		return parseXML(b, &x)
-	})
-	if err != nil {
-		return err
+	if client.Netconf {
+		err := client.RunCommandAndParseWithParser("<get-power-usage-information/>", func(b []byte) error {
+			return parseXML(b, &x)
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		err := client.RunCommandAndParseWithParser("show chassis power", func(b []byte) error {
+			return parseXML(b, &x)
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, re := range x.MultiRoutingEngineResults.RoutingEngine {

@@ -21,9 +21,3 @@ junos_exporter
 config.yml
 
 artifacts
-config/tests/config4.yml
-config/tests/config_local.yml
-notes.txt
-junos_exporter_old
-rpc_reply.txt
-rpc_reply.xml

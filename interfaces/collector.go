@@ -15,36 +15,43 @@ const prefix = "junos_interface_"
 
 // Collector collects interface metrics
 type interfaceCollector struct {
-	labels                  *interfacelabels.DynamicLabels
-	receiveBytesDesc        *prometheus.Desc
-	receivePacketsDesc      *prometheus.Desc
-	receiveErrorsDesc       *prometheus.Desc
-	receiveDropsDesc        *prometheus.Desc
-	interfaceSpeedDesc      *prometheus.Desc
-	transmitBytesDesc       *prometheus.Desc
-	transmitPacketsDesc     *prometheus.Desc
-	transmitErrorsDesc      *prometheus.Desc
-	transmitDropsDesc       *prometheus.Desc
-	ipv6receiveBytesDesc    *prometheus.Desc
-	ipv6receivePacketsDesc  *prometheus.Desc
-	ipv6transmitBytesDesc   *prometheus.Desc
-	ipv6transmitPacketsDesc *prometheus.Desc
-	adminStatusDesc         *prometheus.Desc
-	operStatusDesc          *prometheus.Desc
-	errorStatusDesc         *prometheus.Desc
-	lastFlappedDesc         *prometheus.Desc
-	receiveUnicastsDesc     *prometheus.Desc
-	receiveBroadcastsDesc   *prometheus.Desc
-	receiveMulticastsDesc   *prometheus.Desc
-	receiveCrcErrorsDesc    *prometheus.Desc
-	transmitUnicastsDesc    *prometheus.Desc
-	transmitBroadcastsDesc  *prometheus.Desc
-	transmitMulticastsDesc  *prometheus.Desc
-	transmitCrcErrorsDesc   *prometheus.Desc
-	fecCcwCountDesc         *prometheus.Desc
-	fecNccwCountDesc        *prometheus.Desc
-	fecCcwErrorRateDesc     *prometheus.Desc
-	fecNccwErrorRateDesc    *prometheus.Desc
+	labels                      *interfacelabels.DynamicLabels
+	receiveBytesDesc            *prometheus.Desc
+	receivePacketsDesc          *prometheus.Desc
+	receiveErrorsDesc           *prometheus.Desc
+	receiveDropsDesc            *prometheus.Desc
+	interfaceSpeedDesc          *prometheus.Desc
+	transmitBytesDesc           *prometheus.Desc
+	transmitPacketsDesc         *prometheus.Desc
+	transmitErrorsDesc          *prometheus.Desc
+	transmitDropsDesc           *prometheus.Desc
+	ipv6receiveBytesDesc        *prometheus.Desc
+	ipv6receivePacketsDesc      *prometheus.Desc
+	ipv6transmitBytesDesc       *prometheus.Desc
+	ipv6transmitPacketsDesc     *prometheus.Desc
+	adminStatusDesc             *prometheus.Desc
+	operStatusDesc              *prometheus.Desc
+	errorStatusDesc             *prometheus.Desc
+	lastFlappedDesc             *prometheus.Desc
+	receiveUnicastsDesc         *prometheus.Desc
+	receiveBroadcastsDesc       *prometheus.Desc
+	receiveMulticastsDesc       *prometheus.Desc
+	receiveCrcErrorsDesc        *prometheus.Desc
+	transmitUnicastsDesc        *prometheus.Desc
+	transmitBroadcastsDesc      *prometheus.Desc
+	transmitMulticastsDesc      *prometheus.Desc
+	transmitCrcErrorsDesc       *prometheus.Desc
+	fecCcwCountDesc             *prometheus.Desc
+	fecNccwCountDesc            *prometheus.Desc
+	fecCcwErrorRateDesc         *prometheus.Desc
+	fecNccwErrorRateDesc        *prometheus.Desc
+	receiveOversizedFramesDesc  *prometheus.Desc
+	receiveJabberFramesDesc     *prometheus.Desc
+	receiveFragmentFramesDesc   *prometheus.Desc
+	receiveVlanTaggedFramesDesc *prometheus.Desc
+	receiveCodeViolationsDesc   *prometheus.Desc
+	receiveTotalErrorsDesc      *prometheus.Desc
+	transmitTotalErrorsDesc     *prometheus.Desc
 }
 
 // NewCollector creates a new collector
@@ -95,6 +102,14 @@ func (c *interfaceCollector) init() {
 	c.fecNccwCountDesc = prometheus.NewDesc(prefix+"fec_nccw_count", "Number FEC Uncorrected Errors", l, nil)
 	c.fecCcwErrorRateDesc = prometheus.NewDesc(prefix+"fec_ccw_error_rate", "Number FEC Corrected Errors Rate", l, nil)
 	c.fecNccwErrorRateDesc = prometheus.NewDesc(prefix+"fec_nccw_error_rate", "Number FEC Uncorrected Errors Rate", l, nil)
+	c.receiveOversizedFramesDesc = prometheus.NewDesc(prefix+"receive_oversized_frames", "Number of received Oversize Frames", l, nil)
+	c.receiveJabberFramesDesc = prometheus.NewDesc(prefix+"receive_jabber_frames", "Number of received Jabber Frames", l, nil)
+	c.receiveFragmentFramesDesc = prometheus.NewDesc(prefix+"receive_fragment_frames", "Number of received Fragment Frames", l, nil)
+	c.receiveVlanTaggedFramesDesc = prometheus.NewDesc(prefix+"receive_vlan_tagged_frames", "Number of received Vlan Tagged Frames", l, nil)
+	c.receiveCodeViolationsDesc = prometheus.NewDesc(prefix+"receive_code_violations", "Number of received Code Violations", l, nil)
+	c.receiveTotalErrorsDesc = prometheus.NewDesc(prefix+"receive_total_errors", "Number of received Total Errors", l, nil)
+	c.transmitTotalErrorsDesc = prometheus.NewDesc(prefix+"transmit_total_errors", "Number of transmitted Total Errors", l, nil)
+
 }
 
 // Describe describes the metrics
@@ -128,6 +143,13 @@ func (c *interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.fecNccwCountDesc
 	ch <- c.fecCcwErrorRateDesc
 	ch <- c.fecNccwErrorRateDesc
+	ch <- c.receiveOversizedFramesDesc
+	ch <- c.receiveJabberFramesDesc
+	ch <- c.receiveFragmentFramesDesc
+	ch <- c.receiveVlanTaggedFramesDesc
+	ch <- c.receiveCodeViolationsDesc
+	ch <- c.receiveTotalErrorsDesc
+	ch <- c.transmitTotalErrorsDesc
 }
 
 // Collect collects metrics from JunOS
@@ -154,39 +176,46 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 	stats := make([]*InterfaceStats, 0)
 	for _, phy := range x.Information.Interfaces {
 		s := &InterfaceStats{
-			IsPhysical:          true,
-			Name:                phy.Name,
-			AdminStatus:         phy.AdminStatus == "up",
-			OperStatus:          phy.OperStatus == "up",
-			ErrorStatus:         !(phy.AdminStatus == phy.OperStatus),
-			Description:         phy.Description,
-			Mac:                 phy.MacAddress,
-			ReceiveDrops:        float64(phy.InputErrors.Drops),
-			ReceiveErrors:       float64(phy.InputErrors.Errors),
-			ReceiveBytes:        float64(phy.Stats.InputBytes),
-			ReceivePackets:      float64(phy.Stats.InputPackets),
-			Speed:               phy.Speed,
-			TransmitDrops:       float64(phy.OutputErrors.Drops),
-			TransmitErrors:      float64(phy.OutputErrors.Errors),
-			TransmitBytes:       float64(phy.Stats.OutputBytes),
-			TransmitPackets:     float64(phy.Stats.OutputPackets),
-			IPv6ReceiveBytes:    float64(phy.Stats.IPv6Traffic.InputBytes),
-			IPv6ReceivePackets:  float64(phy.Stats.IPv6Traffic.InputPackets),
-			IPv6TransmitBytes:   float64(phy.Stats.IPv6Traffic.OutputBytes),
-			IPv6TransmitPackets: float64(phy.Stats.IPv6Traffic.OutputPackets),
-			LastFlapped:         -1,
-			ReceiveUnicasts:     float64(phy.EthernetMacStatistics.InputUnicasts),
-			ReceiveBroadcasts:   float64(phy.EthernetMacStatistics.InputBroadcasts),
-			ReceiveMulticasts:   float64(phy.EthernetMacStatistics.InputMulticasts),
-			ReceiveCrcErrors:    float64(phy.EthernetMacStatistics.InputCrcErrors),
-			TransmitUnicasts:    float64(phy.EthernetMacStatistics.OutputUnicasts),
-			TransmitBroadcasts:  float64(phy.EthernetMacStatistics.OutputBroadcasts),
-			TransmitMulticasts:  float64(phy.EthernetMacStatistics.OutputMulticasts),
-			TransmitCrcErrors:   float64(phy.EthernetMacStatistics.OutputCrcErrors),
-			FecCcwCount:         float64(phy.EthernetFecStatistics.NumberfecCcwCount),
-			FecNccwCount:        float64(phy.EthernetFecStatistics.NumberfecNccwCount),
-			FecCcwErrorRate:     float64(phy.EthernetFecStatistics.NumberfecCcwErrorRate),
-			FecNccwErrorRate:    float64(phy.EthernetFecStatistics.NumberfecNccwErrorRate),
+			IsPhysical:              true,
+			Name:                    phy.Name,
+			AdminStatus:             phy.AdminStatus == "up",
+			OperStatus:              phy.OperStatus == "up",
+			ErrorStatus:             !(phy.AdminStatus == phy.OperStatus),
+			Description:             phy.Description,
+			Mac:                     phy.MacAddress,
+			ReceiveDrops:            float64(phy.InputErrors.Drops),
+			ReceiveErrors:           float64(phy.InputErrors.Errors),
+			ReceiveBytes:            float64(phy.Stats.InputBytes),
+			ReceivePackets:          float64(phy.Stats.InputPackets),
+			Speed:                   phy.Speed,
+			TransmitDrops:           float64(phy.OutputErrors.Drops),
+			TransmitErrors:          float64(phy.OutputErrors.Errors),
+			TransmitBytes:           float64(phy.Stats.OutputBytes),
+			TransmitPackets:         float64(phy.Stats.OutputPackets),
+			IPv6ReceiveBytes:        float64(phy.Stats.IPv6Traffic.InputBytes),
+			IPv6ReceivePackets:      float64(phy.Stats.IPv6Traffic.InputPackets),
+			IPv6TransmitBytes:       float64(phy.Stats.IPv6Traffic.OutputBytes),
+			IPv6TransmitPackets:     float64(phy.Stats.IPv6Traffic.OutputPackets),
+			LastFlapped:             -1,
+			ReceiveUnicasts:         float64(phy.EthernetMacStatistics.InputUnicasts),
+			ReceiveBroadcasts:       float64(phy.EthernetMacStatistics.InputBroadcasts),
+			ReceiveMulticasts:       float64(phy.EthernetMacStatistics.InputMulticasts),
+			ReceiveCrcErrors:        float64(phy.EthernetMacStatistics.InputCrcErrors),
+			TransmitUnicasts:        float64(phy.EthernetMacStatistics.OutputUnicasts),
+			TransmitBroadcasts:      float64(phy.EthernetMacStatistics.OutputBroadcasts),
+			TransmitMulticasts:      float64(phy.EthernetMacStatistics.OutputMulticasts),
+			TransmitCrcErrors:       float64(phy.EthernetMacStatistics.OutputCrcErrors),
+			FecCcwCount:             float64(phy.EthernetFecStatistics.NumberfecCcwCount),
+			FecNccwCount:            float64(phy.EthernetFecStatistics.NumberfecNccwCount),
+			FecCcwErrorRate:         float64(phy.EthernetFecStatistics.NumberfecCcwErrorRate),
+			FecNccwErrorRate:        float64(phy.EthernetFecStatistics.NumberfecNccwErrorRate),
+			ReceiveOversizedFrames:  float64(phy.EthernetMacStatistics.InputOversizedFrames),
+			ReceiveJabberFrames:     float64(phy.EthernetMacStatistics.InputJabberFrames),
+			ReceiveFragmentFrames:   float64(phy.EthernetMacStatistics.InputFragmentFrames),
+			ReceiveVlanTaggedFrames: float64(phy.EthernetMacStatistics.InputVlanTaggedFrames),
+			ReceiveCodeViolations:   float64(phy.EthernetMacStatistics.InputCodeViolations),
+			ReceiveTotalErrors:      float64(phy.EthernetMacStatistics.InputTotalErrors),
+			TransmitTotalErrors:     float64(phy.EthernetMacStatistics.OutputTotalErrors),
 		}
 
 		if phy.InterfaceFlapped.Value != "Never" {
@@ -300,5 +329,13 @@ func (c *interfaceCollector) collectForInterface(s *InterfaceStats, device *conn
 		ch <- prometheus.MustNewConstMetric(c.fecNccwCountDesc, prometheus.CounterValue, s.FecNccwCount, l...)
 		ch <- prometheus.MustNewConstMetric(c.fecCcwErrorRateDesc, prometheus.CounterValue, s.FecCcwErrorRate, l...)
 		ch <- prometheus.MustNewConstMetric(c.fecNccwErrorRateDesc, prometheus.CounterValue, s.FecNccwErrorRate, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveOversizedFramesDesc, prometheus.CounterValue, s.ReceiveOversizedFrames, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveJabberFramesDesc, prometheus.CounterValue, s.ReceiveJabberFrames, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveFragmentFramesDesc, prometheus.CounterValue, s.ReceiveFragmentFrames, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveVlanTaggedFramesDesc, prometheus.CounterValue, s.ReceiveVlanTaggedFrames, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveCodeViolationsDesc, prometheus.CounterValue, s.ReceiveCodeViolations, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveTotalErrorsDesc, prometheus.CounterValue, s.ReceiveTotalErrors, l...)
+		ch <- prometheus.MustNewConstMetric(c.transmitTotalErrorsDesc, prometheus.CounterValue, s.TransmitTotalErrors, l...)
+
 	}
 }

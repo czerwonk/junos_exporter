@@ -2,6 +2,7 @@ on:
   workflow_run:
     workflows: ["Test"]
     branches: [anx-prod]
+    tags: "*-prod"
     types: 
       - completed
 

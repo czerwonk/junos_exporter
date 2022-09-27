@@ -22,12 +22,7 @@ jobs:
     - name: Build
       run: go build .
 
-    - uses: actions/upload-artifact@master
-      with:
-        name: junos_exporter
-        path: junos_exporter
-
     - uses: actions/upload-artifact@v3
       with:
         name: junos_exporter
-        path: ./junos_exporter
+        path: junos_exporter

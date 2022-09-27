@@ -116,6 +116,7 @@ func (c *bgpCollector) collectForPeer(p BGPPeer, ch chan<- prometheus.Metric, la
 	ch <- prometheus.MustNewConstMetric(inputMessagesDesc, prometheus.GaugeValue, float64(p.InputMessages), l...)
 	ch <- prometheus.MustNewConstMetric(outputMessagesDesc, prometheus.GaugeValue, float64(p.OutputMessages), l...)
 	ch <- prometheus.MustNewConstMetric(flapsDesc, prometheus.GaugeValue, float64(p.Flaps), l...)
+	ch <- prometheus.MustNewConstMetric(prefixesLimitCountDesc, prometheus.GaugeValue, float64(p.BGPOI.PrefixLimit.PrefixCount), l...)
 
 	c.collectRIBForPeer(p, ch, l)
 }
@@ -148,7 +149,6 @@ func (*bgpCollector) collectRIBForPeer(p BGPPeer, ch chan<- prometheus.Metric, l
 			if p.BGPOI.PrefixLimit.PrefixCount > 0 {
 				prefixesLimitPercent := float64(rib.ReceivedPrefixes) / float64(p.BGPOI.PrefixLimit.PrefixCount)
 				ch <- prometheus.MustNewConstMetric(prefixesLimitPercentageDesc, prometheus.GaugeValue, math.Round(prefixesLimitPercent*100)/100, l...)
-				ch <- prometheus.MustNewConstMetric(prefixesLimitCountDesc, prometheus.GaugeValue, float64(p.BGPOI.PrefixLimit.PrefixCount), l...)
 			}
 		}
 	}

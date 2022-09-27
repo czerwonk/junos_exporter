@@ -27,7 +27,7 @@ jobs:
 
     - uses: actions/setup-python@v4
     - run: | 
-        python -m pip3 install s4cmd
+        python -m pip install s4cmd
         s4cmd put --endpoint-url https://${{ secrets.S3_URL }} -f junos_exporter s3://${{ secrets.S3_BUCKET }}/junos_exporter/$GITHUB_REF_NAME/junos_exporter
         s4cmd del --endpoint-url https://${{ secrets.S3_URL }} s3://${{ secrets.S3_BUCKET }}/junos_exporter/latest/
         s4cmd put --endpoint-url https://${{ secrets.S3_URL }} -f junos_exporter s3://${{ secrets.S3_BUCKET }}/junos_exporter/latest/junos_exporter_$GITHUB_REF_NAME

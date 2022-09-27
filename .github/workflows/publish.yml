@@ -1,7 +1,8 @@
 on:
   workflow_run:
     workflows: ["Test"]
-    tags: "**"
+    tags: 
+      - "**"
     types: 
       - completed
 

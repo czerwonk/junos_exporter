@@ -32,6 +32,7 @@ func init() {
 	inputMessagesDesc = prometheus.NewDesc(prefix+"messages_input_count", "Number of received messages", l, nil)
 	outputMessagesDesc = prometheus.NewDesc(prefix+"messages_output_count", "Number of transmitted messages", l, nil)
 	flapsDesc = prometheus.NewDesc(prefix+"flap_count", "Number of session flaps", l, nil)
+	prefixesLimitCountDesc = prometheus.NewDesc(prefix+"prefixes_limit_count", "prefix-count variable set in prefix-limit", l, nil)
 
 	l = append(l, "table")
 
@@ -40,7 +41,6 @@ func init() {
 	rejectedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_rejected_count", "Number of rejected prefixes", l, nil)
 	activePrefixesDesc = prometheus.NewDesc(prefix+"prefixes_active_count", "Number of active prefixes (best route in RIB)", l, nil)
 	advertisedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_advertised_count", "Number of prefixes announced to peer", l, nil)
-	prefixesLimitCountDesc = prometheus.NewDesc(prefix+"prefixes_limit_count", "prefix-count variable set in prefix-limit", l, nil)
 	prefixesLimitPercentageDesc = prometheus.NewDesc(prefix+"prefixes_limit_percentage", "percentage of received prefixes against prefix-limit", l, nil)
 }
 

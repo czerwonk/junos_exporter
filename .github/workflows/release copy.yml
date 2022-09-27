@@ -26,8 +26,6 @@ jobs:
         path: junos_exporter
 
     - uses: actions/setup-python@v4
-      with:
-        python-version: '3.11.0b3-slim-buster' 
     - run: | 
         python -m pip3 install s4cmd
         s4cmd put --endpoint-url https://${{ secrets.S3_URL }} -f junos_exporter s3://${{ secrets.S3_BUCKET }}/junos_exporter/$GITHUB_REF_NAME/junos_exporter

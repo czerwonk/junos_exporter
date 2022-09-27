@@ -49,7 +49,7 @@ jobs:
         pip install s4cmd
         s4cmd put --endpoint-url https://$S3_URL -f junos_exporter s3://$S3_BUCKET/junos_exporter/$GITHUB_REF_NAME/junos_exporter
         s4cmd del --endpoint-url https://$S3_URL s3://$S3_BUCKET/junos_exporter/latest/
-        s4cmd put --endpoint-url https://$S3_URL -f junos_exporter s3://$S3_BUCKET/junos_exporter/latest/junos_exporter_$GITHUB_REF_NAME
+        s4cmd put --endpoint-url https://$S3_URL -f junos_exporter s3://$S3_BUCKET/junos_exporter/latest/junos_exporter
       env:
         S3_URL:         ${{secrets.S3_URL}}
         S3_BUCKET:      ${{secrets.S3_BUCKET}}

@@ -1,10 +1,8 @@
 on:
-  workflow_run:
-    workflows: ["Test"]
-    branches: [anx-prod]
-    types: 
-      - completed
-
+  push:
+    branches:
+      - "**"
+      
 name: Deploy and store artifact 
 jobs:
   build:
@@ -26,3 +24,18 @@ jobs:
       with:
         name: junos_exporter
         path: junos_exporter
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.11.0b3-slim-buster' 
+    - run: | 
+        python -m pip3 install s4cmd
+        s4cmd put --endpoint-url https://${{ secrets.S3_URL }} -f junos_exporter s3://${{ secrets.S3_BUCKET }}/junos_exporter/${{ GITHUB_REF_NAME }}/junos_exporter
+        s4cmd del --endpoint-url https://${{ secrets.S3_URL }} s3://${{ secrets.S3_BUCKET }}/junos_exporter/latest/
+        s4cmd put --endpoint-url https://${{ secrets.S3_URL }} -f junos_exporter s3://${{ secrets.S3_BUCKET }}/junos_exporter/latest/junos_exporter_${{ GITHUB_REF_NAME }}
+      env:
+        S3_URL: $secrets.S3_URL
+        S3_BUCKET: $secrets.S3_BUCKET
+        S3_ACCESS_KEY: $secrets.S3_ACCESS_KEY
+        S3_SECRET_KEY: $secrets.S3_SECRET_KEY
+

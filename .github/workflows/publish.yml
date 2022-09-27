@@ -1,0 +1,41 @@
+on:
+  workflow_run:
+    workflows: ["Test"]
+    branches: [anx-prod]
+    types: 
+      - completed
+
+name: Deploy and store artifact 
+jobs:
+  build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.18
+
+    - name: Build
+      run: go build .
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: junos_exporter
+        path: junos_exporter
+
+    - uses: actions/setup-python@v4
+    - run: | 
+        pip install s4cmd
+        s4cmd put --endpoint-url https://$S3_URL -f junos_exporter s3://$S3_BUCKET/junos_exporter/$GITHUB_REF_NAME/junos_exporter
+        s4cmd del --endpoint-url https://$S3_URL s3://$S3_BUCKET/junos_exporter/latest/
+        s4cmd put --endpoint-url https://$S3_URL -f junos_exporter s3://$S3_BUCKET/junos_exporter/latest/junos_exporter_$GITHUB_REF_NAME
+      env:
+        S3_URL:         ${{secrets.S3_URL}}
+        S3_BUCKET:      ${{secrets.S3_BUCKET}}
+        S3_ACCESS_KEY:  ${{secrets.S3_ACCESS_KEY}}
+        S3_SECRET_KEY:  ${{secrets.S3_SECRET_KEY}}
+

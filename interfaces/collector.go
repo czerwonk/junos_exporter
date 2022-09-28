@@ -169,7 +169,7 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 			ReceiveBytes:        float64(phy.Stats.InputBytes),
 			ReceivePackets:      float64(phy.Stats.InputPackets),
 			Speed:               phy.Speed,
-			BPDUError:           phy.BPDUError == "Detected",
+			BPDUError:           phy.BPDUError == "detected",
 			TransmitDrops:       float64(phy.OutputErrors.Drops),
 			TransmitErrors:      float64(phy.OutputErrors.Errors),
 			TransmitBytes:       float64(phy.Stats.OutputBytes),

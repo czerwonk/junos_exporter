@@ -24,7 +24,7 @@ jobs:
 
 
   publish:
-    if: github.ref_type == 'tag' 
+    if: github.ref_type == 'tag' || github.ref == 'refs/heads/anx-prod'
     needs: Test
     runs-on: ubuntu-latest
 

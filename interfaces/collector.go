@@ -21,6 +21,7 @@ type interfaceCollector struct {
 	receiveErrorsDesc           *prometheus.Desc
 	receiveDropsDesc            *prometheus.Desc
 	interfaceSpeedDesc          *prometheus.Desc
+	interfaceBPDUErrorDesc      *prometheus.Desc
 	transmitBytesDesc           *prometheus.Desc
 	transmitPacketsDesc         *prometheus.Desc
 	transmitErrorsDesc          *prometheus.Desc
@@ -78,6 +79,7 @@ func (c *interfaceCollector) init() {
 	c.receiveErrorsDesc = prometheus.NewDesc(prefix+"receive_errors", "Number of errors caused by incoming packets", l, nil)
 	c.receiveDropsDesc = prometheus.NewDesc(prefix+"receive_drops", "Number of dropped incoming packets", l, nil)
 	c.interfaceSpeedDesc = prometheus.NewDesc(prefix+"speed", "speed in in bps", l, nil)
+	c.interfaceBPDUErrorDesc = prometheus.NewDesc(prefix+"error_bpdublock", "Flag which tells that there's a BPDU_Block on the interface (bool)", l, nil)
 	c.transmitBytesDesc = prometheus.NewDesc(prefix+"transmit_bytes", "Transmitted data in bytes", l, nil)
 	c.transmitPacketsDesc = prometheus.NewDesc(prefix+"transmit_packets_total", "Transmitted packets", l, nil)
 	c.transmitErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors", "Number of errors caused by outgoing packets", l, nil)
@@ -119,6 +121,7 @@ func (c *interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.receiveErrorsDesc
 	ch <- c.receiveDropsDesc
 	ch <- c.interfaceSpeedDesc
+	ch <- c.interfaceBPDUErrorDesc
 	ch <- c.transmitBytesDesc
 	ch <- c.transmitPacketsDesc
 	ch <- c.transmitDropsDesc
@@ -188,6 +191,7 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 			ReceiveBytes:            float64(phy.Stats.InputBytes),
 			ReceivePackets:          float64(phy.Stats.InputPackets),
 			Speed:                   phy.Speed,
+      BPDUError:           phy.BPDUError == "detected",
 			TransmitDrops:           float64(phy.OutputErrors.Drops),
 			TransmitErrors:          float64(phy.OutputErrors.Errors),
 			TransmitBytes:           float64(phy.Stats.OutputBytes),
@@ -303,6 +307,10 @@ func (c *interfaceCollector) collectForInterface(s *InterfaceStats, device *conn
 		}
 
 		sp64, _ := strconv.ParseFloat(speed, 64)
+
+		if s.BPDUError {
+			ch <- prometheus.MustNewConstMetric(c.interfaceBPDUErrorDesc, prometheus.GaugeValue, float64(1), l...)
+		}
 
 		ch <- prometheus.MustNewConstMetric(c.adminStatusDesc, prometheus.GaugeValue, float64(adminUp), l...)
 		ch <- prometheus.MustNewConstMetric(c.operStatusDesc, prometheus.GaugeValue, float64(operUp), l...)

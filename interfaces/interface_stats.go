@@ -9,6 +9,7 @@ type InterfaceStats struct {
 	Mac                     string
 	IsPhysical              bool
 	Speed                   string
+  BPDUError               bool
 	ReceiveBytes            float64
 	ReceivePackets          float64
 	ReceiveErrors           float64

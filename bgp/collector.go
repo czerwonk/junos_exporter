@@ -123,6 +123,7 @@ func (c *bgpCollector) collectForPeer(p BGPPeer, ch chan<- prometheus.Metric, la
 func (*bgpCollector) collectRIBForPeer(p BGPPeer, ch chan<- prometheus.Metric, labelValues []string) {
 	var rib_name string
 
+	// derive the name of the rib for which the prefix limit is configured by examining the NLRI type
 	switch nlri_type := p.BGPOI.PrefixLimit.NlriType; nlri_type {
 	case "inet-unicast":
 		rib_name = "inet.0"
@@ -132,11 +133,14 @@ func (*bgpCollector) collectRIBForPeer(p BGPPeer, ch chan<- prometheus.Metric, l
 		rib_name = ""
 	}
 
+	// if the prefix limit is configured inside a routing instance we need to prepend the RTI name to the rib name
 	if p.CFG_RTI != "" && p.CFG_RTI != "master" && rib_name != "" {
 		rib_name = p.CFG_RTI + "." + rib_name
 	}
 
-	ch <- prometheus.MustNewConstMetric(prefixesLimitCountDesc, prometheus.GaugeValue, float64(p.BGPOI.PrefixLimit.PrefixCount), append(labelValues, rib_name)...)
+	if p.BGPOI.PrefixLimit.PrefixCount > 0 {
+		ch <- prometheus.MustNewConstMetric(prefixesLimitCountDesc, prometheus.GaugeValue, float64(p.BGPOI.PrefixLimit.PrefixCount), append(labelValues, rib_name)...)
+	}
 
 	for _, rib := range p.RIBs {
 		l := append(labelValues, rib.Name)

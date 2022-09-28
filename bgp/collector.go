@@ -32,7 +32,6 @@ func init() {
 	inputMessagesDesc = prometheus.NewDesc(prefix+"messages_input_count", "Number of received messages", l, nil)
 	outputMessagesDesc = prometheus.NewDesc(prefix+"messages_output_count", "Number of transmitted messages", l, nil)
 	flapsDesc = prometheus.NewDesc(prefix+"flap_count", "Number of session flaps", l, nil)
-	prefixesLimitCountDesc = prometheus.NewDesc(prefix+"prefixes_limit_count", "prefix-count variable set in prefix-limit", l, nil)
 
 	l = append(l, "table")
 
@@ -42,6 +41,7 @@ func init() {
 	activePrefixesDesc = prometheus.NewDesc(prefix+"prefixes_active_count", "Number of active prefixes (best route in RIB)", l, nil)
 	advertisedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_advertised_count", "Number of prefixes announced to peer", l, nil)
 	prefixesLimitPercentageDesc = prometheus.NewDesc(prefix+"prefixes_limit_percentage", "percentage of received prefixes against prefix-limit", l, nil)
+	prefixesLimitCountDesc = prometheus.NewDesc(prefix+"prefixes_limit_count", "prefix-count variable set in prefix-limit", l, nil)
 }
 
 type bgpCollector struct {
@@ -116,7 +116,6 @@ func (c *bgpCollector) collectForPeer(p BGPPeer, ch chan<- prometheus.Metric, la
 	ch <- prometheus.MustNewConstMetric(inputMessagesDesc, prometheus.GaugeValue, float64(p.InputMessages), l...)
 	ch <- prometheus.MustNewConstMetric(outputMessagesDesc, prometheus.GaugeValue, float64(p.OutputMessages), l...)
 	ch <- prometheus.MustNewConstMetric(flapsDesc, prometheus.GaugeValue, float64(p.Flaps), l...)
-	ch <- prometheus.MustNewConstMetric(prefixesLimitCountDesc, prometheus.GaugeValue, float64(p.BGPOI.PrefixLimit.PrefixCount), l...)
 
 	c.collectRIBForPeer(p, ch, l)
 }
@@ -136,6 +135,8 @@ func (*bgpCollector) collectRIBForPeer(p BGPPeer, ch chan<- prometheus.Metric, l
 	if p.CFG_RTI != "" && p.CFG_RTI != "master" && rib_name != "" {
 		rib_name = p.CFG_RTI + "." + rib_name
 	}
+
+	ch <- prometheus.MustNewConstMetric(prefixesLimitCountDesc, prometheus.GaugeValue, float64(p.BGPOI.PrefixLimit.PrefixCount), append(labelValues, rib_name)...)
 
 	for _, rib := range p.RIBs {
 		l := append(labelValues, rib.Name)

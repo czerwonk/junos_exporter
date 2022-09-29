@@ -129,7 +129,7 @@ func (c *securityPolicyCollector) CollectHits(client *rpc.Client, ch chan<- prom
 	}
 
 	for _, pol := range x.MultiRoutingEngineResults.RoutingEngine[0].HitCount.Policies {
-		ls := append(labelValues, pol.PolicyName, pol.FromZone, pol.ToZone)
+		ls := append(labelValues, pol.FromZone, pol.ToZone, pol.PolicyName)
 		ch <- prometheus.MustNewConstMetric(hitCount, prometheus.CounterValue, pol.Count, ls...)
 	}
 	return nil

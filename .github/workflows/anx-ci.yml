@@ -1,7 +1,7 @@
 on:
   [push, pull_request]
 
-name: Test
+name: anx-ci
 jobs:
   test:
     strategy:
@@ -25,7 +25,7 @@ jobs:
 
   publish:
     if: github.ref_type == 'tag' || github.ref == 'refs/heads/anx-prod'
-    needs: Test
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
@@ -47,9 +47,9 @@ jobs:
     - uses: actions/setup-python@v4
     - run: | 
         pip install s4cmd
-        s4cmd put --endpoint-url https://$S3_URL -f junos_exporter s3://$S3_BUCKET/junos_exporter/$GITHUB_REF_NAME/junos_exporter
-        s4cmd del --endpoint-url https://$S3_URL s3://$S3_BUCKET/junos_exporter/latest/
-        s4cmd put --endpoint-url https://$S3_URL -f junos_exporter s3://$S3_BUCKET/junos_exporter/latest/junos_exporter
+        s4cmd put --endpoint-url https://$S3_URL -f junos_exporter s3://$S3_BUCKET/junos_images/junos_exporter/$GITHUB_REF_NAME/junos_exporter
+        s4cmd del --endpoint-url https://$S3_URL s3://$S3_BUCKET/junos_images/junos_exporter/latest/
+        s4cmd put --endpoint-url https://$S3_URL -f junos_exporter s3://$S3_BUCKET/junos_images/junos_exporter/latest/junos_exporter
       env:
         S3_URL:         ${{secrets.S3_URL}}
         S3_BUCKET:      ${{secrets.S3_BUCKET}}

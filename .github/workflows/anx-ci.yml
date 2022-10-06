@@ -48,6 +48,8 @@ jobs:
           path: junos_exporter
 
       - uses: actions/setup-python@v4
+      
+      - run: echo env
 
       - name: publish anx-prod to s3://$S3_BUCKET/junos_images/junos_exporter/$GITHUB_REF_NAME/junos_exporter
         run: |

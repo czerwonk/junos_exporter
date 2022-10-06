@@ -1,10 +1,5 @@
 on:
-  push:
-    branches:
-      - anx-prod
-  pull_request:
-    branches:
-      - "**"
+  [push, pull_request]
 
 name: anx-ci
 jobs:

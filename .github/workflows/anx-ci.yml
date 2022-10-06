@@ -64,5 +64,4 @@ jobs:
         run: |
           pip install s4cmd
           s4cmd put --endpoint-url https://$S3_URL -f junos_exporter s3://$S3_BUCKET/junos_images/junos_exporter/staging/junos_exporter
-        # only set if event that triggers workflow is either pull_request or pull_request_target
-        if: $GITHUB_HEAD_REF != ""
+        if: github.ref_type != 'tag' && github.ref != 'refs/heads/anx-prod'

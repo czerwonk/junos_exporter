@@ -1,5 +1,10 @@
 on:
-  [push, pull_request]
+  push:
+    branches:
+      - anx-prod
+  pull_request:
+    branches:
+      - "**"
 
 name: anx-ci
 jobs:
@@ -48,7 +53,7 @@ jobs:
           path: junos_exporter
 
       - uses: actions/setup-python@v4
-      
+
       - run: echo env
 
       - name: publish anx-prod to s3://$S3_BUCKET/junos_images/junos_exporter/$GITHUB_REF_NAME/junos_exporter

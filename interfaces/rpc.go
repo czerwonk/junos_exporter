@@ -13,6 +13,7 @@ type PhyInterface struct {
 	Description       string         `xml:"description"`
 	MacAddress        string         `xml:"current-physical-address"`
 	Speed             string         `xml:"speed"`
+	BPDUError         string         `xml:"bpdu-error"`
 	Stats             TrafficStat    `xml:"traffic-statistics"`
 	LogicalInterfaces []LogInterface `xml:"logical-interface"`
 	InputErrors       struct {

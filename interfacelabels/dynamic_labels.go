@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"github.com/czerwonk/junos_exporter/rpc"
 	"github.com/pkg/errors"
 )

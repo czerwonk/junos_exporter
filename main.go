@@ -12,9 +12,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
 
-	"github.com/czerwonk/junos_exporter/config"
+	"github.com/czerwonk/junos_exporter/internal/config"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"

@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/czerwonk/junos_exporter/config"
-	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/czerwonk/junos_exporter/internal/config"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"github.com/pkg/errors"
 )
 

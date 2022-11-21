@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/czerwonk/junos_exporter/connector"
 	"github.com/czerwonk/junos_exporter/interfacelabels"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"github.com/czerwonk/junos_exporter/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -53,14 +53,14 @@ func newJunosCollector(devices []*connector.Device, connectionManager *connector
 			if cfg.IfDescReg != "" {
 				regex, err = regexp.Compile(cfg.IfDescReg)
 				if err != nil {
-				        log.Errorf("Global dynamic label regex invalid: %s", cfg.IfDescReg)
-				        regex = defaultIfDescReg
+					log.Errorf("Global dynamic label regex invalid: %s", cfg.IfDescReg)
+					regex = defaultIfDescReg
 				}
 			} else if !(*ignoreConfigTargets) && index < len(cfg.Devices) && cfg.Devices[index].IfDescReg != "" {
 				regex, err = regexp.Compile(cfg.Devices[index].IfDescReg)
 				if err != nil {
-				     log.Errorf("Device specific dynamic label regex invalid: %s", cfg.Devices[index].IfDescReg)
-				     regex = defaultIfDescReg
+					log.Errorf("Device specific dynamic label regex invalid: %s", cfg.Devices[index].IfDescReg)
+					regex = defaultIfDescReg
 				}
 			}
 

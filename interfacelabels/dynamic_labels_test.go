@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"github.com/stretchr/testify/assert"
 )
 

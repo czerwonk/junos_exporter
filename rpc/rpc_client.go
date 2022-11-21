@@ -6,7 +6,7 @@ import (
 
 	"log"
 
-	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
 )
 
 type Parser func([]byte) error

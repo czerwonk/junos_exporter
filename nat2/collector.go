@@ -1,93 +1,93 @@
 package nat2
 
 import (
-	"github.com/czerwonk/junos_exporter/collector"
-	"github.com/czerwonk/junos_exporter/rpc"
-	"github.com/prometheus/client_golang/prometheus"
 	"strconv"
 	"strings"
+
+	"github.com/czerwonk/junos_exporter/pkg/collector"
+	"github.com/czerwonk/junos_exporter/pkg/rpc"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const prefix string = "junos_nat2_statistics_"
 
 var (
-	natTotalSessionInterestDesc                    *prometheus.Desc
+	natTotalSessionInterestDesc *prometheus.Desc
 
-	NatPktDstInNatRouteDesc                              *prometheus.Desc
-	NatFilteringSessionDesc                              *prometheus.Desc
-	NatMappingSessionDesc                                *prometheus.Desc
-	NatRuleLookupFailuresDesc                            *prometheus.Desc
-	NatMapAllocationSuccessesDesc                        *prometheus.Desc
-	NatMapAllocationFailuresDesc                         *prometheus.Desc
-	NatMapFreeSuccessDesc                                *prometheus.Desc
-	NatMapFreeFailuresDesc                               *prometheus.Desc
-	NatEimMappingCreateFailedDesc                        *prometheus.Desc
-	NatEimMappingCreatedDesc                             *prometheus.Desc
-	NatEimMappingUpdatedDesc                             *prometheus.Desc
-	NatEifMappingFreeDesc                                *prometheus.Desc
-	NatEimMappingFreeDesc                                *prometheus.Desc
-	NatTotalPktsProcessedDesc                            *prometheus.Desc
-	NatTotalPktsForwardedDesc                            *prometheus.Desc
-	NatTotalPktsTranslatedDesc                           *prometheus.Desc
-	Nat64MtuExceedDesc                                   *prometheus.Desc
-	Nat64DfbitSetDesc                                    *prometheus.Desc
-	Nat64ErrMtuExceedBuildDesc                           *prometheus.Desc
-	Nat64ErrMtuExceedSendDesc                            *prometheus.Desc
-	SessionXlate464ClatPrefixNotFoundDesc                *prometheus.Desc
-	SessionXlate464EmbededIpv4NotFoundDesc               *prometheus.Desc
-	NatJflowLogAllocFailDesc                             *prometheus.Desc
-	NatJflowLogAllocSuccessDesc                          *prometheus.Desc
-	NatJflowLogFreeSuccessDesc                           *prometheus.Desc
-	NatJflowLogFreeFailRecordDesc                        *prometheus.Desc
-	NatJflowLogFreeFailDataDesc                          *prometheus.Desc
-	NatJflowLogInvalidTransTypeDesc                      *prometheus.Desc
-	NatJflowLogFreeSuccessFailQueuingDesc                *prometheus.Desc
-	NatJflowLogInvalidInputArgsDesc                      *prometheus.Desc
-	NatJflowLogInvalidAllocErrDesc                       *prometheus.Desc
-	NatJflowLogRateLimitFailGetPoolDesc                  *prometheus.Desc
-	NatJflowLogRateLimitFailGetServiceSetDesc            *prometheus.Desc
-	NatJflowLogRateLimitFailInvalidCurrentTimeDesc       *prometheus.Desc
+	NatPktDstInNatRouteDesc                        *prometheus.Desc
+	NatFilteringSessionDesc                        *prometheus.Desc
+	NatMappingSessionDesc                          *prometheus.Desc
+	NatRuleLookupFailuresDesc                      *prometheus.Desc
+	NatMapAllocationSuccessesDesc                  *prometheus.Desc
+	NatMapAllocationFailuresDesc                   *prometheus.Desc
+	NatMapFreeSuccessDesc                          *prometheus.Desc
+	NatMapFreeFailuresDesc                         *prometheus.Desc
+	NatEimMappingCreateFailedDesc                  *prometheus.Desc
+	NatEimMappingCreatedDesc                       *prometheus.Desc
+	NatEimMappingUpdatedDesc                       *prometheus.Desc
+	NatEifMappingFreeDesc                          *prometheus.Desc
+	NatEimMappingFreeDesc                          *prometheus.Desc
+	NatTotalPktsProcessedDesc                      *prometheus.Desc
+	NatTotalPktsForwardedDesc                      *prometheus.Desc
+	NatTotalPktsTranslatedDesc                     *prometheus.Desc
+	Nat64MtuExceedDesc                             *prometheus.Desc
+	Nat64DfbitSetDesc                              *prometheus.Desc
+	Nat64ErrMtuExceedBuildDesc                     *prometheus.Desc
+	Nat64ErrMtuExceedSendDesc                      *prometheus.Desc
+	SessionXlate464ClatPrefixNotFoundDesc          *prometheus.Desc
+	SessionXlate464EmbededIpv4NotFoundDesc         *prometheus.Desc
+	NatJflowLogAllocFailDesc                       *prometheus.Desc
+	NatJflowLogAllocSuccessDesc                    *prometheus.Desc
+	NatJflowLogFreeSuccessDesc                     *prometheus.Desc
+	NatJflowLogFreeFailRecordDesc                  *prometheus.Desc
+	NatJflowLogFreeFailDataDesc                    *prometheus.Desc
+	NatJflowLogInvalidTransTypeDesc                *prometheus.Desc
+	NatJflowLogFreeSuccessFailQueuingDesc          *prometheus.Desc
+	NatJflowLogInvalidInputArgsDesc                *prometheus.Desc
+	NatJflowLogInvalidAllocErrDesc                 *prometheus.Desc
+	NatJflowLogRateLimitFailGetPoolDesc            *prometheus.Desc
+	NatJflowLogRateLimitFailGetServiceSetDesc      *prometheus.Desc
+	NatJflowLogRateLimitFailInvalidCurrentTimeDesc *prometheus.Desc
 
-	PoolNameDesc                                         *prometheus.Desc
-	PoolIdDesc                                           *prometheus.Desc
-	PortTranslationDesc                                  *prometheus.Desc
-	PortOverloadingFactorDesc                            *prometheus.Desc
-	AddressAssignementDesc                               *prometheus.Desc
-	ClearAlarmThresholdDesc                              *prometheus.Desc
-	RaiseAlarmThresholdDesc                              *prometheus.Desc
-	TotalPoolAddressDesc                                 *prometheus.Desc
-	AddressPoolHitsDesc                                  *prometheus.Desc
-	BlkSizeDesc                                          *prometheus.Desc
-	BlkMaxPerHostDesc                                    *prometheus.Desc
-	BlkAtvTimeoutDesc                                    *prometheus.Desc
-	BlkInterimLogCycleDesc                               *prometheus.Desc
-	BlkLogDesc                                           *prometheus.Desc
-	BlkUsedDesc                                          *prometheus.Desc
-	BlkTotalDesc                                         *prometheus.Desc
-	PortBlkEfficiencyDesc                                *prometheus.Desc
-	MaxBlkUsedDesc                                       *prometheus.Desc
-	UsersDesc                                            *prometheus.Desc
-	EimTimeoutDesc                                       *prometheus.Desc
-	MappingTimeoutDesc                                   *prometheus.Desc
-	EifInboundFlowsCountDesc                             *prometheus.Desc
-	EifFlowLimitExceedDropsDesc                          *prometheus.Desc
-	SinglePortSumDesc                                    *prometheus.Desc
+	PoolNameDesc                *prometheus.Desc
+	PoolIdDesc                  *prometheus.Desc
+	PortTranslationDesc         *prometheus.Desc
+	PortOverloadingFactorDesc   *prometheus.Desc
+	AddressAssignementDesc      *prometheus.Desc
+	ClearAlarmThresholdDesc     *prometheus.Desc
+	RaiseAlarmThresholdDesc     *prometheus.Desc
+	TotalPoolAddressDesc        *prometheus.Desc
+	AddressPoolHitsDesc         *prometheus.Desc
+	BlkSizeDesc                 *prometheus.Desc
+	BlkMaxPerHostDesc           *prometheus.Desc
+	BlkAtvTimeoutDesc           *prometheus.Desc
+	BlkInterimLogCycleDesc      *prometheus.Desc
+	BlkLogDesc                  *prometheus.Desc
+	BlkUsedDesc                 *prometheus.Desc
+	BlkTotalDesc                *prometheus.Desc
+	PortBlkEfficiencyDesc       *prometheus.Desc
+	MaxBlkUsedDesc              *prometheus.Desc
+	UsersDesc                   *prometheus.Desc
+	EimTimeoutDesc              *prometheus.Desc
+	MappingTimeoutDesc          *prometheus.Desc
+	EifInboundFlowsCountDesc    *prometheus.Desc
+	EifFlowLimitExceedDropsDesc *prometheus.Desc
+	SinglePortSumDesc           *prometheus.Desc
 
-	SinglePortDesc                                       *prometheus.Desc
+	SinglePortDesc *prometheus.Desc
 
-	OutOfPortErrorDesc                                   *prometheus.Desc
-	OutOfAddrErrorDesc                                   *prometheus.Desc
-	ParityPortErrorDesc                                  *prometheus.Desc
-	PreserveRangeErrorDesc                               *prometheus.Desc
-	AppOutOfPortErrorDesc                                *prometheus.Desc
-	AppExceedPortLimitErrorDesc                          *prometheus.Desc
-	OutOfBlkErrorDesc                                    *prometheus.Desc
-	BlkExceedLimitErrorDesc                              *prometheus.Desc
-	BlkOutOfPortErrorDesc                                *prometheus.Desc
-	BlkMemAllocErrorDesc                                 *prometheus.Desc
+	OutOfPortErrorDesc          *prometheus.Desc
+	OutOfAddrErrorDesc          *prometheus.Desc
+	ParityPortErrorDesc         *prometheus.Desc
+	PreserveRangeErrorDesc      *prometheus.Desc
+	AppOutOfPortErrorDesc       *prometheus.Desc
+	AppExceedPortLimitErrorDesc *prometheus.Desc
+	OutOfBlkErrorDesc           *prometheus.Desc
+	BlkExceedLimitErrorDesc     *prometheus.Desc
+	BlkOutOfPortErrorDesc       *prometheus.Desc
+	BlkMemAllocErrorDesc        *prometheus.Desc
 
-	serviceSetCpuUtilizationDesc                         *prometheus.Desc
-
+	serviceSetCpuUtilizationDesc *prometheus.Desc
 )
 
 func init() {
@@ -317,7 +317,6 @@ func (*natCollector) collectForInterface(s *NatInterface, ch chan<- prometheus.M
 	ch <- prometheus.MustNewConstMetric(NatJflowLogRateLimitFailInvalidCurrentTimeDesc, prometheus.GaugeValue, float64(s.NatJflowLogRateLimitFailInvalidCurrentTime), l...)
 }
 
-
 func (c *natCollector) SrcNatPools(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]SrcNatPool, error) {
 	var x = SrcNatPoolRpc{}
 	err := client.RunCommandAndParse("show services nat source pool all", &x)
@@ -328,7 +327,7 @@ func (c *natCollector) SrcNatPools(client *rpc.Client, ch chan<- prometheus.Metr
 	return x.Information.Pools[:], nil
 }
 
-//func (c *natCollector) collectForSrcNatPool(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) {
+// func (c *natCollector) collectForSrcNatPool(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) {
 func (c *natCollector) collectForSrcNatPool(s []SrcNatPool, ch chan<- prometheus.Metric, labelValues []string) {
 
 	for _, pool := range s {
@@ -345,7 +344,7 @@ func (c *natCollector) collectForSrcNatPool(s []SrcNatPool, ch chan<- prometheus
 		ch <- prometheus.MustNewConstMetric(BlkUsedDesc, prometheus.GaugeValue, float64(pool.BlkUsed), lp...)
 		ch <- prometheus.MustNewConstMetric(BlkTotalDesc, prometheus.GaugeValue, float64(pool.BlkTotal), lp...)
 
-		fpercentage, err := strconv.ParseFloat(strings.Trim(pool.PortBlkEfficiency,"%"),64)
+		fpercentage, err := strconv.ParseFloat(strings.Trim(pool.PortBlkEfficiency, "%"), 64)
 		if err != nil {
 			fpercentage = float64(-1)
 		}
@@ -359,16 +358,15 @@ func (c *natCollector) collectForSrcNatPool(s []SrcNatPool, ch chan<- prometheus
 		ch <- prometheus.MustNewConstMetric(EifInboundFlowsCountDesc, prometheus.GaugeValue, float64(pool.EifInboundFlowsCount), lp...)
 		ch <- prometheus.MustNewConstMetric(EifFlowLimitExceedDropsDesc, prometheus.GaugeValue, float64(pool.EifFlowLimitExceedDrops), lp...)
 
-
-//  not working because the xml parsing is wrong.
-//		for _, par := range pool.SrcPoolAddressRanges {
-//			lar := append(lp, []string{par.AddressRangeLow, par.AddressRangeHigh}...)
-//			ch <- prometheus.MustNewConstMetric(SinglePortDesc, prometheus.GaugeValue, float64(par.SinglePort), lar...)
-//		}
+		//  not working because the xml parsing is wrong.
+		//		for _, par := range pool.SrcPoolAddressRanges {
+		//			lar := append(lp, []string{par.AddressRangeLow, par.AddressRangeHigh}...)
+		//			ch <- prometheus.MustNewConstMetric(SinglePortDesc, prometheus.GaugeValue, float64(par.SinglePort), lar...)
+		//		}
 
 		for i, arl := range pool.SrcPoolAddressRanges.AddressRangeLow {
 			arh := pool.SrcPoolAddressRanges.AddressRangeHigh[i]
-			sp  := pool.SrcPoolAddressRanges.SinglePort[i]
+			sp := pool.SrcPoolAddressRanges.SinglePort[i]
 			lar := append(lp, []string{arl, arh}...)
 			ch <- prometheus.MustNewConstMetric(SinglePortDesc, prometheus.GaugeValue, float64(sp), lar...)
 		}
@@ -387,8 +385,6 @@ func (c *natCollector) collectForSrcNatPool(s []SrcNatPool, ch chan<- prometheus
 		ch <- prometheus.MustNewConstMetric(BlkMemAllocErrorDesc, prometheus.GaugeValue, float64(pool.SrcPoolErrorCounters.BlkMemAllocError), lp...)
 	}
 }
-
-
 
 func (c *natCollector) ServiceSetsCpuInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*ServiceSetsCpuInterface, error) {
 	var x = ServiceSetsCpuRpc{}

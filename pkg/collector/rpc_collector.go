@@ -1,7 +1,7 @@
 package collector
 
 import (
-	"github.com/czerwonk/junos_exporter/rpc"
+	"github.com/czerwonk/junos_exporter/pkg/rpc"
 
 	"github.com/prometheus/client_golang/prometheus"
 )

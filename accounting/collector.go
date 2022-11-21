@@ -3,8 +3,8 @@ package accounting
 import (
 	"errors"
 
-	"github.com/czerwonk/junos_exporter/collector"
-	"github.com/czerwonk/junos_exporter/rpc"
+	"github.com/czerwonk/junos_exporter/pkg/collector"
+	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 

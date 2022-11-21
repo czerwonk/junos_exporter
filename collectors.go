@@ -5,7 +5,6 @@ import (
 	"github.com/czerwonk/junos_exporter/alarm"
 	"github.com/czerwonk/junos_exporter/bfd"
 	"github.com/czerwonk/junos_exporter/bgp"
-	"github.com/czerwonk/junos_exporter/collector"
 	"github.com/czerwonk/junos_exporter/environment"
 	"github.com/czerwonk/junos_exporter/firewall"
 	"github.com/czerwonk/junos_exporter/fpc"
@@ -24,7 +23,11 @@ import (
 	"github.com/czerwonk/junos_exporter/nat"
 	"github.com/czerwonk/junos_exporter/nat2"
 	"github.com/czerwonk/junos_exporter/ospf"
+	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
+	"github.com/czerwonk/junos_exporter/pkg/modules/power"
+	"github.com/czerwonk/junos_exporter/pkg/modules/route"
+	"github.com/czerwonk/junos_exporter/pkg/modules/routingengine"
 	"github.com/czerwonk/junos_exporter/pkg/modules/rpki"
 	"github.com/czerwonk/junos_exporter/pkg/modules/rpm"
 	"github.com/czerwonk/junos_exporter/pkg/modules/security"
@@ -32,9 +35,6 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/modules/system"
 	"github.com/czerwonk/junos_exporter/pkg/modules/vpws"
 	"github.com/czerwonk/junos_exporter/pkg/modules/vrrp"
-	"github.com/czerwonk/junos_exporter/power"
-	"github.com/czerwonk/junos_exporter/route"
-	"github.com/czerwonk/junos_exporter/routingengine"
 )
 
 type collectors struct {

@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/czerwonk/junos_exporter/pkg/connector"
-	"github.com/czerwonk/junos_exporter/rpc"
+	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/pkg/errors"
 )
 

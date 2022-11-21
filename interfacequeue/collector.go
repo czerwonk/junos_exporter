@@ -1,10 +1,10 @@
 package interfacequeue
 
 import (
-	"github.com/czerwonk/junos_exporter/collector"
 	"github.com/czerwonk/junos_exporter/interfacelabels"
+	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
-	"github.com/czerwonk/junos_exporter/rpc"
+	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 

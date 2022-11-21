@@ -2,7 +2,7 @@ package config
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 
@@ -10,7 +10,7 @@ import (
 )
 
 func TestShouldParse(t *testing.T) {
-	b, err := ioutil.ReadFile("tests/config1.yml")
+	b, err := os.ReadFile("tests/config1.yml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func TestShouldParse(t *testing.T) {
 }
 
 func TestShouldUseDefaults(t *testing.T) {
-	b, err := ioutil.ReadFile("tests/config2.yml")
+	b, err := os.ReadFile("tests/config2.yml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,7 +71,7 @@ func TestShouldUseDefaults(t *testing.T) {
 }
 
 func TestShouldParseDevices(t *testing.T) {
-	b, err := ioutil.ReadFile("tests/config3.yml")
+	b, err := os.ReadFile("tests/config3.yml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,7 +117,7 @@ func TestShouldParseDevices(t *testing.T) {
 }
 
 func TestShouldParseDevicesWithPattern(t *testing.T) {
-	b, err := ioutil.ReadFile("tests/config4.yml")
+	b, err := os.ReadFile("tests/config4.yml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -158,7 +158,7 @@ func TestShouldParseDevicesWithPattern(t *testing.T) {
 }
 
 func TestShouldParseDevicesWithPatternInvalid(t *testing.T) {
-	b, err := ioutil.ReadFile("tests/config5.yml")
+	b, err := os.ReadFile("tests/config5.yml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -179,7 +179,7 @@ func assertFeature(name string, actual, expected bool, t *testing.T) {
 }
 
 func TestFindDeviceConfig(t *testing.T) {
-	b, err := ioutil.ReadFile("tests/config4.yml")
+	b, err := os.ReadFile("tests/config4.yml")
 	if err != nil {
 		t.Fatal(err)
 	}

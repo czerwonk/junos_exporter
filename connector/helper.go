@@ -2,14 +2,13 @@ package connector
 
 import (
 	"io"
-	"io/ioutil"
 
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
 )
 
 func loadPrivateKey(r io.Reader) (ssh.AuthMethod, error) {
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not read from reader")
 	}

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -178,7 +177,7 @@ func loadConfig() (*config.Config, error) {
 	}
 
 	log.Infoln("Loading config from", *configFile)
-	b, err := ioutil.ReadFile(*configFile)
+	b, err := os.ReadFile(*configFile)
 	if err != nil {
 		return nil, err
 	}
@@ -218,6 +217,10 @@ func loadConfigFromFlags() *config.Config {
 	f.System = *systemEnabled
 	f.Power = *powerEnabled
 	f.MAC = *macEnabled
+	f.LACP = *lacpEnabled
+	f.BFD = *bfdEnabled
+	f.VPWS = *vpwsEnabled
+	f.MPLS_LSP = *mpls_lspEnabled
 
 	return c
 }

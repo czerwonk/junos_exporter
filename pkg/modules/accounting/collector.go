@@ -1,7 +1,7 @@
 package accounting
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/rpc"
@@ -82,53 +82,53 @@ func (c *accountingCollector) Collect(client *rpc.Client, ch chan<- prometheus.M
 	l := append(labelValues, []string{flow.FpcSlot}...)
 
 	ch <- prometheus.MustNewConstMetric(inlineActiveFlowsDesc, prometheus.GaugeValue, float64(flow.InlineActiveFlows), l...)
-	ch <- prometheus.MustNewConstMetric(inlineIpv4ActiveFlowsDesc, prometheus.GaugeValue, float64(flow.InlineIpv4ActiveFlows), l...)
-	ch <- prometheus.MustNewConstMetric(inlineIpv6ActiveFlowsDesc, prometheus.GaugeValue, float64(flow.InlineIpv6ActiveFlows), l...)
+	ch <- prometheus.MustNewConstMetric(inlineIpv4ActiveFlowsDesc, prometheus.GaugeValue, float64(flow.InlineIPv4ActiveFlows), l...)
+	ch <- prometheus.MustNewConstMetric(inlineIpv6ActiveFlowsDesc, prometheus.GaugeValue, float64(flow.InlineIPv6ActiveFlows), l...)
 	ch <- prometheus.MustNewConstMetric(inlineFlowsDesc, prometheus.GaugeValue, float64(flow.InlineFlows), l...)
-	ch <- prometheus.MustNewConstMetric(inlineIpv4TotalFlowsDesc, prometheus.GaugeValue, float64(flow.InlineIpv4TotalFlows), l...)
-	ch <- prometheus.MustNewConstMetric(inlineIpv6TotalFlowsDesc, prometheus.GaugeValue, float64(flow.InlineIpv6TotalFlows), l...)
+	ch <- prometheus.MustNewConstMetric(inlineIpv4TotalFlowsDesc, prometheus.GaugeValue, float64(flow.InlineIPv4TotalFlows), l...)
+	ch <- prometheus.MustNewConstMetric(inlineIpv6TotalFlowsDesc, prometheus.GaugeValue, float64(flow.InlineIPv6TotalFlows), l...)
 	ch <- prometheus.MustNewConstMetric(inlineFlowCreationFailuresDesc, prometheus.GaugeValue, float64(failure.InlineFlowCreationFailures), l...)
-	ch <- prometheus.MustNewConstMetric(inlineIpv4FlowCreationFailuresDesc, prometheus.GaugeValue, float64(failure.InlineIpv4FlowCreationFailures), l...)
-	ch <- prometheus.MustNewConstMetric(inlineIpv6FlowCreationFailuresDesc, prometheus.GaugeValue, float64(failure.InlineIpv6FlowCreationFailures), l...)
+	ch <- prometheus.MustNewConstMetric(inlineIpv4FlowCreationFailuresDesc, prometheus.GaugeValue, float64(failure.InlineIPv4FlowCreationFailures), l...)
+	ch <- prometheus.MustNewConstMetric(inlineIpv6FlowCreationFailuresDesc, prometheus.GaugeValue, float64(failure.InlineIPv6FlowCreationFailures), l...)
 
 	return nil
 }
 
-func (c *accountingCollector) accountingFlows(client *rpc.Client) (*AccountingFlow, error) {
-	var x = AccountingFlowRpc{}
+func (c *accountingCollector) accountingFlows(client *rpc.Client) (*accountingFlow, error) {
+	var x = result{}
 	err := client.RunCommandAndParse("show services accounting flow inline-jflow", &x)
 	if err != nil {
 		return nil, err
 	}
 
 	if x.Error.Message != "" {
-		return nil, errors.New("Accounting command not supported")
+		return nil, fmt.Errorf("accounting command not supported")
 	}
 
-	return &AccountingFlow{
+	return &accountingFlow{
 		FpcSlot:               x.Information.InlineFlow.FpcSlot,
 		InlineActiveFlows:     float64(x.Information.InlineFlow.InlineActiveFlows),
-		InlineIpv4ActiveFlows: float64(x.Information.InlineFlow.InlineIpv4ActiveFlows),
-		InlineIpv6ActiveFlows: float64(x.Information.InlineFlow.InlineIpv6ActiveFlows),
+		InlineIPv4ActiveFlows: float64(x.Information.InlineFlow.InlineIPv4ActiveFlows),
+		InlineIPv6ActiveFlows: float64(x.Information.InlineFlow.InlineIPv6ActiveFlows),
 
 		InlineFlows:          float64(x.Information.InlineFlow.InlineFlows),
-		InlineIpv4TotalFlows: float64(x.Information.InlineFlow.InlineIpv4TotalFlows),
-		InlineIpv6TotalFlows: float64(x.Information.InlineFlow.InlineIpv6TotalFlows),
+		InlineIPv4TotalFlows: float64(x.Information.InlineFlow.InlineIPv4TotalFlows),
+		InlineIPv6TotalFlows: float64(x.Information.InlineFlow.InlineIPv6TotalFlows),
 	}, nil
 }
 
-func (c *accountingCollector) accountingFailures(client *rpc.Client) (*AccountingError, error) {
-	var x = AccountingFlowErrorRpc{}
+func (c *accountingCollector) accountingFailures(client *rpc.Client) (*accountingError, error) {
+	var x = accountingFlowError{}
 	err := client.RunCommandAndParse("show services accounting errors inline-jflow fpc-slot 0", &x)
 	if err != nil {
 		return nil, err
 	}
 
-	return &AccountingError{
+	return &accountingError{
 		FpcSlot: x.Information.InlineFlow.FpcSlot,
 
 		InlineFlowCreationFailures:     float64(x.Information.InlineFlow.InlineFlowCreationFailures),
-		InlineIpv4FlowCreationFailures: float64(x.Information.InlineFlow.InlineIpv4FlowCreationFailures),
-		InlineIpv6FlowCreationFailures: float64(x.Information.InlineFlow.InlineIpv6FlowCreationFailures),
+		InlineIPv4FlowCreationFailures: float64(x.Information.InlineFlow.InlineIPv4FlowCreationFailures),
+		InlineIPv6FlowCreationFailures: float64(x.Information.InlineFlow.InlineIPv6FlowCreationFailures),
 	}, nil
 }

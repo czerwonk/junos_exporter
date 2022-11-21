@@ -89,6 +89,10 @@ func (m *SSHConnectionManager) Connect(device *Device) (*SSHConnection, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
+	if connection, found := m.connections[device.Host]; found {
+		return connection, nil
+	}
+
 	return m.connect(device)
 }
 

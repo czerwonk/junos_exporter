@@ -173,8 +173,8 @@ func (c *routingEngineCollector) Collect(client *rpc.Client, ch chan<- prometheu
 
 	for _, re := range x.Results.RoutingEngines {
 		labelValues := append(labelValues, re.Name)
-		for _, re_ := range re.Information.RouteEngines {
-			c.collectForSlot(re_, ch, labelValues)
+		for _, engine := range re.Information.RouteEngines {
+			c.collectForSlot(engine, ch, labelValues)
 		}
 	}
 

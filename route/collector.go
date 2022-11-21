@@ -51,7 +51,7 @@ func (*routeCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *routeCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = RouteRpc{}
+	var x = result{}
 	err := client.RunCommandAndParse("show route summary", &x)
 	if err != nil {
 		return err
@@ -64,7 +64,7 @@ func (c *routeCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric
 	return nil
 }
 
-func (c *routeCollector) collectForTable(table RouteTable, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *routeCollector) collectForTable(table routeTable, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, table.Name)
 
 	ch <- prometheus.MustNewConstMetric(totalRoutesDesc, prometheus.GaugeValue, float64(table.TotalRoutes), l...)

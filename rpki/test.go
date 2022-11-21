@@ -23,18 +23,18 @@ func TestCollectForSession(t *testing.T) {
 	labels := []string{"target"}
 
 	// test session
-	session := RpkiSession{
-		IpAddress:       "217.146.23.92",
-		SessionState:    "Down",
-		SessionFlaps:    10,
-		Ipv4PrefixCount: 231588,
-		Ipv6PrefixCount: 44487,
+	session := session{
+		IPAddress:       "217.146.23.92",
+		State:           "Down",
+		Flaps:           10,
+		IPv4PrefixCount: 231588,
+		IPv6PrefixCount: 44487,
 	}
 
 	t.Run("Down", func(t *testing.T) {
 		m := &dto.Metric{}
 		ch := make(chan prometheus.Metric)
-		session.SessionState = "Down"
+		session.State = "Down"
 		go collector.collectForSession(session, ch, labels)
 		if err := (<-ch).Write(m); err != nil {
 			fmt.Println("error write dto metric")
@@ -44,7 +44,7 @@ func TestCollectForSession(t *testing.T) {
 	t.Run("Up", func(t *testing.T) {
 		m := &dto.Metric{}
 		ch := make(chan prometheus.Metric)
-		session.SessionState = "Up"
+		session.State = "Up"
 		go collector.collectForSession(session, ch, labels)
 		if err := (<-ch).Write(m); err != nil {
 			fmt.Println("error write dto metric")
@@ -54,7 +54,7 @@ func TestCollectForSession(t *testing.T) {
 	t.Run("Connect", func(t *testing.T) {
 		m := &dto.Metric{}
 		ch := make(chan prometheus.Metric)
-		session.SessionState = "Connect"
+		session.State = "Connect"
 		go collector.collectForSession(session, ch, labels)
 		if err := (<-ch).Write(m); err != nil {
 			fmt.Println("error write dto metric")
@@ -64,7 +64,7 @@ func TestCollectForSession(t *testing.T) {
 	t.Run("Ex_Start", func(t *testing.T) {
 		m := &dto.Metric{}
 		ch := make(chan prometheus.Metric)
-		session.SessionState = "Ex-Start"
+		session.State = "Ex-Start"
 		go collector.collectForSession(session, ch, labels)
 		if err := (<-ch).Write(m); err != nil {
 			fmt.Println("error write dto metric")
@@ -74,7 +74,7 @@ func TestCollectForSession(t *testing.T) {
 	t.Run("Ex_Incr", func(t *testing.T) {
 		m := &dto.Metric{}
 		ch := make(chan prometheus.Metric)
-		session.SessionState = "Ex-Incr"
+		session.State = "Ex-Incr"
 		go collector.collectForSession(session, ch, labels)
 		if err := (<-ch).Write(m); err != nil {
 			fmt.Println("error write dto metric")
@@ -84,7 +84,7 @@ func TestCollectForSession(t *testing.T) {
 	t.Run("Ex_Full", func(t *testing.T) {
 		m := &dto.Metric{}
 		ch := make(chan prometheus.Metric)
-		session.SessionState = "Ex-Full"
+		session.State = "Ex-Full"
 		go collector.collectForSession(session, ch, labels)
 		if err := (<-ch).Write(m); err != nil {
 			fmt.Println("error write dto metric")
@@ -94,7 +94,7 @@ func TestCollectForSession(t *testing.T) {
 	t.Run("wrong_test", func(t *testing.T) {
 		m := &dto.Metric{}
 		ch := make(chan prometheus.Metric)
-		session.SessionState = "Undefined"
+		session.State = "Undefined"
 		go collector.collectForSession(session, ch, labels)
 		if err := (<-ch).Write(m); err != nil {
 			fmt.Println("error write dto metric")

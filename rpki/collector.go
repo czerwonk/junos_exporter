@@ -78,20 +78,20 @@ func (c *rpkiCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 }
 
 func (c *rpkiCollector) collectSessions(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = RpkiSessionRpc{}
+	var x = sessionResult{}
 	err := client.RunCommandAndParse("show validation session", &x)
 	if err != nil {
 		return err
 	}
 
-	for _, session := range x.Information.RpkiSessions {
+	for _, session := range x.Information.Sessions {
 		c.collectForSession(session, ch, labelValues)
 	}
 
 	return nil
 }
 
-func (c *rpkiCollector) collectForSession(s RpkiSession, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *rpkiCollector) collectForSession(s session, ch chan<- prometheus.Metric, labelValues []string) {
 	type SessionState int
 	var state SessionState
 	const (
@@ -103,9 +103,9 @@ func (c *rpkiCollector) collectForSession(s RpkiSession, ch chan<- prometheus.Me
 		Ex_Full
 	)
 
-	l := append(labelValues, []string{s.IpAddress}...)
+	l := append(labelValues, []string{s.IPAddress}...)
 
-	switch s.SessionState {
+	switch s.State {
 	case "Up":
 		state = Up
 	case "Connect":
@@ -121,13 +121,13 @@ func (c *rpkiCollector) collectForSession(s RpkiSession, ch chan<- prometheus.Me
 	}
 
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, float64(state), l...)
-	ch <- prometheus.MustNewConstMetric(flapsDesc, prometheus.GaugeValue, float64(s.SessionFlaps), l...)
-	ch <- prometheus.MustNewConstMetric(ipv4PrefixCountDesc, prometheus.GaugeValue, float64(s.Ipv4PrefixCount), l...)
-	ch <- prometheus.MustNewConstMetric(ipv6PrefixCountDesc, prometheus.GaugeValue, float64(s.Ipv6PrefixCount), l...)
+	ch <- prometheus.MustNewConstMetric(flapsDesc, prometheus.GaugeValue, float64(s.Flaps), l...)
+	ch <- prometheus.MustNewConstMetric(ipv4PrefixCountDesc, prometheus.GaugeValue, float64(s.IPv4PrefixCount), l...)
+	ch <- prometheus.MustNewConstMetric(ipv6PrefixCountDesc, prometheus.GaugeValue, float64(s.IPv6PrefixCount), l...)
 }
 
 func (c *rpkiCollector) collectStatistics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = RpkiStatisticsRpc{}
+	var x = statisticResult{}
 
 	err := client.RunCommandAndParse("show validation statistics", &x)
 	if err != nil {

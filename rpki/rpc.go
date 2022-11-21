@@ -1,26 +1,26 @@
 package rpki
 
-type RpkiSessionRpc struct {
+type sessionResult struct {
 	Information struct {
-		RpkiSessions []RpkiSession `xml:"rv-session"`
+		Sessions []session `xml:"rv-session"`
 	} `xml:"rv-session-information"`
 }
 
-type RpkiSession struct {
-	IpAddress       string `xml:"ip-address"`
-	SessionState    string `xml:"session-state"`
-	SessionFlaps    int64  `xml:"session-flaps"`
-	Ipv4PrefixCount int64  `xml:"ip-prefix-count"`
-	Ipv6PrefixCount int64  `xml:"ip6-prefix-count"`
+type session struct {
+	IPAddress       string `xml:"ip-address"`
+	State           string `xml:"session-state"`
+	Flaps           int64  `xml:"session-flaps"`
+	IPv4PrefixCount int64  `xml:"ip-prefix-count"`
+	IPv6PrefixCount int64  `xml:"ip6-prefix-count"`
 }
 
-type RpkiStatisticsRpc struct {
+type statisticResult struct {
 	Information struct {
-		Statistics RpkiStatistics `xml:"rv-statistics"`
+		Statistics statistics `xml:"rv-statistics"`
 	} `xml:"rv-statistics-information"`
 }
 
-type RpkiStatistics struct {
+type statistics struct {
 	RecordCount            int64 `xml:"rv-record-count"`
 	ReplicationRecordCount int64 `xml:"rv-replication-record-count"`
 	PrefixCount            int64 `xml:"rv-prefix-count"`

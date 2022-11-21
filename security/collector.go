@@ -62,13 +62,15 @@ func (*securityCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *securityCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = RpcReply{}
-	err := client.RunCommandAndParse("show security monitoring", &x)
+	var x = multiEngineResult{}
+	err := client.RunCommandAndParseWithParser("show security monitoring", func(b []byte) error {
+		return parseXML(b, &x)
+	})
 	if err != nil {
 		return err
 	}
 
-	for _, re := range x.MultiRoutingEngineResults.RoutingEngine {
+	for _, re := range x.Results.RoutingEngines {
 		ls := append(labelValues, re.Name)
 		for _, ps := range re.PerformanceSummary.PerformanceStatistics {
 			ch <- prometheus.MustNewConstMetric(fpcNumber, prometheus.GaugeValue, float64(ps.FPCNumber), ls...)
@@ -85,19 +87,19 @@ func (c *securityCollector) Collect(client *rpc.Client, ch chan<- prometheus.Met
 	return nil
 }
 
-func parseXML(b []byte, res *RpcReply) error {
+func parseXML(b []byte, res *multiEngineResult) error {
 	if strings.Contains(string(b), "multi-routing-engine-results") {
 		return xml.Unmarshal(b, res)
 	}
 
-	fi := RpcReplyNoRE{}
+	fi := singleEngineResult{}
 
 	err := xml.Unmarshal(b, &fi)
 	if err != nil {
 		return err
 	}
 
-	res.MultiRoutingEngineResults.RoutingEngine = []RoutingEngine{
+	res.Results.RoutingEngines = []routingEngine{
 		{
 			Name:               "N/A",
 			PerformanceSummary: fi.PerformanceSummary,

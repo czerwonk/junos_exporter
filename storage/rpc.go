@@ -8,7 +8,7 @@ type multiEngineResult struct {
 }
 
 type routingEngines struct {
-	RoutingEngine []routingEngine `xml:"multi-routing-engine-item"`
+	RoutingEngines []routingEngine `xml:"multi-routing-engine-item"`
 }
 
 type routingEngine struct {

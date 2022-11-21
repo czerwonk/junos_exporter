@@ -58,7 +58,7 @@ func (c *storageCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metr
 		return err
 	}
 
-	for _, re := range x.Results.RoutingEngine {
+	for _, re := range x.Results.RoutingEngines {
 		for _, f := range re.StorageInformation.Filesystems {
 			l := append(labelValues, f.FilesystemName, re.Name, f.MountedOn)
 
@@ -89,7 +89,7 @@ func parseXML(b []byte, res *multiEngineResult) error {
 		return err
 	}
 
-	res.Results.RoutingEngine = []routingEngine{
+	res.Results.RoutingEngines = []routingEngine{
 		{
 			Name:               "N/A",
 			StorageInformation: fi.StorageInformation,

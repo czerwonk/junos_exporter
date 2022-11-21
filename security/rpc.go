@@ -2,25 +2,25 @@ package security
 
 import "encoding/xml"
 
-type RpcReply struct {
-	XMLName                   xml.Name                  `xml:"rpc-reply"`
-	MultiRoutingEngineResults MultiRoutingEngineResults `xml:"multi-routing-engine-results"`
+type multiEngineResult struct {
+	XMLName xml.Name       `xml:"rpc-reply"`
+	Results routingEngines `xml:"multi-routing-engine-results"`
 }
 
-type MultiRoutingEngineResults struct {
-	RoutingEngine []RoutingEngine `xml:"multi-routing-engine-item"`
+type routingEngines struct {
+	RoutingEngines []routingEngine `xml:"multi-routing-engine-item"`
 }
 
-type RoutingEngine struct {
+type routingEngine struct {
 	Name               string                     `xml:"re-name"`
-	PerformanceSummary SecurityPerformanceSummary `xml:"performance-summary-information"`
+	PerformanceSummary securityPerformanceSummary `xml:"performance-summary-information"`
 }
 
-type SecurityPerformanceSummary struct {
-	PerformanceStatistics []SecurityPerformanceStatistics `xml:"performance-summary-statistics"`
+type securityPerformanceSummary struct {
+	PerformanceStatistics []securityPerformanceStatistics `xml:"performance-summary-statistics"`
 }
 
-type SecurityPerformanceStatistics struct {
+type securityPerformanceStatistics struct {
 	FPCNumber   int64 `xml:"fpc-number"`
 	PICNumber   int64 `xml:"pic-number"`
 	CPUUtil     int64 `xml:"spu-cpu-utilization"`
@@ -31,7 +31,7 @@ type SecurityPerformanceStatistics struct {
 	MaxCP       int64 `xml:"spu-max-cp-session"`
 }
 
-type RpcReplyNoRE struct {
+type singleEngineResult struct {
 	XMLName            xml.Name                   `xml:"rpc-reply"`
-	PerformanceSummary SecurityPerformanceSummary `xml:"performance-summary-information"`
+	PerformanceSummary securityPerformanceSummary `xml:"performance-summary-information"`
 }

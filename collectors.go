@@ -25,16 +25,16 @@ import (
 	"github.com/czerwonk/junos_exporter/nat2"
 	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
+	"github.com/czerwonk/junos_exporter/pkg/modules/rpki"
+	"github.com/czerwonk/junos_exporter/pkg/modules/rpm"
+	"github.com/czerwonk/junos_exporter/pkg/modules/security"
+	"github.com/czerwonk/junos_exporter/pkg/modules/storage"
+	"github.com/czerwonk/junos_exporter/pkg/modules/system"
+	"github.com/czerwonk/junos_exporter/pkg/modules/vpws"
+	"github.com/czerwonk/junos_exporter/pkg/modules/vrrp"
 	"github.com/czerwonk/junos_exporter/power"
 	"github.com/czerwonk/junos_exporter/route"
 	"github.com/czerwonk/junos_exporter/routingengine"
-	"github.com/czerwonk/junos_exporter/rpki"
-	"github.com/czerwonk/junos_exporter/rpm"
-	"github.com/czerwonk/junos_exporter/security"
-	"github.com/czerwonk/junos_exporter/storage"
-	"github.com/czerwonk/junos_exporter/system"
-	"github.com/czerwonk/junos_exporter/vpws"
-	"github.com/czerwonk/junos_exporter/vrrp"
 )
 
 type collectors struct {

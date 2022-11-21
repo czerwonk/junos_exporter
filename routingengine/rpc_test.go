@@ -107,7 +107,7 @@ func TestParseOutputMultiRE(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := RpcReply{}
+	rpc := multiEngineResult{}
 	err := parseXML([]byte(body), &rpc)
 
 	if err != nil {
@@ -115,22 +115,22 @@ func TestParseOutputMultiRE(t *testing.T) {
 	}
 
 	// test routing engine 0
-	assert.Equal(t, "node0", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
+	assert.Equal(t, "node0", rpc.Results.RoutingEngines[0].Name, "re-name")
 
 	// test first route engine
-	assert.Equal(t, "OK", rpc.MultiRoutingEngineResults.RoutingEngine[0].RouteEngineInformation.RouteEngines[0].Status, "status")
+	assert.Equal(t, "OK", rpc.Results.RoutingEngines[0].Information.RouteEngines[0].Status, "status")
 
-	assert.Equal(t, float64(35), rpc.MultiRoutingEngineResults.RoutingEngine[0].RouteEngineInformation.RouteEngines[0].CPUTemperature.Value, "cpu-temperature")
+	assert.Equal(t, float64(35), rpc.Results.RoutingEngines[0].Information.RouteEngines[0].CPUTemperature.Value, "cpu-temperature")
 
-	assert.Equal(t, float64(1905), rpc.MultiRoutingEngineResults.RoutingEngine[0].RouteEngineInformation.RouteEngines[0].MemorySystemTotal, "memory-system-total")
+	assert.Equal(t, float64(1905), rpc.Results.RoutingEngines[0].Information.RouteEngines[0].MemorySystemTotal, "memory-system-total")
 
-	assert.Equal(t, float64(19), rpc.MultiRoutingEngineResults.RoutingEngine[0].RouteEngineInformation.RouteEngines[0].CPUUser1, "cpu-user1")
+	assert.Equal(t, float64(19), rpc.Results.RoutingEngines[0].Information.RouteEngines[0].CPUUser1, "cpu-user1")
 	// test routing engine 1
-	assert.Equal(t, "node1", rpc.MultiRoutingEngineResults.RoutingEngine[1].Name, "re-name")
+	assert.Equal(t, "node1", rpc.Results.RoutingEngines[1].Name, "re-name")
 
-	assert.Equal(t, "OK", rpc.MultiRoutingEngineResults.RoutingEngine[1].RouteEngineInformation.RouteEngines[0].Status, "status")
+	assert.Equal(t, "OK", rpc.Results.RoutingEngines[1].Information.RouteEngines[0].Status, "status")
 
-	assert.Equal(t, float64(36), rpc.MultiRoutingEngineResults.RoutingEngine[1].RouteEngineInformation.RouteEngines[0].CPUTemperature.Value, "cpu-temperature")
+	assert.Equal(t, float64(36), rpc.Results.RoutingEngines[1].Information.RouteEngines[0].CPUTemperature.Value, "cpu-temperature")
 }
 
 // Test no multi routing engine
@@ -206,23 +206,23 @@ func TestParseOutputNoMultiRE(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := RpcReply{}
+	rpc := multiEngineResult{}
 	err := parseXML([]byte(body), &rpc)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, "N/A", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
+	assert.Equal(t, "N/A", rpc.Results.RoutingEngines[0].Name, "re-name")
 
 	// test first route engine
-	assert.Equal(t, "0", rpc.MultiRoutingEngineResults.RoutingEngine[0].RouteEngineInformation.RouteEngines[0].Slot, "slot")
+	assert.Equal(t, "0", rpc.Results.RoutingEngines[0].Information.RouteEngines[0].Slot, "slot")
 
-	assert.Equal(t, float64(31), rpc.MultiRoutingEngineResults.RoutingEngine[0].RouteEngineInformation.RouteEngines[0].CPUTemperature.Value, "cpu-temperature")
+	assert.Equal(t, float64(31), rpc.Results.RoutingEngines[0].Information.RouteEngines[0].CPUTemperature.Value, "cpu-temperature")
 
 	// test second route engine
-	assert.Equal(t, "1", rpc.MultiRoutingEngineResults.RoutingEngine[0].RouteEngineInformation.RouteEngines[1].Slot, "slot")
+	assert.Equal(t, "1", rpc.Results.RoutingEngines[0].Information.RouteEngines[1].Slot, "slot")
 
-	assert.Equal(t, uint64(3149860), rpc.MultiRoutingEngineResults.RoutingEngine[0].RouteEngineInformation.RouteEngines[1].UpTime.Seconds, "up-time")
+	assert.Equal(t, uint64(3149860), rpc.Results.RoutingEngines[0].Information.RouteEngines[1].UpTime.Seconds, "up-time")
 
 }

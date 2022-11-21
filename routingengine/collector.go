@@ -12,10 +12,9 @@ import (
 const prefix string = "junos_route_engine_"
 
 var (
-	temperature             *prometheus.Desc
-	memoryUtilization       *prometheus.Desc
-	memoryBufferUtilization *prometheus.Desc
-	cpuTemperature          *prometheus.Desc
+	temperature       *prometheus.Desc
+	memoryUtilization *prometheus.Desc
+	cpuTemperature    *prometheus.Desc
 	// 5sec interval
 	cpuUser       *prometheus.Desc
 	cpuBackground *prometheus.Desc
@@ -48,13 +47,10 @@ var (
 	uptime                 *prometheus.Desc
 	memorySystemTotal      *prometheus.Desc
 	memorySystemTotalUsed  *prometheus.Desc
-	memorySystemTotalUtil  *prometheus.Desc
 	memoryControlPlane     *prometheus.Desc
 	memoryControlPlaneUsed *prometheus.Desc
-	memoryControlPlaneUtil *prometheus.Desc
 	memoryDataPlane        *prometheus.Desc
 	memoryDataPlaneUsed    *prometheus.Desc
-	memoryDataPlaneUtil    *prometheus.Desc
 	mastershipState        *prometheus.Desc
 	mastershipPriority     *prometheus.Desc
 )
@@ -167,7 +163,7 @@ func (*routingEngineCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *routingEngineCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = RpcReply{}
+	var x = multiEngineResult{}
 	err := client.RunCommandAndParseWithParser("show chassis routing-engine", func(b []byte) error {
 		return parseXML(b, &x)
 	})
@@ -175,9 +171,9 @@ func (c *routingEngineCollector) Collect(client *rpc.Client, ch chan<- prometheu
 		return err
 	}
 
-	for _, re := range x.MultiRoutingEngineResults.RoutingEngine {
+	for _, re := range x.Results.RoutingEngines {
 		labelValues := append(labelValues, re.Name)
-		for _, re_ := range re.RouteEngineInformation.RouteEngines {
+		for _, re_ := range re.Information.RouteEngines {
 			c.collectForSlot(re_, ch, labelValues)
 		}
 	}
@@ -185,7 +181,7 @@ func (c *routingEngineCollector) Collect(client *rpc.Client, ch chan<- prometheu
 	return nil
 }
 
-func (c *routingEngineCollector) collectForSlot(re RouteEngine, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *routingEngineCollector) collectForSlot(re routeEngine, ch chan<- prometheus.Metric, labelValues []string) error {
 	if re.Slot == "" {
 		re.Slot = "N/A"
 	}
@@ -270,22 +266,22 @@ func (c *routingEngineCollector) collectForSlot(re RouteEngine, ch chan<- promet
 	return nil
 }
 
-func parseXML(b []byte, res *RpcReply) error {
+func parseXML(b []byte, res *multiEngineResult) error {
 	if strings.Contains(string(b), "multi-routing-engine-results") {
 		return xml.Unmarshal(b, res)
 	}
 
-	fi := RpcReplyNoRE{}
+	fi := singleRoutingEngineResult{}
 
 	err := xml.Unmarshal(b, &fi)
 	if err != nil {
 		return err
 	}
 
-	res.MultiRoutingEngineResults.RoutingEngine = []RoutingEngine{
+	res.Results.RoutingEngines = []routingEngine{
 		{
-			Name:                   "N/A",
-			RouteEngineInformation: fi.RouteEngineInformation,
+			Name:        "N/A",
+			Information: fi.Information,
 		},
 	}
 

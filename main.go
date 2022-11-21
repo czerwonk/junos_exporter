@@ -68,7 +68,7 @@ var (
 	lacpEnabled                 = flag.Bool("lacp.enabled", false, "Scrape LACP metrics")
 	bfdEnabled                  = flag.Bool("bfd.enabled", false, "Scrape BFD metrics")
 	vpwsEnabled                 = flag.Bool("vpws.enabled", false, "Scrape EVPN VPWS metrics")
-	mpls_lspEnabled             = flag.Bool("mpls_lsp.enabled", false, "Scrape MPLS LSP metrics")
+	mplsLSPEnabled              = flag.Bool("mpls_lsp.enabled", false, "Scrape MPLS LSP metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -220,7 +220,7 @@ func loadConfigFromFlags() *config.Config {
 	f.LACP = *lacpEnabled
 	f.BFD = *bfdEnabled
 	f.VPWS = *vpwsEnabled
-	f.MPLS_LSP = *mpls_lspEnabled
+	f.MPLS_LSP = *mplsLSPEnabled
 
 	return c
 }

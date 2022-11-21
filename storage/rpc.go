@@ -2,25 +2,25 @@ package storage
 
 import "encoding/xml"
 
-type RpcReply struct {
-	XMLName                   xml.Name                  `xml:"rpc-reply"`
-	MultiRoutingEngineResults MultiRoutingEngineResults `xml:"multi-routing-engine-results"`
+type multiEngineResult struct {
+	XMLName xml.Name       `xml:"rpc-reply"`
+	Results routingEngines `xml:"multi-routing-engine-results"`
 }
 
-type MultiRoutingEngineResults struct {
-	RoutingEngine []RoutingEngine `xml:"multi-routing-engine-item"`
+type routingEngines struct {
+	RoutingEngine []routingEngine `xml:"multi-routing-engine-item"`
 }
 
-type RoutingEngine struct {
+type routingEngine struct {
 	Name               string             `xml:"re-name"`
-	StorageInformation StorageInformation `xml:"system-storage-information"`
+	StorageInformation storageInformation `xml:"system-storage-information"`
 }
 
-type StorageInformation struct {
-	Filesystems []Filesystem `xml:"filesystem"`
+type storageInformation struct {
+	Filesystems []filesystem `xml:"filesystem"`
 }
 
-type Filesystem struct {
+type filesystem struct {
 	FilesystemName  string `xml:"filesystem-name"`
 	TotalBlocks     int64  `xml:"total-blocks"`
 	UsedBlocks      int64  `xml:"used-blocks"`
@@ -29,7 +29,7 @@ type Filesystem struct {
 	MountedOn       string `xml:"mounted-on"`
 }
 
-type RpcReplyNoRE struct {
+type singleEngineResult struct {
 	XMLName            xml.Name           `xml:"rpc-reply"`
-	StorageInformation StorageInformation `xml:"system-storage-information"`
+	StorageInformation storageInformation `xml:"system-storage-information"`
 }

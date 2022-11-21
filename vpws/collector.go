@@ -52,14 +52,14 @@ func (*vpwsCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *vpwsCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = vpwsRpc{}
+	var x = result{}
 	err := client.RunCommandAndParse("show evpn vpws-instance", &x)
 	if err != nil {
 		return err
 	}
 
 	for _, vInst := range x.Information.VpwsInstances {
-		for _, vIf := range vInst.VpwsInterfaces {
+		for _, vIf := range vInst.Interfaces {
 			l := append(labelValues, vInst.Name, vInst.RD, vIf.Name, vIf.Esi, vIf.Mode, vIf.Role)
 			ch <- prometheus.MustNewConstMetric(vpwsStatus, prometheus.GaugeValue, float64(vpwsStatusMap[vIf.Status]), l...)
 

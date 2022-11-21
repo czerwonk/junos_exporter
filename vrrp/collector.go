@@ -43,7 +43,7 @@ func (c *vrrpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 		"master": 3,
 	}
 
-	var x = VrrpRpc{}
+	var x = result{}
 	err := client.RunCommandAndParse("show vrrp summary", &x)
 	if err != nil {
 		return err
@@ -51,7 +51,7 @@ func (c *vrrpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 
 	for _, iface := range x.Information.Interfaces {
 		l := labelValues
-		l = append(l, iface.Interface, iface.Group, iface.LocalInterfaceAddress, iface.VirtualIpAddress)
+		l = append(l, iface.Interface, iface.Group, iface.LocalInterfaceAddress, iface.VirtualIPAddress)
 		ch <- prometheus.MustNewConstMetric(vrrpState, prometheus.GaugeValue, float64(statusValues[iface.VrrpState]), l...)
 	}
 

@@ -149,9 +149,9 @@ func (c *systemCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metri
 
 func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var (
-		r              *BuffersRPC
-		r2             *SystemInformationRPC
-		r3             *SatelliteChassisRPC
+		r              *buffers
+		r2             *systemInformation
+		r3             *satelliteChassis
 		l              []string
 		err            error
 		lines          []string
@@ -160,7 +160,7 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 		hardwareLabels = make([]string, 0)
 	)
 
-	r = new(BuffersRPC)
+	r = new(buffers)
 
 	err = client.RunCommandAndParse("show system buffers", r)
 	if err != nil {
@@ -276,7 +276,7 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 	}
 
 	// system information
-	r2 = new(SystemInformationRPC)
+	r2 = new(systemInformation)
 	err = client.RunCommandAndParse("show system information", r2)
 	if err != nil {
 		return err
@@ -297,7 +297,7 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 	if client.Satellite {
 
 		// system information of satellites
-		r3 = new(SatelliteChassisRPC)
+		r3 = new(satelliteChassis)
 		err = client.RunCommandAndParse("show chassis satellite detail", r3)
 		// there are various error messages when satellite is not enabled; thus here we just ignore the error and continue
 		if err == nil {
@@ -312,7 +312,7 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 					r3.SatelliteInfo.Satellite[i].Serial,
 					"",
 					r3.SatelliteInfo.Satellite[i].Alias,
-					strconv.Itoa(r3.SatelliteInfo.Satellite[i].SlotId),
+					strconv.Itoa(r3.SatelliteInfo.Satellite[i].SlotID),
 					strings.ToLower(r3.SatelliteInfo.Satellite[i].State))
 
 				ch <- prometheus.MustNewConstMetric(hardwareInfoDesc, prometheus.GaugeValue, float64(1), hardwareLabels...)

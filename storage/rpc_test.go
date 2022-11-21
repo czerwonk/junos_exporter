@@ -50,19 +50,19 @@ func TestParseMultiREOutput(t *testing.T) {
 			</cli>
 		</rpc-reply>`
 
-	rpc := RpcReply{}
+	rpc := multiEngineResult{}
 	err := parseXML([]byte(body), &rpc)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.MultiRoutingEngineResults.RoutingEngine[0].StorageInformation)
+	assert.NotEmpty(t, rpc.Results.RoutingEngine[0].StorageInformation)
 
 	// test first routing engine
-	assert.Equal(t, "fpc0", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
+	assert.Equal(t, "fpc0", rpc.Results.RoutingEngine[0].Name, "re-name")
 
-	f := rpc.MultiRoutingEngineResults.RoutingEngine[0].StorageInformation.Filesystems[1]
+	f := rpc.Results.RoutingEngine[0].StorageInformation.Filesystems[1]
 
 	assert.Equal(t, "/dev/sda", f.FilesystemName, "filesystem-name")
 	assert.Equal(t, int64(2796512), f.TotalBlocks, "total-blocks")
@@ -70,9 +70,9 @@ func TestParseMultiREOutput(t *testing.T) {
 	assert.Equal(t, "/", f.MountedOn, "mounted-on")
 
 	// test second routing engine
-	assert.Equal(t, "fpc1", rpc.MultiRoutingEngineResults.RoutingEngine[1].Name, "re-name")
+	assert.Equal(t, "fpc1", rpc.Results.RoutingEngine[1].Name, "re-name")
 
-	f = rpc.MultiRoutingEngineResults.RoutingEngine[1].StorageInformation.Filesystems[0]
+	f = rpc.Results.RoutingEngine[1].StorageInformation.Filesystems[0]
 
 	assert.Equal(t, "/dev/gpt/junos1", f.FilesystemName, "filesystem-name")
 	assert.Equal(t, int64(2796512), f.TotalBlocks, "total-blocks")
@@ -105,18 +105,18 @@ func TestParseNoMultiREOutput(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := RpcReply{}
+	rpc := multiEngineResult{}
 	err := parseXML([]byte(body), &rpc)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.MultiRoutingEngineResults.RoutingEngine[0].StorageInformation)
+	assert.NotEmpty(t, rpc.Results.RoutingEngine[0].StorageInformation)
 
-	assert.Equal(t, "N/A", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
+	assert.Equal(t, "N/A", rpc.Results.RoutingEngine[0].Name, "re-name")
 
-	f := rpc.MultiRoutingEngineResults.RoutingEngine[0].StorageInformation.Filesystems[1]
+	f := rpc.Results.RoutingEngine[0].StorageInformation.Filesystems[1]
 
 	assert.Equal(t, "/var/log", f.FilesystemName, "filesystem-name")
 	assert.Equal(t, int64(44306520), f.TotalBlocks, "total-blocks")

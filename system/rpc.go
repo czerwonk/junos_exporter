@@ -1,6 +1,6 @@
 package system
 
-type BuffersRPC struct {
+type buffers struct {
 	// some versions don't provide parsed output
 	Output           string `xml:"output"`
 	MemoryStatistics struct {
@@ -48,7 +48,7 @@ type BuffersRPC struct {
 	} `xml:"memory-statistics"`
 }
 
-type SystemInformationRPC struct {
+type systemInformation struct {
 	SysInfo struct {
 		Model     string `xml:"hardware-model"`
 		OS        string `xml:"os-name"`
@@ -58,11 +58,11 @@ type SystemInformationRPC struct {
 	} `xml:"system-information"`
 }
 
-type SatelliteChassisRPC struct {
+type satelliteChassis struct {
 	SatelliteInfo struct {
 		Satellite []struct {
 			Alias   string `xml:"satellite-alias"`
-			SlotId  int    `xml:"slot-id"`
+			SlotID  int    `xml:"slot-id"`
 			State   string `xml:"operation-state"`
 			Model   string `xml:"product-model"`
 			Serial  string `xml:"serial-number"`

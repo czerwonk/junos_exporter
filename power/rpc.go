@@ -2,22 +2,22 @@ package power
 
 import "encoding/xml"
 
-type RpcReply struct {
-	XMLName                   xml.Name                  `xml:"rpc-reply"`
-	MultiRoutingEngineResults MultiRoutingEngineResults `xml:"multi-routing-engine-results"`
+type multiRoutingEngineResult struct {
+	XMLName xml.Name       `xml:"rpc-reply"`
+	Results routingEngines `xml:"multi-routing-engine-results"`
 }
 
-type MultiRoutingEngineResults struct {
-	RoutingEngine []RoutingEngine `xml:"multi-routing-engine-item"`
+type routingEngines struct {
+	RoutingEngine []routingEngine `xml:"multi-routing-engine-item"`
 }
 
-type RoutingEngine struct {
+type routingEngine struct {
 	Name                  string                `xml:"re-name"`
-	PowerUsageInformation PowerUsageInformation `xml:"power-usage-information"`
+	PowerUsageInformation powerUsageInformation `xml:"power-usage-information"`
 }
 
-type PowerUsageInformation struct {
-	PowerUsageItem   []PowerUsageItem `xml:"power-usage-item"`
+type powerUsageInformation struct {
+	PowerUsageItem   []powerUsageItem `xml:"power-usage-item"`
 	PowerUsageSystem struct {
 		PowerUsageZoneInformation []struct {
 			Zone                string `xml:"zone"`
@@ -33,7 +33,7 @@ type PowerUsageInformation struct {
 	} `xml:"power-usage-system"`
 }
 
-type PowerUsageItem struct {
+type powerUsageItem struct {
 	Name           string `xml:"name"`
 	State          string `xml:"state"`
 	DcOutputDetail struct {
@@ -45,7 +45,7 @@ type PowerUsageItem struct {
 	} `xml:"dc-output-detail"`
 }
 
-type RpcReplyNoRE struct {
+type singleRoutingEngineResult struct {
 	XMLName               xml.Name              `xml:"rpc-reply"`
-	PowerUsageInformation PowerUsageInformation `xml:"power-usage-information"`
+	PowerUsageInformation powerUsageInformation `xml:"power-usage-information"`
 }

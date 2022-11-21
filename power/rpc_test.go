@@ -118,19 +118,19 @@ func TestParseMultiREOutputSRX(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := RpcReply{}
+	rpc := multiRoutingEngineResult{}
 	err := parseXML([]byte(body), &rpc)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation)
+	assert.NotEmpty(t, rpc.Results.RoutingEngine[0].PowerUsageInformation)
 
 	// test first routing engine
-	assert.Equal(t, "node0", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
+	assert.Equal(t, "node0", rpc.Results.RoutingEngine[0].Name, "re-name")
 
-	p := rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation.PowerUsageItem[1]
+	p := rpc.Results.RoutingEngine[0].PowerUsageInformation.PowerUsageItem[1]
 
 	assert.Equal(t, "PEM 1", p.Name, "name")
 	assert.Equal(t, "Online", p.State, "state")
@@ -140,7 +140,7 @@ func TestParseMultiREOutputSRX(t *testing.T) {
 	assert.Equal(t, int(12), p.DcOutputDetail.DcVoltage, "dc-voltage")
 	assert.Equal(t, int(4), p.DcOutputDetail.DcLoad, "dc-load")
 
-	s := rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.PowerUsageZoneInformation[0]
+	s := rpc.Results.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.PowerUsageZoneInformation[0]
 
 	assert.Equal(t, "0", s.Zone, "zone")
 	assert.Equal(t, int(0), s.CapacityActual, "capacity-actual")
@@ -149,14 +149,14 @@ func TestParseMultiREOutputSRX(t *testing.T) {
 	assert.Equal(t, int(0), s.CapacityRemaining, "capacity-remaining")
 	assert.Equal(t, int(240), s.CapacityActualUsage, "capacity-actual-usage")
 
-	assert.Equal(t, int(0), rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysActual, "capacity-sys-usage")
-	assert.Equal(t, int(0), rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysMax, "capacity-sys-max")
-	assert.Equal(t, int(0), rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysRemaining, "capacity-sys-remaining")
+	assert.Equal(t, int(0), rpc.Results.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysActual, "capacity-sys-usage")
+	assert.Equal(t, int(0), rpc.Results.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysMax, "capacity-sys-max")
+	assert.Equal(t, int(0), rpc.Results.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysRemaining, "capacity-sys-remaining")
 
 	// test the second routing engine
-	assert.Equal(t, "node1", rpc.MultiRoutingEngineResults.RoutingEngine[1].Name, "re-name")
+	assert.Equal(t, "node1", rpc.Results.RoutingEngine[1].Name, "re-name")
 
-	p = rpc.MultiRoutingEngineResults.RoutingEngine[1].PowerUsageInformation.PowerUsageItem[0]
+	p = rpc.Results.RoutingEngine[1].PowerUsageInformation.PowerUsageItem[0]
 
 	assert.Equal(t, "PEM 0", p.Name, "name")
 	assert.Equal(t, "Online", p.State, "state")
@@ -166,7 +166,7 @@ func TestParseMultiREOutputSRX(t *testing.T) {
 	assert.Equal(t, int(12), p.DcOutputDetail.DcVoltage, "dc-voltage")
 	assert.Equal(t, int(4), p.DcOutputDetail.DcLoad, "dc-load")
 
-	s = rpc.MultiRoutingEngineResults.RoutingEngine[1].PowerUsageInformation.PowerUsageSystem.PowerUsageZoneInformation[0]
+	s = rpc.Results.RoutingEngine[1].PowerUsageInformation.PowerUsageSystem.PowerUsageZoneInformation[0]
 
 	assert.Equal(t, "0", s.Zone, "zone")
 	assert.Equal(t, int(0), s.CapacityActual, "capacity-actual")
@@ -175,9 +175,9 @@ func TestParseMultiREOutputSRX(t *testing.T) {
 	assert.Equal(t, int(0), s.CapacityRemaining, "capacity-remaining")
 	assert.Equal(t, int(240), s.CapacityActualUsage, "capacity-actual-usage")
 
-	assert.Equal(t, int(0), rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysActual, "capacity-sys-usage")
-	assert.Equal(t, int(0), rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysMax, "capacity-sys-max")
-	assert.Equal(t, int(0), rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysRemaining, "capacity-sys-remaining")
+	assert.Equal(t, int(0), rpc.Results.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysActual, "capacity-sys-usage")
+	assert.Equal(t, int(0), rpc.Results.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysMax, "capacity-sys-max")
+	assert.Equal(t, int(0), rpc.Results.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysRemaining, "capacity-sys-remaining")
 }
 
 func TestParseNoMultiREOutputMX(t *testing.T) {
@@ -298,18 +298,18 @@ func TestParseNoMultiREOutputMX(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := RpcReply{}
+	rpc := multiRoutingEngineResult{}
 	err := parseXML([]byte(body), &rpc)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation)
+	assert.NotEmpty(t, rpc.Results.RoutingEngine[0].PowerUsageInformation)
 
-	assert.Equal(t, "N/A", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
+	assert.Equal(t, "N/A", rpc.Results.RoutingEngine[0].Name, "re-name")
 
-	p := rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation.PowerUsageItem[1]
+	p := rpc.Results.RoutingEngine[0].PowerUsageInformation.PowerUsageItem[1]
 
 	assert.Equal(t, "PEM 1", p.Name, "name")
 	assert.Equal(t, "Online", p.State, "state")
@@ -319,7 +319,7 @@ func TestParseNoMultiREOutputMX(t *testing.T) {
 	assert.Equal(t, int(56), p.DcOutputDetail.DcVoltage, "dc-voltage")
 	assert.Equal(t, int(6), p.DcOutputDetail.DcLoad, "dc-load")
 
-	s := rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.PowerUsageZoneInformation[1]
+	s := rpc.Results.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.PowerUsageZoneInformation[1]
 
 	assert.Equal(t, "1", s.Zone, "zone")
 	assert.Equal(t, int(2440), s.CapacityActual, "capacity-actual")
@@ -328,7 +328,7 @@ func TestParseNoMultiREOutputMX(t *testing.T) {
 	assert.Equal(t, int(1975), s.CapacityRemaining, "capacity-remaining")
 	assert.Equal(t, int(225), s.CapacityActualUsage, "capacity-actual-usage")
 
-	assert.Equal(t, int(4880), rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysActual, "capacity-sys-usage")
-	assert.Equal(t, int(4880), rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysMax, "capacity-sys-max")
-	assert.Equal(t, int(2895), rpc.MultiRoutingEngineResults.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysRemaining, "capacity-sys-remaining")
+	assert.Equal(t, int(4880), rpc.Results.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysActual, "capacity-sys-usage")
+	assert.Equal(t, int(4880), rpc.Results.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysMax, "capacity-sys-max")
+	assert.Equal(t, int(2895), rpc.Results.RoutingEngine[0].PowerUsageInformation.PowerUsageSystem.CapacitySysRemaining, "capacity-sys-remaining")
 }

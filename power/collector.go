@@ -87,7 +87,7 @@ func (c *powerCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric
 		"Empty":   3,
 	}
 
-	var x = RpcReply{}
+	var x = multiRoutingEngineResult{}
 	err := client.RunCommandAndParseWithParser("show chassis power", func(b []byte) error {
 		return parseXML(b, &x)
 	})
@@ -95,7 +95,7 @@ func (c *powerCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric
 		return err
 	}
 
-	for _, re := range x.MultiRoutingEngineResults.RoutingEngine {
+	for _, re := range x.Results.RoutingEngine {
 		l := append(labelValues, re.Name)
 
 		if re.PowerUsageInformation.PowerUsageSystem.CapacitySysActual > 0 {
@@ -132,19 +132,19 @@ func (c *powerCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric
 	return nil
 }
 
-func parseXML(b []byte, res *RpcReply) error {
+func parseXML(b []byte, res *multiRoutingEngineResult) error {
 	if strings.Contains(string(b), "multi-routing-engine-results") {
 		return xml.Unmarshal(b, res)
 	}
 
-	fi := RpcReplyNoRE{}
+	fi := singleRoutingEngineResult{}
 
 	err := xml.Unmarshal(b, &fi)
 	if err != nil {
 		return err
 	}
 
-	res.MultiRoutingEngineResults.RoutingEngine = []RoutingEngine{
+	res.Results.RoutingEngine = []routingEngine{
 		{
 			Name:                  "N/A",
 			PowerUsageInformation: fi.PowerUsageInformation,

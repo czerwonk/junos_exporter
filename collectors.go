@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/czerwonk/junos_exporter/accounting"
-	"github.com/czerwonk/junos_exporter/alarm"
 	"github.com/czerwonk/junos_exporter/bfd"
 	"github.com/czerwonk/junos_exporter/bgp"
 	"github.com/czerwonk/junos_exporter/environment"
@@ -25,6 +23,8 @@ import (
 	"github.com/czerwonk/junos_exporter/ospf"
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
+	"github.com/czerwonk/junos_exporter/pkg/modules/accounting"
+	"github.com/czerwonk/junos_exporter/pkg/modules/alarm"
 	"github.com/czerwonk/junos_exporter/pkg/modules/power"
 	"github.com/czerwonk/junos_exporter/pkg/modules/route"
 	"github.com/czerwonk/junos_exporter/pkg/modules/routingengine"

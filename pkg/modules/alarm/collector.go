@@ -57,8 +57,8 @@ func (c *alarmCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric
 		return err
 	}
 
-	ch <- prometheus.MustNewConstMetric(alarmsYellowCount, prometheus.GaugeValue, counter.YellowCount, labelValues...)
-	ch <- prometheus.MustNewConstMetric(alarmsRedCount, prometheus.GaugeValue, counter.RedCount, labelValues...)
+	ch <- prometheus.MustNewConstMetric(alarmsYellowCount, prometheus.GaugeValue, counter.yellow, labelValues...)
+	ch <- prometheus.MustNewConstMetric(alarmsRedCount, prometheus.GaugeValue, counter.red, labelValues...)
 	if alarms != nil {
 		for _, alarm := range *alarms {
 			localLabelvalues := append(labelValues, alarm.Class, alarm.Type, alarm.Description)
@@ -69,7 +69,7 @@ func (c *alarmCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric
 	return nil
 }
 
-func (c *alarmCollector) alarmCounter(client *rpc.Client) (*AlarmCounter, *[]AlarmDetails, error) {
+func (c *alarmCollector) alarmCounter(client *rpc.Client) (*alarmCounter, *[]details, error) {
 	red := 0
 	yellow := 0
 
@@ -78,11 +78,11 @@ func (c *alarmCollector) alarmCounter(client *rpc.Client) (*AlarmCounter, *[]Ala
 		"show chassis alarms",
 	}
 
-	var alarms []AlarmDetails
+	var alarms []details
 
 	messages := make(map[string]interface{})
 	for _, cmd := range cmds {
-		var a = AlarmRpc{}
+		var a = result{}
 		err := client.RunCommandAndParse(cmd, &a)
 		if err != nil {
 			return nil, nil, err
@@ -109,10 +109,10 @@ func (c *alarmCollector) alarmCounter(client *rpc.Client) (*AlarmCounter, *[]Ala
 		}
 	}
 
-	return &AlarmCounter{RedCount: float64(red), YellowCount: float64(yellow)}, &alarms, nil
+	return &alarmCounter{red: float64(red), yellow: float64(yellow)}, &alarms, nil
 }
 
-func (c *alarmCollector) shouldFilterAlarm(a *AlarmDetails) bool {
+func (c *alarmCollector) shouldFilterAlarm(a *details) bool {
 	if c.filter == nil {
 		return false
 	}

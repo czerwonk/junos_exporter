@@ -1,12 +1,12 @@
 package alarm
 
-type AlarmRpc struct {
+type result struct {
 	Information struct {
-		Details []AlarmDetails `xml:"alarm-detail"`
+		Details []details `xml:"alarm-detail"`
 	} `xml:"alarm-information"`
 }
 
-type AlarmDetails struct {
+type details struct {
 	Class       string `xml:"alarm-class"`
 	Description string `xml:"alarm-description"`
 	Type        string `xml:"alarm-type"`

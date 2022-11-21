@@ -45,7 +45,7 @@ type SSHConnectionManager struct {
 	reconnectInterval time.Duration
 	keepAliveInterval time.Duration
 	keepAliveTimeout  time.Duration
-	mu                sync.Mutex
+	locks             map[string]*sync.Mutex
 }
 
 // NewConnectionManager creates a new connection manager
@@ -55,6 +55,7 @@ func NewConnectionManager(opts ...Option) *SSHConnectionManager {
 		reconnectInterval: 30 * time.Second,
 		keepAliveInterval: 10 * time.Second,
 		keepAliveTimeout:  15 * time.Second,
+		locks:             make(map[string]*sync.Mutex),
 	}
 
 	for _, opt := range opts {
@@ -64,11 +65,18 @@ func NewConnectionManager(opts ...Option) *SSHConnectionManager {
 	return m
 }
 
+func (m *SSHConnectionManager) lockForDevice(device *Device) *sync.Mutex {
+	if mu, exists := m.locks[device.Host]; exists {
+		return mu
+	}
+
+	mu := &sync.Mutex{}
+	m.locks[device.Host] = mu
+	return mu
+}
+
 // Connect connects to a device or returns an long living connection
 func (m *SSHConnectionManager) Connect(device *Device) (*SSHConnection, error) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
 	if connection, found := m.connections[device.Host]; found {
 		if !connection.isConnected() {
 			return nil, errors.New("not connected")
@@ -76,6 +84,10 @@ func (m *SSHConnectionManager) Connect(device *Device) (*SSHConnection, error) {
 
 		return connection, nil
 	}
+
+	mu := m.lockForDevice(device)
+	mu.Lock()
+	defer mu.Unlock()
 
 	return m.connect(device)
 }

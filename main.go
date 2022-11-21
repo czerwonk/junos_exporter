@@ -21,7 +21,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "0.9.15"
+const version string = "0.10.0"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")

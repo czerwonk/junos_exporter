@@ -1,12 +1,12 @@
 package rpm
 
-type RPMRPC struct {
+type result struct {
 	Results struct {
-		Probes []RPMProbe `xml:"probe-test-results"`
+		Probes []probe `xml:"probe-test-results"`
 	} `xml:"probe-results"`
 }
 
-type RPMProbe struct {
+type probe struct {
 	Owner     string `xml:"owner"`
 	Name      string `xml:"test-name"`
 	Address   string `xml:"target-address"`
@@ -14,14 +14,14 @@ type RPMProbe struct {
 	Interface string `xml:"destination-interface"`
 	Size      int64  `xml:"test-size"`
 	Last      struct {
-		Results RPMGenericResults `xml:"probe-test-generic-results"`
+		Results genericResults `xml:"probe-test-generic-results"`
 	} `xml:"probe-last-test-results"`
 	Global struct {
-		Results RPMGenericResults `xml:"probe-test-generic-results"`
+		Results genericResults `xml:"probe-test-generic-results"`
 	} `xml:"probe-test-global-results"`
 }
 
-type RPMGenericResults struct {
+type genericResults struct {
 	Scope       string  `xml:"results-scope"`
 	Sent        int64   `xml:"probes-sent"`
 	Responses   int64   `xml:"probe-responses"`

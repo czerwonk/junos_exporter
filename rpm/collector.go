@@ -69,7 +69,7 @@ func (c *rpmCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 }
 
 func (c *rpmCollector) collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = RPMRPC{}
+	var x = result{}
 
 	err := client.RunCommandAndParse("show services rpm probe-results", &x)
 	if err != nil {
@@ -83,7 +83,7 @@ func (c *rpmCollector) collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 	return nil
 }
 
-func (c *rpmCollector) collectForProbe(p RPMProbe, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *rpmCollector) collectForProbe(p probe, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, []string{p.Owner, p.Name, p.Address, p.Type, p.Interface}...)
 
 	ch <- prometheus.MustNewConstMetric(totalSentDesc, prometheus.GaugeValue, float64(p.Global.Results.Sent), l...)

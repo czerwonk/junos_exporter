@@ -1,6 +1,7 @@
 package system
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -135,11 +136,7 @@ func (*systemCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *systemCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var (
-		err error
-	)
-
-	err = c.CollectSystem(client, ch, labelValues)
+	err := c.CollectSystem(client, ch, labelValues)
 	if err != nil {
 		return err
 	}
@@ -148,176 +145,137 @@ func (c *systemCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metri
 }
 
 func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var (
-		r              *buffers
-		r2             *systemInformation
-		r3             *satelliteChassis
-		l              []string
-		err            error
-		lines          []string
-		matches        [][]string
-		i              int
-		hardwareLabels = make([]string, 0)
-	)
-
-	r = new(buffers)
-
-	err = client.RunCommandAndParse("show system buffers", r)
+	err := c.collectBuffers(client, ch, labelValues)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not get buffer information: %w", err)
 	}
 
-	if r.Output != "" {
-		// this data still needs to be parsed
-		lines = strings.Split(r.Output, "\n")
-
-		for i = range lines {
-			lines[i] = strings.TrimSpace(lines[i])
-		}
-
-		// trim away empty lines
-		lines = lines[1 : len(lines)-1]
-
-		// NOTE: matches[0][0] is always the whole line
-
-		// "3216/15519/18735 mbufs in use (current/cache/total)"
-		matches = regex3Ints.FindAllStringSubmatch(lines[0], 1)
-		if len(matches) >= 1 && len(matches[0]) >= 4 {
-			r.MemoryStatistics.MbufsCurrent, _ = strconv.Atoi(matches[0][1])
-			r.MemoryStatistics.MbufsCache, _ = strconv.Atoi(matches[0][2])
-			r.MemoryStatistics.MbufsTotal, _ = strconv.Atoi(matches[0][3])
-		}
-
-		// "3074/14458/17532/2039110 mbuf clusters in use (current/cache/total/max)"
-		matches = regex4Ints.FindAllStringSubmatch(lines[1], 1)
-		if len(matches) >= 1 && len(matches[0]) >= 5 {
-			r.MemoryStatistics.MbufClustersCurrent, _ = strconv.Atoi(matches[0][1])
-			r.MemoryStatistics.MbufClustersCache, _ = strconv.Atoi(matches[0][2])
-			r.MemoryStatistics.MbufClustersTotal, _ = strconv.Atoi(matches[0][3])
-			r.MemoryStatistics.MbufClustersMax, _ = strconv.Atoi(matches[0][4])
-		}
-
-		// "3069/7557 mbuf+clusters out of packet secondary zone in use (current/cache)"
-		matches = regex2Ints.FindAllStringSubmatch(lines[2], 1)
-		if len(matches) >= 1 && len(matches[0]) >= 3 {
-			r.MemoryStatistics.MbufClustersFromPacketZoneCurrent, _ = strconv.Atoi(matches[0][1])
-			r.MemoryStatistics.MbufClustersFromPacketZoneCache, _ = strconv.Atoi(matches[0][2])
-		}
-
-		// "0/1101/1101/1019555 4k (page size) jumbo clusters in use (current/cache/total/max)"
-		matches = regex4Ints.FindAllStringSubmatch(lines[3], 1)
-		if len(matches) >= 1 && len(matches[0]) >= 5 {
-			r.MemoryStatistics.JumboClustersCurrent4K, _ = strconv.Atoi(matches[0][1])
-			r.MemoryStatistics.JumboClustersCache4K, _ = strconv.Atoi(matches[0][2])
-			r.MemoryStatistics.JumboClustersTotal4K, _ = strconv.Atoi(matches[0][3])
-			r.MemoryStatistics.JumboClustersMax4K, _ = strconv.Atoi(matches[0][4])
-		}
-
-		// "0/1101/1101/1019555 9k (page size) jumbo clusters in use (current/cache/total/max)"
-		matches = regex4Ints.FindAllStringSubmatch(lines[4], 1)
-		if len(matches) >= 1 && len(matches[0]) >= 5 {
-			r.MemoryStatistics.JumboClustersCurrent9K, _ = strconv.Atoi(matches[0][1])
-			r.MemoryStatistics.JumboClustersCache9K, _ = strconv.Atoi(matches[0][2])
-			r.MemoryStatistics.JumboClustersTotal9K, _ = strconv.Atoi(matches[0][3])
-			r.MemoryStatistics.JumboClustersMax9K, _ = strconv.Atoi(matches[0][4])
-		}
-
-		// "0/1101/1101/1019555 16k (page size) jumbo clusters in use (current/cache/total/max)"
-		matches = regex4Ints.FindAllStringSubmatch(lines[5], 1)
-		if len(matches) >= 1 && len(matches[0]) >= 5 {
-			r.MemoryStatistics.JumboClustersCurrent16K, _ = strconv.Atoi(matches[0][1])
-			r.MemoryStatistics.JumboClustersCache16K, _ = strconv.Atoi(matches[0][2])
-			r.MemoryStatistics.JumboClustersTotal16K, _ = strconv.Atoi(matches[0][3])
-			r.MemoryStatistics.JumboClustersMax16K, _ = strconv.Atoi(matches[0][4])
-		}
-
-		// "6952K/37199K/44152K bytes allocated to network (current/cache/total)"
-		matches = regexNetworkAlloc.FindAllStringSubmatch(lines[6], 1)
-		if len(matches) >= 1 && len(matches[0]) >= 4 {
-			r.MemoryStatistics.NetworkAllocCurrent, _ = strconv.Atoi(matches[0][1])
-			r.MemoryStatistics.NetworkAllocCache, _ = strconv.Atoi(matches[0][2])
-			r.MemoryStatistics.NetworkAllocTotal, _ = strconv.Atoi(matches[0][3])
-		}
-
-		// "0/0/0 requests for mbufs denied (mbufs/clusters/mbuf+clusters)"
-		matches = regex3Ints.FindAllStringSubmatch(lines[7], 1)
-		if len(matches) >= 1 && len(matches[0]) >= 4 {
-			r.MemoryStatistics.MbufsDenied, _ = strconv.Atoi(matches[0][1])
-			r.MemoryStatistics.MbufClustersDenied, _ = strconv.Atoi(matches[0][2])
-			r.MemoryStatistics.MbufAndClustersDenied, _ = strconv.Atoi(matches[0][2])
-		}
-
-		// "0/0/0 requests for jumbo clusters denied (4k/9k/16k)"
-		matches = regex3Ints.FindAllStringSubmatch(lines[8], 1)
-		if len(matches) >= 1 && len(matches[0]) >= 4 {
-			r.MemoryStatistics.JumboClustersDenied4K, _ = strconv.Atoi(matches[0][1])
-			r.MemoryStatistics.JumboClustersDenied9K, _ = strconv.Atoi(matches[0][2])
-			r.MemoryStatistics.JumboClustersDenied16K, _ = strconv.Atoi(matches[0][3])
-		}
-
-		// "0 requests for sfbufs denied"
-		matches = regex1Ints.FindAllStringSubmatch(lines[9], 1)
-		if len(matches) >= 1 && len(matches[0]) >= 2 {
-			r.MemoryStatistics.SfbufsDenied, _ = strconv.Atoi(matches[0][1])
-		}
-
-		// "0 requests for sfbufs delayed"
-		matches = regex1Ints.FindAllStringSubmatch(lines[10], 1)
-		if len(matches) >= 1 {
-			r.MemoryStatistics.SfbufsDelayed, _ = strconv.Atoi(matches[0][1])
-		}
-
-		// "0 requests for I/O initiated by sendfile"
-		matches = regex1Ints.FindAllStringSubmatch(lines[11], 1)
-		if len(matches) >= 1 {
-			r.MemoryStatistics.IoInit, _ = strconv.Atoi(matches[0][1])
-		}
-
-	}
-
-	// system information
-	r2 = new(systemInformation)
-	err = client.RunCommandAndParse("show system information", r2)
+	err = c.collectSystemInformation(client, ch, labelValues)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not get system information: %w", err)
 	}
 
-	// create LabelSet (target, "model", "os", "os_version", "serial", "hostname", "alias", "slot_id", "state")
-	hardwareLabels = append(labelValues,
-		r2.SysInfo.Model,
-		r2.SysInfo.OS,
-		r2.SysInfo.OSVersion,
-		r2.SysInfo.Serial,
-		r2.SysInfo.Hostname,
-		"", "", "")
-
-	ch <- prometheus.MustNewConstMetric(hardwareInfoDesc, prometheus.GaugeValue, float64(1), hardwareLabels...)
-
-	// gather satellite data
 	if client.Satellite {
+		c.collectSatelites(client, ch, labelValues)
+	}
 
-		// system information of satellites
-		r3 = new(satelliteChassis)
-		err = client.RunCommandAndParse("show chassis satellite detail", r3)
-		// there are various error messages when satellite is not enabled; thus here we just ignore the error and continue
-		if err == nil {
-			for i = range r3.SatelliteInfo.Satellite {
-				// reset labels
-				hardwareLabels = make([]string, 0)
-				// create LabelSet (target, "model", "os", "os_version", "serial", "hostname", "alias", "slot_id", "state")
-				hardwareLabels = append(labelValues,
-					strings.ToLower(r3.SatelliteInfo.Satellite[i].Model),
-					"satellite",
-					r3.SatelliteInfo.Satellite[i].Version,
-					r3.SatelliteInfo.Satellite[i].Serial,
-					"",
-					r3.SatelliteInfo.Satellite[i].Alias,
-					strconv.Itoa(r3.SatelliteInfo.Satellite[i].SlotID),
-					strings.ToLower(r3.SatelliteInfo.Satellite[i].State))
+	return nil
+}
 
-				ch <- prometheus.MustNewConstMetric(hardwareInfoDesc, prometheus.GaugeValue, float64(1), hardwareLabels...)
-			}
-		}
+func (c *systemCollector) collectBuffers(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	r := &buffers{}
+	err := client.RunCommandAndParse("show system buffers", r)
+	if err != nil {
+		return err
+	}
+
+	if r.Output == "" {
+		return nil
+	}
+
+	// this data still needs to be parsed
+	lines := strings.Split(r.Output, "\n")
+
+	for i := range lines {
+		lines[i] = strings.TrimSpace(lines[i])
+	}
+
+	// trim away empty lines
+	lines = lines[1 : len(lines)-1]
+
+	// NOTE: matches[0][0] is always the whole line
+
+	// "3216/15519/18735 mbufs in use (current/cache/total)"
+	matches := regex3Ints.FindAllStringSubmatch(lines[0], 1)
+	if len(matches) >= 1 && len(matches[0]) >= 4 {
+		r.MemoryStatistics.MbufsCurrent, _ = strconv.Atoi(matches[0][1])
+		r.MemoryStatistics.MbufsCache, _ = strconv.Atoi(matches[0][2])
+		r.MemoryStatistics.MbufsTotal, _ = strconv.Atoi(matches[0][3])
+	}
+
+	// "3074/14458/17532/2039110 mbuf clusters in use (current/cache/total/max)"
+	matches = regex4Ints.FindAllStringSubmatch(lines[1], 1)
+	if len(matches) >= 1 && len(matches[0]) >= 5 {
+		r.MemoryStatistics.MbufClustersCurrent, _ = strconv.Atoi(matches[0][1])
+		r.MemoryStatistics.MbufClustersCache, _ = strconv.Atoi(matches[0][2])
+		r.MemoryStatistics.MbufClustersTotal, _ = strconv.Atoi(matches[0][3])
+		r.MemoryStatistics.MbufClustersMax, _ = strconv.Atoi(matches[0][4])
+	}
+
+	// "3069/7557 mbuf+clusters out of packet secondary zone in use (current/cache)"
+	matches = regex2Ints.FindAllStringSubmatch(lines[2], 1)
+	if len(matches) >= 1 && len(matches[0]) >= 3 {
+		r.MemoryStatistics.MbufClustersFromPacketZoneCurrent, _ = strconv.Atoi(matches[0][1])
+		r.MemoryStatistics.MbufClustersFromPacketZoneCache, _ = strconv.Atoi(matches[0][2])
+	}
+
+	// "0/1101/1101/1019555 4k (page size) jumbo clusters in use (current/cache/total/max)"
+	matches = regex4Ints.FindAllStringSubmatch(lines[3], 1)
+	if len(matches) >= 1 && len(matches[0]) >= 5 {
+		r.MemoryStatistics.JumboClustersCurrent4K, _ = strconv.Atoi(matches[0][1])
+		r.MemoryStatistics.JumboClustersCache4K, _ = strconv.Atoi(matches[0][2])
+		r.MemoryStatistics.JumboClustersTotal4K, _ = strconv.Atoi(matches[0][3])
+		r.MemoryStatistics.JumboClustersMax4K, _ = strconv.Atoi(matches[0][4])
+	}
+
+	// "0/1101/1101/1019555 9k (page size) jumbo clusters in use (current/cache/total/max)"
+	matches = regex4Ints.FindAllStringSubmatch(lines[4], 1)
+	if len(matches) >= 1 && len(matches[0]) >= 5 {
+		r.MemoryStatistics.JumboClustersCurrent9K, _ = strconv.Atoi(matches[0][1])
+		r.MemoryStatistics.JumboClustersCache9K, _ = strconv.Atoi(matches[0][2])
+		r.MemoryStatistics.JumboClustersTotal9K, _ = strconv.Atoi(matches[0][3])
+		r.MemoryStatistics.JumboClustersMax9K, _ = strconv.Atoi(matches[0][4])
+	}
+
+	// "0/1101/1101/1019555 16k (page size) jumbo clusters in use (current/cache/total/max)"
+	matches = regex4Ints.FindAllStringSubmatch(lines[5], 1)
+	if len(matches) >= 1 && len(matches[0]) >= 5 {
+		r.MemoryStatistics.JumboClustersCurrent16K, _ = strconv.Atoi(matches[0][1])
+		r.MemoryStatistics.JumboClustersCache16K, _ = strconv.Atoi(matches[0][2])
+		r.MemoryStatistics.JumboClustersTotal16K, _ = strconv.Atoi(matches[0][3])
+		r.MemoryStatistics.JumboClustersMax16K, _ = strconv.Atoi(matches[0][4])
+	}
+
+	// "6952K/37199K/44152K bytes allocated to network (current/cache/total)"
+	matches = regexNetworkAlloc.FindAllStringSubmatch(lines[6], 1)
+	if len(matches) >= 1 && len(matches[0]) >= 4 {
+		r.MemoryStatistics.NetworkAllocCurrent, _ = strconv.Atoi(matches[0][1])
+		r.MemoryStatistics.NetworkAllocCache, _ = strconv.Atoi(matches[0][2])
+		r.MemoryStatistics.NetworkAllocTotal, _ = strconv.Atoi(matches[0][3])
+	}
+
+	// "0/0/0 requests for mbufs denied (mbufs/clusters/mbuf+clusters)"
+	matches = regex3Ints.FindAllStringSubmatch(lines[7], 1)
+	if len(matches) >= 1 && len(matches[0]) >= 4 {
+		r.MemoryStatistics.MbufsDenied, _ = strconv.Atoi(matches[0][1])
+		r.MemoryStatistics.MbufClustersDenied, _ = strconv.Atoi(matches[0][2])
+		r.MemoryStatistics.MbufAndClustersDenied, _ = strconv.Atoi(matches[0][2])
+	}
+
+	// "0/0/0 requests for jumbo clusters denied (4k/9k/16k)"
+	matches = regex3Ints.FindAllStringSubmatch(lines[8], 1)
+	if len(matches) >= 1 && len(matches[0]) >= 4 {
+		r.MemoryStatistics.JumboClustersDenied4K, _ = strconv.Atoi(matches[0][1])
+		r.MemoryStatistics.JumboClustersDenied9K, _ = strconv.Atoi(matches[0][2])
+		r.MemoryStatistics.JumboClustersDenied16K, _ = strconv.Atoi(matches[0][3])
+	}
+
+	// "0 requests for sfbufs denied"
+	matches = regex1Ints.FindAllStringSubmatch(lines[9], 1)
+	if len(matches) >= 1 && len(matches[0]) >= 2 {
+		r.MemoryStatistics.SfbufsDenied, _ = strconv.Atoi(matches[0][1])
+	}
+
+	// "0 requests for sfbufs delayed"
+	matches = regex1Ints.FindAllStringSubmatch(lines[10], 1)
+	if len(matches) >= 1 {
+		r.MemoryStatistics.SfbufsDelayed, _ = strconv.Atoi(matches[0][1])
+	}
+
+	// "0 requests for I/O initiated by sendfile"
+	matches = regex1Ints.FindAllStringSubmatch(lines[11], 1)
+	if len(matches) >= 1 {
+		r.MemoryStatistics.IoInit, _ = strconv.Atoi(matches[0][1])
 	}
 
 	ch <- prometheus.MustNewConstMetric(mbufsCurrentDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufsCurrent), labelValues...)
@@ -334,7 +292,7 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 	ch <- prometheus.MustNewConstMetric(mbufClustersFromPacketZoneCurrentDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersFromPacketZoneCurrent), labelValues...)
 	ch <- prometheus.MustNewConstMetric(mbufClustersFromPacketZoneCacheDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersFromPacketZoneCache), labelValues...)
 
-	l = append(labelValues, "4k")
+	l := append(labelValues, "4k")
 	ch <- prometheus.MustNewConstMetric(jumboClustersCurrentDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersCurrent4K), l...)
 	ch <- prometheus.MustNewConstMetric(jumboClustersCacheDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersCache4K), l...)
 	ch <- prometheus.MustNewConstMetric(jumboClustersTotalDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersTotal4K), l...)
@@ -367,4 +325,47 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 	ch <- prometheus.MustNewConstMetric(networkAllocTotalDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.NetworkAllocTotal*1024), labelValues...)
 
 	return nil
+}
+
+func (c *systemCollector) collectSystemInformation(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	r := &systemInformation{}
+	err := client.RunCommandAndParse("show system information", r)
+	if err != nil {
+		return err
+	}
+
+	hardwareLabels := append(labelValues,
+		r.SysInfo.Model,
+		r.SysInfo.OS,
+		r.SysInfo.OSVersion,
+		r.SysInfo.Serial,
+		r.SysInfo.Hostname,
+		"", "", "")
+
+	ch <- prometheus.MustNewConstMetric(hardwareInfoDesc, prometheus.GaugeValue, float64(1), hardwareLabels...)
+
+	return nil
+}
+
+func (c *systemCollector) collectSatelites(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) {
+	r := &satelliteChassis{}
+	err := client.RunCommandAndParse("show chassis satellite detail", r)
+	if err != nil {
+		// there are various error messages when satellite is not enabled; thus here we just ignore the error and continue
+		return
+	}
+
+	for i := range r.SatelliteInfo.Satellite {
+		l := append(labelValues,
+			strings.ToLower(r.SatelliteInfo.Satellite[i].Model),
+			"satellite",
+			r.SatelliteInfo.Satellite[i].Version,
+			r.SatelliteInfo.Satellite[i].Serial,
+			"",
+			r.SatelliteInfo.Satellite[i].Alias,
+			strconv.Itoa(r.SatelliteInfo.Satellite[i].SlotID),
+			strings.ToLower(r.SatelliteInfo.Satellite[i].State))
+
+		ch <- prometheus.MustNewConstMetric(hardwareInfoDesc, prometheus.GaugeValue, float64(1), l...)
+	}
 }

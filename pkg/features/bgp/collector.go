@@ -1,6 +1,8 @@
 package bgp
 
 import (
+	"math"
+
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
@@ -11,15 +13,17 @@ import (
 const prefix string = "junos_bgp_session_"
 
 var (
-	upDesc                 *prometheus.Desc
-	receivedPrefixesDesc   *prometheus.Desc
-	acceptedPrefixesDesc   *prometheus.Desc
-	rejectedPrefixesDesc   *prometheus.Desc
-	activePrefixesDesc     *prometheus.Desc
-	advertisedPrefixesDesc *prometheus.Desc
-	inputMessagesDesc      *prometheus.Desc
-	outputMessagesDesc     *prometheus.Desc
-	flapsDesc              *prometheus.Desc
+	upDesc                      *prometheus.Desc
+	receivedPrefixesDesc        *prometheus.Desc
+	acceptedPrefixesDesc        *prometheus.Desc
+	rejectedPrefixesDesc        *prometheus.Desc
+	activePrefixesDesc          *prometheus.Desc
+	advertisedPrefixesDesc      *prometheus.Desc
+	inputMessagesDesc           *prometheus.Desc
+	outputMessagesDesc          *prometheus.Desc
+	flapsDesc                   *prometheus.Desc
+	prefixesLimitCountDesc      *prometheus.Desc
+	prefixesLimitPercentageDesc *prometheus.Desc
 )
 
 func init() {
@@ -30,11 +34,14 @@ func init() {
 	flapsDesc = prometheus.NewDesc(prefix+"flap_count", "Number of session flaps", l, nil)
 
 	l = append(l, "table")
+
 	receivedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_received_count", "Number of received prefixes", l, nil)
 	acceptedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_accepted_count", "Number of accepted prefixes", l, nil)
 	rejectedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_rejected_count", "Number of rejected prefixes", l, nil)
 	activePrefixesDesc = prometheus.NewDesc(prefix+"prefixes_active_count", "Number of active prefixes (best route in RIB)", l, nil)
 	advertisedPrefixesDesc = prometheus.NewDesc(prefix+"prefixes_advertised_count", "Number of prefixes announced to peer", l, nil)
+	prefixesLimitPercentageDesc = prometheus.NewDesc(prefix+"prefixes_limit_percentage", "percentage of received prefixes against prefix-limit", l, nil)
+	prefixesLimitCountDesc = prometheus.NewDesc(prefix+"prefixes_limit_count", "prefix-count variable set in prefix-limit", l, nil)
 }
 
 type bgpCollector struct {
@@ -62,6 +69,8 @@ func (*bgpCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- inputMessagesDesc
 	ch <- outputMessagesDesc
 	ch <- flapsDesc
+	ch <- prefixesLimitCountDesc
+	ch <- prefixesLimitPercentageDesc
 }
 
 // Collect collects metrics from JunOS
@@ -112,6 +121,27 @@ func (c *bgpCollector) collectForPeer(p peer, ch chan<- prometheus.Metric, label
 }
 
 func (*bgpCollector) collectRIBForPeer(p peer, ch chan<- prometheus.Metric, labelValues []string) {
+	var rib_name string
+
+	// derive the name of the rib for which the prefix limit is configured by examining the NLRI type
+	switch nlri_type := p.BGPOI.PrefixLimit.NlriType; nlri_type {
+	case "inet-unicast":
+		rib_name = "inet.0"
+	case "inet6-unicast":
+		rib_name = "inet6.0"
+	default:
+		rib_name = ""
+	}
+
+	// if the prefix limit is configured inside a routing instance we need to prepend the RTI name to the rib name
+	if p.CFGRTI != "" && p.CFGRTI != "master" && rib_name != "" {
+		rib_name = p.CFGRTI + "." + rib_name
+	}
+
+	if p.BGPOI.PrefixLimit.PrefixCount > 0 {
+		ch <- prometheus.MustNewConstMetric(prefixesLimitCountDesc, prometheus.GaugeValue, float64(p.BGPOI.PrefixLimit.PrefixCount), append(labelValues, rib_name)...)
+	}
+
 	for _, rib := range p.RIBs {
 		l := append(labelValues, rib.Name)
 		ch <- prometheus.MustNewConstMetric(receivedPrefixesDesc, prometheus.GaugeValue, float64(rib.ReceivedPrefixes), l...)
@@ -119,5 +149,12 @@ func (*bgpCollector) collectRIBForPeer(p peer, ch chan<- prometheus.Metric, labe
 		ch <- prometheus.MustNewConstMetric(rejectedPrefixesDesc, prometheus.GaugeValue, float64(rib.RejectedPrefixes), l...)
 		ch <- prometheus.MustNewConstMetric(activePrefixesDesc, prometheus.GaugeValue, float64(rib.ActivePrefixes), l...)
 		ch <- prometheus.MustNewConstMetric(advertisedPrefixesDesc, prometheus.GaugeValue, float64(rib.AdvertisedPrefixes), l...)
+
+		if rib.Name == rib_name {
+			if p.BGPOI.PrefixLimit.PrefixCount > 0 {
+				prefixesLimitPercent := float64(rib.ReceivedPrefixes) / float64(p.BGPOI.PrefixLimit.PrefixCount)
+				ch <- prometheus.MustNewConstMetric(prefixesLimitPercentageDesc, prometheus.GaugeValue, math.Round(prefixesLimitPercent*100)/100, l...)
+			}
+		}
 	}
 }

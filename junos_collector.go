@@ -74,7 +74,7 @@ func deviceInterfaceRegex(host string) *regexp.Regexp {
 			return regex
 		}
 
-		log.Errorf("device specific dynamic label regex %s invalid: %w", dc.IfDescReg, err)
+		log.Errorf("device specific dynamic label regex %s invalid: %v", dc.IfDescReg, err)
 	}
 
 	if len(cfg.IfDescReg) > 0 {
@@ -83,7 +83,7 @@ func deviceInterfaceRegex(host string) *regexp.Regexp {
 			return regex
 		}
 
-		log.Errorf("global dynamic label regex (%s) invalid: %w", cfg.IfDescReg, err)
+		log.Errorf("global dynamic label regex (%s) invalid: %v", cfg.IfDescReg, err)
 	}
 
 	return defaultIfDescReg

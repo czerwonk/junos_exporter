@@ -37,11 +37,11 @@ type interfaceCollector struct {
 	receiveUnicastsDesc         *prometheus.Desc
 	receiveBroadcastsDesc       *prometheus.Desc
 	receiveMulticastsDesc       *prometheus.Desc
-	receiveCrcErrorsDesc        *prometheus.Desc
+	receiveCRCErrorsDesc        *prometheus.Desc
 	transmitUnicastsDesc        *prometheus.Desc
 	transmitBroadcastsDesc      *prometheus.Desc
 	transmitMulticastsDesc      *prometheus.Desc
-	transmitCrcErrorsDesc       *prometheus.Desc
+	transmitCRCErrorsDesc       *prometheus.Desc
 	fecCcwCountDesc             *prometheus.Desc
 	fecNccwCountDesc            *prometheus.Desc
 	fecCcwErrorRateDesc         *prometheus.Desc
@@ -95,11 +95,11 @@ func (c *interfaceCollector) init() {
 	c.receiveUnicastsDesc = prometheus.NewDesc(prefix+"receive_unicasts_packets", "Received unicast packets", l, nil)
 	c.receiveBroadcastsDesc = prometheus.NewDesc(prefix+"receive_broadcasts_packets", "Received broadcast packets", l, nil)
 	c.receiveMulticastsDesc = prometheus.NewDesc(prefix+"receive_multicasts_packets", "Received multicast packets", l, nil)
-	c.receiveCrcErrorsDesc = prometheus.NewDesc(prefix+"receive_errors_crc_packets", "Number of CRC error incoming packets", l, nil)
+	c.receiveCRCErrorsDesc = prometheus.NewDesc(prefix+"receive_errors_crc_packets", "Number of CRC error incoming packets", l, nil)
 	c.transmitUnicastsDesc = prometheus.NewDesc(prefix+"transmit_unicasts_packets", "Transmitted unicast packets", l, nil)
 	c.transmitBroadcastsDesc = prometheus.NewDesc(prefix+"transmit_broadcasts_packets", "Transmitted broadcast packets", l, nil)
 	c.transmitMulticastsDesc = prometheus.NewDesc(prefix+"transmit_multicasts_packets", "Transmitted multicast packets", l, nil)
-	c.transmitCrcErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors_crc_packets", "Number of CRC error outgoing packets", l, nil)
+	c.transmitCRCErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors_crc_packets", "Number of CRC error outgoing packets", l, nil)
 	c.fecCcwCountDesc = prometheus.NewDesc(prefix+"fec_ccw_count", "Number FEC Corrected Errors", l, nil)
 	c.fecNccwCountDesc = prometheus.NewDesc(prefix+"fec_nccw_count", "Number FEC Uncorrected Errors", l, nil)
 	c.fecCcwErrorRateDesc = prometheus.NewDesc(prefix+"fec_ccw_error_rate", "Number FEC Corrected Errors Rate", l, nil)
@@ -137,11 +137,11 @@ func (c *interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.receiveUnicastsDesc
 	ch <- c.receiveBroadcastsDesc
 	ch <- c.receiveMulticastsDesc
-	ch <- c.receiveCrcErrorsDesc
+	ch <- c.receiveCRCErrorsDesc
 	ch <- c.transmitUnicastsDesc
 	ch <- c.transmitBroadcastsDesc
 	ch <- c.transmitMulticastsDesc
-	ch <- c.transmitCrcErrorsDesc
+	ch <- c.transmitCRCErrorsDesc
 	ch <- c.fecCcwCountDesc
 	ch <- c.fecNccwCountDesc
 	ch <- c.fecCcwErrorRateDesc
@@ -299,7 +299,7 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, device *conn
 				speed = "10000000000"
 			} else {
 				speed = strings.Replace(s.Speed, "Auto", "0", 1)
-				speed = strings.Replace(s.Speed, "Unspecified", "0", 1)
+				speed = strings.Replace(speed, "Unspecified", "0", 1)
 			}
 		}
 		if strings.Contains(s.Speed, "Unlimited") {
@@ -328,11 +328,11 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, device *conn
 		ch <- prometheus.MustNewConstMetric(c.receiveUnicastsDesc, prometheus.CounterValue, s.ReceiveUnicasts, l...)
 		ch <- prometheus.MustNewConstMetric(c.receiveBroadcastsDesc, prometheus.CounterValue, s.ReceiveBroadcasts, l...)
 		ch <- prometheus.MustNewConstMetric(c.receiveMulticastsDesc, prometheus.CounterValue, s.ReceiveMulticasts, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveCrcErrorsDesc, prometheus.CounterValue, s.ReceiveCRCErrors, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveCRCErrorsDesc, prometheus.CounterValue, s.ReceiveCRCErrors, l...)
 		ch <- prometheus.MustNewConstMetric(c.transmitUnicastsDesc, prometheus.CounterValue, s.TransmitUnicasts, l...)
 		ch <- prometheus.MustNewConstMetric(c.transmitBroadcastsDesc, prometheus.CounterValue, s.TransmitBroadcasts, l...)
 		ch <- prometheus.MustNewConstMetric(c.transmitMulticastsDesc, prometheus.CounterValue, s.TransmitMulticasts, l...)
-		ch <- prometheus.MustNewConstMetric(c.transmitCrcErrorsDesc, prometheus.CounterValue, s.TransmitCRCErrors, l...)
+		ch <- prometheus.MustNewConstMetric(c.transmitCRCErrorsDesc, prometheus.CounterValue, s.TransmitCRCErrors, l...)
 		ch <- prometheus.MustNewConstMetric(c.fecCcwCountDesc, prometheus.CounterValue, s.FecCcwCount, l...)
 		ch <- prometheus.MustNewConstMetric(c.fecNccwCountDesc, prometheus.CounterValue, s.FecNccwCount, l...)
 		ch <- prometheus.MustNewConstMetric(c.fecCcwErrorRateDesc, prometheus.CounterValue, s.FecCcwErrorRate, l...)

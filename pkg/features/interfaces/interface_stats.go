@@ -26,11 +26,11 @@ type interfaceStats struct {
 	ReceiveUnicasts         float64
 	ReceiveBroadcasts       float64
 	ReceiveMulticasts       float64
-	ReceiveCrcErrors        float64
+	ReceiveCRCErrors        float64
 	TransmitUnicasts        float64
 	TransmitBroadcasts      float64
 	TransmitMulticasts      float64
-	TransmitCrcErrors       float64
+	TransmitCRCErrors       float64
 	FecCcwCount             float64
 	FecNccwCount            float64
 	FecCcwErrorRate         float64

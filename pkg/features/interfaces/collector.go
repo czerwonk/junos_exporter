@@ -204,22 +204,22 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*interfaceSta
 			ReceiveUnicasts:         float64(phy.MACStatistics.InputUnicasts),
 			ReceiveBroadcasts:       float64(phy.MACStatistics.InputBroadcasts),
 			ReceiveMulticasts:       float64(phy.MACStatistics.InputMulticasts),
-			ReceiveCrcErrors:        float64(phy.MACStatistics.InputCrcErrors),
+			ReceiveCRCErrors:        float64(phy.MACStatistics.InputCRCErrors),
 			TransmitUnicasts:        float64(phy.MACStatistics.OutputUnicasts),
 			TransmitBroadcasts:      float64(phy.MACStatistics.OutputBroadcasts),
 			TransmitMulticasts:      float64(phy.MACStatistics.OutputMulticasts),
-			TransmitCrcErrors:       float64(phy.MACStatistics.OutputCrcErrors),
+			TransmitCRCErrors:       float64(phy.MACStatistics.OutputCRCErrors),
 			FecCcwCount:             float64(phy.FECStatistics.NumberfecCcwCount),
 			FecNccwCount:            float64(phy.FECStatistics.NumberfecNccwCount),
 			FecCcwErrorRate:         float64(phy.FECStatistics.NumberfecCcwErrorRate),
 			FecNccwErrorRate:        float64(phy.FECStatistics.NumberfecNccwErrorRate),
-			ReceiveOversizedFrames:  float64(phy.EthernetMacStatistics.InputOversizedFrames),
-			ReceiveJabberFrames:     float64(phy.EthernetMacStatistics.InputJabberFrames),
-			ReceiveFragmentFrames:   float64(phy.EthernetMacStatistics.InputFragmentFrames),
-			ReceiveVlanTaggedFrames: float64(phy.EthernetMacStatistics.InputVlanTaggedFrames),
-			ReceiveCodeViolations:   float64(phy.EthernetMacStatistics.InputCodeViolations),
-			ReceiveTotalErrors:      float64(phy.EthernetMacStatistics.InputTotalErrors),
-			TransmitTotalErrors:     float64(phy.EthernetMacStatistics.OutputTotalErrors),
+			ReceiveOversizedFrames:  float64(phy.MACStatistics.InputOversizedFrames),
+			ReceiveJabberFrames:     float64(phy.MACStatistics.InputJabberFrames),
+			ReceiveFragmentFrames:   float64(phy.MACStatistics.InputFragmentFrames),
+			ReceiveVlanTaggedFrames: float64(phy.MACStatistics.InputVlanTaggedFrames),
+			ReceiveCodeViolations:   float64(phy.MACStatistics.InputCodeViolations),
+			ReceiveTotalErrors:      float64(phy.MACStatistics.InputTotalErrors),
+			TransmitTotalErrors:     float64(phy.MACStatistics.OutputTotalErrors),
 		}
 
 		if phy.InterfaceFlapped.Value != "Never" {
@@ -328,11 +328,11 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, device *conn
 		ch <- prometheus.MustNewConstMetric(c.receiveUnicastsDesc, prometheus.CounterValue, s.ReceiveUnicasts, l...)
 		ch <- prometheus.MustNewConstMetric(c.receiveBroadcastsDesc, prometheus.CounterValue, s.ReceiveBroadcasts, l...)
 		ch <- prometheus.MustNewConstMetric(c.receiveMulticastsDesc, prometheus.CounterValue, s.ReceiveMulticasts, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveCrcErrorsDesc, prometheus.CounterValue, s.ReceiveCrcErrors, l...)
+		ch <- prometheus.MustNewConstMetric(c.receiveCrcErrorsDesc, prometheus.CounterValue, s.ReceiveCRCErrors, l...)
 		ch <- prometheus.MustNewConstMetric(c.transmitUnicastsDesc, prometheus.CounterValue, s.TransmitUnicasts, l...)
 		ch <- prometheus.MustNewConstMetric(c.transmitBroadcastsDesc, prometheus.CounterValue, s.TransmitBroadcasts, l...)
 		ch <- prometheus.MustNewConstMetric(c.transmitMulticastsDesc, prometheus.CounterValue, s.TransmitMulticasts, l...)
-		ch <- prometheus.MustNewConstMetric(c.transmitCrcErrorsDesc, prometheus.CounterValue, s.TransmitCrcErrors, l...)
+		ch <- prometheus.MustNewConstMetric(c.transmitCrcErrorsDesc, prometheus.CounterValue, s.TransmitCRCErrors, l...)
 		ch <- prometheus.MustNewConstMetric(c.fecCcwCountDesc, prometheus.CounterValue, s.FecCcwCount, l...)
 		ch <- prometheus.MustNewConstMetric(c.fecNccwCountDesc, prometheus.CounterValue, s.FecNccwCount, l...)
 		ch <- prometheus.MustNewConstMetric(c.fecCcwErrorRateDesc, prometheus.CounterValue, s.FecCcwErrorRate, l...)

@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/czerwonk/junos_exporter/config"
-	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/czerwonk/junos_exporter/internal/config"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"github.com/pkg/errors"
 )
 
@@ -19,13 +19,18 @@ func devicesForConfig(cfg *config.Config) ([]*connector.Device, error) {
 		cfg.Devices = devicesFromTargets(cfg.Targets)
 	}
 
-	devs := make([]*connector.Device, len(cfg.Devices))
-	var err error
-	for i, d := range cfg.Devices {
-		devs[i], err = deviceFromDeviceConfig(d, cfg)
+	devs := make([]*connector.Device, 0)
+	for _, d := range cfg.Devices {
+		if d.IsHostPattern {
+			continue
+		}
+
+		dev, err := deviceFromDeviceConfig(d, d.Host, cfg)
 		if err != nil {
 			return nil, err
 		}
+
+		devs = append(devs, dev)
 	}
 
 	return devs, nil
@@ -42,7 +47,7 @@ func devicesFromTargets(targets []string) []*config.DeviceConfig {
 	return devices
 }
 
-func deviceFromDeviceConfig(device *config.DeviceConfig, cfg *config.Config) (*connector.Device, error) {
+func deviceFromDeviceConfig(device *config.DeviceConfig, hostname string, cfg *config.Config) (*connector.Device, error) {
 	auth, err := authForDevice(device, cfg)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not initialize config for device %s", device.Host)
@@ -56,7 +61,7 @@ func deviceFromDeviceConfig(device *config.DeviceConfig, cfg *config.Config) (*c
 	}
 
 	return &connector.Device{
-		Host: device.Host,
+		Host: hostname,
 		Auth: auth,
 	}, nil
 }

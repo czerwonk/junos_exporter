@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/czerwonk/junos_exporter/connector"
-	"github.com/czerwonk/junos_exporter/interfacelabels"
-	"github.com/czerwonk/junos_exporter/rpc"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
+	"github.com/czerwonk/junos_exporter/pkg/interfacelabels"
+	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
@@ -39,7 +39,7 @@ func newJunosCollector(devices []*connector.Device, connectionManager *connector
 
 	clients := make(map[*connector.Device]*rpc.Client)
 
-	for index, d := range devices {
+	for _, d := range devices {
 		cl, err := clientForDevice(d, connManager)
 		if err != nil {
 			log.Errorf("Could not connect to %s: %s", d, err)
@@ -49,23 +49,8 @@ func newJunosCollector(devices []*connector.Device, connectionManager *connector
 		clients[d] = cl
 
 		if *dynamicIfaceLabels {
-			regex := defaultIfDescReg
-			if cfg.IfDescReg != "" {
-				regex, err = regexp.Compile(cfg.IfDescReg)
-				if err != nil {
-				        log.Errorf("Global dynamic label regex invalid: %s", cfg.IfDescReg)
-				        regex = defaultIfDescReg
-				}
-			} else if !(*ignoreConfigTargets) && index < len(cfg.Devices) && cfg.Devices[index].IfDescReg != "" {
-				regex, err = regexp.Compile(cfg.Devices[index].IfDescReg)
-				if err != nil {
-				     log.Errorf("Device specific dynamic label regex invalid: %s", cfg.Devices[index].IfDescReg)
-				     regex = defaultIfDescReg
-				}
-			}
-
+			regex := deviceInterfaceRegex(d.Host)
 			err = l.CollectDescriptions(d, cl, regex)
-
 			if err != nil {
 				log.Errorf("Could not get interface descriptions %s: %s", d, err)
 				continue
@@ -78,6 +63,30 @@ func newJunosCollector(devices []*connector.Device, connectionManager *connector
 		collectors: collectorsForDevices(devices, cfg, logicalSystem, l),
 		clients:    clients,
 	}
+}
+
+func deviceInterfaceRegex(host string) *regexp.Regexp {
+	dc := cfg.FindDeviceConfig(host)
+
+	if len(dc.IfDescReg) > 0 {
+		regex, err := regexp.Compile(dc.IfDescReg)
+		if err == nil {
+			return regex
+		}
+
+		log.Errorf("device specific dynamic label regex %s invalid: %v", dc.IfDescReg, err)
+	}
+
+	if len(cfg.IfDescReg) > 0 {
+		regex, err := regexp.Compile(cfg.IfDescReg)
+		if err == nil {
+			return regex
+		}
+
+		log.Errorf("global dynamic label regex (%s) invalid: %v", cfg.IfDescReg, err)
+	}
+
+	return defaultIfDescReg
 }
 
 func clientForDevice(device *connector.Device, connManager *connector.SSHConnectionManager) (*rpc.Client, error) {

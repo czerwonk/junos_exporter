@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,19 +12,18 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/czerwonk/junos_exporter/connector"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
 
-	"github.com/czerwonk/junos_exporter/config"
+	"github.com/czerwonk/junos_exporter/internal/config"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "0.9.15"
+const version string = "0.10.0"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
-	ignoreConfigTargets         = flag.Bool("config.ignore-targets", false, "Ignore check if target is specified in config")
 	listenAddress               = flag.String("web.listen-address", ":9326", "Address on which to expose metrics and web interface.")
 	metricsPath                 = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	sshHosts                    = flag.String("ssh.targets", "", "Hosts to scrape")
@@ -35,6 +33,7 @@ var (
 	sshReconnectInterval        = flag.Duration("ssh.reconnect-interval", 30*time.Second, "Duration to wait before reconnecting to a device after connection got lost")
 	sshKeepAliveInterval        = flag.Duration("ssh.keep-alive-interval", 10*time.Second, "Duration to wait between keep alive messages")
 	sshKeepAliveTimeout         = flag.Duration("ssh.keep-alive-timeout", 15*time.Second, "Duration to wait for keep alive message response")
+	sshExpireTimeout            = flag.Duration("ssh.expire-timeout", 15*time.Minute, "Duration after an connection is terminated when it is not used")
 	debug                       = flag.Bool("debug", false, "Show verbose debug output in log")
 	alarmEnabled                = flag.Bool("alarm.enabled", true, "Scrape Alarm metrics")
 	bgpEnabled                  = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
@@ -69,7 +68,7 @@ var (
 	lacpEnabled                 = flag.Bool("lacp.enabled", false, "Scrape LACP metrics")
 	bfdEnabled                  = flag.Bool("bfd.enabled", false, "Scrape BFD metrics")
 	vpwsEnabled                 = flag.Bool("vpws.enabled", false, "Scrape EVPN VPWS metrics")
-	mpls_lspEnabled             = flag.Bool("mpls_lsp.enabled", false, "Scrape MPLS LSP metrics")
+	mplsLSPEnabled              = flag.Bool("mpls_lsp.enabled", false, "Scrape MPLS LSP metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -178,7 +177,7 @@ func loadConfig() (*config.Config, error) {
 	}
 
 	log.Infoln("Loading config from", *configFile)
-	b, err := ioutil.ReadFile(*configFile)
+	b, err := os.ReadFile(*configFile)
 	if err != nil {
 		return nil, err
 	}
@@ -218,6 +217,10 @@ func loadConfigFromFlags() *config.Config {
 	f.System = *systemEnabled
 	f.Power = *powerEnabled
 	f.MAC = *macEnabled
+	f.LACP = *lacpEnabled
+	f.BFD = *bfdEnabled
+	f.VPWS = *vpwsEnabled
+	f.MPLSLSP = *mplsLSPEnabled
 
 	return c
 }
@@ -227,6 +230,7 @@ func connectionManager() *connector.SSHConnectionManager {
 		connector.WithReconnectInterval(*sshReconnectInterval),
 		connector.WithKeepAliveInterval(*sshKeepAliveInterval),
 		connector.WithKeepAliveTimeout(*sshKeepAliveTimeout),
+		connector.WithExpiredConnectionTimeout(*sshExpireTimeout),
 	}
 
 	return connector.NewConnectionManager(opts...)
@@ -307,16 +311,19 @@ func devicesForRequest(r *http.Request) ([]*connector.Device, error) {
 		}
 	}
 
-	if *ignoreConfigTargets {
-		d, err := deviceFromDeviceConfig(
-			&config.DeviceConfig{
-				Host: reqTarget,
-			}, cfg)
-		if err != nil {
-			return nil, err
+	for _, dc := range cfg.Devices {
+		if !dc.IsHostPattern {
+			continue
 		}
 
-		return []*connector.Device{d}, nil
+		if dc.HostPattern.MatchString(reqTarget) {
+			d, err := deviceFromDeviceConfig(dc, reqTarget, cfg)
+			if err != nil {
+				return nil, err
+			}
+
+			return []*connector.Device{d}, nil
+		}
 	}
 
 	return nil, fmt.Errorf("the target '%s' is not defined in the configuration file", reqTarget)

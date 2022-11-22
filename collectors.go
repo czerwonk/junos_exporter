@@ -1,40 +1,40 @@
 package main
 
 import (
-	"github.com/czerwonk/junos_exporter/accounting"
-	"github.com/czerwonk/junos_exporter/alarm"
-	"github.com/czerwonk/junos_exporter/bfd"
-	"github.com/czerwonk/junos_exporter/bgp"
-	"github.com/czerwonk/junos_exporter/collector"
-	"github.com/czerwonk/junos_exporter/config"
-	"github.com/czerwonk/junos_exporter/connector"
-	"github.com/czerwonk/junos_exporter/environment"
-	"github.com/czerwonk/junos_exporter/firewall"
-	"github.com/czerwonk/junos_exporter/fpc"
-	"github.com/czerwonk/junos_exporter/interfacediagnostics"
-	"github.com/czerwonk/junos_exporter/interfacelabels"
-	"github.com/czerwonk/junos_exporter/interfacequeue"
-	"github.com/czerwonk/junos_exporter/interfaces"
-	"github.com/czerwonk/junos_exporter/ipsec"
-	"github.com/czerwonk/junos_exporter/isis"
-	"github.com/czerwonk/junos_exporter/l2circuit"
-	"github.com/czerwonk/junos_exporter/lacp"
-	"github.com/czerwonk/junos_exporter/ldp"
-	"github.com/czerwonk/junos_exporter/mac"
-	"github.com/czerwonk/junos_exporter/mpls_lsp"
-	"github.com/czerwonk/junos_exporter/nat"
-	"github.com/czerwonk/junos_exporter/nat2"
-	"github.com/czerwonk/junos_exporter/ospf"
-	"github.com/czerwonk/junos_exporter/power"
-	"github.com/czerwonk/junos_exporter/route"
-	"github.com/czerwonk/junos_exporter/routingengine"
-	"github.com/czerwonk/junos_exporter/rpki"
-	"github.com/czerwonk/junos_exporter/rpm"
-	"github.com/czerwonk/junos_exporter/security"
-	"github.com/czerwonk/junos_exporter/storage"
-	"github.com/czerwonk/junos_exporter/system"
-	"github.com/czerwonk/junos_exporter/vrrp"
-	"github.com/czerwonk/junos_exporter/vpws"
+	"github.com/czerwonk/junos_exporter/internal/config"
+	"github.com/czerwonk/junos_exporter/pkg/collector"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
+	"github.com/czerwonk/junos_exporter/pkg/features/accounting"
+	"github.com/czerwonk/junos_exporter/pkg/features/alarm"
+	"github.com/czerwonk/junos_exporter/pkg/features/bfd"
+	"github.com/czerwonk/junos_exporter/pkg/features/bgp"
+	"github.com/czerwonk/junos_exporter/pkg/features/environment"
+	"github.com/czerwonk/junos_exporter/pkg/features/firewall"
+	"github.com/czerwonk/junos_exporter/pkg/features/fpc"
+	"github.com/czerwonk/junos_exporter/pkg/features/interfacediagnostics"
+	"github.com/czerwonk/junos_exporter/pkg/features/interfacequeue"
+	"github.com/czerwonk/junos_exporter/pkg/features/interfaces"
+	"github.com/czerwonk/junos_exporter/pkg/features/ipsec"
+	"github.com/czerwonk/junos_exporter/pkg/features/isis"
+	"github.com/czerwonk/junos_exporter/pkg/features/l2circuit"
+	"github.com/czerwonk/junos_exporter/pkg/features/lacp"
+	"github.com/czerwonk/junos_exporter/pkg/features/ldp"
+	"github.com/czerwonk/junos_exporter/pkg/features/mac"
+	"github.com/czerwonk/junos_exporter/pkg/features/mplslsp"
+	"github.com/czerwonk/junos_exporter/pkg/features/nat"
+	"github.com/czerwonk/junos_exporter/pkg/features/nat2"
+	"github.com/czerwonk/junos_exporter/pkg/features/ospf"
+	"github.com/czerwonk/junos_exporter/pkg/features/power"
+	"github.com/czerwonk/junos_exporter/pkg/features/route"
+	"github.com/czerwonk/junos_exporter/pkg/features/routingengine"
+	"github.com/czerwonk/junos_exporter/pkg/features/rpki"
+	"github.com/czerwonk/junos_exporter/pkg/features/rpm"
+	"github.com/czerwonk/junos_exporter/pkg/features/security"
+	"github.com/czerwonk/junos_exporter/pkg/features/storage"
+	"github.com/czerwonk/junos_exporter/pkg/features/system"
+	"github.com/czerwonk/junos_exporter/pkg/features/vpws"
+	"github.com/czerwonk/junos_exporter/pkg/features/vrrp"
+	"github.com/czerwonk/junos_exporter/pkg/interfacelabels"
 )
 
 type collectors struct {
@@ -107,7 +107,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "mac", f.MAC, mac.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "vrrp", f.VRRP, vrrp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "vpws", f.VPWS, vpws.NewCollector)
-	c.addCollectorIfEnabledForDevice(device, "mpls_lsp", f.MPLS_LSP, mpls_lsp.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "mpls_lsp", f.MPLSLSP, mplslsp.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

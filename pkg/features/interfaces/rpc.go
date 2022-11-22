@@ -62,14 +62,21 @@ type lagTrafficStat struct {
 }
 
 type ethernetMACStat struct {
-	InputUnicasts    uint64 `xml:"input-unicasts"`
-	InputBroadcasts  uint64 `xml:"input-broadcasts"`
-	InputMulticasts  uint64 `xml:"input-multicasts"`
-	InputCrcErrors   uint64 `xml:"input-crc-errors"`
-	OutputUnicasts   uint64 `xml:"output-unicasts"`
-	OutputBroadcasts uint64 `xml:"output-broadcasts"`
-	OutputMulticasts uint64 `xml:"output-multicasts"`
-	OutputCrcErrors  uint64 `xml:"output-crc-errors"`
+	InputUnicasts         uint64 `xml:"input-unicasts"`
+	InputBroadcasts       uint64 `xml:"input-broadcasts"`
+	InputMulticasts       uint64 `xml:"input-multicasts"`
+	InputCrcErrors        uint64 `xml:"input-crc-errors"`
+	OutputUnicasts        uint64 `xml:"output-unicasts"`
+	OutputBroadcasts      uint64 `xml:"output-broadcasts"`
+	OutputMulticasts      uint64 `xml:"output-multicasts"`
+	OutputCrcErrors       uint64 `xml:"output-crc-errors"`
+	InputOversizedFrames  uint64 `xml:"input-oversized-frames"`
+	InputJabberFrames     uint64 `xml:"input-jabber-frames"`
+	InputFragmentFrames   uint64 `xml:"input-fragment-frames"`
+	InputVlanTaggedFrames uint64 `xml:"input-vlan-tagged-frames"`
+	InputCodeViolations   uint64 `xml:"input-code-violations"`
+	InputTotalErrors      uint64 `xml:"input-total-errors"`
+	OutputTotalErrors     uint64 `xml:"output-total-errors"`
 }
 
 type ethernetFECStat struct {

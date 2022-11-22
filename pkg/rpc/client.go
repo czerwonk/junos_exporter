@@ -9,10 +9,8 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 )
 
+// Parser parses XML of RPC-Output
 type Parser func([]byte) error
-type ClientCfg struct {
-	SatelliteEnabled bool
-}
 
 // Client sends commands to JunOS and parses results
 type Client struct {

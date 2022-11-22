@@ -46,7 +46,7 @@ type interfaceLabel struct {
 
 // CollectDescriptions collects labels from descriptions
 func (l *DynamicLabels) CollectDescriptions(device *connector.Device, client *rpc.Client, ifDescReg *regexp.Regexp) error {
-	r := &InterfaceRPC{}
+	r := &result{}
 	err := client.RunCommandAndParse("show interfaces descriptions", r)
 	if err != nil {
 		return errors.Wrap(err, "could not retrieve interface descriptions for "+device.Host)

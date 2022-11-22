@@ -1,6 +1,6 @@
 package interfacelabels
 
-type InterfaceRPC struct {
+type result struct {
 	Information struct {
 		Interfaces []phyInterface `xml:"physical-interface"`
 	} `xml:"interface-information"`

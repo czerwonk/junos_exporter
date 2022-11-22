@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+// Device is the basic configuration needed to connect to the device
 type Device struct {
 	Host string
 	Auth AuthMethod

@@ -59,7 +59,7 @@ type FeatureConfig struct {
 	System              bool `yaml:"system,omitempty"`
 	Power               bool `yaml:"power,omitempty"`
 	MAC                 bool `yaml:"mac,omitempty"`
-	MPLS_LSP            bool `yaml:"mpls_lsp,omitempty"`
+	MPLSLSP             bool `yaml:"mpls_lsp,omitempty"`
 	VPWS                bool `yaml:"vpws,omitempty"`
 	VRRP                bool `yaml:"vrrp,omitempty"`
 }
@@ -128,7 +128,7 @@ func setDefaultValues(c *Config) {
 	f.Satellite = false
 	f.Power = false
 	f.MAC = false
-	f.MPLS_LSP = false
+	f.MPLSLSP = false
 	f.VPWS = false
 	f.VRRP = false
 	f.BFD = false

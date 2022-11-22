@@ -220,7 +220,7 @@ func loadConfigFromFlags() *config.Config {
 	f.LACP = *lacpEnabled
 	f.BFD = *bfdEnabled
 	f.VPWS = *vpwsEnabled
-	f.MPLS_LSP = *mplsLSPEnabled
+	f.MPLSLSP = *mplsLSPEnabled
 
 	return c
 }

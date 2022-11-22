@@ -34,6 +34,7 @@ The following metrics are supported by now:
 * Routing engine statistics
 * Storage (total, available and used blocks, used percentage)
 * Firewall filters (counters and policers) - needs explicit rights beyond read-only
+* Security policy (SRX) statistics
 * Statistics about l2circuits (tunnel state, number of tunnels)
 * Interface queue statistics
 * Power (Power usage)

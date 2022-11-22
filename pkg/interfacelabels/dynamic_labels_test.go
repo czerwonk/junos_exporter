@@ -9,28 +9,27 @@ import (
 )
 
 func TestParseDescriptions(t *testing.T) {
-
 	t.Run("Test default", func(t *testing.T) {
 		l := NewDynamicLabels()
 		regex := regexp.MustCompile(`\[([^=\]]+)(=[^\]]+)?\]`)
 
-		if1 := PhyInterface{
+		if1 := phyInterface{
 			Name:        "xe-0/0/0",
 			Description: "Name1 [tag1] [foo=x]",
 		}
-		if2 := PhyInterface{
+		if2 := phyInterface{
 			Name:        "xe-0/0/1",
 			Description: "Name2 [foo=y] [bar=123]",
 		}
-		if3 := PhyInterface{
+		if3 := phyInterface{
 			Name: "xe-0/0/3",
 		}
 
 		d1 := &connector.Device{Host: "device1"}
 		d2 := &connector.Device{Host: "device2"}
 
-		l.parseDescriptions(d1, []PhyInterface{if1}, regex)
-		l.parseDescriptions(d2, []PhyInterface{if2}, regex)
+		l.parseDescriptions(d1, []phyInterface{if1}, regex)
+		l.parseDescriptions(d2, []phyInterface{if2}, regex)
 
 		assert.Equal(t, []string{"tag1", "foo", "bar"}, l.LabelNames(), "Label names")
 		assert.Equal(t, []string{"1", "x", ""}, l.ValuesForInterface(d1, if1.Name), "Values if1")
@@ -42,15 +41,15 @@ func TestParseDescriptions(t *testing.T) {
 		l := NewDynamicLabels()
 		regex := regexp.MustCompile(`[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]`)
 
-		if1 := PhyInterface{
+		if1 := phyInterface{
 			Name:        "xe-0/0/0",
 			Description: "Name1 [foo=x, bar=y, thisisatag]",
 		}
-		if2 := PhyInterface{
+		if2 := phyInterface{
 			Name:        "xe-0/0/1",
 			Description: "Name2 [onlyatag]",
 		}
-		if3 := PhyInterface{
+		if3 := phyInterface{
 			Name:        "xe-0/0/3",
 			Description: "Name2 [foo=x, bar=y, this=is]",
 		}
@@ -59,9 +58,9 @@ func TestParseDescriptions(t *testing.T) {
 		d2 := &connector.Device{Host: "device2"}
 		d3 := &connector.Device{Host: "device3"}
 
-		l.parseDescriptions(d1, []PhyInterface{if1}, regex)
-		l.parseDescriptions(d2, []PhyInterface{if2}, regex)
-		l.parseDescriptions(d3, []PhyInterface{if3}, regex)
+		l.parseDescriptions(d1, []phyInterface{if1}, regex)
+		l.parseDescriptions(d2, []phyInterface{if2}, regex)
+		l.parseDescriptions(d3, []phyInterface{if3}, regex)
 
 		assert.Equal(t, []string{"foo", "bar", "thisisatag", "onlyatag", "this"}, l.LabelNames(), "Label names")
 		assert.Equal(t, []string{"x", "y", "1", "", ""}, l.ValuesForInterface(d1, if1.Name), "Values if1")

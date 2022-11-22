@@ -1,6 +1,6 @@
 package interfacediagnostics
 
-type InterfaceDiagnostics struct {
+type interfaceDiagnostics struct {
 	Index                              string
 	Name                               string
 	LaserBiasCurrent                   float64
@@ -47,5 +47,5 @@ type InterfaceDiagnostics struct {
 	RxSignalAvgOpticalPower         float64
 	RxSignalAvgOpticalPowerDbm      float64
 
-	Lanes []*InterfaceDiagnostics
+	Lanes []*interfaceDiagnostics
 }

@@ -1,20 +1,20 @@
 package interfacequeue
 
-type InterfaceQueueRPC struct {
+type result struct {
 	InterfaceInformation struct {
-		Interfaces []PhysicalInterface `xml:"physical-interface"`
+		Interfaces []physicalInterface `xml:"physical-interface"`
 	} `xml:"interface-information"`
 }
 
-type PhysicalInterface struct {
+type physicalInterface struct {
 	Name          string `xml:"name"`
 	Description   string `xml:"description"`
 	QueueCounters struct {
-		Queues []Queue `xml:"queue"`
+		Queues []queue `xml:"queue"`
 	} `xml:"queue-counters"`
 }
 
-type Queue struct {
+type queue struct {
 	Number               string `xml:"queue-number"`
 	QueuedPackets        uint64 `xml:"queue-counters-queued-packets"`
 	QueuedBytes          uint64 `xml:"queue-counters-queued-bytes"`

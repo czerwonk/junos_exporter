@@ -5,9 +5,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/czerwonk/junos_exporter/interfacelabels"
 	"github.com/czerwonk/junos_exporter/internal/config"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
+	"github.com/czerwonk/junos_exporter/pkg/interfacelabels"
 )
 
 func TestCollectorsRegistered(t *testing.T) {

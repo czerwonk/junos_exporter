@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/czerwonk/junos_exporter/interfacelabels"
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
+	"github.com/czerwonk/junos_exporter/pkg/interfacelabels"
 	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -144,16 +144,16 @@ func (c *interfaceCollector) Collect(client *rpc.Client, ch chan<- prometheus.Me
 	return nil
 }
 
-func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceStats, error) {
-	var x = InterfaceRpc{}
+func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*interfaceStats, error) {
+	var x = result{}
 	err := client.RunCommandAndParse("show interfaces extensive", &x)
 	if err != nil {
 		return nil, err
 	}
 
-	stats := make([]*InterfaceStats, 0)
+	stats := make([]*interfaceStats, 0)
 	for _, phy := range x.Information.Interfaces {
-		s := &InterfaceStats{
+		s := &interfaceStats{
 			IsPhysical:          true,
 			Name:                phy.Name,
 			AdminStatus:         phy.AdminStatus == "up",
@@ -175,18 +175,18 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 			IPv6TransmitBytes:   float64(phy.Stats.IPv6Traffic.OutputBytes),
 			IPv6TransmitPackets: float64(phy.Stats.IPv6Traffic.OutputPackets),
 			LastFlapped:         -1,
-			ReceiveUnicasts:     float64(phy.EthernetMacStatistics.InputUnicasts),
-			ReceiveBroadcasts:   float64(phy.EthernetMacStatistics.InputBroadcasts),
-			ReceiveMulticasts:   float64(phy.EthernetMacStatistics.InputMulticasts),
-			ReceiveCrcErrors:    float64(phy.EthernetMacStatistics.InputCrcErrors),
-			TransmitUnicasts:    float64(phy.EthernetMacStatistics.OutputUnicasts),
-			TransmitBroadcasts:  float64(phy.EthernetMacStatistics.OutputBroadcasts),
-			TransmitMulticasts:  float64(phy.EthernetMacStatistics.OutputMulticasts),
-			TransmitCrcErrors:   float64(phy.EthernetMacStatistics.OutputCrcErrors),
-			FecCcwCount:         float64(phy.EthernetFecStatistics.NumberfecCcwCount),
-			FecNccwCount:        float64(phy.EthernetFecStatistics.NumberfecNccwCount),
-			FecCcwErrorRate:     float64(phy.EthernetFecStatistics.NumberfecCcwErrorRate),
-			FecNccwErrorRate:    float64(phy.EthernetFecStatistics.NumberfecNccwErrorRate),
+			ReceiveUnicasts:     float64(phy.MACStatistics.InputUnicasts),
+			ReceiveBroadcasts:   float64(phy.MACStatistics.InputBroadcasts),
+			ReceiveMulticasts:   float64(phy.MACStatistics.InputMulticasts),
+			ReceiveCrcErrors:    float64(phy.MACStatistics.InputCrcErrors),
+			TransmitUnicasts:    float64(phy.MACStatistics.OutputUnicasts),
+			TransmitBroadcasts:  float64(phy.MACStatistics.OutputBroadcasts),
+			TransmitMulticasts:  float64(phy.MACStatistics.OutputMulticasts),
+			TransmitCrcErrors:   float64(phy.MACStatistics.OutputCrcErrors),
+			FecCcwCount:         float64(phy.FECStatistics.NumberfecCcwCount),
+			FecNccwCount:        float64(phy.FECStatistics.NumberfecNccwCount),
+			FecCcwErrorRate:     float64(phy.FECStatistics.NumberfecCcwErrorRate),
+			FecNccwErrorRate:    float64(phy.FECStatistics.NumberfecNccwErrorRate),
 		}
 
 		if phy.InterfaceFlapped.Value != "Never" {
@@ -196,13 +196,13 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 		stats = append(stats, s)
 
 		for _, log := range phy.LogicalInterfaces {
-			var s TrafficStat
-			if (log.Stats != TrafficStat{}) {
+			var s trafficStat
+			if (log.Stats != trafficStat{}) {
 				s = log.Stats
 			} else {
 				s = log.LagStats.Stats
 			}
-			sl := &InterfaceStats{
+			sl := &interfaceStats{
 				IsPhysical:          false,
 				Name:                log.Name,
 				Description:         log.Description,
@@ -224,7 +224,7 @@ func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*InterfaceSta
 	return stats, nil
 }
 
-func (c *interfaceCollector) collectForInterface(s *InterfaceStats, device *connector.Device, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *interfaceCollector) collectForInterface(s *interfaceStats, device *connector.Device, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, []string{s.Name, s.Description, s.Mac}...)
 	l = append(l, c.labels.ValuesForInterface(device, s.Name)...)
 

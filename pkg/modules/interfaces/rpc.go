@@ -1,20 +1,20 @@
 package interfaces
 
-type InterfaceRpc struct {
+type result struct {
 	Information struct {
-		Interfaces []PhyInterface `xml:"physical-interface"`
+		Interfaces []phyInterface `xml:"physical-interface"`
 	} `xml:"interface-information"`
 }
 
-type PhyInterface struct {
+type phyInterface struct {
 	Name              string         `xml:"name"`
 	AdminStatus       string         `xml:"admin-status"`
 	OperStatus        string         `xml:"oper-status"`
 	Description       string         `xml:"description"`
 	MacAddress        string         `xml:"current-physical-address"`
 	Speed             string         `xml:"speed"`
-	Stats             TrafficStat    `xml:"traffic-statistics"`
-	LogicalInterfaces []LogInterface `xml:"logical-interface"`
+	Stats             trafficStat    `xml:"traffic-statistics"`
+	LogicalInterfaces []logInterface `xml:"logical-interface"`
 	InputErrors       struct {
 		Drops  uint64 `xml:"input-drops"`
 		Errors uint64 `xml:"input-errors"`
@@ -27,40 +27,40 @@ type PhyInterface struct {
 		Seconds uint64 `xml:"seconds,attr"`
 		Value   string `xml:",chardata"`
 	} `xml:"interface-flapped"`
-	EthernetMacStatistics EthernetMacStat `xml:"ethernet-mac-statistics"`
-	EthernetFecStatistics EthernetFecStat `xml:"ethernet-fec-statistics"`
+	MACStatistics ethernetMACStat `xml:"ethernet-mac-statistics"`
+	FECStatistics ethernetFECStat `xml:"ethernet-fec-statistics"`
 }
 
-type LogInterface struct {
+type logInterface struct {
 	Name        string         `xml:"name"`
 	Description string         `xml:"description"`
-	Stats       TrafficStat    `xml:"traffic-statistics"`
-	LagStats    LagTrafficStat `xml:"lag-traffic-statistics"`
+	Stats       trafficStat    `xml:"traffic-statistics"`
+	LagStats    lagTrafficStat `xml:"lag-traffic-statistics"`
 }
 
-type TrafficStat struct {
+type trafficStat struct {
 	InputBytes    uint64   `xml:"input-bytes"`
 	InputPackets  uint64   `xml:"input-packets"`
 	OutputBytes   uint64   `xml:"output-bytes"`
 	OutputPackets uint64   `xml:"output-packets"`
-	IPv6Traffic   IPv6Stat `xml:"ipv6-transit-statistics"`
+	IPv6Traffic   ipv6Stat `xml:"ipv6-transit-statistics"`
 }
 
-type IPv6Stat struct {
+type ipv6Stat struct {
 	InputBytes    uint64 `xml:"input-bytes"`
 	InputPackets  uint64 `xml:"input-packets"`
 	OutputBytes   uint64 `xml:"output-bytes"`
 	OutputPackets uint64 `xml:"output-packets"`
 }
 
-type LagTrafficStat struct {
-	Stats TrafficStat `xml:"lag-bundle"`
+type lagTrafficStat struct {
+	Stats trafficStat `xml:"lag-bundle"`
 	Links []struct {
 		Name string `xml:"name"`
 	} `xml:"lag-link"`
 }
 
-type EthernetMacStat struct {
+type ethernetMACStat struct {
 	InputUnicasts    uint64 `xml:"input-unicasts"`
 	InputBroadcasts  uint64 `xml:"input-broadcasts"`
 	InputMulticasts  uint64 `xml:"input-multicasts"`
@@ -71,7 +71,7 @@ type EthernetMacStat struct {
 	OutputCrcErrors  uint64 `xml:"output-crc-errors"`
 }
 
-type EthernetFecStat struct {
+type ethernetFECStat struct {
 	NumberfecCcwCount      uint64 `xml:"fec_ccw_count"`
 	NumberfecNccwCount     uint64 `xml:"fec_nccw_count"`
 	NumberfecCcwErrorRate  uint64 `xml:"fec_ccw_error_rate"`

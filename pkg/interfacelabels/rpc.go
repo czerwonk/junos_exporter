@@ -2,11 +2,11 @@ package interfacelabels
 
 type InterfaceRPC struct {
 	Information struct {
-		Interfaces []PhyInterface `xml:"physical-interface"`
+		Interfaces []phyInterface `xml:"physical-interface"`
 	} `xml:"interface-information"`
 }
 
-type PhyInterface struct {
+type phyInterface struct {
 	Name        string `xml:"name"`
 	Description string `xml:"description"`
 }

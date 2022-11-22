@@ -1,6 +1,6 @@
 package interfaces
 
-type InterfaceStats struct {
+type interfaceStats struct {
 	Name                string
 	AdminStatus         bool
 	OperStatus          bool

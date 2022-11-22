@@ -85,7 +85,7 @@ func (l *DynamicLabels) ValuesForInterface(device *connector.Device, ifaceName s
 	return labels
 }
 
-func (l *DynamicLabels) parseDescriptions(device *connector.Device, ifaces []PhyInterface, ifDescReg *regexp.Regexp) {
+func (l *DynamicLabels) parseDescriptions(device *connector.Device, ifaces []phyInterface, ifDescReg *regexp.Regexp) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -104,7 +104,7 @@ func (l *DynamicLabels) parseDescriptions(device *connector.Device, ifaces []Phy
 	}
 }
 
-func (l *DynamicLabels) parseDescription(iface PhyInterface, ifDescReg *regexp.Regexp) []*interfaceLabel {
+func (l *DynamicLabels) parseDescription(iface phyInterface, ifDescReg *regexp.Regexp) []*interfaceLabel {
 	labels := make([]*interfaceLabel, 0)
 
 	if len(iface.Description) == 0 {

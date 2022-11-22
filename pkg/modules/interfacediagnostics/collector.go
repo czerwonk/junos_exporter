@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/czerwonk/junos_exporter/interfacelabels"
+	"github.com/czerwonk/junos_exporter/pkg/interfacelabels"
 	"github.com/czerwonk/junos_exporter/pkg/rpc"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
@@ -213,11 +213,11 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 			ch <- prometheus.MustNewConstMetric(c.rxSignalAvgOpticalPowerDbmDesc, prometheus.GaugeValue, d.RxSignalAvgOpticalPowerDbm, l...)
 		}
 
-		var data []*InterfaceDiagnostics
+		var data []*interfaceDiagnostics
 		if len(d.Lanes) > 0 {
 			data = d.Lanes
 		} else {
-			data = []*InterfaceDiagnostics{d}
+			data = []*interfaceDiagnostics{d}
 		}
 
 		for _, e := range data {
@@ -253,8 +253,8 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 	return nil
 }
 
-func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client) ([]*InterfaceDiagnostics, error) {
-	var x = InterfaceDiagnosticsRPC{}
+func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client) ([]*interfaceDiagnostics, error) {
+	var x = result{}
 	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
 	if err != nil {
 		return nil, err
@@ -263,8 +263,8 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client)
 	return interfaceDiagnosticsFromRPCResult(x), nil
 }
 
-func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rpc.Client) ([]*InterfaceDiagnostics, error) {
-	var x = InterfaceDiagnosticsRPC{}
+func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rpc.Client) ([]*interfaceDiagnostics, error) {
+	var x = result{}
 
 	// NOTE: Junos is broken and delivers incorrect XML
 	// 2020/01/06 12:25:24 Output for X.X.X.X: <rpc-reply xmlns:junos="http://xml.juniper.net/junos/17.3R3/junos">
@@ -320,15 +320,15 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rp
 	return interfaceDiagnosticsFromRPCResult(x), nil
 }
 
-func interfaceDiagnosticsFromRPCResult(result InterfaceDiagnosticsRPC) []*InterfaceDiagnostics {
-	diagnostics := make([]*InterfaceDiagnostics, 0)
+func interfaceDiagnosticsFromRPCResult(res result) []*interfaceDiagnostics {
+	diagnostics := make([]*interfaceDiagnostics, 0)
 
-	for _, diag := range result.Information.Diagnostics {
+	for _, diag := range res.Information.Diagnostics {
 		if diag.Diagnostics.NA == "N/A" {
 			continue
 		}
 
-		d := &InterfaceDiagnostics{
+		d := &interfaceDiagnostics{
 			Index:                              "",
 			Name:                               diag.Name,
 			LaserBiasCurrent:                   float64(diag.Diagnostics.LaserBiasCurrent),
@@ -378,7 +378,7 @@ func interfaceDiagnosticsFromRPCResult(result InterfaceDiagnosticsRPC) []*Interf
 
 		if len(diag.Diagnostics.Lanes) > 0 {
 			for _, lane := range diag.Diagnostics.Lanes {
-				l := &InterfaceDiagnostics{
+				l := &interfaceDiagnostics{
 					Index:                  lane.LaneIndex,
 					Name:                   diag.Name,
 					LaserBiasCurrent:       float64(lane.LaserBiasCurrent),

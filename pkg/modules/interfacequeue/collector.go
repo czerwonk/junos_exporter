@@ -1,9 +1,9 @@
 package interfacequeue
 
 import (
-	"github.com/czerwonk/junos_exporter/interfacelabels"
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
+	"github.com/czerwonk/junos_exporter/pkg/interfacelabels"
 	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -99,7 +99,7 @@ func (c *interfaceQueueCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *interfaceQueueCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	q := InterfaceQueueRPC{}
+	q := result{}
 
 	err := client.RunCommandAndParse("show interfaces queue", &q)
 	if err != nil {
@@ -113,7 +113,7 @@ func (c *interfaceQueueCollector) Collect(client *rpc.Client, ch chan<- promethe
 	return nil
 }
 
-func (c *interfaceQueueCollector) collectForInterface(iface PhysicalInterface, device *connector.Device, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *interfaceQueueCollector) collectForInterface(iface physicalInterface, device *connector.Device, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, iface.Name, iface.Description)
 	l = append(l, c.labels.ValuesForInterface(device, iface.Name)...)
 
@@ -122,7 +122,7 @@ func (c *interfaceQueueCollector) collectForInterface(iface PhysicalInterface, d
 	}
 }
 
-func (c *interfaceQueueCollector) collectForQueue(queue Queue, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *interfaceQueueCollector) collectForQueue(queue queue, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, queue.Number)
 
 	ch <- prometheus.MustNewConstMetric(c.queuedPackets, prometheus.CounterValue, float64(queue.QueuedPackets), l...)

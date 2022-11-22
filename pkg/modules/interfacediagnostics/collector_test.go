@@ -8,12 +8,12 @@ import (
 )
 
 func TestInterfaceDiagnosticsFromRPCResult(t *testing.T) {
-	result := InterfaceDiagnosticsRPC{}
+	result := result{}
 
-	result.Information.Diagnostics = []PhyDiagInterface{
+	result.Information.Diagnostics = []phyDiagInterface{
 		{
 			Name: "xe-0/0/0",
-			Diagnostics: PhyInterfaceDiagnostic{
+			Diagnostics: phyInterfaceDiagnostic{
 				LaserBiasCurrent:                         1,
 				LaserBiasCurrentHighAlarmThreshold:       110,
 				LaserBiasCurrentLowAlarmThreshold:        10,
@@ -29,19 +29,19 @@ func TestInterfaceDiagnosticsFromRPCResult(t *testing.T) {
 				LaserTxOpticalPowerLowAlarmThresholdDbm:  "30",
 				LaserTxOpticalPowerHighWarnThresholdDbm:  "39",
 				LaserTxOpticalPowerLowWarnThresholdDbm:   "31",
-				ModuleTemperature: Temperature{
+				ModuleTemperature: temperatureValue{
 					Value: 4,
 				},
-				ModuleTemperatureHighAlarmThreshold: Temperature{
+				ModuleTemperatureHighAlarmThreshold: temperatureValue{
 					Value: 410,
 				},
-				ModuleTemperatureLowAlarmThreshold: Temperature{
+				ModuleTemperatureLowAlarmThreshold: temperatureValue{
 					Value: 40,
 				},
-				ModuleTemperatureHighWarnThreshold: Temperature{
+				ModuleTemperatureHighWarnThreshold: temperatureValue{
 					Value: 49,
 				},
-				ModuleTemperatureLowWarnThreshold: Temperature{
+				ModuleTemperatureLowWarnThreshold: temperatureValue{
 					Value: 41,
 				},
 				ModuleVoltage:                            5,
@@ -61,7 +61,7 @@ func TestInterfaceDiagnosticsFromRPCResult(t *testing.T) {
 				LaserRxOpticalPowerLowAlarmThresholdDbm:  "80",
 				LaserRxOpticalPowerHighWarnThresholdDbm:  "89",
 				LaserRxOpticalPowerLowWarnThresholdDbm:   "81",
-				Lanes: []LaneValue{
+				Lanes: []lane{
 					{
 						LaneIndex:              "1",
 						LaserBiasCurrent:       8,

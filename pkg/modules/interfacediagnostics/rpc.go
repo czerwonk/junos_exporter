@@ -1,30 +1,30 @@
 package interfacediagnostics
 
-type InterfaceDiagnosticsRPC struct {
+type result struct {
 	Information struct {
-		Diagnostics []PhyDiagInterface `xml:"physical-interface"`
+		Diagnostics []phyDiagInterface `xml:"physical-interface"`
 	} `xml:"interface-information"`
 }
 
-type PhyDiagInterface struct {
+type phyDiagInterface struct {
 	Name        string                 `xml:"name"`
-	Diagnostics PhyInterfaceDiagnostic `xml:"optics-diagnostics,omitempty"`
+	Diagnostics phyInterfaceDiagnostic `xml:"optics-diagnostics,omitempty"`
 }
 
-type PhyInterfaceDiagnostic struct {
+type phyInterfaceDiagnostic struct {
 	LaserBiasCurrent                   float64 `xml:"laser-bias-current,omitempty"`
 	LaserBiasCurrentHighAlarmThreshold float64 `xml:"laser-bias-current-high-alarm-threshold,omitempty"`
 	LaserBiasCurrentLowAlarmThreshold  float64 `xml:"laser-bias-current-low-alarm-threshold,omitempty"`
 	LaserBiasCurrentHighWarnThreshold  float64 `xml:"laser-bias-current-high-warn-threshold,omitempty"`
 	LaserBiasCurrentLowWarnThreshold   float64 `xml:"laser-bias-current-low-warn-threshold,omitempty"`
 
-	LaserOutputPower                    float64     `xml:"laser-output-power,omitempty"`
-	LaserOutputPowerDbm                 string      `xml:"laser-output-power-dbm,omitempty"`
-	ModuleTemperature                   Temperature `xml:"module-temperature"`
-	ModuleTemperatureHighAlarmThreshold Temperature `xml:"module-temperature-high-alarm-threshold,omitempty"`
-	ModuleTemperatureLowAlarmThreshold  Temperature `xml:"module-temperature-low-alarm-threshold,omitempty"`
-	ModuleTemperatureHighWarnThreshold  Temperature `xml:"module-temperature-high-warn-threshold,omitempty"`
-	ModuleTemperatureLowWarnThreshold   Temperature `xml:"module-temperature-low-warn-threshold,omitempty"`
+	LaserOutputPower                    float64          `xml:"laser-output-power,omitempty"`
+	LaserOutputPowerDbm                 string           `xml:"laser-output-power-dbm,omitempty"`
+	ModuleTemperature                   temperatureValue `xml:"module-temperature"`
+	ModuleTemperatureHighAlarmThreshold temperatureValue `xml:"module-temperature-high-alarm-threshold,omitempty"`
+	ModuleTemperatureLowAlarmThreshold  temperatureValue `xml:"module-temperature-low-alarm-threshold,omitempty"`
+	ModuleTemperatureHighWarnThreshold  temperatureValue `xml:"module-temperature-high-warn-threshold,omitempty"`
+	ModuleTemperatureLowWarnThreshold   temperatureValue `xml:"module-temperature-low-warn-threshold,omitempty"`
 
 	ModuleVoltage                   float64 `xml:"module-voltage,omitempty"`
 	ModuleVoltageHighAlarmThreshold float64 `xml:"module-voltage-high-alarm-threshold,omitempty"`
@@ -59,14 +59,14 @@ type PhyInterfaceDiagnostic struct {
 
 	NA string `xml:"optic-diagnostics-not-available"`
 
-	Lanes []LaneValue `xml:"optics-diagnostics-lane-values,omitempty"`
+	Lanes []lane `xml:"optics-diagnostics-lane-values,omitempty"`
 }
 
-type Temperature struct {
+type temperatureValue struct {
 	Value float64 `xml:"celsius,attr"`
 }
 
-type LaneValue struct {
+type lane struct {
 	LaneIndex              string  `xml:"lane-index"`
 	LaserBiasCurrent       float64 `xml:"laser-bias-current,omitempty"`
 	LaserOutputPower       float64 `xml:"laser-output-power,omitempty"`

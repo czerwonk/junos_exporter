@@ -19,17 +19,18 @@ func devicesForConfig(cfg *config.Config) ([]*connector.Device, error) {
 		cfg.Devices = devicesFromTargets(cfg.Targets)
 	}
 
-	devs := make([]*connector.Device, len(cfg.Devices))
-	var err error
-	for i, d := range cfg.Devices {
+	devs := make([]*connector.Device, 0)
+	for _, d := range cfg.Devices {
 		if d.IsHostPattern {
 			continue
 		}
 
-		devs[i], err = deviceFromDeviceConfig(d, d.Host, cfg)
+		dev, err := deviceFromDeviceConfig(d, d.Host, cfg)
 		if err != nil {
 			return nil, err
 		}
+
+		devs = append(devs, dev)
 	}
 
 	return devs, nil

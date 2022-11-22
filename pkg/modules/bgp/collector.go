@@ -75,7 +75,7 @@ func (c *bgpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 }
 
 func (c *bgpCollector) collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = BGPRPC{}
+	var x = result{}
 	var cmd strings.Builder
 	cmd.WriteString("show bgp neighbor")
 	if c.LogicalSystem != "" {
@@ -94,7 +94,7 @@ func (c *bgpCollector) collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 	return nil
 }
 
-func (c *bgpCollector) collectForPeer(p BGPPeer, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *bgpCollector) collectForPeer(p peer, ch chan<- prometheus.Metric, labelValues []string) {
 	ip := strings.Split(p.IP, "+")
 	l := append(labelValues, []string{p.ASN, ip[0], p.Description, p.Group}...)
 
@@ -111,7 +111,7 @@ func (c *bgpCollector) collectForPeer(p BGPPeer, ch chan<- prometheus.Metric, la
 	c.collectRIBForPeer(p, ch, l)
 }
 
-func (*bgpCollector) collectRIBForPeer(p BGPPeer, ch chan<- prometheus.Metric, labelValues []string) {
+func (*bgpCollector) collectRIBForPeer(p peer, ch chan<- prometheus.Metric, labelValues []string) {
 	for _, rib := range p.RIBs {
 		l := append(labelValues, rib.Name)
 		ch <- prometheus.MustNewConstMetric(receivedPrefixesDesc, prometheus.GaugeValue, float64(rib.ReceivedPrefixes), l...)

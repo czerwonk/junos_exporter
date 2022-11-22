@@ -22,17 +22,17 @@ func TestParseEXOutput(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := RpcReply{}
+	rpc := multiEngineResult{}
 	err := parseXML([]byte(body), &rpc)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.MultiRoutingEngineResults.RoutingEngine[0].FPCs)
-	assert.Equal(t, "N/A", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
+	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].FPCs)
+	assert.Equal(t, "N/A", rpc.Results.RoutingEngines[0].Name, "re-name")
 
-	f := rpc.MultiRoutingEngineResults.RoutingEngine[0].FPCs.FPC[0]
+	f := rpc.Results.RoutingEngines[0].FPCs.FPC[0]
 	assert.Equal(t, 0, f.Slot, "slot")
 	assert.Equal(t, "Online", f.State, "state")
 	assert.Equal(t, uint(1024), f.MemoryDramSize, "memory-dram-size")
@@ -59,16 +59,16 @@ func TestParseQFXOutput(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := RpcReply{}
+	rpc := multiEngineResult{}
 	err := parseXML([]byte(body), &rpc)
 
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.NotEmpty(t, rpc.MultiRoutingEngineResults.RoutingEngine[0].FPCs)
-	assert.Equal(t, "N/A", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
+	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].FPCs)
+	assert.Equal(t, "N/A", rpc.Results.RoutingEngines[0].Name, "re-name")
 
-	f := rpc.MultiRoutingEngineResults.RoutingEngine[0].FPCs.FPC[0]
+	f := rpc.Results.RoutingEngines[0].FPCs.FPC[0]
 
 	assert.Equal(t, 0, f.Slot, "slot")
 	assert.Equal(t, "Online", f.State, "state")
@@ -110,16 +110,16 @@ func TestParseMXOutput(t *testing.T) {
 	</cli>
 </rpc-reply>`
 
-	rpc := RpcReply{}
+	rpc := multiEngineResult{}
 	err := parseXML([]byte(body), &rpc)
 
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.NotEmpty(t, rpc.MultiRoutingEngineResults.RoutingEngine[0].FPCs)
-	assert.Equal(t, "N/A", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
+	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].FPCs)
+	assert.Equal(t, "N/A", rpc.Results.RoutingEngines[0].Name, "re-name")
 
-	f := rpc.MultiRoutingEngineResults.RoutingEngine[0].FPCs.FPC[1]
+	f := rpc.Results.RoutingEngines[0].FPCs.FPC[1]
 
 	assert.Equal(t, 2, f.Slot, "slot")
 	assert.Equal(t, "Online", f.State, "state")
@@ -189,19 +189,19 @@ func TestParseSRXOutput(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := RpcReply{}
+	rpc := multiEngineResult{}
 	err := parseXML([]byte(body), &rpc)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.MultiRoutingEngineResults.RoutingEngine[0].FPCs.FPC)
+	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].FPCs.FPC)
 
-	assert.Equal(t, "node0", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
-	assert.Equal(t, "node1", rpc.MultiRoutingEngineResults.RoutingEngine[1].Name, "re-name")
+	assert.Equal(t, "node0", rpc.Results.RoutingEngines[0].Name, "re-name")
+	assert.Equal(t, "node1", rpc.Results.RoutingEngines[1].Name, "re-name")
 
-	f := rpc.MultiRoutingEngineResults.RoutingEngine[0].FPCs.FPC[1]
+	f := rpc.Results.RoutingEngines[0].FPCs.FPC[1]
 
 	assert.Equal(t, 0, f.Slot, "slot")
 	assert.Equal(t, "Online", f.State, "state")
@@ -258,18 +258,18 @@ func TestParseMXPicOutput(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := RpcReply{}
+	rpc := multiEngineResult{}
 	err := parseXML([]byte(body), &rpc)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.MultiRoutingEngineResults.RoutingEngine[0].FPCs.FPC)
+	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].FPCs.FPC)
 
-	assert.Equal(t, "N/A", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
+	assert.Equal(t, "N/A", rpc.Results.RoutingEngines[0].Name, "re-name")
 
-	f := rpc.MultiRoutingEngineResults.RoutingEngine[0].FPCs.FPC[2]
+	f := rpc.Results.RoutingEngines[0].FPCs.FPC[2]
 
 	assert.Equal(t, 3, f.Slot, "slot")
 	assert.Equal(t, "Online", f.State, "state")
@@ -337,19 +337,19 @@ func TestParseSRXPicOutput(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := RpcReply{}
+	rpc := multiEngineResult{}
 	err := parseXML([]byte(body), &rpc)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.MultiRoutingEngineResults.RoutingEngine[0].FPCs.FPC)
+	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].FPCs.FPC)
 
-	assert.Equal(t, "node0", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
-	assert.Equal(t, "node1", rpc.MultiRoutingEngineResults.RoutingEngine[1].Name, "re-name")
+	assert.Equal(t, "node0", rpc.Results.RoutingEngines[0].Name, "re-name")
+	assert.Equal(t, "node1", rpc.Results.RoutingEngines[1].Name, "re-name")
 
-	f := rpc.MultiRoutingEngineResults.RoutingEngine[0].FPCs.FPC[1]
+	f := rpc.Results.RoutingEngines[0].FPCs.FPC[1]
 
 	assert.Equal(t, 1, f.Slot, "slot")
 	assert.Equal(t, "Online", f.State, "state")

@@ -1,10 +1,10 @@
 package nat
 
-type NatRpc struct {
-	Interfaces []NatInterface `xml:"service-nat-statistics-information"`
+type result struct {
+	Interfaces []iface `xml:"service-nat-statistics-information"`
 }
 
-type NatInterface struct {
+type iface struct {
 	Interface                                  string `xml:"interface-name"`
 	NatTotalSessionInterest                    int64  `xml:"nat-total-session-interest"`
 	NatTotalSessionCreate                      int64  `xml:"nat-total-session-create"`
@@ -201,19 +201,19 @@ type NatInterface struct {
 	NatEimMappingCreatedWithoutEifSessLimit    int64  `xml:"nat_eim_mapping_created_without_eif_sess_limit"`
 }
 
-type NatPoolRpc struct {
+type poolResult struct {
 	Information struct {
-		Interfaces []NatPoolInterface `xml:"sfw-per-service-set-nat-pool"`
+		Interfaces []poolInterface `xml:"sfw-per-service-set-nat-pool"`
 	} `xml:"service-nat-pool-information"`
 }
 
-type NatPoolInterface struct {
+type poolInterface struct {
 	Interface       string           `xml:"interface-name"`
 	ServiceSetName  string           `xml:"service-set-name"`
-	ServiceNatPools []ServiceNatPool `xml:"service-nat-pool"`
+	ServiceNatPools []serviceNatPool `xml:"service-nat-pool"`
 }
 
-type ServiceNatPool struct {
+type serviceNatPool struct {
 	Name                string  `xml:"pool-name"`
 	TranslationType     string  `xml:"description"`
 	PortRange           string  `xml:"pool-port-range"`
@@ -226,19 +226,19 @@ type ServiceNatPool struct {
 	PortBlockEfficiency float64 `xml:"port-block-efficiency"`
 }
 
-type NatPoolDetailRpc struct {
+type poolDetailResult struct {
 	Information struct {
-		Interfaces []NatPoolDetailInterface `xml:"sfw-per-service-set-nat-pool"`
+		Interfaces []poolDetailInterface `xml:"sfw-per-service-set-nat-pool"`
 	} `xml:"service-nat-pool-information"`
 }
 
-type NatPoolDetailInterface struct {
+type poolDetailInterface struct {
 	Interface             string                 `xml:"interface-name"`
 	ServiceSetName        string                 `xml:"service-set-name"`
-	ServiceNatPoolsDetail []ServiceNatPoolDetail `xml:"service-nat-pool"`
+	ServiceNatPoolsDetail []serviceNatPoolDetail `xml:"service-nat-pool"`
 }
 
-type ServiceNatPoolDetail struct {
+type serviceNatPoolDetail struct {
 	Name                      string `xml:"pool-name"`
 	TranslationType           string `xml:"description"`
 	PortRange                 string `xml:"pool-port-range"`
@@ -260,14 +260,14 @@ type ServiceNatPoolDetail struct {
 	EifInboundLimitExceedDrop int64  `xml:"eif-inbound-session-limit-exceed-drop"`
 }
 
-type ServiceSetsCpuRpc struct {
+type serviceSetsCPUResult struct {
 	Information struct {
-		Interfaces []ServiceSetsCpuInterface `xml:"service-set-cpu-statistics"`
+		Interfaces []serviceSetsCPUInterface `xml:"service-set-cpu-statistics"`
 	} `xml:"service-set-cpu-statistics-information"`
 }
 
-type ServiceSetsCpuInterface struct {
+type serviceSetsCPUInterface struct {
 	Interface             string  `xml:"interface-name"`
 	ServiceSetName        string  `xml:"service-set-name"`
-	CpuUtilizationPercent float64 `xml:"cpu-utilization-percent"`
+	CPUUtilizationPercent float64 `xml:"cpu-utilization-percent"`
 }

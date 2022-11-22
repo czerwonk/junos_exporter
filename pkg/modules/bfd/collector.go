@@ -41,13 +41,13 @@ func (*bfdCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *bfdCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = bfdRpc{}
-	err := client.RunCommandAndParse("show bfd session extensive", &x)
+	var res = result{}
+	err := client.RunCommandAndParse("show bfd session extensive", &res)
 	if err != nil {
 		return err
 	}
 
-	for _, bfds := range x.Information.BfdSessions {
+	for _, bfds := range res.Information.BfdSessions {
 		l := append(labelValues, bfds.Neighbor, bfds.Interface, bfds.Client.Name)
 		ch <- prometheus.MustNewConstMetric(bfdState, prometheus.GaugeValue, float64(bfdStateMap[bfds.State]), l...)
 	}

@@ -2,6 +2,7 @@ package environment
 
 import (
 	"encoding/xml"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -68,7 +69,7 @@ func (c *environmentCollector) Collect(client *rpc.Client, ch chan<- prometheus.
 }
 
 func (c *environmentCollector) environmentItems(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = RpcReply{}
+	x := multiEngineResult{}
 
 	statusValues := map[string]int{
 		"OK":      1,
@@ -85,9 +86,8 @@ func (c *environmentCollector) environmentItems(client *rpc.Client, ch chan<- pr
 		return nil
 	}
 
-	// gather satellite data
 	if client.Satellite {
-		var y = RpcReply{}
+		var y = multiEngineResult{}
 		err = client.RunCommandAndParseWithParser("show chassis environment satellite", func(b []byte) error {
 			if string(b[:]) == "\nerror: syntax error, expecting <command>: satellite\n" {
 				log.Printf("system doesn't seem to have satellite enabled")
@@ -98,15 +98,14 @@ func (c *environmentCollector) environmentItems(client *rpc.Client, ch chan<- pr
 		})
 		if err != nil {
 			return nil
-		} else {
-			// add satellite details (only if y.MultiRoutingEngineResults.RoutingEngine has elements)
-			if len(y.MultiRoutingEngineResults.RoutingEngine) > 0 {
-				x.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items = append(x.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items, y.MultiRoutingEngineResults.RoutingEngine[0].EnvironmentInformation.Items...)
-			}
+		}
+
+		if len(y.Results.RoutingEngines) > 0 {
+			x.Results.RoutingEngines[0].EnvironmentInformation.Items = append(x.Results.RoutingEngines[0].EnvironmentInformation.Items, y.Results.RoutingEngines[0].EnvironmentInformation.Items...)
 		}
 	}
 
-	for _, re := range x.MultiRoutingEngineResults.RoutingEngine {
+	for _, re := range x.Results.RoutingEngines {
 		l := labelValues
 		for _, item := range re.EnvironmentInformation.Items {
 			l = append(labelValues, re.Name)
@@ -124,7 +123,7 @@ func (c *environmentCollector) environmentItems(client *rpc.Client, ch chan<- pr
 }
 
 func (c *environmentCollector) environmentPEMItems(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = RpcReply{}
+	var x = multiEngineResult{}
 
 	stateValues := map[string]int{
 		"Online":  1,
@@ -139,19 +138,20 @@ func (c *environmentCollector) environmentPEMItems(client *rpc.Client, ch chan<-
 		return err
 	}
 
-	for _, re := range x.MultiRoutingEngineResults.RoutingEngine {
+	for _, re := range x.Results.RoutingEngines {
 		for _, e := range re.EnvironmentComponentInformation.EnvironmentComponentItem {
 			l := append(labelValues, re.Name, e.Name)
 
 			ch <- prometheus.MustNewConstMetric(pemDesc, prometheus.GaugeValue, float64(stateValues[e.State]), append(l, e.State)...)
 
 			for _, f := range e.FanSpeedReading {
-				rpms, err_ := strconv.ParseFloat(strings.TrimSuffix(f.FanSpeed, " RPM"), 64)
-				if err_ != nil {
-					return err_
+				rpms, err := strconv.ParseFloat(strings.TrimSuffix(f.FanSpeed, " RPM"), 64)
+				if err != nil {
+					return fmt.Errorf("could not parse fan speed value to float: %s", f.FanSpeed)
 				}
 				ch <- prometheus.MustNewConstMetric(fanDesc, prometheus.GaugeValue, rpms, append(l, f.FanName)...)
 			}
+
 			voltage := 0.0
 			if e.DcInformation.DcDetail.DcVoltage > 0 {
 				voltage = e.DcInformation.DcDetail.DcVoltage
@@ -174,19 +174,19 @@ func (c *environmentCollector) environmentPEMItems(client *rpc.Client, ch chan<-
 	return nil
 }
 
-func parseXML(b []byte, res *RpcReply) error {
+func parseXML(b []byte, res *multiEngineResult) error {
 	if strings.Contains(string(b), "multi-routing-engine-results") {
 		return xml.Unmarshal(b, res)
 	}
 
-	fi := RpcReplyNoRE{}
+	fi := singleEngineResult{}
 
 	err := xml.Unmarshal(b, &fi)
 	if err != nil {
 		return err
 	}
 
-	res.MultiRoutingEngineResults.RoutingEngine = []RoutingEngine{
+	res.Results.RoutingEngines = []routingEngine{
 		{
 			Name:                            "N/A",
 			EnvironmentComponentInformation: fi.EnvironmentComponentInformation,

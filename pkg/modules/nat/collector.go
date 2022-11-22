@@ -469,7 +469,7 @@ func (*natCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *natCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	interfaces, err := c.NatInterfaces(client)
+	interfaces, err := c.natInterfaces(client)
 	if err != nil {
 		return err
 	}
@@ -477,7 +477,7 @@ func (c *natCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 		c.collectForInterface(s, ch, labelValues)
 	}
 
-	poolinterfaces, err := c.NatPoolInterfaces(client, ch, labelValues)
+	poolinterfaces, err := c.poolInterfaces(client, ch, labelValues)
 	if err != nil {
 		return err
 	}
@@ -485,7 +485,7 @@ func (c *natCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 		c.collectForPoolInterface(s, ch, labelValues)
 	}
 
-	pooldetailinterfaces, err := c.NatPoolDetailInterfaces(client, ch, labelValues)
+	pooldetailinterfaces, err := c.poolDetailInterfaces(client, ch, labelValues)
 	if err != nil {
 		return err
 	}
@@ -493,9 +493,9 @@ func (c *natCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 		c.collectForPoolDetailInterface(s, ch, labelValues)
 	}
 
-	servicesetscpuinterfaces, err := c.ServiceSetsCpuInterfaces(client, ch, labelValues)
+	servicesetscpuinterfaces, err := c.serviceSetsCPUInterfaces(client, ch, labelValues)
 	for _, s := range servicesetscpuinterfaces {
-		c.collectForServiceSetsCpuInterface(s, ch, labelValues)
+		c.collectForServiceSetsCPUInterface(s, ch, labelValues)
 	}
 	if err != nil {
 		return err
@@ -504,16 +504,16 @@ func (c *natCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 	return nil
 }
 
-func (c *natCollector) NatInterfaces(client *rpc.Client) ([]*NatInterface, error) {
-	var x = NatRpc{}
+func (c *natCollector) natInterfaces(client *rpc.Client) ([]*iface, error) {
+	var x = result{}
 	err := client.RunCommandAndParse("show services nat statistics", &x)
 	if err != nil {
 		return nil, err
 	}
 
-	interfaces := make([]*NatInterface, 0)
+	interfaces := make([]*iface, 0)
 	for _, natinterface := range x.Interfaces {
-		s := &NatInterface{
+		s := &iface{
 			Interface:                                  natinterface.Interface,
 			Nat64DfbitSet:                              int64(natinterface.Nat64DfbitSet),
 			Nat64ErrMapDst:                             int64(natinterface.Nat64ErrMapDst),
@@ -716,7 +716,7 @@ func (c *natCollector) NatInterfaces(client *rpc.Client) ([]*NatInterface, error
 	return interfaces, nil
 }
 
-func (*natCollector) collectForInterface(s *NatInterface, ch chan<- prometheus.Metric, labelValues []string) {
+func (*natCollector) collectForInterface(s *iface, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, []string{s.Interface}...)
 
 	ch <- prometheus.MustNewConstMetric(nat64DfbitSetDesc, prometheus.GaugeValue, float64(s.Nat64DfbitSet), l...)
@@ -914,26 +914,27 @@ func (*natCollector) collectForInterface(s *NatInterface, ch chan<- prometheus.M
 	ch <- prometheus.MustNewConstMetric(natunsupportedLayer4NaptDesc, prometheus.GaugeValue, float64(s.NatunsupportedLayer4Napt), l...)
 }
 
-func (c *natCollector) NatPoolInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*NatPoolInterface, error) {
-	var x = NatPoolRpc{}
+func (c *natCollector) poolInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*poolInterface, error) {
+	var x = poolResult{}
 	err := client.RunCommandAndParse("show services nat pool", &x)
 	if err != nil {
 		return nil, err
 	}
 
-	interfaces := make([]*NatPoolInterface, 0)
+	interfaces := make([]*poolInterface, 0)
 	for _, natpoolinterface := range x.Information.Interfaces {
-		s := &NatPoolInterface{
+		s := &poolInterface{
 			Interface:       natpoolinterface.Interface,
 			ServiceSetName:  natpoolinterface.ServiceSetName,
 			ServiceNatPools: natpoolinterface.ServiceNatPools,
 		}
 		interfaces = append(interfaces, s)
 	}
+
 	return interfaces, nil
 }
 
-func (c *natCollector) collectForPoolInterface(s *NatPoolInterface, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *natCollector) collectForPoolInterface(s *poolInterface, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, []string{s.Interface}...)
 
 	for _, pool := range s.ServiceNatPools {
@@ -948,16 +949,16 @@ func (c *natCollector) collectForPoolInterface(s *NatPoolInterface, ch chan<- pr
 	}
 }
 
-func (c *natCollector) NatPoolDetailInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*NatPoolDetailInterface, error) {
-	var x = NatPoolDetailRpc{}
+func (c *natCollector) poolDetailInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*poolDetailInterface, error) {
+	var x = poolDetailResult{}
 	err := client.RunCommandAndParse("show services nat pool detail", &x)
 	if err != nil {
 		return nil, err
 	}
 
-	interfacesdetail := make([]*NatPoolDetailInterface, 0)
+	interfacesdetail := make([]*poolDetailInterface, 0)
 	for _, natpooldetailinterface := range x.Information.Interfaces {
-		s := &NatPoolDetailInterface{
+		s := &poolDetailInterface{
 			Interface:             natpooldetailinterface.Interface,
 			ServiceSetName:        natpooldetailinterface.ServiceSetName,
 			ServiceNatPoolsDetail: natpooldetailinterface.ServiceNatPoolsDetail,
@@ -967,7 +968,7 @@ func (c *natCollector) NatPoolDetailInterfaces(client *rpc.Client, ch chan<- pro
 	return interfacesdetail, nil
 }
 
-func (c *natCollector) collectForPoolDetailInterface(s *NatPoolDetailInterface, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *natCollector) collectForPoolDetailInterface(s *poolDetailInterface, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, []string{s.Interface}...)
 
 	for _, pool := range s.ServiceNatPoolsDetail {
@@ -990,27 +991,27 @@ func (c *natCollector) collectForPoolDetailInterface(s *NatPoolDetailInterface, 
 	}
 }
 
-func (c *natCollector) ServiceSetsCpuInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*ServiceSetsCpuInterface, error) {
-	var x = ServiceSetsCpuRpc{}
+func (c *natCollector) serviceSetsCPUInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*serviceSetsCPUInterface, error) {
+	var x = serviceSetsCPUResult{}
 	err := client.RunCommandAndParse("show services service-sets cpu-usage", &x)
 	if err != nil {
 		return nil, err
 	}
 
-	interfacesdetail := make([]*ServiceSetsCpuInterface, 0)
+	interfacesdetail := make([]*serviceSetsCPUInterface, 0)
 	for _, servicesetscpuinterface := range x.Information.Interfaces {
-		s := &ServiceSetsCpuInterface{
+		s := &serviceSetsCPUInterface{
 			Interface:             servicesetscpuinterface.Interface,
 			ServiceSetName:        servicesetscpuinterface.ServiceSetName,
-			CpuUtilizationPercent: servicesetscpuinterface.CpuUtilizationPercent,
+			CPUUtilizationPercent: servicesetscpuinterface.CPUUtilizationPercent,
 		}
 		interfacesdetail = append(interfacesdetail, s)
 	}
 	return interfacesdetail, nil
 }
 
-func (c *natCollector) collectForServiceSetsCpuInterface(s *ServiceSetsCpuInterface, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *natCollector) collectForServiceSetsCPUInterface(s *serviceSetsCPUInterface, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, []string{s.Interface, s.ServiceSetName}...)
 
-	ch <- prometheus.MustNewConstMetric(serviceSetCpuUtilizationDesc, prometheus.GaugeValue, float64(s.CpuUtilizationPercent), l...)
+	ch <- prometheus.MustNewConstMetric(serviceSetCpuUtilizationDesc, prometheus.GaugeValue, float64(s.CPUUtilizationPercent), l...)
 }

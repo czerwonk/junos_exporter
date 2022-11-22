@@ -1,10 +1,10 @@
 package nat2
 
-type NatRpc struct {
-	Interfaces []NatInterface `xml:"service-nat-statistics-information"`
+type result struct {
+	Interfaces []iface `xml:"service-nat-statistics-information"`
 }
 
-type NatInterface struct {
+type iface struct {
 	Interface                                  string `xml:"interface-name"`
 	NatPktDstInNatRoute                        int64  `xml:"nat-pkt-dst-in-nat-route"`
 	NatFilteringSession                        int64  `xml:"nat-filtering-session"`
@@ -42,18 +42,18 @@ type NatInterface struct {
 	NatJflowLogRateLimitFailInvalidCurrentTime int64  `xml:"nat-jflow-log-rate-limit-fail-invalid-current-time"`
 }
 
-type SrcNatPoolRpc struct {
+type srcNatPoolResult struct {
 	Information struct {
 		TotalSourcePools string       `xml:"total-source-pools"`
-		Pools            []SrcNatPool `xml:"source-nat-pool-info-entry"`
+		Pools            []srcNatPool `xml:"source-nat-pool-info-entry"`
 	} `xml:"source-nat-pool-detail-information"`
 }
 
-type SrcNatPool struct {
+type srcNatPool struct {
 	Interface               string `xml:"interface-name"`
 	ServiceSetName          string `xml:"service-set-name"`
 	PoolName                string `xml:"pool-name"`
-	PoolId                  string `xml:"pool-id"`
+	PoolID                  string `xml:"pool-id"`
 	PortTranslation         string `xml:"source-pool-port-translation"`
 	PortOverloadingFactor   int64  `xml:"port-overloading-factor"`
 	AddressAssignement      string `xml:"source-pool-address-assignment"`
@@ -100,14 +100,14 @@ type SrcNatPool struct {
 	} `xml:"source-pool-error-counters"`
 }
 
-type ServiceSetsCpuRpc struct {
+type serviceSetsCPUResult struct {
 	Information struct {
-		Interfaces []ServiceSetsCpuInterface `xml:"service-set-cpu-statistics"`
+		Interfaces []serviceSetsCPUInterface `xml:"service-set-cpu-statistics"`
 	} `xml:"service-set-cpu-statistics-information"`
 }
 
-type ServiceSetsCpuInterface struct {
+type serviceSetsCPUInterface struct {
 	Interface             string  `xml:"interface-name"`
 	ServiceSetName        string  `xml:"service-set-name"`
-	CpuUtilizationPercent float64 `xml:"cpu-utilization-percent"`
+	CPUUtilizationPercent float64 `xml:"cpu-utilization-percent"`
 }

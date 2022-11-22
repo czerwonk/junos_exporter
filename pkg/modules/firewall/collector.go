@@ -47,7 +47,7 @@ func (*firewallCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *firewallCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = FirewallRpc{}
+	var x = result{}
 	err := client.RunCommandAndParse("show firewall filter regex .*", &x)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (c *firewallCollector) Collect(client *rpc.Client, ch chan<- prometheus.Met
 	return nil
 }
 
-func (c *firewallCollector) collectForFilter(filter Filter, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *firewallCollector) collectForFilter(filter filter, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, filter.Name)
 
 	for _, counter := range filter.Counters {

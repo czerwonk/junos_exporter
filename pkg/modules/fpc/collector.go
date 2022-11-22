@@ -48,8 +48,8 @@ func init() {
 	l = append(l, "memory_type")
 	memoryDesc = prometheus.NewDesc(prefix+"memory_bytes", "Memory size in bytes", l, nil)
 
-	l_pic := []string{"target", "re_name", "fpc_slot", "pic_slot", "pic_type"}
-	picstatusDesc = prometheus.NewDesc(prefix+"pic_status", "Status of the PIC (1 = Online, 0 = Offline)", l_pic, nil)
+	lPic := []string{"target", "re_name", "fpc_slot", "pic_slot", "pic_type"}
+	picstatusDesc = prometheus.NewDesc(prefix+"pic_status", "Status of the PIC (1 = Online, 0 = Offline)", lPic, nil)
 }
 
 // NewCollector creates a new collector
@@ -99,7 +99,7 @@ func (c *fpcCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 
 // CollectFPC collects metrics from JunOS
 func (c *fpcCollector) CollectFPCDetail(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	r := RpcReply{}
+	r := multiEngineResult{}
 	err := client.RunCommandAndParseWithParser("show chassis fpc detail", func(b []byte) error {
 		return parseXML(b, &r)
 	})
@@ -108,7 +108,7 @@ func (c *fpcCollector) CollectFPCDetail(client *rpc.Client, ch chan<- prometheus
 		return err
 	}
 
-	for _, r := range r.MultiRoutingEngineResults.RoutingEngine {
+	for _, r := range r.Results.RoutingEngines {
 		labels := append(labelValues, r.Name)
 		for _, f := range r.FPCs.FPC {
 			c.collectForFPCDetail(ch, labels, &f)
@@ -120,7 +120,7 @@ func (c *fpcCollector) CollectFPCDetail(client *rpc.Client, ch chan<- prometheus
 
 // Collect collects metrics from JunOS
 func (c *fpcCollector) CollectFPC(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	r := RpcReply{}
+	r := multiEngineResult{}
 	err := client.RunCommandAndParseWithParser("show chassis fpc", func(b []byte) error {
 		return parseXML(b, &r)
 	})
@@ -128,7 +128,7 @@ func (c *fpcCollector) CollectFPC(client *rpc.Client, ch chan<- prometheus.Metri
 		return err
 	}
 
-	for _, r := range r.MultiRoutingEngineResults.RoutingEngine {
+	for _, r := range r.Results.RoutingEngines {
 		labels := append(labelValues, r.Name)
 		for _, f := range r.FPCs.FPC {
 			c.collectForFPC(ch, labels, &f)
@@ -138,14 +138,15 @@ func (c *fpcCollector) CollectFPC(client *rpc.Client, ch chan<- prometheus.Metri
 }
 
 func (c *fpcCollector) CollectPIC(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	r := RpcReply{}
+	r := multiEngineResult{}
 	err := client.RunCommandAndParseWithParser("show chassis fpc pic-status", func(b []byte) error {
 		return parseXML(b, &r)
 	})
 	if err != nil {
 		return err
 	}
-	for _, r := range r.MultiRoutingEngineResults.RoutingEngine {
+
+	for _, r := range r.Results.RoutingEngines {
 		labels := append(labelValues, r.Name)
 		for _, f := range r.FPCs.FPC {
 			for _, p := range f.Pics {
@@ -153,10 +154,11 @@ func (c *fpcCollector) CollectPIC(client *rpc.Client, ch chan<- prometheus.Metri
 			}
 		}
 	}
+
 	return nil
 }
 
-func (c *fpcCollector) collectForFPCDetail(ch chan<- prometheus.Metric, labelValues []string, fpc *FPC) {
+func (c *fpcCollector) collectForFPCDetail(ch chan<- prometheus.Metric, labelValues []string, fpc *fpc) {
 	l := append(labelValues, strconv.Itoa(fpc.Slot))
 	ch <- prometheus.MustNewConstMetric(uptimeDesc, prometheus.CounterValue, float64(fpc.UpTime.Seconds), l...)
 
@@ -175,7 +177,7 @@ func (c *fpcCollector) collectForFPCDetail(ch chan<- prometheus.Metric, labelVal
 	c.collectMemory(fpc.MemoryRldramSize, "rl-dram", ch, l)
 }
 
-func (c *fpcCollector) collectForFPC(ch chan<- prometheus.Metric, labelValues []string, fpc *FPC) {
+func (c *fpcCollector) collectForFPC(ch chan<- prometheus.Metric, labelValues []string, fpc *fpc) {
 	up := 0
 	if fpc.State == "Online" {
 		up = 1
@@ -184,13 +186,13 @@ func (c *fpcCollector) collectForFPC(ch chan<- prometheus.Metric, labelValues []
 
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, float64(up), l...)
 	if up == 1 {
-		ch <- prometheus.MustNewConstMetric(cpuTotalDesc, prometheus.GaugeValue, float64(fpc.CpuTotal), l...)
-		ch <- prometheus.MustNewConstMetric(cpuInterruptDesc, prometheus.GaugeValue, float64(fpc.CpuInterrupt), l...)
+		ch <- prometheus.MustNewConstMetric(cpuTotalDesc, prometheus.GaugeValue, float64(fpc.CPUTotal), l...)
+		ch <- prometheus.MustNewConstMetric(cpuInterruptDesc, prometheus.GaugeValue, float64(fpc.CPUInterrupt), l...)
 		ch <- prometheus.MustNewConstMetric(memoryHeapUtilizationDesc, prometheus.GaugeValue, float64(fpc.MemoryHeapUtilization), l...)
 		ch <- prometheus.MustNewConstMetric(memoryBufferUtilizationDesc, prometheus.GaugeValue, float64(fpc.MemoryBufferUtilization), l...)
-		ch <- prometheus.MustNewConstMetric(cpuAvgDesc, prometheus.GaugeValue, float64(fpc.Cpu1min_avg), append(l, "1min")...)
-		ch <- prometheus.MustNewConstMetric(cpuAvgDesc, prometheus.GaugeValue, float64(fpc.Cpu5min_avg), append(l, "5min")...)
-		ch <- prometheus.MustNewConstMetric(cpuAvgDesc, prometheus.GaugeValue, float64(fpc.Cpu15min_avg), append(l, "15min")...)
+		ch <- prometheus.MustNewConstMetric(cpuAvgDesc, prometheus.GaugeValue, float64(fpc.CPU1minAVG), append(l, "1min")...)
+		ch <- prometheus.MustNewConstMetric(cpuAvgDesc, prometheus.GaugeValue, float64(fpc.CPU5minAVG), append(l, "5min")...)
+		ch <- prometheus.MustNewConstMetric(cpuAvgDesc, prometheus.GaugeValue, float64(fpc.CPU15minAVG), append(l, "15min")...)
 	}
 }
 
@@ -202,33 +204,34 @@ func (c *fpcCollector) collectMemory(memory uint, memType string, ch chan<- prom
 	}
 }
 
-func (c *fpcCollector) collectForPIC(ch chan<- prometheus.Metric, labelValues []string, fpc *FPC, pic *PIC) {
+func (c *fpcCollector) collectForPIC(ch chan<- prometheus.Metric, labelValues []string, fpc *fpc, pic *pic) {
 	picup := 0
 	if pic.PicState == "Online" {
 		picup = 1
 	}
 
-	l_pic := append(labelValues, strconv.Itoa(fpc.Slot), strconv.Itoa(pic.PicSlot), pic.PicType)
-	ch <- prometheus.MustNewConstMetric(picstatusDesc, prometheus.GaugeValue, float64(picup), l_pic...)
+	l := append(labelValues, strconv.Itoa(fpc.Slot), strconv.Itoa(pic.PicSlot), pic.PicType)
+	ch <- prometheus.MustNewConstMetric(picstatusDesc, prometheus.GaugeValue, float64(picup), l...)
 }
 
-func parseXML(b []byte, res *RpcReply) error {
+func parseXML(b []byte, res *multiEngineResult) error {
 	if strings.Contains(string(b), "multi-routing-engine-results") {
 		return xml.Unmarshal(b, res)
 	}
 
-	fi := RpcReplyNoRE{}
+	fi := singeEngineResult{}
 
 	err := xml.Unmarshal(b, &fi)
 	if err != nil {
 		return err
 	}
 
-	res.MultiRoutingEngineResults.RoutingEngine = []RoutingEngine{
+	res.Results.RoutingEngines = []routingEngine{
 		{
 			Name: "N/A",
 			FPCs: fi.FPCs,
 		},
 	}
+
 	return nil
 }

@@ -1,24 +1,24 @@
 package firewall
 
-type FirewallRpc struct {
+type result struct {
 	Information struct {
-		Filters []Filter `xml:"filter-information"`
+		Filters []filter `xml:"filter-information"`
 	} `xml:"firewall-information"`
 }
 
-type Filter struct {
+type filter struct {
 	Name     string          `xml:"filter-name"`
-	Counters []FilterCounter `xml:"counter"`
-	Policers []FilterPolicer `xml:"policer"`
+	Counters []filterCounter `xml:"counter"`
+	Policers []filterPolicer `xml:"policer"`
 }
 
-type FilterCounter struct {
+type filterCounter struct {
 	Name    string `xml:"counter-name"`
 	Packets int64  `xml:"packet-count"`
 	Bytes   int64  `xml:"byte-count"`
 }
 
-type FilterPolicer struct {
+type filterPolicer struct {
 	Name    string `xml:"policer-name"`
 	Packets int64  `xml:"packet-count"`
 	Bytes   int64  `xml:"byte-count"`

@@ -179,6 +179,7 @@ func (m *SSHConnectionManager) keepAlive(connection *SSHConnection) {
 		case <-time.After(m.keepAliveInterval):
 			if time.Since(connection.lastUsed) > m.expiredConnectionTimeout {
 				connection.terminate()
+				return
 			}
 
 			log.Debugf("Sending keepalive for ")

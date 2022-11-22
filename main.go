@@ -33,7 +33,7 @@ var (
 	sshReconnectInterval        = flag.Duration("ssh.reconnect-interval", 30*time.Second, "Duration to wait before reconnecting to a device after connection got lost")
 	sshKeepAliveInterval        = flag.Duration("ssh.keep-alive-interval", 10*time.Second, "Duration to wait between keep alive messages")
 	sshKeepAliveTimeout         = flag.Duration("ssh.keep-alive-timeout", 15*time.Second, "Duration to wait for keep alive message response")
-	sshExpireTimeout            = flag.Duration("ssh.expire-timeout", 5*time.Minute, "Duration after an connection is terminated when it is not used")
+	sshExpireTimeout            = flag.Duration("ssh.expire-timeout", 15*time.Minute, "Duration after an connection is terminated when it is not used")
 	debug                       = flag.Bool("debug", false, "Show verbose debug output in log")
 	alarmEnabled                = flag.Bool("alarm.enabled", true, "Scrape Alarm metrics")
 	bgpEnabled                  = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")

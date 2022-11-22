@@ -7,7 +7,7 @@ type result struct {
 }
 
 type peer struct {
-	CFG_RTI        string            `xml:"peer-cfg-rti"`
+	CFGRTI         string            `xml:"peer-cfg-rti"`
 	IP             string            `xml:"peer-address"`
 	ASN            string            `xml:"peer-as"`
 	State          string            `xml:"peer-state"`

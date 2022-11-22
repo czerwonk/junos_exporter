@@ -134,8 +134,8 @@ func (*bgpCollector) collectRIBForPeer(p peer, ch chan<- prometheus.Metric, labe
 	}
 
 	// if the prefix limit is configured inside a routing instance we need to prepend the RTI name to the rib name
-	if p.CFG_RTI != "" && p.CFG_RTI != "master" && rib_name != "" {
-		rib_name = p.CFG_RTI + "." + rib_name
+	if p.CFGRTI != "" && p.CFGRTI != "master" && rib_name != "" {
+		rib_name = p.CFGRTI + "." + rib_name
 	}
 
 	if p.BGPOI.PrefixLimit.PrefixCount > 0 {

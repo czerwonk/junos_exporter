@@ -39,13 +39,21 @@ func WithKeepAliveTimeout(d time.Duration) Option {
 	}
 }
 
+// WithExpiredConnectionTime sets the timeout after an unused ssh connection will not be keepalived
+func WithExpiredConnectionTimeout(d time.Duration) Option {
+	return func(m *SSHConnectionManager) {
+		m.expiredConnectionTimeout = d
+	}
+}
+
 // SSHConnectionManager manages SSH connections to different devices
 type SSHConnectionManager struct {
-	connections       map[string]*SSHConnection
-	reconnectInterval time.Duration
-	keepAliveInterval time.Duration
-	keepAliveTimeout  time.Duration
-	locks             map[string]*sync.Mutex
+	connections              map[string]*SSHConnection
+	reconnectInterval        time.Duration
+	keepAliveInterval        time.Duration
+	keepAliveTimeout         time.Duration
+	expiredConnectionTimeout time.Duration
+	locks                    map[string]*sync.Mutex
 }
 
 // NewConnectionManager creates a new connection manager
@@ -169,6 +177,10 @@ func (m *SSHConnectionManager) keepAlive(connection *SSHConnection) {
 	for {
 		select {
 		case <-time.After(m.keepAliveInterval):
+			if time.Since(connection.lastUsed) > m.expiredConnectionTimeout {
+				connection.terminate()
+			}
+
 			log.Debugf("Sending keepalive for ")
 			connection.conn.SetDeadline(time.Now().Add(m.keepAliveTimeout))
 			_, _, err := connection.client.SendRequest("keepalive@golang.org", true, nil)

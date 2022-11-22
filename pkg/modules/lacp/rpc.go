@@ -1,23 +1,19 @@
 package lacp
 
-type lacpRpc struct {
+type result struct {
 	Information struct {
 		LacpInterfaces []lacpInterface `xml:"lacp-interface-information"`
 	} `xml:"lacp-interface-information-list"`
 }
 
 type lacpInterface struct {
-	LagLacpHeader struct {
+	LagLACPHeader struct {
 		Name string `xml:"aggregate-name"`
 	} `xml:"lag-lacp-header"`
-	LagLacpStates    []LagLacpStateStruct    `xml:"lag-lacp-state"`
-	LagLacpProtocols []LagLacpProtocolStruct `xml:"lag-lacp-protocol"`
+	LagLACPProtocols []lagLACPProtocol `xml:"lag-lacp-protocol"`
 }
 
-type LagLacpStateStruct struct {
-}
-
-type LagLacpProtocolStruct struct {
+type lagLACPProtocol struct {
 	Member       string `xml:"name"`
 	LacpMuxState string `xml:"lacp-mux-state"`
 }

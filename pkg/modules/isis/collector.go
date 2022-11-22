@@ -52,6 +52,7 @@ func (c *isisCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 
 	ch <- prometheus.MustNewConstMetric(upCount, prometheus.GaugeValue, adjancies.Up, labelValues...)
 	ch <- prometheus.MustNewConstMetric(totalCount, prometheus.GaugeValue, adjancies.Total, labelValues...)
+
 	if adjancies.Adjacencies != nil {
 		for _, adj := range adjancies.Adjacencies {
 			localLabelvalues := append(labelValues, adj.InterfaceName, adj.SystemName, strconv.Itoa(int(adj.Level)))
@@ -70,19 +71,19 @@ func (c *isisCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 			case "Rejected":
 				state = 5.0
 			}
+
 			ch <- prometheus.MustNewConstMetric(adjState, prometheus.GaugeValue, state, localLabelvalues...)
 		}
-
 	}
 
 	return nil
 }
 
-func (c *isisCollector) isisAdjancies(client *rpc.Client) (*IsisAdjacencies, error) {
+func (c *isisCollector) isisAdjancies(client *rpc.Client) (*adjacencies, error) {
 	up := 0
 	total := 0
 
-	var x = IsisRpc{}
+	var x = result{}
 	err := client.RunCommandAndParse("show isis adjacency", &x)
 	if err != nil {
 		return nil, err
@@ -95,5 +96,5 @@ func (c *isisCollector) isisAdjancies(client *rpc.Client) (*IsisAdjacencies, err
 		total++
 	}
 
-	return &IsisAdjacencies{Up: float64(up), Total: float64(total), Adjacencies: x.Information.Adjacencies}, nil
+	return &adjacencies{Up: float64(up), Total: float64(total), Adjacencies: x.Information.Adjacencies}, nil
 }

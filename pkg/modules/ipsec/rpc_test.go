@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Test multi routing engine
 func TestParseSRXOutputMultiRE(t *testing.T) {
 	body := `<rpc-reply xmlns:junos="http://xml.juniper.net/junos/18.4R3/junos">
     <multi-routing-engine-results>
@@ -153,7 +152,7 @@ func TestParseSRXOutputMultiRE(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := RpcReply{}
+	rpc := multiEngineResult{}
 	err := parseXML([]byte(body), &rpc)
 
 	if err != nil {
@@ -161,13 +160,13 @@ func TestParseSRXOutputMultiRE(t *testing.T) {
 	}
 
 	// test routing engine 0
-	assert.NotEmpty(t, rpc.MultiRoutingEngineResults.RoutingEngine[0].IpSec)
+	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].IPSec)
 
-	assert.Equal(t, "node0", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
+	assert.Equal(t, "node0", rpc.Results.RoutingEngines[0].Name, "re-name")
 
-	assert.Equal(t, 2, rpc.MultiRoutingEngineResults.RoutingEngine[0].IpSec.ActiveTunnels, "total-active-tunnels")
+	assert.Equal(t, 2, rpc.Results.RoutingEngines[0].IPSec.ActiveTunnels, "total-active-tunnels")
 
-	f := rpc.MultiRoutingEngineResults.RoutingEngine[0].IpSec.SecurityAssociations[0]
+	f := rpc.Results.RoutingEngines[0].IPSec.SecurityAssociations[0]
 
 	assert.Equal(t, "up", f.State, "state")
 
@@ -320,20 +319,20 @@ func TestParseSRXOutput(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := RpcReply{}
+	rpc := multiEngineResult{}
 	err := parseXML([]byte(body), &rpc)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.MultiRoutingEngineResults.RoutingEngine[0].IpSec)
+	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].IPSec)
 
-	assert.Equal(t, "N/A", rpc.MultiRoutingEngineResults.RoutingEngine[0].Name, "re-name")
+	assert.Equal(t, "N/A", rpc.Results.RoutingEngines[0].Name, "re-name")
 
-	assert.Equal(t, 2, rpc.MultiRoutingEngineResults.RoutingEngine[0].IpSec.ActiveTunnels, "total-active-tunnels")
+	assert.Equal(t, 2, rpc.Results.RoutingEngines[0].IPSec.ActiveTunnels, "total-active-tunnels")
 
-	f := rpc.MultiRoutingEngineResults.RoutingEngine[0].IpSec.SecurityAssociations[0]
+	f := rpc.Results.RoutingEngines[0].IPSec.SecurityAssociations[0]
 
 	assert.Equal(t, "up", f.State, "state")
 
@@ -386,7 +385,7 @@ func TestParseConfigOutput(t *testing.T) {
     </configuration>
 </rpc-reply>`
 
-	rpc := ConfigurationSecurityIpsec{}
+	rpc := configurationSecurityResult{}
 	err := xml.Unmarshal([]byte(body), &rpc)
 
 	if err != nil {
@@ -405,7 +404,7 @@ func TestParseConfigOutput(t *testing.T) {
 
 	assert.Equal(t, "vpn2", f[1].Name, "name")
 
-	assert.Equal(t, "test-ipsec1", f[0].Ike.IpsecPolicy, "ipsec-policy")
+	assert.Equal(t, "test-ipsec1", f[0].Ike.IPSecPolicy, "ipsec-policy")
 	assert.Equal(t, "gateway2", f[1].Ike.Gateway, "gateway")
 
 	assert.Equal(t, 2, len(f), "configured vpns")

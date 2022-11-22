@@ -1,6 +1,6 @@
 package ldp
 
-type LDPRpc struct {
+type result struct {
 	Information ldpInformation `xml:"ldp-neighbor-information"`
 }
 
@@ -12,7 +12,7 @@ type ldpNeighbor struct {
 	Address string `xml:"ldp-neighbor-address"`
 }
 
-type LDPSessionRpc struct {
+type sessionResult struct {
 	Information ldpSessionInformation `xml:"ldp-session-information"`
 }
 

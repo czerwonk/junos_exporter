@@ -2,33 +2,33 @@ package ipsec
 
 import "encoding/xml"
 
-type RpcReply struct {
-	XMLName                   xml.Name                  `xml:"rpc-reply"`
-	MultiRoutingEngineResults MultiRoutingEngineResults `xml:"multi-routing-engine-results"`
+type multiEngineResult struct {
+	XMLName xml.Name           `xml:"rpc-reply"`
+	Results multiEngineResults `xml:"multi-routing-engine-results"`
 }
 
-type MultiRoutingEngineResults struct {
-	RoutingEngine []RoutingEngine `xml:"multi-routing-engine-item"`
+type multiEngineResults struct {
+	RoutingEngines []routingEngine `xml:"multi-routing-engine-item"`
 }
 
-type RoutingEngine struct {
-	Name  string   `xml:"re-name"`
-	IpSec IpSecRpc `xml:"ipsec-security-associations-information"`
+type routingEngine struct {
+	Name  string      `xml:"re-name"`
+	IPSec information `xml:"ipsec-security-associations-information"`
 }
 
-type IpSecRpc struct {
-	ActiveTunnels        int                             `xml:"total-active-tunnels"`
-	SecurityAssociations []IpsecSecurityAssociationBlock `xml:"ipsec-security-associations-block"`
+type information struct {
+	ActiveTunnels        int                        `xml:"total-active-tunnels"`
+	SecurityAssociations []securityAssociationBlock `xml:"ipsec-security-associations-block"`
 }
 
 // IpsecSecurityAssociationBlock is used for xml unmarshalling
-type IpsecSecurityAssociationBlock struct {
-	State                string                     `xml:"sa-block-state"`
-	SecurityAssociations []IpsecSecurityAssociation `xml:"ipsec-security-associations"`
+type securityAssociationBlock struct {
+	State                string                `xml:"sa-block-state"`
+	SecurityAssociations []securityAssociation `xml:"ipsec-security-associations"`
 }
 
 // IpsecSecurityAssociation is used for xml unmarshalling
-type IpsecSecurityAssociation struct {
+type securityAssociation struct {
 	Direction              string `xml:"sa-direction"`
 	TunnelIndex            int64  `xml:"sa-tunnel-index"`
 	Spi                    string `xml:"sa-spi"`
@@ -44,14 +44,14 @@ type IpsecSecurityAssociation struct {
 	VirtualSystem          string `xml:"sa-virtual-system"`
 }
 
-type RpcReplyNoRE struct {
-	XMLName xml.Name `xml:"rpc-reply"`
-	IpSec   IpSecRpc `xml:"ipsec-security-associations-information"`
+type singleEngineResult struct {
+	XMLName xml.Name    `xml:"rpc-reply"`
+	IPSec   information `xml:"ipsec-security-associations-information"`
 }
 
 // ConfigurationSecurityIpsec is used for xml unmarshalling
 // In order to get the number of configured VPNs
-type ConfigurationSecurityIpsec struct {
+type configurationSecurityResult struct {
 	Configuration struct {
 		Security struct {
 			Ipsec struct {
@@ -72,7 +72,7 @@ type ConfigurationSecurityIpsec struct {
 					BindInterface string `xml:"bind-interface"`
 					Ike           struct {
 						Gateway     string `xml:"gateway"`
-						IpsecPolicy string `xml:"ipsec-policy"`
+						IPSecPolicy string `xml:"ipsec-policy"`
 					} `xml:"ike"`
 					EstablishTunnels string `xml:"establish-tunnels"`
 				} `xml:"vpn"`

@@ -77,7 +77,7 @@ func (c *l2circuitCollector) Collect(client *rpc.Client, ch chan<- prometheus.Me
 }
 
 func (c *l2circuitCollector) collectL2circuitMetrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = L2circuitRpc{}
+	var x = result{}
 	err := client.RunCommandAndParse("show l2circuit connections brief", &x)
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func (c *l2circuitCollector) collectL2circuitMetrics(client *rpc.Client, ch chan
 }
 
 func (c *l2circuitCollector) collectForConnection(client *rpc.Client, ch chan<- prometheus.Metric,
-	conn l2circuitConnection, labelValues []string, connCount int) {
+	conn connection, labelValues []string, connCount int) {
 	idStr := conn.ID
 	idInt := re.FindStringSubmatch(idStr)
 	id := idInt[len(idInt)-1]

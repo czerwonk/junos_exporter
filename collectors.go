@@ -9,9 +9,6 @@ import (
 	"github.com/czerwonk/junos_exporter/ipsec"
 	"github.com/czerwonk/junos_exporter/isis"
 	"github.com/czerwonk/junos_exporter/l2circuit"
-	"github.com/czerwonk/junos_exporter/lacp"
-	"github.com/czerwonk/junos_exporter/ldp"
-	"github.com/czerwonk/junos_exporter/mpls_lsp"
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"github.com/czerwonk/junos_exporter/pkg/modules/accounting"
@@ -21,7 +18,10 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/modules/environment"
 	"github.com/czerwonk/junos_exporter/pkg/modules/firewall"
 	"github.com/czerwonk/junos_exporter/pkg/modules/fpc"
+	"github.com/czerwonk/junos_exporter/pkg/modules/lacp"
+	"github.com/czerwonk/junos_exporter/pkg/modules/ldp"
 	"github.com/czerwonk/junos_exporter/pkg/modules/mac"
+	"github.com/czerwonk/junos_exporter/pkg/modules/mplslsp"
 	"github.com/czerwonk/junos_exporter/pkg/modules/nat"
 	"github.com/czerwonk/junos_exporter/pkg/modules/nat2"
 	"github.com/czerwonk/junos_exporter/pkg/modules/ospf"
@@ -107,7 +107,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "mac", f.MAC, mac.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "vrrp", f.VRRP, vrrp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "vpws", f.VPWS, vpws.NewCollector)
-	c.addCollectorIfEnabledForDevice(device, "mpls_lsp", f.MPLS_LSP, mpls_lsp.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "mpls_lsp", f.MPLS_LSP, mplslsp.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

@@ -45,19 +45,17 @@ func (*lacpCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *lacpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = lacpRpc{}
+	var x = result{}
 	err := client.RunCommandAndParse("show lacp interfaces", &x)
 	if err != nil {
 		return err
 	}
 
 	for _, iface := range x.Information.LacpInterfaces {
-
-		for _, member := range iface.LagLacpProtocols {
-			l := append(labelValues, iface.LagLacpHeader.Name, member.Member)
+		for _, member := range iface.LagLACPProtocols {
+			l := append(labelValues, iface.LagLACPHeader.Name, member.Member)
 			ch <- prometheus.MustNewConstMetric(lacpMuxState, prometheus.GaugeValue, float64(lacpMuxStateMap[member.LacpMuxState]), l...)
 		}
-
 	}
 
 	return nil

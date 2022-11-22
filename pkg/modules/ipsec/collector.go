@@ -48,22 +48,24 @@ func (*ipsecCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *ipsecCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = RpcReply{}
-	err := client.RunCommandAndParse("show security ipsec security-associations", &x)
+	var x = multiEngineResult{}
+	err := client.RunCommandAndParseWithParser("show security ipsec security-associations", func(b []byte) error {
+		return parseXML(b, &x)
+	})
 	if err != nil {
 		return err
 	}
 
-	for _, re := range x.MultiRoutingEngineResults.RoutingEngine {
+	for _, re := range x.Results.RoutingEngines {
 		ls := append(labelValues, re.Name, "active tunnels", "")
-		ch <- prometheus.MustNewConstMetric(activeTunnels, prometheus.GaugeValue, float64(re.IpSec.ActiveTunnels), ls...)
+		ch <- prometheus.MustNewConstMetric(activeTunnels, prometheus.GaugeValue, float64(re.IPSec.ActiveTunnels), ls...)
 
-		for _, block := range re.IpSec.SecurityAssociations {
+		for _, block := range re.IPSec.SecurityAssociations {
 			c.collectForSecurityAssociation(block, ch, append(labelValues, re.Name))
 		}
 	}
 
-	var conf = ConfigurationSecurityIpsec{}
+	var conf = configurationSecurityResult{}
 	err = client.RunCommandAndParse("show configuration security ipsec", &conf)
 	if err != nil {
 		return err
@@ -75,7 +77,7 @@ func (c *ipsecCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric
 	return nil
 }
 
-func (c *ipsecCollector) collectForSecurityAssociation(block IpsecSecurityAssociationBlock, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *ipsecCollector) collectForSecurityAssociation(block securityAssociationBlock, ch chan<- prometheus.Metric, labelValues []string) {
 	// build SA name
 	var saName string
 	var saDesc string
@@ -98,23 +100,24 @@ func stateToInt(state *string) int {
 	return retval
 }
 
-func parseXML(b []byte, res *RpcReply) error {
+func parseXML(b []byte, res *multiEngineResult) error {
 	if strings.Contains(string(b), "multi-routing-engine-results") {
 		return xml.Unmarshal(b, res)
 	}
 
-	fi := RpcReplyNoRE{}
+	fi := singleEngineResult{}
 
 	err := xml.Unmarshal(b, &fi)
 	if err != nil {
 		return err
 	}
 
-	res.MultiRoutingEngineResults.RoutingEngine = []RoutingEngine{
+	res.Results.RoutingEngines = []routingEngine{
 		{
 			Name:  "N/A",
-			IpSec: fi.IpSec,
+			IPSec: fi.IPSec,
 		},
 	}
+
 	return nil
 }

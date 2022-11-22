@@ -188,22 +188,22 @@ func TestFindDeviceConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	device1 := c.findDeviceConfig("router1")
+	device1 := c.FindDeviceConfig("router1")
 	if device1.Username != "router" {
 		t.Fatalf("Unexpected username for router1: %s", device1.Username)
 	}
 
-	device2 := c.findDeviceConfig("router2")
+	device2 := c.FindDeviceConfig("router2")
 	if device2 != nil {
 		t.Fatal("Unexpected device for router2")
 	}
 
-	device3 := c.findDeviceConfig("switch-ber01")
+	device3 := c.FindDeviceConfig("switch-ber01")
 	if device3.Username != "switch" {
 		t.Fatalf("Unexpected username for switch-ber01: %s", device1.Username)
 	}
 
-	device4 := c.findDeviceConfig("switch-oob")
+	device4 := c.FindDeviceConfig("switch-oob")
 	if device4 != nil {
 		t.Fatal("Unexpected device for switch-oob")
 	}

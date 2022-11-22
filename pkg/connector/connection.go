@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -12,17 +13,20 @@ import (
 
 // SSHConnection encapsulates the connection to the device
 type SSHConnection struct {
-	device *Device
-	client *ssh.Client
-	conn   net.Conn
-	mu     sync.Mutex
-	done   chan struct{}
+	device   *Device
+	client   *ssh.Client
+	conn     net.Conn
+	lastUsed time.Time
+	mu       sync.Mutex
+	done     chan struct{}
 }
 
 // RunCommand runs a command against the device
 func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
+	c.lastUsed = time.Now()
 
 	if c.client == nil {
 		return nil, errors.New("not connected")

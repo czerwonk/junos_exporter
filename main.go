@@ -24,7 +24,6 @@ const version string = "0.10.0"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
-	ignoreConfigTargets         = flag.Bool("config.ignore-targets", false, "Ignore check if target is specified in config")
 	listenAddress               = flag.String("web.listen-address", ":9326", "Address on which to expose metrics and web interface.")
 	metricsPath                 = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	sshHosts                    = flag.String("ssh.targets", "", "Hosts to scrape")
@@ -310,16 +309,19 @@ func devicesForRequest(r *http.Request) ([]*connector.Device, error) {
 		}
 	}
 
-	if *ignoreConfigTargets {
-		d, err := deviceFromDeviceConfig(
-			&config.DeviceConfig{
-				Host: reqTarget,
-			}, cfg)
-		if err != nil {
-			return nil, err
+	for _, dc := range cfg.Devices {
+		if !dc.IsHostPattern {
+			continue
 		}
 
-		return []*connector.Device{d}, nil
+		if dc.HostPattern.MatchString(reqTarget) {
+			d, err := deviceFromDeviceConfig(dc, reqTarget, cfg)
+			if err != nil {
+				return nil, err
+			}
+
+			return []*connector.Device{d}, nil
+		}
 	}
 
 	return nil, fmt.Errorf("the target '%s' is not defined in the configuration file", reqTarget)

@@ -136,7 +136,7 @@ func setDefaultValues(c *Config) {
 
 // FeaturesForDevice gets the feature set configured for a device
 func (c *Config) FeaturesForDevice(host string) *FeatureConfig {
-	d := c.findDeviceConfig(host)
+	d := c.FindDeviceConfig(host)
 
 	if d != nil && d.Features != nil {
 		return d.Features
@@ -145,7 +145,7 @@ func (c *Config) FeaturesForDevice(host string) *FeatureConfig {
 	return &c.Features
 }
 
-func (c *Config) findDeviceConfig(host string) *DeviceConfig {
+func (c *Config) FindDeviceConfig(host string) *DeviceConfig {
 	for _, dc := range c.Devices {
 		if dc.HostPattern != nil {
 			if dc.HostPattern.MatchString(host) {

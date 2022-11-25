@@ -97,7 +97,7 @@ States map to human readable names like this:
 
 ## Install
 ```bash
-go get -u github.com/czerwonk/junos_exporter
+go get -u github.com/czerwonk/junos_exporter@master
 ```
 
 ## Usage

@@ -46,6 +46,10 @@ var (
 
 	hardwareInfoDesc *prometheus.Desc
 
+	licenseUsedDesc *prometheus.Desc
+	licenseInstalledDesc *prometheus.Desc
+	licenseNeededDesc *prometheus.Desc
+
 	// regex
 	regex1Ints        *regexp.Regexp = regexp.MustCompile(`^(\d+).*`)
 	regex2Ints        *regexp.Regexp = regexp.MustCompile(`^(\d+)\/(\d+).*`)
@@ -95,6 +99,12 @@ func init() {
 
 	l = append(l, "model", "os", "os_version", "serial", "hostname", "alias", "slot_id", "state")
 	hardwareInfoDesc = prometheus.NewDesc(prefix+"hardware_info", "Hardware information about this system", l, nil)
+
+	l = []string{"target"}
+	l = append(l, "feature_name", "feature_description", "expiry")
+	licenseUsedDesc = prometheus.NewDesc(prefix+"license_used", "Amount of license used", l, nil)
+	licenseInstalledDesc = prometheus.NewDesc(prefix+"license_installed", "Amount of license installed", l, nil)
+	licenseNeededDesc = prometheus.NewDesc(prefix+"license_needed", "Amount of license needed", l, nil)
 }
 
 // NewCollector creates a new collector
@@ -132,6 +142,9 @@ func (*systemCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- sfbufsDelayedDesc
 	ch <- ioInitDesc
 	ch <- hardwareInfoDesc
+	ch <- licenseUsedDesc
+	ch <- licenseInstalledDesc
+	ch <- licenseNeededDesc
 }
 
 // Collect collects metrics from JunOS
@@ -157,6 +170,10 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 
 	if client.Satellite {
 		c.collectSatelites(client, ch, labelValues)
+	}
+
+	if client.License {
+		c.collectLicense(client, ch, labelValues)
 	}
 
 	return nil
@@ -367,5 +384,26 @@ func (c *systemCollector) collectSatelites(client *rpc.Client, ch chan<- prometh
 			strings.ToLower(r.SatelliteInfo.Satellite[i].State))
 
 		ch <- prometheus.MustNewConstMetric(hardwareInfoDesc, prometheus.GaugeValue, float64(1), l...)
+	}
+}
+
+func (c *systemCollector) collectLicense(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) {
+	r := &licenseInformation{}
+	err := client.RunCommandAndParse("show system license usage", r)
+
+	if err == nil {
+		for i := range r.LicenseInfo.License {
+			// licenseLabels = make([]string, 0)
+			// 	l = append(l, "feature_name", "feature_description", "expiry")
+
+			licenseLabels := append(labelValues,
+				strings.ToLower(r.LicenseInfo.License[i].Name),
+				strings.ToLower(r.LicenseInfo.License[i].Description),
+				strings.ToLower(r.LicenseInfo.License[i].ValidityType))
+
+			ch <- prometheus.MustNewConstMetric(licenseUsedDesc, prometheus.GaugeValue, float64(r.LicenseInfo.License[i].Used), licenseLabels...)
+			ch <- prometheus.MustNewConstMetric(licenseInstalledDesc, prometheus.GaugeValue, float64(r.LicenseInfo.License[i].Installed), licenseLabels...)
+			ch <- prometheus.MustNewConstMetric(licenseNeededDesc, prometheus.GaugeValue, float64(r.LicenseInfo.License[i].Needed), licenseLabels...)
+		}
 	}
 }

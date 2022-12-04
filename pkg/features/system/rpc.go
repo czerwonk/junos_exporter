@@ -70,3 +70,16 @@ type satelliteChassis struct {
 		} `xml:"satellite"`
 	} `xml:"satellite-information"`
 }
+
+type licenseInformation struct {
+	LicenseInfo struct {
+		License []struct {
+			Name  string `xml:"name"`
+			Description string `xml:"description"`
+			Installed  int `xml:"licensed"`
+			Used int `xml:"used-licensed"`
+			Needed int `xml:"needed"`
+			ValidityType string `xml:"validity-type"`
+		} `xml:"feature-summary"`
+	} `xml:"license-usage-summary"`
+}

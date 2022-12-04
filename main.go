@@ -62,7 +62,7 @@ var (
 	macEnabled                  = flag.Bool("mac.enabled", false, "Scrape MAC address table metrics")
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 	configFile                  = flag.String("config.file", "", "Path to config file")
-	dynamicIfaceLabels          = flag.Bool("dynamic-interface-labels", true, "Parse interface descriptions to get labels dynamicly")
+	dynamicIfaceLabels          = flag.Bool("dynamic-interface-labels", true, "Parse interface descriptions to get labels dynamically")
 	interfaceDescriptionRegex   = flag.String("interface-description-regex", "", "give a regex to retrieve the interface description labels")
 	lsEnabled                   = flag.Bool("logical-systems.enabled", false, "Enable logical systems support")
 	powerEnabled                = flag.Bool("power.enabled", true, "Scrape power metrics")
@@ -70,6 +70,7 @@ var (
 	bfdEnabled                  = flag.Bool("bfd.enabled", false, "Scrape BFD metrics")
 	vpwsEnabled                 = flag.Bool("vpws.enabled", false, "Scrape EVPN VPWS metrics")
 	mplsLSPEnabled              = flag.Bool("mpls_lsp.enabled", false, "Scrape MPLS LSP metrics")
+	licenseEnabled              = flag.Bool("license.enabled", false, "Scrape license metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -223,6 +224,7 @@ func loadConfigFromFlags() *config.Config {
 	f.BFD = *bfdEnabled
 	f.VPWS = *vpwsEnabled
 	f.MPLSLSP = *mplsLSPEnabled
+	f.License = *licenseEnabled
 
 	return c
 }

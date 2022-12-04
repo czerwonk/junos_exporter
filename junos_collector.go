@@ -105,6 +105,10 @@ func clientForDevice(device *connector.Device, connManager *connector.SSHConnect
 		c.EnableSatellite()
 	}
 
+	if cfg.Features.License {
+		c.EnableLicense()
+	}
+
 	return c, nil
 }
 

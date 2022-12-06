@@ -46,6 +46,7 @@ The following metrics are supported by now:
 * Statistics about l2circuits (tunnel state, number of tunnels)
 * Interface queue statistics
 * Power (Power usage)
+* License statistics (installed/used/needed)
 ```   
 0:EI -- encapsulation invalid
 1:MM -- mtu mismatch

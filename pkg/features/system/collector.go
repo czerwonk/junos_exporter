@@ -393,9 +393,6 @@ func (c *systemCollector) collectLicense(client *rpc.Client, ch chan<- prometheu
 
 	if err == nil {
 		for i := range r.LicenseInfo.License {
-			// licenseLabels = make([]string, 0)
-			// 	l = append(l, "feature_name", "feature_description", "expiry")
-
 			licenseLabels := append(labelValues,
 				strings.ToLower(r.LicenseInfo.License[i].Name),
 				strings.ToLower(r.LicenseInfo.License[i].Description),

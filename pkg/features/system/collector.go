@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
+	"math"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/rpc"
@@ -49,6 +51,7 @@ var (
 	licenseUsedDesc *prometheus.Desc
 	licenseInstalledDesc *prometheus.Desc
 	licenseNeededDesc *prometheus.Desc
+	licenseExpiryDesc *prometheus.Desc
 
 	// regex
 	regex1Ints        *regexp.Regexp = regexp.MustCompile(`^(\d+).*`)
@@ -101,10 +104,11 @@ func init() {
 	hardwareInfoDesc = prometheus.NewDesc(prefix+"hardware_info", "Hardware information about this system", l, nil)
 
 	l = []string{"target"}
-	l = append(l, "feature_name", "feature_description", "expiry")
+	l = append(l, "feature_name", "feature_description")
 	licenseUsedDesc = prometheus.NewDesc(prefix+"license_used", "Amount of license used", l, nil)
 	licenseInstalledDesc = prometheus.NewDesc(prefix+"license_installed", "Amount of license installed", l, nil)
 	licenseNeededDesc = prometheus.NewDesc(prefix+"license_needed", "Amount of license needed", l, nil)
+	licenseExpiryDesc = prometheus.NewDesc(prefix+"license_expiry", "Days until expiry, if applicable; -1 = expired; +Inf = permanent; -Inf = invalid", l, nil)
 }
 
 // NewCollector creates a new collector
@@ -145,6 +149,7 @@ func (*systemCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- licenseUsedDesc
 	ch <- licenseInstalledDesc
 	ch <- licenseNeededDesc
+	ch <- licenseExpiryDesc
 }
 
 // Collect collects metrics from JunOS
@@ -395,12 +400,26 @@ func (c *systemCollector) collectLicense(client *rpc.Client, ch chan<- prometheu
 		for i := range r.LicenseInfo.License {
 			licenseLabels := append(labelValues,
 				strings.ToLower(r.LicenseInfo.License[i].Name),
-				strings.ToLower(r.LicenseInfo.License[i].Description),
-				strings.ToLower(r.LicenseInfo.License[i].ValidityType))
+				strings.ToLower(r.LicenseInfo.License[i].Description))
 
 			ch <- prometheus.MustNewConstMetric(licenseUsedDesc, prometheus.GaugeValue, float64(r.LicenseInfo.License[i].Used), licenseLabels...)
 			ch <- prometheus.MustNewConstMetric(licenseInstalledDesc, prometheus.GaugeValue, float64(r.LicenseInfo.License[i].Installed), licenseLabels...)
 			ch <- prometheus.MustNewConstMetric(licenseNeededDesc, prometheus.GaugeValue, float64(r.LicenseInfo.License[i].Needed), licenseLabels...)
+
+			expiry_str := strings.ToLower(r.LicenseInfo.License[i].ValidityType)
+			expiry, err := time.Parse("2006-01-02 03:04:05 MST", expiry_str)
+			if err != nil {
+				if strings.Compare(expiry_str, "expired") == 0 {
+					ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(-1), licenseLabels...)
+				} else if strings.Compare(expiry_str, "permanent") == 0 {
+					ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(1)), licenseLabels...)
+				} else {
+					ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(-1)), licenseLabels...)
+				}
+			} else {
+				license_ttl_days := time.Until(expiry).Hours() / 24.0
+				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(license_ttl_days), licenseLabels...)
+			}
 		}
 	}
 }

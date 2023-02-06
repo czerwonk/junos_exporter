@@ -15,6 +15,7 @@ type Config struct {
 	Features  FeatureConfig   `yaml:"features,omitempty"`
 	LSEnabled bool            `yaml:"logical_systems,omitempty"`
 	IfDescReg string          `yaml:"interface_description_regex,omitempty"`
+	TLS       TLS             `yaml:"tls"`
 }
 
 // DeviceConfig is the config representation of 1 device
@@ -63,6 +64,15 @@ type FeatureConfig struct {
 	MPLSLSP             bool `yaml:"mpls_lsp,omitempty"`
 	VPWS                bool `yaml:"vpws,omitempty"`
 	VRRP                bool `yaml:"vrrp,omitempty"`
+}
+
+type TLS struct {
+	// Enabled defines if TLS encryption should be used
+	Enabled bool `yaml:"enabled"`
+	// CertFile specifies the path to the cerificate file
+	CertChainFile string `yaml:"cert_chain_file"`
+	// CertFile specifies the path to the key file for the given cert
+	KeyFile string `yaml:"key_file"`
 }
 
 // New creates a new config

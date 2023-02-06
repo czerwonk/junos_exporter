@@ -20,7 +20,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "0.10.1"
+const version string = "0.10.2"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -254,7 +254,12 @@ func startServer() {
 	http.HandleFunc(*metricsPath, handleMetricsRequest)
 	http.HandleFunc("/-/reload", updateConfiguration)
 
-	log.Infof("Listening for %s on %s\n", *metricsPath, *listenAddress)
+	log.Infof("Listening for %s on %s (TLS: %v)\n", *metricsPath, *listenAddress, cfg.TLS.Enabled)
+	if cfg.TLS.Enabled {
+		log.Fatal(http.ListenAndServeTLS(*listenAddress, cfg.TLS.CertChainFile, cfg.TLS.KeyFile, nil))
+		return
+	}
+
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
 }
 

@@ -2,7 +2,6 @@ package vrrp
 
 import (
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -36,7 +35,7 @@ func (*vrrpCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *vrrpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *vrrpCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	statusValues := map[string]int{
 		"init":   1,
 		"backup": 2,

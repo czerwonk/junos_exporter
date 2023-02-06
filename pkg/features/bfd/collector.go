@@ -2,7 +2,6 @@ package bfd
 
 import (
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -40,7 +39,7 @@ func (*bfdCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *bfdCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *bfdCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var res = result{}
 	err := client.RunCommandAndParse("show bfd session extensive", &res)
 	if err != nil {

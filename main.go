@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"flag"
 	"fmt"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	"github.com/czerwonk/junos_exporter/pkg/connector"
+	"go.opentelemetry.io/otel"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
 	"github.com/prometheus/client_golang/prometheus"
@@ -75,6 +77,7 @@ var (
 	connManager                 *connector.SSHConnectionManager
 	reloadCh                    chan chan error
 	configMu                    sync.RWMutex
+	tracer                      = otel.Tracer("junos_exporter")
 )
 
 func init() {
@@ -281,21 +284,26 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	configMu.RLock()
 	defer configMu.RUnlock()
 
+	ctx, span := tracer.Start(context.Background(), "HandleMetricsRequest")
+	defer span.End()
+
 	reg := prometheus.NewRegistry()
 
 	devs, err := devicesForRequest(r)
 	if err != nil {
+		span.RecordError(err)
 		http.Error(w, err.Error(), 400)
 		return
 	}
 
 	logicalSystem := r.URL.Query().Get("ls")
 	if !cfg.LSEnabled && logicalSystem != "" {
+		span.RecordError(err)
 		http.Error(w, fmt.Sprintf("Logical systems not enabled but the logical system '%s' in parameters", logicalSystem), 400)
 		return
 	}
 
-	c := newJunosCollector(devs, connManager, logicalSystem)
+	c := newJunosCollector(ctx, devs, connManager, logicalSystem)
 	reg.MustRegister(c)
 
 	l := log.New()

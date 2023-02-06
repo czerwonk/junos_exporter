@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"regexp"
 	"sync"
 	"time"
@@ -10,6 +11,8 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const prefix = "junos_"
@@ -32,9 +35,10 @@ type junosCollector struct {
 	devices    []*connector.Device
 	clients    map[*connector.Device]*rpc.Client
 	collectors *collectors
+	ctx        context.Context
 }
 
-func newJunosCollector(devices []*connector.Device, connectionManager *connector.SSHConnectionManager, logicalSystem string) *junosCollector {
+func newJunosCollector(ctx context.Context, devices []*connector.Device, connectionManager *connector.SSHConnectionManager, logicalSystem string) *junosCollector {
 	l := interfacelabels.NewDynamicLabels()
 
 	clients := make(map[*connector.Device]*rpc.Client)
@@ -47,10 +51,14 @@ func newJunosCollector(devices []*connector.Device, connectionManager *connector
 		}
 
 		clients[d] = cl
+		cla := &clientTracingAdapter{
+			cl:  cl,
+			ctx: ctx,
+		}
 
 		if *dynamicIfaceLabels {
 			regex := deviceInterfaceRegex(d.Host)
-			err = l.CollectDescriptions(d, cl, regex)
+			err = l.CollectDescriptions(d, cla, regex)
 			if err != nil {
 				log.Errorf("Could not get interface descriptions %s: %s", d, err)
 				continue
@@ -62,6 +70,7 @@ func newJunosCollector(devices []*connector.Device, connectionManager *connector
 		devices:    devices,
 		collectors: collectorsForDevices(devices, cfg, logicalSystem, l),
 		clients:    clients,
+		ctx:        ctx,
 	}
 }
 
@@ -95,16 +104,16 @@ func clientForDevice(device *connector.Device, connManager *connector.SSHConnect
 		return nil, err
 	}
 
-	c := rpc.NewClient(conn)
-
+	opts := []rpc.ClientOption{}
 	if *debug {
-		c.EnableDebug()
+		opts = append(opts, rpc.WithDebug())
 	}
 
 	if cfg.Features.Satellite {
-		c.EnableSatellite()
+		opts = append(opts, rpc.WithSatellite())
 	}
 
+	c := rpc.NewClient(conn, opts...)
 	return c, nil
 }
 
@@ -121,18 +130,26 @@ func (c *junosCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector interface
 func (c *junosCollector) Collect(ch chan<- prometheus.Metric) {
+	ctx, span := tracer.Start(c.ctx, "Collect")
+	defer span.End()
+
 	wg := &sync.WaitGroup{}
 
 	wg.Add(len(c.devices))
 	for _, d := range c.devices {
-		go c.collectForHost(d, ch, wg)
+		go c.collectForHost(ctx, d, ch, wg)
 	}
 
 	wg.Wait()
 }
 
-func (c *junosCollector) collectForHost(device *connector.Device, ch chan<- prometheus.Metric, wg *sync.WaitGroup) {
+func (c *junosCollector) collectForHost(ctx context.Context, device *connector.Device, ch chan<- prometheus.Metric, wg *sync.WaitGroup) {
 	defer wg.Done()
+
+	ctx, span := tracer.Start(ctx, "CollectForHost", trace.WithAttributes(
+		attribute.String("host", device.Host),
+	))
+	defer span.End()
 
 	l := []string{device.Host}
 
@@ -141,7 +158,7 @@ func (c *junosCollector) collectForHost(device *connector.Device, ch chan<- prom
 		ch <- prometheus.MustNewConstMetric(scrapeDurationDesc, prometheus.GaugeValue, time.Since(t).Seconds(), l...)
 	}()
 
-	rpc, found := c.clients[device]
+	cl, found := c.clients[device]
 	if !found {
 		ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 0, l...)
 		return
@@ -150,13 +167,24 @@ func (c *junosCollector) collectForHost(device *connector.Device, ch chan<- prom
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 1, l...)
 
 	for _, col := range c.collectors.collectorsForDevice(device) {
+		ctx, sp := tracer.Start(ctx, "CollectForHostWithCollector", trace.WithAttributes(
+			attribute.String("collector", col.Name()),
+		))
+
+		cta := &clientTracingAdapter{
+			cl:  cl,
+			ctx: ctx,
+		}
+
 		ct := time.Now()
-		err := col.Collect(rpc, ch, l)
+		err := col.Collect(cta, ch, l)
 
 		if err != nil && err.Error() != "EOF" {
+			sp.RecordError(err)
 			log.Errorln(col.Name() + ": " + err.Error())
 		}
 
 		ch <- prometheus.MustNewConstMetric(scrapeCollectorDurationDesc, prometheus.GaugeValue, time.Since(ct).Seconds(), append(l, col.Name())...)
+		sp.End()
 	}
 }

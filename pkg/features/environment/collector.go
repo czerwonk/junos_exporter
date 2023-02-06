@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -61,14 +60,14 @@ func (*environmentCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *environmentCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *environmentCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	c.environmentItems(client, ch, labelValues)
 	c.environmentPEMItems(client, ch, labelValues)
 
 	return nil
 }
 
-func (c *environmentCollector) environmentItems(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *environmentCollector) environmentItems(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	x := multiEngineResult{}
 
 	statusValues := map[string]int{
@@ -86,7 +85,7 @@ func (c *environmentCollector) environmentItems(client *rpc.Client, ch chan<- pr
 		return nil
 	}
 
-	if client.Satellite {
+	if client.IsSatelliteEnabled() {
 		var y = multiEngineResult{}
 		err = client.RunCommandAndParseWithParser("show chassis environment satellite", func(b []byte) error {
 			if string(b[:]) == "\nerror: syntax error, expecting <command>: satellite\n" {
@@ -122,7 +121,7 @@ func (c *environmentCollector) environmentItems(client *rpc.Client, ch chan<- pr
 	return nil
 }
 
-func (c *environmentCollector) environmentPEMItems(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *environmentCollector) environmentPEMItems(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = multiEngineResult{}
 
 	stateValues := map[string]int{

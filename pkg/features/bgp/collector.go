@@ -4,7 +4,6 @@ import (
 	"math"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"strings"
@@ -74,7 +73,7 @@ func (*bgpCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *bgpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *bgpCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	err := c.collect(client, ch, labelValues)
 	if err != nil {
 		return err
@@ -83,7 +82,7 @@ func (c *bgpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 	return nil
 }
 
-func (c *bgpCollector) collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *bgpCollector) collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = result{}
 	var cmd strings.Builder
 	cmd.WriteString("show bgp neighbor")

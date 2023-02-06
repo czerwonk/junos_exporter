@@ -12,6 +12,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -181,6 +182,7 @@ func (c *junosCollector) collectForHost(ctx context.Context, device *connector.D
 
 		if err != nil && err.Error() != "EOF" {
 			sp.RecordError(err)
+			sp.SetStatus(codes.Error, err.Error())
 			log.Errorln(col.Name() + ": " + err.Error())
 		}
 

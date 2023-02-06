@@ -15,6 +15,7 @@ import (
 
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
 	"github.com/prometheus/client_golang/prometheus"
@@ -292,6 +293,7 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	devs, err := devicesForRequest(r)
 	if err != nil {
 		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		http.Error(w, err.Error(), 400)
 		return
 	}
@@ -299,6 +301,7 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	logicalSystem := r.URL.Query().Get("ls")
 	if !cfg.LSEnabled && logicalSystem != "" {
 		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		http.Error(w, fmt.Sprintf("Logical systems not enabled but the logical system '%s' in parameters", logicalSystem), 400)
 		return
 	}

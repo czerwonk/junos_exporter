@@ -102,8 +102,9 @@ func main() {
 		log.Fatalf("could not initialize exporter. %v", err)
 	}
 
-	if *tracingEnabled {
-		initTracing()
+	err = initTracing()
+	if err != nil {
+		log.Errorf("could not initialize tracing")
 	}
 
 	initChannels()

@@ -22,16 +22,22 @@ var (
 	)
 )
 
-func initTracing() {
-	if *tracingStdout {
-		initTracingToStdOut()
+func initTracing() error {
+	if !*tracingEnabled {
+		return nil
 	}
+
+	if *tracingStdout {
+		return initTracingToStdOut()
+	}
+
+	return nil
 }
 
-func initTracingToStdOut() {
+func initTracingToStdOut() error {
 	exp, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
 	if err != nil {
-		panic(fmt.Errorf("creating stdout exporter: %w", err))
+		return fmt.Errorf("creating stdout exporter: %w", err)
 	}
 
 	tp := sdktrace.NewTracerProvider(
@@ -39,6 +45,8 @@ func initTracingToStdOut() {
 		sdktrace.WithResource(resourceDefinition()),
 	)
 	otel.SetTracerProvider(tp)
+
+	return nil
 }
 
 func resourceDefinition() *resource.Resource {

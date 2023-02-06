@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/czerwonk/junos_exporter/pkg/connector"
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
@@ -73,12 +72,13 @@ var (
 	bfdEnabled                  = flag.Bool("bfd.enabled", false, "Scrape BFD metrics")
 	vpwsEnabled                 = flag.Bool("vpws.enabled", false, "Scrape EVPN VPWS metrics")
 	mplsLSPEnabled              = flag.Bool("mpls_lsp.enabled", false, "Scrape MPLS LSP metrics")
+	tracingEnabled              = flag.Bool("tracing.enabled", false, "Tracing features enabled")
+	tracingStdout               = flag.Bool("tracing.stdout", false, "Output traces to stdout")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
 	reloadCh                    chan chan error
 	configMu                    sync.RWMutex
-	tracer                      = otel.Tracer("junos_exporter")
 )
 
 func init() {
@@ -100,6 +100,10 @@ func main() {
 	err := initialize()
 	if err != nil {
 		log.Fatalf("could not initialize exporter. %v", err)
+	}
+
+	if *tracingEnabled {
+		initTracing()
 	}
 
 	initChannels()

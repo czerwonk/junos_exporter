@@ -52,14 +52,14 @@ func newJunosCollector(ctx context.Context, devices []*connector.Device, connect
 		}
 
 		clients[d] = cl
-		cla := &clientTracingAdapter{
+		cta := &clientTracingAdapter{
 			cl:  cl,
 			ctx: ctx,
 		}
 
 		if *dynamicIfaceLabels {
 			regex := deviceInterfaceRegex(d.Host)
-			err = l.CollectDescriptions(d, cla, regex)
+			err = l.CollectDescriptions(d, cta, regex)
 			if err != nil {
 				log.Errorf("Could not get interface descriptions %s: %s", d, err)
 				continue

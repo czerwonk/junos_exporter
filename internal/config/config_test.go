@@ -219,11 +219,32 @@ func TestTLSConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected := &TLS{
+	expected := TLSConfig{
 		Enabled:       true,
 		CertChainFile: "test.pem",
 		KeyFile:       "test.key",
 	}
 
-	assert.Equal(t, *expected, c.TLS)
+	assert.Equal(t, expected, c.TLS)
+}
+
+func TestTracingConfig(t *testing.T) {
+	b, err := os.ReadFile("tests/config7.yml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := Load(bytes.NewReader(b))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := TracingConfig{
+		Enabled:  true,
+		Provider: "collector",
+		Collector: TracingCollectorConfig{
+			GRPCAddress: "localhost:12345",
+		},
+	}
+
+	assert.Equal(t, expected, c.Tracing)
 }

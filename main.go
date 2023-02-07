@@ -72,9 +72,6 @@ var (
 	bfdEnabled                  = flag.Bool("bfd.enabled", false, "Scrape BFD metrics")
 	vpwsEnabled                 = flag.Bool("vpws.enabled", false, "Scrape EVPN VPWS metrics")
 	mplsLSPEnabled              = flag.Bool("mpls_lsp.enabled", false, "Scrape MPLS LSP metrics")
-	tracingEnabled              = flag.Bool("tracing.enabled", false, "Tracing features enabled")
-	tracingProvider             = flag.String("tracing.provider", "stdout", "Tracing provider used (Possible values: stdout, collector)")
-	tracingCollector            = flag.String("tracing.grpc-collector", "", "Listen address of the OpenTelemetry collector")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager

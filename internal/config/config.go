@@ -15,7 +15,8 @@ type Config struct {
 	Features  FeatureConfig   `yaml:"features,omitempty"`
 	LSEnabled bool            `yaml:"logical_systems,omitempty"`
 	IfDescReg string          `yaml:"interface_description_regex,omitempty"`
-	TLS       TLS             `yaml:"tls"`
+	TLS       TLSConfig       `yaml:"tls"`
+	Tracing   TracingConfig   `yaml:"tracing"`
 }
 
 // DeviceConfig is the config representation of 1 device
@@ -66,7 +67,17 @@ type FeatureConfig struct {
 	VRRP                bool `yaml:"vrrp,omitempty"`
 }
 
-type TLS struct {
+type TracingConfig struct {
+	Enabled   bool                   `yaml:"enabled"`
+	Provider  string                 `yaml:"provider"`
+	Collector TracingCollectorConfig `yaml:"collector"`
+}
+
+type TracingCollectorConfig struct {
+	GRPCAddress string `yaml:"grpc_address"`
+}
+
+type TLSConfig struct {
 	// Enabled defines if TLS encryption should be used
 	Enabled bool `yaml:"enabled"`
 	// CertFile specifies the path to the cerificate file

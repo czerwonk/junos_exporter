@@ -6,9 +6,13 @@ import (
 
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"github.com/czerwonk/junos_exporter/pkg/rpc"
+	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
@@ -22,22 +26,33 @@ var (
 	)
 )
 
-func initTracing() error {
+func initTracing(ctx context.Context) (func(), error) {
 	if !*tracingEnabled {
-		return nil
+		return initTracingWithNoop()
 	}
 
-	if *tracingStdout {
-		return initTracingToStdOut()
+	switch *tracingProvider {
+	case "stdout":
+		return initTracingToStdOut(ctx)
+	case "collector":
+		return initTracingToCollector(ctx)
+	default:
+		log.Warnf("got invalid value for tracing.provider: %s, disable tracing", *tracingProvider)
+		return initTracingWithNoop()
 	}
-
-	return nil
 }
 
-func initTracingToStdOut() error {
+func initTracingWithNoop() (func(), error) {
+	tp := trace.NewNoopTracerProvider()
+	otel.SetTracerProvider(tp)
+
+	return func() {}, nil
+}
+
+func initTracingToStdOut(ctx context.Context) (func(), error) {
 	exp, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
 	if err != nil {
-		return fmt.Errorf("creating stdout exporter: %w", err)
+		return nil, fmt.Errorf("failed to create stdout exporter: %w", err)
 	}
 
 	tp := sdktrace.NewTracerProvider(
@@ -46,7 +61,37 @@ func initTracingToStdOut() error {
 	)
 	otel.SetTracerProvider(tp)
 
-	return nil
+	return shutdownTraceProvider(ctx, tp.Shutdown), nil
+}
+
+func initTracingToCollector(ctx context.Context) (func(), error) {
+	cl := otlptracegrpc.NewClient(
+		otlptracegrpc.WithInsecure(),
+		otlptracegrpc.WithEndpoint(*tracingCollector),
+	)
+	exp, err := otlptrace.New(ctx, cl)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create gRPC collector exporter: %w", err)
+	}
+
+	bsp := sdktrace.NewBatchSpanProcessor(exp)
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+		sdktrace.WithResource(resourceDefinition()),
+		sdktrace.WithSpanProcessor(bsp),
+	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.TraceContext{})
+
+	return shutdownTraceProvider(ctx, tp.Shutdown), nil
+}
+
+func shutdownTraceProvider(ctx context.Context, shutdownFunc func(ctx context.Context) error) func() {
+	return func() {
+		if err := shutdownFunc(ctx); err != nil {
+			log.Errorf("failed to shutdown TracerProvider: %w", err)
+		}
+	}
 }
 
 func resourceDefinition() *resource.Resource {

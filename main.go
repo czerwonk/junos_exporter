@@ -73,7 +73,8 @@ var (
 	vpwsEnabled                 = flag.Bool("vpws.enabled", false, "Scrape EVPN VPWS metrics")
 	mplsLSPEnabled              = flag.Bool("mpls_lsp.enabled", false, "Scrape MPLS LSP metrics")
 	tracingEnabled              = flag.Bool("tracing.enabled", false, "Tracing features enabled")
-	tracingStdout               = flag.Bool("tracing.stdout", false, "Output traces to stdout")
+	tracingProvider             = flag.String("tracing.provider", "stdout", "Tracing provider used (Possible values: stdout, collector)")
+	tracingCollector            = flag.String("tracing.grpc-collector", "", "Listen address of the OpenTelemetry collector")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -102,10 +103,14 @@ func main() {
 		log.Fatalf("could not initialize exporter. %v", err)
 	}
 
-	err = initTracing()
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	shutdownTracing, err := initTracing(ctx)
 	if err != nil {
-		log.Errorf("could not initialize tracing")
+		log.Fatalf("could not initialize tracing: %w", err)
 	}
+	defer shutdownTracing()
 
 	initChannels()
 

@@ -250,7 +250,7 @@ func connectionManager() *connector.SSHConnectionManager {
 }
 
 func startServer() {
-	log.Infof("Starting JunOS exporter (Version: %s)\n", version)
+	log.Infof("Starting JunOS exporter (Version: %s)", version)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
 			<head><title>JunOS Exporter (Version ` + version + `)</title></head>
@@ -265,7 +265,7 @@ func startServer() {
 	http.HandleFunc(*metricsPath, handleMetricsRequest)
 	http.HandleFunc("/-/reload", updateConfiguration)
 
-	log.Infof("Listening for %s on %s (TLS: %v)\n", *metricsPath, *listenAddress, cfg.TLS.Enabled)
+	log.Infof("Listening for %s on %s (TLS: %v)", *metricsPath, *listenAddress, cfg.TLS.Enabled)
 	if cfg.TLS.Enabled {
 		log.Fatal(http.ListenAndServeTLS(*listenAddress, cfg.TLS.CertChainFile, cfg.TLS.KeyFile, nil))
 		return

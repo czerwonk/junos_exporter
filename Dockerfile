@@ -7,7 +7,7 @@ FROM alpine
 ENV SSH_KEYFILE ""
 ENV CONFIG_FILE "/config.yml"
 ENV ALARM_FILTER ""
-ENV CMD_FLAGS ""
+ENV CMD_FLAGS "-tracing.enabled"
 RUN apk --no-cache add ca-certificates
 WORKDIR /app
 COPY --from=builder /go/bin/junos_exporter .

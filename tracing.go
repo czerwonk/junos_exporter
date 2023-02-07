@@ -50,6 +50,8 @@ func initTracingWithNoop() (func(), error) {
 }
 
 func initTracingToStdOut(ctx context.Context) (func(), error) {
+	log.Info("Initialize tracing (STDOUT)")
+
 	exp, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
 	if err != nil {
 		return nil, fmt.Errorf("failed to create stdout exporter: %w", err)
@@ -65,6 +67,8 @@ func initTracingToStdOut(ctx context.Context) (func(), error) {
 }
 
 func initTracingToCollector(ctx context.Context) (func(), error) {
+	log.Infof("Initialize tracing (agent: %s)", *tracingCollector)
+
 	cl := otlptracegrpc.NewClient(
 		otlptracegrpc.WithInsecure(),
 		otlptracegrpc.WithEndpoint(*tracingCollector),

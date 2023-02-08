@@ -15,7 +15,6 @@ type Config struct {
 	Features  FeatureConfig   `yaml:"features,omitempty"`
 	LSEnabled bool            `yaml:"logical_systems,omitempty"`
 	IfDescReg string          `yaml:"interface_description_regex,omitempty"`
-	TLS       TLSConfig       `yaml:"tls"`
 	Tracing   TracingConfig   `yaml:"tracing"`
 }
 
@@ -75,15 +74,6 @@ type TracingConfig struct {
 
 type TracingCollectorConfig struct {
 	GRPCAddress string `yaml:"grpc_address"`
-}
-
-type TLSConfig struct {
-	// Enabled defines if TLS encryption should be used
-	Enabled bool `yaml:"enabled"`
-	// CertFile specifies the path to the cerificate file
-	CertChainFile string `yaml:"cert_chain_file"`
-	// CertFile specifies the path to the key file for the given cert
-	KeyFile string `yaml:"key_file"`
 }
 
 // New creates a new config

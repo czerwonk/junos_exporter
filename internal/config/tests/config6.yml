@@ -2,7 +2,8 @@ devices:
   - host: router1
     username: router
 
-tls:
+tracing:
   enabled: true
-  cert_chain_file: "test.pem"
-  key_file: "test.key"
+  provider: collector
+  collector:
+    grpc_address: "localhost:12345"

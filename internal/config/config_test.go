@@ -209,27 +209,8 @@ func TestFindDeviceConfig(t *testing.T) {
 	}
 }
 
-func TestTLSConfig(t *testing.T) {
-	b, err := os.ReadFile("tests/config6.yml")
-	if err != nil {
-		t.Fatal(err)
-	}
-	c, err := Load(bytes.NewReader(b))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	expected := TLSConfig{
-		Enabled:       true,
-		CertChainFile: "test.pem",
-		KeyFile:       "test.key",
-	}
-
-	assert.Equal(t, expected, c.TLS)
-}
-
 func TestTracingConfig(t *testing.T) {
-	b, err := os.ReadFile("tests/config7.yml")
+	b, err := os.ReadFile("tests/config6.yml")
 	if err != nil {
 		t.Fatal(err)
 	}

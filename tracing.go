@@ -93,7 +93,7 @@ func initTracingToCollector(ctx context.Context) (func(), error) {
 func shutdownTraceProvider(ctx context.Context, shutdownFunc func(ctx context.Context) error) func() {
 	return func() {
 		if err := shutdownFunc(ctx); err != nil {
-			log.Errorf("failed to shutdown TracerProvider: %w", err)
+			log.Errorf("failed to shutdown TracerProvider: %v", err)
 		}
 	}
 }

@@ -108,7 +108,7 @@ func main() {
 
 	shutdownTracing, err := initTracing(ctx)
 	if err != nil {
-		log.Fatalf("could not initialize tracing: %w", err)
+		log.Fatalf("could not initialize tracing: %v", err)
 	}
 	defer shutdownTracing()
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package mac
 
 import (

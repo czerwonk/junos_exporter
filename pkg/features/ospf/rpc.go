@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package ospf
 
 type v2Result struct {

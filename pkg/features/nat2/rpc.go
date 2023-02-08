@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package nat2
 
 type result struct {

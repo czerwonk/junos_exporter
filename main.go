@@ -70,6 +70,9 @@ var (
 	bfdEnabled                  = flag.Bool("bfd.enabled", false, "Scrape BFD metrics")
 	vpwsEnabled                 = flag.Bool("vpws.enabled", false, "Scrape EVPN VPWS metrics")
 	mplsLSPEnabled              = flag.Bool("mpls_lsp.enabled", false, "Scrape MPLS LSP metrics")
+	tlsEnabled                  = flag.Bool("tls.enabled", false, "Enables TLS")
+	tlsCertChainPath            = flag.String("tls.cert-file", "", "Path to TLS cert file")
+	tlsKeyPath                  = flag.String("tls.key-file", "", "Path to TLS key file")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -254,9 +257,9 @@ func startServer() {
 	http.HandleFunc(*metricsPath, handleMetricsRequest)
 	http.HandleFunc("/-/reload", updateConfiguration)
 
-	log.Infof("Listening for %s on %s (TLS: %v)\n", *metricsPath, *listenAddress, cfg.TLS.Enabled)
-	if cfg.TLS.Enabled {
-		log.Fatal(http.ListenAndServeTLS(*listenAddress, cfg.TLS.CertChainFile, cfg.TLS.KeyFile, nil))
+	log.Infof("Listening for %s on %s (TLS: %v)", *metricsPath, *listenAddress, *tlsEnabled)
+	if *tlsEnabled {
+		log.Fatal(http.ListenAndServeTLS(*listenAddress, *tlsCertChainPath, *tlsKeyPath, nil))
 		return
 	}
 

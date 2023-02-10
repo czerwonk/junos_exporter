@@ -17,6 +17,7 @@ type Config struct {
 	Features  FeatureConfig   `yaml:"features,omitempty"`
 	LSEnabled bool            `yaml:"logical_systems,omitempty"`
 	IfDescReg string          `yaml:"interface_description_regex,omitempty"`
+	Tracing   TracingConfig   `yaml:"tracing"`
 }
 
 // DeviceConfig is the config representation of 1 device
@@ -65,6 +66,16 @@ type FeatureConfig struct {
 	MPLSLSP             bool `yaml:"mpls_lsp,omitempty"`
 	VPWS                bool `yaml:"vpws,omitempty"`
 	VRRP                bool `yaml:"vrrp,omitempty"`
+}
+
+type TracingConfig struct {
+	Enabled   bool                   `yaml:"enabled"`
+	Provider  string                 `yaml:"provider"`
+	Collector TracingCollectorConfig `yaml:"collector"`
+}
+
+type TracingCollectorConfig struct {
+	GRPCAddress string `yaml:"grpc_address"`
 }
 
 // New creates a new config

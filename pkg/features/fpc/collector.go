@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -80,18 +79,18 @@ func (*fpcCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *fpcCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	err := c.CollectFPCDetail(client, ch, labelValues)
+func (c *fpcCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	err := c.collectFPCDetail(client, ch, labelValues)
 	if err != nil {
 		return err
 	}
 
-	err = c.CollectFPC(client, ch, labelValues)
+	err = c.collectFPC(client, ch, labelValues)
 	if err != nil {
 		return err
 	}
 
-	err = c.CollectPIC(client, ch, labelValues)
+	err = c.collectPIC(client, ch, labelValues)
 	if err != nil {
 		return err
 	}
@@ -100,7 +99,7 @@ func (c *fpcCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 }
 
 // CollectFPC collects metrics from JunOS
-func (c *fpcCollector) CollectFPCDetail(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *fpcCollector) collectFPCDetail(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	r := multiEngineResult{}
 	err := client.RunCommandAndParseWithParser("show chassis fpc detail", func(b []byte) error {
 		return parseXML(b, &r)
@@ -121,7 +120,7 @@ func (c *fpcCollector) CollectFPCDetail(client *rpc.Client, ch chan<- prometheus
 }
 
 // Collect collects metrics from JunOS
-func (c *fpcCollector) CollectFPC(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *fpcCollector) collectFPC(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	r := multiEngineResult{}
 	err := client.RunCommandAndParseWithParser("show chassis fpc", func(b []byte) error {
 		return parseXML(b, &r)
@@ -139,7 +138,7 @@ func (c *fpcCollector) CollectFPC(client *rpc.Client, ch chan<- prometheus.Metri
 	return nil
 }
 
-func (c *fpcCollector) CollectPIC(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *fpcCollector) collectPIC(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	r := multiEngineResult{}
 	err := client.RunCommandAndParseWithParser("show chassis fpc pic-status", func(b []byte) error {
 		return parseXML(b, &r)

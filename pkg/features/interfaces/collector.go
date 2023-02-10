@@ -9,7 +9,6 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"github.com/czerwonk/junos_exporter/pkg/interfacelabels"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -158,7 +157,7 @@ func (c *interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *interfaceCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *interfaceCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	stats, err := c.interfaceStats(client)
 	if err != nil {
 		return err
@@ -171,7 +170,7 @@ func (c *interfaceCollector) Collect(client *rpc.Client, ch chan<- prometheus.Me
 	return nil
 }
 
-func (c *interfaceCollector) interfaceStats(client *rpc.Client) ([]*interfaceStats, error) {
+func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfaceStats, error) {
 	var x = result{}
 	err := client.RunCommandAndParse("show interfaces extensive", &x)
 	if err != nil {

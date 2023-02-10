@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -199,7 +198,7 @@ func (*natCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *natCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *natCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	interfaces, err := c.natInterfaces(client)
 	if err != nil {
 		return err
@@ -225,7 +224,7 @@ func (c *natCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 	return nil
 }
 
-func (c *natCollector) natInterfaces(client *rpc.Client) ([]*iface, error) {
+func (c *natCollector) natInterfaces(client collector.Client) ([]*iface, error) {
 	var x = result{}
 	err := client.RunCommandAndParse("show services nat statistics", &x)
 	if err != nil {
@@ -319,7 +318,7 @@ func (*natCollector) collectForInterface(s *iface, ch chan<- prometheus.Metric, 
 	ch <- prometheus.MustNewConstMetric(NatJflowLogRateLimitFailInvalidCurrentTimeDesc, prometheus.GaugeValue, float64(s.NatJflowLogRateLimitFailInvalidCurrentTime), l...)
 }
 
-func (c *natCollector) srcNatPools(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]srcNatPool, error) {
+func (c *natCollector) srcNatPools(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) ([]srcNatPool, error) {
 	var x = srcNatPoolResult{}
 	err := client.RunCommandAndParse("show services nat source pool all", &x)
 	if err != nil {
@@ -329,7 +328,7 @@ func (c *natCollector) srcNatPools(client *rpc.Client, ch chan<- prometheus.Metr
 	return x.Information.Pools[:], nil
 }
 
-// func (c *natCollector) collectForSrcNatPool(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) {
+// func (c *natCollector) collectForSrcNatPool(client *collector.Client, ch chan<- prometheus.Metric, labelValues []string) {
 func (c *natCollector) collectForSrcNatPool(s []srcNatPool, ch chan<- prometheus.Metric, labelValues []string) {
 
 	for _, pool := range s {
@@ -388,7 +387,7 @@ func (c *natCollector) collectForSrcNatPool(s []srcNatPool, ch chan<- prometheus
 	}
 }
 
-func (c *natCollector) serviceSetsCPUInterfaces(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*serviceSetsCPUInterface, error) {
+func (c *natCollector) serviceSetsCPUInterfaces(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) ([]*serviceSetsCPUInterface, error) {
 	var x = serviceSetsCPUResult{}
 	err := client.RunCommandAndParse("show services service-sets cpu-usage", &x)
 	if err != nil {

@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -70,7 +69,7 @@ func (*accountingCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *accountingCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *accountingCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	flow, err := c.accountingFlows(client)
 	if err != nil {
 		return err
@@ -96,7 +95,7 @@ func (c *accountingCollector) Collect(client *rpc.Client, ch chan<- prometheus.M
 	return nil
 }
 
-func (c *accountingCollector) accountingFlows(client *rpc.Client) (*accountingFlow, error) {
+func (c *accountingCollector) accountingFlows(client collector.Client) (*accountingFlow, error) {
 	var x = result{}
 	err := client.RunCommandAndParse("show services accounting flow inline-jflow", &x)
 	if err != nil {
@@ -119,7 +118,7 @@ func (c *accountingCollector) accountingFlows(client *rpc.Client) (*accountingFl
 	}, nil
 }
 
-func (c *accountingCollector) accountingFailures(client *rpc.Client) (*accountingError, error) {
+func (c *accountingCollector) accountingFailures(client collector.Client) (*accountingError, error) {
 	var x = accountingFlowError{}
 	err := client.RunCommandAndParse("show services accounting errors inline-jflow fpc-slot 0", &x)
 	if err != nil {

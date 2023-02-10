@@ -4,6 +4,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"flag"
 	"fmt"
 	"net/http"
@@ -15,6 +16,7 @@ import (
 	"time"
 
 	"github.com/czerwonk/junos_exporter/pkg/connector"
+	"go.opentelemetry.io/otel/codes"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
 	"github.com/prometheus/client_golang/prometheus"
@@ -22,7 +24,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "0.10.2"
+const version string = "0.11.0"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -102,6 +104,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("could not initialize exporter. %v", err)
 	}
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	shutdownTracing, err := initTracing(ctx)
+	if err != nil {
+		log.Fatalf("could not initialize tracing: %v", err)
+	}
+	defer shutdownTracing()
 
 	initChannels()
 
@@ -244,7 +255,7 @@ func connectionManager() *connector.SSHConnectionManager {
 }
 
 func startServer() {
-	log.Infof("Starting JunOS exporter (Version: %s)\n", version)
+	log.Infof("Starting JunOS exporter (Version: %s)", version)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
 			<head><title>JunOS Exporter (Version ` + version + `)</title></head>
@@ -286,21 +297,28 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	configMu.RLock()
 	defer configMu.RUnlock()
 
+	ctx, span := tracer.Start(context.Background(), "HandleMetricsRequest")
+	defer span.End()
+
 	reg := prometheus.NewRegistry()
 
 	devs, err := devicesForRequest(r)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		http.Error(w, err.Error(), 400)
 		return
 	}
 
 	logicalSystem := r.URL.Query().Get("ls")
 	if !cfg.LSEnabled && logicalSystem != "" {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		http.Error(w, fmt.Sprintf("Logical systems not enabled but the logical system '%s' in parameters", logicalSystem), 400)
 		return
 	}
 
-	c := newJunosCollector(devs, connManager, logicalSystem)
+	c := newJunosCollector(ctx, devs, connManager, logicalSystem)
 	reg.MustRegister(c)
 
 	l := log.New()

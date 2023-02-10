@@ -4,7 +4,6 @@ package rpm
 
 import (
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -61,7 +60,7 @@ func (*rpmCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *rpmCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *rpmCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	err := c.collect(client, ch, labelValues)
 	if err != nil {
 		return err
@@ -70,7 +69,7 @@ func (c *rpmCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 	return nil
 }
 
-func (c *rpmCollector) collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *rpmCollector) collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = result{}
 
 	err := client.RunCommandAndParse("show services rpm probe-results", &x)

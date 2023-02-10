@@ -7,8 +7,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/pkg/errors"
 )
 
@@ -47,7 +47,7 @@ type interfaceLabel struct {
 }
 
 // CollectDescriptions collects labels from descriptions
-func (l *DynamicLabels) CollectDescriptions(device *connector.Device, client *rpc.Client, ifDescReg *regexp.Regexp) error {
+func (l *DynamicLabels) CollectDescriptions(device *connector.Device, client collector.Client, ifDescReg *regexp.Regexp) error {
 	r := &result{}
 	err := client.RunCommandAndParse("show interfaces descriptions", r)
 	if err != nil {

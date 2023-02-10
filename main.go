@@ -77,6 +77,9 @@ var (
 	tlsEnabled                  = flag.Bool("tls.enabled", false, "Enables TLS")
 	tlsCertChainPath            = flag.String("tls.cert-file", "", "Path to TLS cert file")
 	tlsKeyPath                  = flag.String("tls.key-file", "", "Path to TLS key file")
+	tracingEnabled              = flag.Bool("tracing.enabled", false, "Enables tracing using OpenTelemetry")
+	tracingProvider             = flag.String("tracing.provider", "", "Sets the tracing provider (stdout or collector)")
+	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager

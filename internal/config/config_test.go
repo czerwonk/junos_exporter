@@ -210,24 +210,3 @@ func TestFindDeviceConfig(t *testing.T) {
 		t.Fatal("Unexpected device for switch-oob")
 	}
 }
-
-func TestTracingConfig(t *testing.T) {
-	b, err := os.ReadFile("tests/config6.yml")
-	if err != nil {
-		t.Fatal(err)
-	}
-	c, err := Load(bytes.NewReader(b))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	expected := TracingConfig{
-		Enabled:  true,
-		Provider: "collector",
-		Collector: TracingCollectorConfig{
-			GRPCAddress: "localhost:12345",
-		},
-	}
-
-	assert.Equal(t, expected, c.Tracing)
-}

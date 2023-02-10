@@ -1,9 +1,0 @@
-devices:
-  - host: router1
-    username: router
-
-tracing:
-  enabled: true
-  provider: collector
-  collector:
-    grpc_address: "localhost:12345"

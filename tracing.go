@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
@@ -124,6 +125,11 @@ func (cta *clientTracingAdapter) RunCommandAndParseWithParser(cmd string, parser
 	defer span.End()
 
 	err := cta.cl.RunCommandAndParseWithParser(cmd, parser)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+
 	return err
 }
 

@@ -300,7 +300,7 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 	configMu.RLock()
 	defer configMu.RUnlock()
 
-	ctx, span := tracer.Start(context.Background(), "HandleMetricsRequest")
+	ctx, span := tracer.Start(r.Context(), "HandleMetricsRequest")
 	defer span.End()
 
 	reg := prometheus.NewRegistry()

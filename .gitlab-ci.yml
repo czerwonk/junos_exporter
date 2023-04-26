@@ -1,13 +1,16 @@
-image: docker:19.03.8
+image: docker:23.0.4
 services:
-  - docker:18.09.7-dind
+  - name: docker:dind
+    entrypoint: ["dockerd-entrypoint.sh", "--tls=false"]
+    alias: thedockerhost
 variables:
   DOCKER_DRIVER: overlay
-  DOCKER_HOST: tcp://localhost:2375
+  DOCKER_HOST: tcp://thedockerhost:2375/
+  DOCKER_TLS_CERTDIR: ""
 
 before_script:
   # Install CA certs, openssl to https downloads, python for gcloud sdk
-  - apk add --update make ca-certificates openssl python
+  - apk add --update make ca-certificates openssl python3
   - update-ca-certificates
   # Write our GCP service account private key into a file
   - echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json

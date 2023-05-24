@@ -1,0 +1,19 @@
+targets:
+  - router1
+  - router2
+
+features:
+  bgp: true
+  ospf: false
+  isis: true
+  nat: false
+  environment: false
+  routes: true
+  routing_engine: true
+  interface_diagnostic: false
+  interface_queue: true
+  interfaces: false
+  l2circuit: true
+  storage: false
+  fpc: true
+  firewall: false

@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Release.Name }}-serviceMonitor
+  namespace: {{ .Values.namespace }}
+  release: {{ .Values.prometheusOperator }}
+  labels:
+    {{- include "junos_exporter.labels" . | nindent 4 }}
+spec:
+  endpoints:
+  - port: metrics
+    scrapeTimeout: {{ default "60s" .Values.serviceMonitor.scrapeTimeout }}
+    interval: {{ default "120s" .Values.serviceMonitor.interval }}
+  jobLabel: {{ default "jobLabel" .Values.serviceMonitor.jobLabel }}
+  selector:
+    {{- include "junos_exporter.selectorLabels" . | nindent 4 }}

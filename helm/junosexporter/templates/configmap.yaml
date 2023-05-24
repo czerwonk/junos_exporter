@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+data:
+  config.yml: {{ toYaml .Values.configyml | indent 2 }}
+metadata:
+  name: {{ .Release.Name }}-configmap
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "junos_exporter.labels" . | nindent 4 }}
+      

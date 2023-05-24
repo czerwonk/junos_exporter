@@ -1,0 +1,28 @@
+devices:
+  - host: router1
+    username: router
+  - host: switch\-[a-z]{3}\d+
+    host_pattern: true
+    username: switch
+    password: secret
+    features:
+      bgp: false
+      ospf: false
+      isis: false
+      nat: false
+      environment: true
+      routes: false
+      routing_engine: false
+      interface_diagnostic: true
+      interface_queue: true
+      interfaces: true
+      l2circuit: false
+      storage: false
+      fpc: false
+      firewall: false
+      ldp: false
+      accounting: false
+      ipsec: false
+      rpki: false
+      power: true
+

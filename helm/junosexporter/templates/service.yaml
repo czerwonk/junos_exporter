@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "junos_exporter.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "junos_exporter.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+      protocol: TCP
+      name: metrics
+  selector:
+    {{- include "junos_exporter.selectorLabels" . | nindent 4 }}

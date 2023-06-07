@@ -2,6 +2,48 @@
 
 package interfacediagnostics
 
+type chassisHardware struct {
+	ChassisInventory chassisInventory `xml:"chassis-inventory"`
+}
+
+type chassisInventory struct {
+	Chassis chassis `xml:"chassis"`
+}
+
+type chassis struct {
+	Name          string          `xml:"name"`
+	SerialNumber  string          `xml:"serial-number"`
+	Description   string          `xml:"description"`
+	ChassisModule []chassisModule `xml:"chassis-module"`
+}
+
+type chassisModule struct {
+	Name             string             `xml:"name"`
+	PartNumber       string             `xml:"part-number"`
+	SerialNumber     string             `xml:"serial-number"`
+	Description      string             `xml:"description"`
+	CleiCode         string             `xml:"clei-code"`
+	ModelNumber      string             `xml:"model-number"`
+	ChassisSubModule []chassisSubModule `xml:"chassis-sub-module"`
+}
+
+type chassisSubModule struct {
+	Name                string                `xml:"name"`
+	PartNumber          string                `xml:"part-number"`
+	SerialNumber        string                `xml:"serial-number"`
+	Description         string                `xml:"description"`
+	CleiCode            string                `xml:"clei-code"`
+	ModelNumber         string                `xml:"model-number"`
+	ChassisSubSubModule []chassisSubSubModule `xml:"chassis-sub-sub-module"`
+}
+type chassisSubSubModule struct {
+	Name         string `xml:"name"`
+	Version      string `xml:"version"`
+	PartNumber   string `xml:"part-number"`
+	SerialNumber string `xml:"serial-number"`
+	Description  string `xml:"description"`
+}
+
 type result struct {
 	Information struct {
 		Diagnostics []phyDiagInterface `xml:"physical-interface"`

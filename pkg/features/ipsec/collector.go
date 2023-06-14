@@ -49,7 +49,7 @@ func (*ipsecCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *ipsecCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = multiEngineResult{}
+	var x = multiRoutingEngineResults{}
 	err := client.RunCommandAndParseWithParser("show security ipsec security-associations", func(b []byte) error {
 		return parseXML(b, &x)
 	})
@@ -57,7 +57,7 @@ func (c *ipsecCollector) Collect(client collector.Client, ch chan<- prometheus.M
 		return err
 	}
 
-	for _, re := range x.Results.RoutingEngines {
+	for _, re := range x.RoutingEngines {
 		ls := append(labelValues, re.Name, "active tunnels", "")
 		ch <- prometheus.MustNewConstMetric(activeTunnels, prometheus.GaugeValue, float64(re.IPSec.ActiveTunnels), ls...)
 
@@ -73,7 +73,7 @@ func (c *ipsecCollector) Collect(client collector.Client, ch chan<- prometheus.M
 	}
 
 	cls := append(labelValues, "N/A", "configured tunnels", "")
-	ch <- prometheus.MustNewConstMetric(configuredTunnels, prometheus.GaugeValue, float64(len(conf.Configuration.Security.Ipsec.Vpn)), cls...)
+	ch <- prometheus.MustNewConstMetric(configuredTunnels, prometheus.GaugeValue, float64(len(conf.Security.Ipsec.Vpn)), cls...)
 
 	return nil
 }
@@ -101,22 +101,22 @@ func stateToInt(state *string) int {
 	return retval
 }
 
-func parseXML(b []byte, res *multiEngineResult) error {
-	if strings.Contains(string(b), "multi-routing-engine-results") {
+func parseXML(b []byte, res *multiRoutingEngineResults) error {
+	if strings.Contains(string(b), "<multi-routing-engine-results") {
 		return xml.Unmarshal(b, res)
 	}
 
-	fi := singleEngineResult{}
+	fi := securityAssociationsInformation{}
 
 	err := xml.Unmarshal(b, &fi)
 	if err != nil {
 		return err
 	}
 
-	res.Results.RoutingEngines = []routingEngine{
+	res.RoutingEngines = []routingEngine{
 		{
 			Name:  "N/A",
-			IPSec: fi.IPSec,
+			IPSec: fi,
 		},
 	}
 

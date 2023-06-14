@@ -178,7 +178,7 @@ func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfa
 	}
 
 	stats := make([]*interfaceStats, 0)
-	for _, phy := range x.Information.Interfaces {
+	for _, phy := range x.Interfaces {
 		s := &interfaceStats{
 			IsPhysical:              true,
 			Name:                    phy.Name,

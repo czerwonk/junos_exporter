@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/czerwonk/junos_exporter/pkg/rpc"
 )
 
 // Test multi routing engine
@@ -69,22 +71,28 @@ func TestParseOutputMultiRESystemAlarms(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := multiEngineResult{}
-	err := parseXML([]byte(body), &rpc)
+	var b, err = rpc.UnpackRpcReply([]byte(body))
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, "node0", rpc.Information.RoutingEngines[0].Name, "re-name")
-	assert.Equal(t, "Autorecovery", rpc.Information.RoutingEngines[0].AlarmInfo.Details[0].Type, "alarm-type")
-	assert.Equal(t, "Minor", rpc.Information.RoutingEngines[0].AlarmInfo.Details[0].Class, "alarm-class")
-	assert.Equal(t, "Autorecovery information needs to be saved", rpc.Information.RoutingEngines[0].AlarmInfo.Details[0].Description, "alarm-description")
+	result := multiEngineResult{}
+	err = parseXML(b, &result)
 
-	assert.Equal(t, "node1", rpc.Information.RoutingEngines[1].Name, "re-name")
-	assert.Equal(t, "Configuration", rpc.Information.RoutingEngines[1].AlarmInfo.Details[1].Type, "alarm-type")
-	assert.Equal(t, "Minor", rpc.Information.RoutingEngines[1].AlarmInfo.Details[1].Class, "alarm-class")
-	assert.Equal(t, "Rescue configuration is not set", rpc.Information.RoutingEngines[1].AlarmInfo.Details[1].Description, "alarm-description")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, "node0", result.RoutingEngines[0].Name, "re-name")
+	assert.Equal(t, "Autorecovery", result.RoutingEngines[0].AlarmInfo.Details[0].Type, "alarm-type")
+	assert.Equal(t, "Minor", result.RoutingEngines[0].AlarmInfo.Details[0].Class, "alarm-class")
+	assert.Equal(t, "Autorecovery information needs to be saved", result.RoutingEngines[0].AlarmInfo.Details[0].Description, "alarm-description")
+
+	assert.Equal(t, "node1", result.RoutingEngines[1].Name, "re-name")
+	assert.Equal(t, "Configuration", result.RoutingEngines[1].AlarmInfo.Details[1].Type, "alarm-type")
+	assert.Equal(t, "Minor", result.RoutingEngines[1].AlarmInfo.Details[1].Class, "alarm-class")
+	assert.Equal(t, "Rescue configuration is not set", result.RoutingEngines[1].AlarmInfo.Details[1].Description, "alarm-description")
 }
 
 // Test no multi routing engine
@@ -118,15 +126,21 @@ func TestParseOutputSingleRESystemAlarms(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := multiEngineResult{}
-	err := parseXML([]byte(body), &rpc)
+	var b, err = rpc.UnpackRpcReply([]byte(body))
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, "N/A", rpc.Information.RoutingEngines[0].Name, "re-name")
-	assert.Equal(t, "Autorecovery", rpc.Information.RoutingEngines[0].AlarmInfo.Details[0].Type, "alarm-type")
-	assert.Equal(t, "Minor", rpc.Information.RoutingEngines[0].AlarmInfo.Details[0].Class, "alarm-class")
-	assert.Equal(t, "Autorecovery information needs to be saved", rpc.Information.RoutingEngines[0].AlarmInfo.Details[0].Description, "alarm-description")
+	result := multiEngineResult{}
+	err = parseXML(b, &result)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, "N/A", result.RoutingEngines[0].Name, "re-name")
+	assert.Equal(t, "Autorecovery", result.RoutingEngines[0].AlarmInfo.Details[0].Type, "alarm-type")
+	assert.Equal(t, "Minor", result.RoutingEngines[0].AlarmInfo.Details[0].Class, "alarm-class")
+	assert.Equal(t, "Autorecovery information needs to be saved", result.RoutingEngines[0].AlarmInfo.Details[0].Description, "alarm-description")
 }

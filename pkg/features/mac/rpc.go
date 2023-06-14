@@ -2,12 +2,13 @@
 
 package mac
 
-type result struct {
-	Information ethernetSwitchingTableInformation `xml:"ethernet-switching-table-information"`
-}
+import (
+	"encoding/xml"
+)
 
 type ethernetSwitchingTableInformation struct {
-	Table ethernetSwitchingTable `xml:"ethernet-switching-table"`
+	XMLName xml.Name               `xml:"ethernet-switching-table-information"`
+	Table   ethernetSwitchingTable `xml:"ethernet-switching-table"`
 }
 
 type ethernetSwitchingTable struct {
@@ -15,7 +16,9 @@ type ethernetSwitchingTable struct {
 }
 
 type macTableEntry struct {
-	TotalCount   int64 `xml:"mac-table-total-count"`
+	TotalCount int64 `xml:"mac-table-total-count"`
+	Dot1XCount int64 `xml:"mac-table-dot1x-count"`
+	// JunOS actually returns recieve
 	ReceiveCount int64 `xml:"mac-table-recieve-count"`
 	DynamicCount int64 `xml:"mac-table-dynamic-count"`
 	FloodCount   int64 `xml:"mac-table-flood-count"`

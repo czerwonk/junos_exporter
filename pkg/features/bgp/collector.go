@@ -85,19 +85,22 @@ func (c *bgpCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 }
 
 func (c *bgpCollector) collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = result{}
-	var cmd strings.Builder
-	cmd.WriteString("show bgp neighbor")
-	if c.LogicalSystem != "" {
-		cmd.WriteString(" logical-system " + c.LogicalSystem)
+	var x = information{}
+
+	var cmd string
+
+	if c.LogicalSystem == "" {
+		cmd = "show bgp neighbor"
+	} else {
+		cmd = "show bgp neighbor logical-system" + c.LogicalSystem
 	}
 
-	err := client.RunCommandAndParse(cmd.String(), &x)
+	err := client.RunCommandAndParse(cmd, &x)
 	if err != nil {
 		return err
 	}
 
-	for _, peer := range x.Information.Peers {
+	for _, peer := range x.Peers {
 		c.collectForPeer(peer, ch, labelValues)
 	}
 

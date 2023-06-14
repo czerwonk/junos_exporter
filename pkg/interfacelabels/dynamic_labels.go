@@ -54,7 +54,7 @@ func (l *DynamicLabels) CollectDescriptions(device *connector.Device, client col
 		return errors.Wrap(err, "could not retrieve interface descriptions for "+device.Host)
 	}
 
-	l.parseDescriptions(device, r.Information.Interfaces, ifDescReg)
+	l.parseDescriptions(device, r.Interfaces, ifDescReg)
 
 	return nil
 }

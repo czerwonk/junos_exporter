@@ -2,10 +2,13 @@
 
 package rpm
 
+import (
+	"encoding/xml"
+)
+
 type result struct {
-	Results struct {
-		Probes []probe `xml:"probe-test-results"`
-	} `xml:"probe-results"`
+	XMLName xml.Name `xml:"probe-results"`
+	Probes  []probe  `xml:"probe-test-results"`
 }
 
 type probe struct {

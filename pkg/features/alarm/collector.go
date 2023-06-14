@@ -93,7 +93,7 @@ func (c *alarmCollector) alarmCounter(client collector.Client) (*alarmCounter, *
 			return nil, nil, err
 		}
 
-		for _, engine := range a.Information.RoutingEngines {
+		for _, engine := range a.RoutingEngines {
 			for _, d := range engine.AlarmInfo.Details {
 				if _, found := messages[d.Description]; found {
 					continue
@@ -132,17 +132,17 @@ func parseXML(b []byte, res *multiEngineResult) error {
 		return xml.Unmarshal(b, res)
 	}
 
-	se := singleEngineResult{}
+	se := alarmInformation{}
 
 	err := xml.Unmarshal(b, &se)
 	if err != nil {
 		return err
 	}
 
-	res.Information.RoutingEngines = []routingEngine{
+	res.RoutingEngines = []routingEngine{
 		{
-			Name:        "N/A",
-			AlarmInfo: se.Information,
+			Name:      "N/A",
+			AlarmInfo: se,
 		},
 	}
 

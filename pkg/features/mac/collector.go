@@ -47,13 +47,13 @@ func (*macCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *macCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = result{}
+	var x = ethernetSwitchingTableInformation{}
 	err := client.RunCommandAndParse("show ethernet-switching table summary", &x)
 	if err != nil {
 		return err
 	}
 
-	entry := x.Information.Table.Entry
+	entry := x.Table.Entry
 	ch <- prometheus.MustNewConstMetric(totalCount, prometheus.GaugeValue, float64(entry.TotalCount), labelValues...)
 	ch <- prometheus.MustNewConstMetric(recieveCount, prometheus.GaugeValue, float64(entry.ReceiveCount), labelValues...)
 	ch <- prometheus.MustNewConstMetric(dynamicCount, prometheus.GaugeValue, float64(entry.DynamicCount), labelValues...)

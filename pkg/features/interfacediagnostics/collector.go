@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"net/rpc"
 	"strconv"
 	"strings"
 
@@ -272,7 +271,7 @@ func (c *interfaceDiagnosticsCollector) Collect(client collector.Client, ch chan
 	return nil
 }
 
-func (c *interfaceDiagnosticsCollector) interfaceMediaInfo(client *rpc.Client) (map[string]*physicalInterface, error) {
+func (c *interfaceDiagnosticsCollector) interfaceMediaInfo(client collector.Client) (map[string]*physicalInterface, error) {
 	var x = interfacesMediaStruct{}
 	err := client.RunCommandAndParse("show interfaces media", &x)
 	if err != nil {
@@ -296,7 +295,7 @@ func interfaceMediaInfoFromRPCResult(interfaceMediaList *[]physicalInterface) ma
 	return interfaceMediaDict
 }
 
-func (c *interfaceDiagnosticsCollector) chassisHardwareInfos(client *rpc.Client) ([]*transceiverInformation, error) {
+func (c *interfaceDiagnosticsCollector) chassisHardwareInfos(client collector.Client) ([]*transceiverInformation, error) {
 	var x = chassisHardware{}
 	err := client.RunCommandAndParse("show chassis hardware", &x)
 	if err != nil {
@@ -306,7 +305,7 @@ func (c *interfaceDiagnosticsCollector) chassisHardwareInfos(client *rpc.Client)
 	return c.transceiverInfoFromRPCResult(client, x)
 }
 
-func (c *interfaceDiagnosticsCollector) transceiverInfoFromRPCResult(client *rpc.Client, chassisHardware chassisHardware) ([]*transceiverInformation, error) {
+func (c *interfaceDiagnosticsCollector) transceiverInfoFromRPCResult(client collector.Client, chassisHardware chassisHardware) ([]*transceiverInformation, error) {
 	transceiverList := make([]*transceiverInformation, 0)
 
 	var chassisModules = chassisHardware.ChassisInventory.Chassis.ChassisModule
@@ -342,7 +341,7 @@ func (c *interfaceDiagnosticsCollector) transceiverInfoFromRPCResult(client *rpc
 	return transceiverList, nil
 }
 
-func (c *interfaceDiagnosticsCollector) getPicPortsFromRPCResult(client *rpc.Client, fpc string, pic string) ([]picPort, error) {
+func (c *interfaceDiagnosticsCollector) getPicPortsFromRPCResult(client collector.Client, fpc string, pic string) ([]picPort, error) {
 	var x = fPCInformationStruct{}
 	command := fmt.Sprintf("show chassis pic fpc-slot %s pic-slot %s", fpc, pic)
 	err := client.RunCommandAndParse(command, &x)
@@ -353,7 +352,7 @@ func (c *interfaceDiagnosticsCollector) getPicPortsFromRPCResult(client *rpc.Cli
 	return x.FPCInformation.FPC.PicDetail.PicPortInfoList, nil
 }
 
-func createTransceiverMetrics(c *interfaceDiagnosticsCollector, client *rpc.Client, diagnostics_dict map[string]*interfaceDiagnostics, ch chan<- prometheus.Metric, labelValues []string) error {
+func createTransceiverMetrics(c *interfaceDiagnosticsCollector, client collector.Client, diagnostics_dict map[string]*interfaceDiagnostics, ch chan<- prometheus.Metric, labelValues []string) error {
 
 	ifMediaDict, err := c.interfaceMediaInfo(client)
 	if err != nil {
@@ -387,7 +386,7 @@ func createTransceiverMetrics(c *interfaceDiagnosticsCollector, client *rpc.Clie
 	return nil
 }
 
-func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rpc.Client) ([]*interfaceDiagnostics, error) {
+func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client collector.Client) ([]*interfaceDiagnostics, error) {
 	var x = result{}
 
 	// NOTE: Junos is broken and delivers incorrect XML
@@ -444,7 +443,7 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rp
 	return interfaceDiagnosticsFromRPCResult(x), nil
 }
 
-func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client) ([]*interfaceDiagnostics, error) {
+func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client collector.Client) ([]*interfaceDiagnostics, error) {
 	var x = result{}
 	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
 	if err != nil {

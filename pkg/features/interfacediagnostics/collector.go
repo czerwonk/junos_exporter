@@ -62,6 +62,8 @@ type interfaceDiagnosticsCollector struct {
 
 	rxSignalAvgOpticalPowerDesc    *prometheus.Desc
 	rxSignalAvgOpticalPowerDbmDesc *prometheus.Desc
+
+	transceiverDesc *prometheus.Desc
 }
 
 // NewCollector creates a new collector
@@ -127,6 +129,9 @@ func (c *interfaceDiagnosticsCollector) init() {
 	c.laserRxOpticalPowerLowAlarmThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_low_alarm_threshold_dbm", "Laser rx power low alarm threshold_dbm in dBm", l, nil)
 	c.laserRxOpticalPowerHighWarnThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_high_warn_threshold_dbm", "Laser rx power high warn threshold_dbm in dBm", l, nil)
 	c.laserRxOpticalPowerLowWarnThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_low_warn_threshold_dbm", "Laser rx power low warn threshold_dbm in dBm", l, nil)
+
+	transceiver_labels := []string{"target", "slot", "version", "part_number", "serial_number", "description"}
+	c.transceiverDesc = prometheus.NewDesc("junos_interface_transceiver", "Transceiver Info", transceiver_labels, nil)
 }
 
 // Describe describes the metrics
@@ -171,6 +176,8 @@ func (c *interfaceDiagnosticsCollector) Describe(ch chan<- *prometheus.Desc) {
 
 	ch <- c.rxSignalAvgOpticalPowerDesc
 	ch <- c.rxSignalAvgOpticalPowerDbmDesc
+
+	ch <- c.transceiverDesc
 }
 
 // Collect collects metrics from JunOS
@@ -178,6 +185,15 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 	diagnostics, err := c.interfaceDiagnostics(client)
 	if err != nil {
 		return err
+	}
+
+	transceiverInfo, err := c.chassisHardwareInfos(client)
+	if err != nil {
+		return err
+	}
+	for _, t := range transceiverInfo {
+		transceiver_labels := append(labelValues, t.Name, t.Version, t.PartNumber, t.SerialNumber, t.Description)
+		ch <- prometheus.MustNewConstMetric(c.transceiverDesc, prometheus.GaugeValue, 1, transceiver_labels...)
 	}
 
 	// add satellite details if feature is enabled
@@ -261,6 +277,42 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client)
 	}
 
 	return interfaceDiagnosticsFromRPCResult(x), nil
+}
+
+func (c *interfaceDiagnosticsCollector) chassisHardwareInfos(client *rpc.Client) ([]*chassisSubSubModule, error) {
+	var x = chassisHardware{}
+	err := client.RunCommandAndParse("show chassis hardware", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	return transceiverInfoFromRPCResult(x), nil
+}
+
+func transceiverInfoFromRPCResult(chassisHardware chassisHardware) []*chassisSubSubModule {
+	transceiverList := make([]*chassisSubSubModule, 0)
+
+	var chassisModules = chassisHardware.ChassisInventory.Chassis.ChassisModule
+	for _, module := range chassisModules {
+		for _, subModule := range module.ChassisSubModule {
+			for _, subSubModule := range subModule.ChassisSubSubModule {
+				i := strings.Split(module.Name, " ")[1]
+				j := strings.Split(subModule.Name, " ")[1]
+				k := strings.Split(subSubModule.Name, " ")[1]
+
+				id := i + "/" + j + "/" + k
+				transceiver := &chassisSubSubModule{
+					Name:         id,
+					Version:      subSubModule.Version,
+					PartNumber:   subSubModule.PartNumber,
+					SerialNumber: subSubModule.SerialNumber,
+					Description:  subSubModule.Description,
+				}
+				transceiverList = append(transceiverList, transceiver)
+			}
+		}
+	}
+	return transceiverList
 }
 
 func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rpc.Client) ([]*interfaceDiagnostics, error) {

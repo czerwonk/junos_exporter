@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package securitypolicies
 
 import (
@@ -5,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -61,7 +62,7 @@ func (*securityPolicyCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *securityPolicyCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *securityPolicyCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	err := c.CollectStats(client, ch, labelValues)
 	if err != nil {
 		return err
@@ -75,7 +76,7 @@ func (c *securityPolicyCollector) Collect(client *rpc.Client, ch chan<- promethe
 	return nil
 }
 
-func (c *securityPolicyCollector) CollectStats(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *securityPolicyCollector) CollectStats(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = statsMultiEngineResult{}
 	err := client.RunCommandAndParseWithParser("show security policies detail", func(b []byte) error {
 		return parseStatsXML(b, &x)
@@ -119,7 +120,7 @@ func (c *securityPolicyCollector) CollectStats(client *rpc.Client, ch chan<- pro
 	return nil
 }
 
-func (c *securityPolicyCollector) CollectHits(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *securityPolicyCollector) CollectHits(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = hitsMultiEngineResult{}
 	err := client.RunCommandAndParseWithParser("show security policies hit-count", func(b []byte) error {
 		return parseHitsXML(b, &x)

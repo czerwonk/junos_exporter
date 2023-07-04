@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package isis
 
 type result struct {

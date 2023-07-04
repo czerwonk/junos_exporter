@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package connector
 
 import (
@@ -86,11 +88,9 @@ func (m *SSHConnectionManager) lockForDevice(device *Device) *sync.Mutex {
 // Connect connects to a device or returns an long living connection
 func (m *SSHConnectionManager) Connect(device *Device) (*SSHConnection, error) {
 	if connection, found := m.connections[device.Host]; found {
-		if !connection.isConnected() {
-			return nil, errors.New("not connected")
+		if connection.isConnected() {
+			return connection, nil
 		}
-
-		return connection, nil
 	}
 
 	mu := m.lockForDevice(device)
@@ -98,7 +98,9 @@ func (m *SSHConnectionManager) Connect(device *Device) (*SSHConnection, error) {
 	defer mu.Unlock()
 
 	if connection, found := m.connections[device.Host]; found {
-		return connection, nil
+		if connection.isConnected() {
+			return connection, nil
+		}
 	}
 
 	return m.connect(device)

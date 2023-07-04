@@ -1,8 +1,9 @@
+// SPDX-License-Identifier: MIT
+
 package mplslsp
 
 import (
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -47,7 +48,7 @@ func (*mplsLSPCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *mplsLSPCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *mplsLSPCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = result{}
 	err := client.RunCommandAndParse("show mpls lsp ingress extensive", &x) //ingress:Display LSPs originating at this router
 	if err != nil {

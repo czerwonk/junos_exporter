@@ -1,10 +1,11 @@
+// SPDX-License-Identifier: MIT
+
 package ospf
 
 import (
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -52,7 +53,7 @@ func (*ospfCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *ospfCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *ospfCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	err := c.collectOSPFMetrics(client, ch, labelValues)
 	if err != nil {
 		return err
@@ -61,7 +62,7 @@ func (c *ospfCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 	return c.collectOSPFv3Metrics(client, ch, labelValues)
 }
 
-func (c *ospfCollector) collectOSPFMetrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *ospfCollector) collectOSPFMetrics(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = v2Result{}
 	var cmd strings.Builder
 	cmd.WriteString("show ospf overview")
@@ -91,7 +92,7 @@ func (c *ospfCollector) collectOSPFMetrics(client *rpc.Client, ch chan<- prometh
 	return nil
 }
 
-func (c *ospfCollector) collectOSPFv3Metrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *ospfCollector) collectOSPFv3Metrics(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = v3Result{}
 	var cmd strings.Builder
 	cmd.WriteString("show ospf3 overview")

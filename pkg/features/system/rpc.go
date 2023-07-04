@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package system
 
 type buffers struct {

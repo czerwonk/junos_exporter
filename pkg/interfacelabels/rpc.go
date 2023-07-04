@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package interfacelabels
 
 type result struct {

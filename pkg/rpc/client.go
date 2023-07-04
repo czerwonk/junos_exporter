@@ -1,30 +1,54 @@
+// SPDX-License-Identifier: MIT
+
 package rpc
 
 import (
 	"encoding/xml"
 	"fmt"
-
 	"log"
-
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 )
 
 // Parser parses XML of RPC-Output
 type Parser func([]byte) error
 
+type ClientOption func(*Client)
+
+func WithDebug() ClientOption {
+	return func(cl *Client) {
+		cl.debug = true
+	}
+}
+
+func WithSatellite() ClientOption {
+	return func(cl *Client) {
+		cl.satellite = true
+	}
+}
+
+func WithLicenseInformation() ClientOption {
+  return func(cl *Client) {
+    cl.license = true
+  }
+}
+
 // Client sends commands to JunOS and parses results
 type Client struct {
 	conn      *connector.SSHConnection
 	debug     bool
-	Satellite bool
-	License   bool
+	satellite bool
+	license   bool
 }
 
 // NewClient creates a new client to connect to
-func NewClient(ssh *connector.SSHConnection) *Client {
-	rpc := &Client{conn: ssh}
+func NewClient(ssh *connector.SSHConnection, opts ...ClientOption) *Client {
+	cl := &Client{conn: ssh}
 
-	return rpc
+	for _, opt := range opts {
+		opt(cl)
+	}
+
+	return cl
 }
 
 // RunCommandAndParse runs a command on JunOS and unmarshals the XML result
@@ -34,7 +58,7 @@ func (c *Client) RunCommandAndParse(cmd string, obj interface{}) error {
 	})
 }
 
-// RunCommandAndParseWithParser runs a command on JunOS and uses the given parser to handle the result
+// RunCommandAndParseWithParser runs a command on JunOS and unmarshals the XML result using the specified parser function
 func (c *Client) RunCommandAndParseWithParser(cmd string, parser Parser) error {
 	if c.debug {
 		log.Printf("Running command on %s: %s\n", c.conn.Host(), cmd)
@@ -58,21 +82,11 @@ func (c *Client) Device() *connector.Device {
 	return c.conn.Device()
 }
 
-// EnableDebug enables the debug mode
-func (c *Client) EnableDebug() {
-	c.debug = true
-}
-
-// DisableDebug disables the debug mode
-func (c *Client) DisableDebug() {
-	c.debug = false
-}
-
-// EnableSatellite enables satellite device metrics gathering
-func (c *Client) EnableSatellite() {
-	c.Satellite = true
+// IsSatelliteEnabled returns if sattelite features are enabled on the device
+func (c *Client) IsSatelliteEnabled() bool {
+	return c.satellite
 }
 
 func (c *Client) EnableLicense() {
-	c.License = true
+	return c.license
 }

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package storage
 
 import (
@@ -6,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -49,7 +50,7 @@ func (*storageCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *storageCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *storageCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = multiEngineResult{}
 	err := client.RunCommandAndParseWithParser("show system storage", func(b []byte) error {
 		return parseXML(b, &x)

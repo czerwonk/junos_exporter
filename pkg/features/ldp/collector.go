@@ -1,8 +1,9 @@
+// SPDX-License-Identifier: MIT
+
 package ldp
 
 import (
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -51,7 +52,7 @@ func (*ldpCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *ldpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *ldpCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	err := c.collectLDPSessions(client, ch, labelValues)
 	if err != nil {
 		return err
@@ -60,7 +61,7 @@ func (c *ldpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 	return c.collectLDPMetrics(client, ch, labelValues)
 }
 
-func (c *ldpCollector) collectLDPMetrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *ldpCollector) collectLDPMetrics(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = result{}
 	err := client.RunCommandAndParse("show ldp neighbor", &x)
 	if err != nil {
@@ -73,7 +74,7 @@ func (c *ldpCollector) collectLDPMetrics(client *rpc.Client, ch chan<- prometheu
 	return nil
 }
 
-func (c *ldpCollector) collectLDPSessions(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *ldpCollector) collectLDPSessions(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = sessionResult{}
 	err := client.RunCommandAndParse("show ldp session", &x)
 	if err != nil {

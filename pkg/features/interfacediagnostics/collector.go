@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package interfacediagnostics
 
 import (
@@ -8,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/interfacelabels"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/prometheus/client_golang/prometheus"
@@ -174,14 +175,14 @@ func (c *interfaceDiagnosticsCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *interfaceDiagnosticsCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	diagnostics, err := c.interfaceDiagnostics(client)
 	if err != nil {
 		return err
 	}
 
 	// add satellite details if feature is enabled
-	if client.Satellite {
+	if client.IsSatelliteEnabled() {
 		diagnosticsSatellite, err := c.interfaceDiagnosticsSatellite(client)
 		if err != nil {
 			return err
@@ -253,7 +254,7 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 	return nil
 }
 
-func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client) ([]*interfaceDiagnostics, error) {
+func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client collector.Client) ([]*interfaceDiagnostics, error) {
 	var x = result{}
 	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
 	if err != nil {
@@ -263,7 +264,7 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client)
 	return interfaceDiagnosticsFromRPCResult(x), nil
 }
 
-func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rpc.Client) ([]*interfaceDiagnostics, error) {
+func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client collector.Client) ([]*interfaceDiagnostics, error) {
 	var x = result{}
 
 	// NOTE: Junos is broken and delivers incorrect XML

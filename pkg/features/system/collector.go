@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package system
 
 import (
@@ -9,7 +11,6 @@ import (
 	"math"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -153,7 +154,7 @@ func (*systemCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *systemCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *systemCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	err := c.CollectSystem(client, ch, labelValues)
 	if err != nil {
 		return err
@@ -162,7 +163,7 @@ func (c *systemCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metri
 	return nil
 }
 
-func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *systemCollector) CollectSystem(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	err := c.collectBuffers(client, ch, labelValues)
 	if err != nil {
 		return fmt.Errorf("could not get buffer information: %w", err)
@@ -173,7 +174,7 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 		return fmt.Errorf("could not get system information: %w", err)
 	}
 
-	if client.Satellite {
+	if client.IsSatelliteEnabled() {
 		c.collectSatelites(client, ch, labelValues)
 	}
 
@@ -184,7 +185,7 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 	return nil
 }
 
-func (c *systemCollector) collectBuffers(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *systemCollector) collectBuffers(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	r := &buffers{}
 	err := client.RunCommandAndParse("show system buffers", r)
 	if err != nil {
@@ -349,7 +350,7 @@ func (c *systemCollector) collectBuffers(client *rpc.Client, ch chan<- prometheu
 	return nil
 }
 
-func (c *systemCollector) collectSystemInformation(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *systemCollector) collectSystemInformation(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	r := &systemInformation{}
 	err := client.RunCommandAndParse("show system information", r)
 	if err != nil {
@@ -369,7 +370,7 @@ func (c *systemCollector) collectSystemInformation(client *rpc.Client, ch chan<-
 	return nil
 }
 
-func (c *systemCollector) collectSatelites(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *systemCollector) collectSatelites(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) {
 	r := &satelliteChassis{}
 	err := client.RunCommandAndParse("show chassis satellite detail", r)
 	if err != nil {

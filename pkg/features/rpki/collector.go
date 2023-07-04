@@ -1,8 +1,9 @@
+// SPDX-License-Identifier: MIT
+
 package rpki
 
 import (
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -63,7 +64,7 @@ func (*rpkiCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *rpkiCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *rpkiCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	err := c.collectSessions(client, ch, labelValues)
 	if err != nil {
 		return err
@@ -77,7 +78,7 @@ func (c *rpkiCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 	return nil
 }
 
-func (c *rpkiCollector) collectSessions(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *rpkiCollector) collectSessions(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = sessionResult{}
 	err := client.RunCommandAndParse("show validation session", &x)
 	if err != nil {
@@ -126,7 +127,7 @@ func (c *rpkiCollector) collectForSession(s session, ch chan<- prometheus.Metric
 	ch <- prometheus.MustNewConstMetric(ipv6PrefixCountDesc, prometheus.GaugeValue, float64(s.IPv6PrefixCount), l...)
 }
 
-func (c *rpkiCollector) collectStatistics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *rpkiCollector) collectStatistics(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = statisticResult{}
 
 	err := client.RunCommandAndParse("show validation statistics", &x)

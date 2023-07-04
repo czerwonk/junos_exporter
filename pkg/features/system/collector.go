@@ -178,7 +178,7 @@ func (c *systemCollector) CollectSystem(client collector.Client, ch chan<- prome
 		c.collectSatelites(client, ch, labelValues)
 	}
 
-	if client.License {
+	if client.IsScrapingLicenseEnabled() {
 		c.collectLicense(client, ch, labelValues)
 	}
 
@@ -393,7 +393,7 @@ func (c *systemCollector) collectSatelites(client collector.Client, ch chan<- pr
 	}
 }
 
-func (c *systemCollector) collectLicense(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *systemCollector) collectLicense(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) {
 	r := &licenseInformation{}
 	err := client.RunCommandAndParse("show system license usage", r)
 

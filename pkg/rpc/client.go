@@ -87,6 +87,6 @@ func (c *Client) IsSatelliteEnabled() bool {
 	return c.satellite
 }
 
-func (c *Client) EnableLicense() {
+func (c *Client) IsScrapingLicenseEnabled() bool {
 	return c.license
 }

@@ -130,7 +130,7 @@ func (c *interfaceDiagnosticsCollector) init() {
 	c.laserRxOpticalPowerHighWarnThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_high_warn_threshold_dbm", "Laser rx power high warn threshold_dbm in dBm", l, nil)
 	c.laserRxOpticalPowerLowWarnThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_low_warn_threshold_dbm", "Laser rx power low warn threshold_dbm in dBm", l, nil)
 
-	transceiver_labels := []string{"target", "slot", "version", "part_number", "serial_number", "description"}
+	transceiver_labels := []string{"target", "name", "version", "part_number", "serial_number", "description"}
 	c.transceiverDesc = prometheus.NewDesc("junos_interface_transceiver", "Transceiver Info", transceiver_labels, nil)
 }
 
@@ -187,15 +187,6 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 		return err
 	}
 
-	transceiverInfo, err := c.chassisHardwareInfos(client)
-	if err != nil {
-		return err
-	}
-	for _, t := range transceiverInfo {
-		transceiver_labels := append(labelValues, t.Name, t.Version, t.PartNumber, t.SerialNumber, t.Description)
-		ch <- prometheus.MustNewConstMetric(c.transceiverDesc, prometheus.GaugeValue, 1, transceiver_labels...)
-	}
-
 	// add satellite details if feature is enabled
 	if client.Satellite {
 		diagnosticsSatellite, err := c.interfaceDiagnosticsSatellite(client)
@@ -206,7 +197,13 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 		diagnostics = append(diagnostics, diagnosticsSatellite...)
 	}
 
+	diagnostics_dict := make(map[string]*interfaceDiagnostics)
+
 	for _, d := range diagnostics {
+
+		index := strings.Split(d.Name, "-")[1]
+		diagnostics_dict[index] = d
+
 		l := append(labelValues, d.Name)
 		l = append(l, c.labels.ValuesForInterface(client.Device(), d.Name)...)
 
@@ -264,6 +261,24 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 			ch <- prometheus.MustNewConstMetric(c.laserRxOpticalPowerHighWarnThresholdDbmDesc, prometheus.GaugeValue, d.LaserRxOpticalPowerHighWarnThresholdDbm, l2...)
 			ch <- prometheus.MustNewConstMetric(c.laserRxOpticalPowerLowWarnThresholdDbmDesc, prometheus.GaugeValue, d.LaserRxOpticalPowerLowWarnThresholdDbm, l2...)
 		}
+	}
+
+	transceiverInfo, err := c.chassisHardwareInfos(client)
+	if err != nil {
+		return err
+	}
+
+	for _, t := range transceiverInfo {
+
+		if diag, hit := diagnostics_dict[t.Name]; hit {
+			t.Name = diag.Name
+			continue
+		}
+		if t.Description == "SFP-T" {
+			t.Name = "ge-" + t.Name
+			continue
+		}
+		t.Name = "slot-" + t.Name
 	}
 
 	return nil

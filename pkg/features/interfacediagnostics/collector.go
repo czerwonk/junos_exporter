@@ -302,6 +302,11 @@ func transceiverInfoFromRPCResult(chassisHardware chassisHardware) []*chassisSub
 				j := strings.Split(subModule.Name, " ")[1]
 				k := strings.Split(subSubModule.Name, " ")[1]
 
+				name := strings.Split(subSubModule.Name, " ")[0]
+				if name != "Xcvr" {
+					continue
+				}
+
 				id := i + "/" + j + "/" + k
 				transceiver := &chassisSubSubModule{
 					Name:         id,

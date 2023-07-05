@@ -140,6 +140,10 @@ func (cta *clientTracingAdapter) IsSatelliteEnabled() bool {
 	return cta.cl.IsSatelliteEnabled()
 }
 
+func (cta *clientTracingAdapter) IsScrapingLicenseEnabled() bool {
+	return cta.cl.IsScrapingLicenseEnabled()
+}
+
 // Device implements Device of the collector.Client interface
 func (cta *clientTracingAdapter) Device() *connector.Device {
 	return cta.cl.Device()

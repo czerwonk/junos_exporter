@@ -116,6 +116,10 @@ func clientForDevice(device *connector.Device, connManager *connector.SSHConnect
 		opts = append(opts, rpc.WithSatellite())
 	}
 
+	if cfg.Features.License {
+    opts = append(opts, rpc.WithLicenseInformation())
+	}
+
 	c := rpc.NewClient(conn, opts...)
 	return c, nil
 }

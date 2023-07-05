@@ -65,6 +65,7 @@ type FeatureConfig struct {
 	MPLSLSP             bool `yaml:"mpls_lsp,omitempty"`
 	VPWS                bool `yaml:"vpws,omitempty"`
 	VRRP                bool `yaml:"vrrp,omitempty"`
+	License             bool `yaml:"license,omitempty"`
 }
 
 // New creates a new config
@@ -136,6 +137,7 @@ func setDefaultValues(c *Config) {
 	f.VPWS = false
 	f.VRRP = false
 	f.BFD = false
+	f.License = false
 }
 
 // FeaturesForDevice gets the feature set configured for a device

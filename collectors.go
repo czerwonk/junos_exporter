@@ -106,7 +106,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "security", f.Security, security.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "security_policies", f.SecurityPolicies, securitypolicies.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "storage", f.Storage, storage.NewCollector)
-	c.addCollectorIfEnabledForDevice(device, "system", f.System, system.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "system", (f.System || f.License), system.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "power", f.Power, power.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "mac", f.MAC, mac.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "vrrp", f.VRRP, vrrp.NewCollector)

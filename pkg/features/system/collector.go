@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
+	"math"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/prometheus/client_golang/prometheus"
@@ -46,6 +48,11 @@ var (
 	ioInitDesc                *prometheus.Desc
 
 	hardwareInfoDesc *prometheus.Desc
+
+	licenseUsedDesc *prometheus.Desc
+	licenseInstalledDesc *prometheus.Desc
+	licenseNeededDesc *prometheus.Desc
+	licenseExpiryDesc *prometheus.Desc
 
 	// regex
 	regex1Ints        *regexp.Regexp = regexp.MustCompile(`^(\d+).*`)
@@ -96,6 +103,13 @@ func init() {
 
 	l = append(l, "model", "os", "os_version", "serial", "hostname", "alias", "slot_id", "state")
 	hardwareInfoDesc = prometheus.NewDesc(prefix+"hardware_info", "Hardware information about this system", l, nil)
+
+	l = []string{"target"}
+	l = append(l, "feature_name", "feature_description")
+	licenseUsedDesc = prometheus.NewDesc(prefix+"license_used", "Amount of license used", l, nil)
+	licenseInstalledDesc = prometheus.NewDesc(prefix+"license_installed", "Amount of license installed", l, nil)
+	licenseNeededDesc = prometheus.NewDesc(prefix+"license_needed", "Amount of license needed", l, nil)
+	licenseExpiryDesc = prometheus.NewDesc(prefix+"license_expiry", "Days until expiry, if applicable; -1 = expired; +Inf = permanent; -Inf = invalid", l, nil)
 }
 
 // NewCollector creates a new collector
@@ -133,6 +147,10 @@ func (*systemCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- sfbufsDelayedDesc
 	ch <- ioInitDesc
 	ch <- hardwareInfoDesc
+	ch <- licenseUsedDesc
+	ch <- licenseInstalledDesc
+	ch <- licenseNeededDesc
+	ch <- licenseExpiryDesc
 }
 
 // Collect collects metrics from JunOS
@@ -158,6 +176,10 @@ func (c *systemCollector) CollectSystem(client collector.Client, ch chan<- prome
 
 	if client.IsSatelliteEnabled() {
 		c.collectSatelites(client, ch, labelValues)
+	}
+
+	if client.IsScrapingLicenseEnabled() {
+		c.collectLicense(client, ch, labelValues)
 	}
 
 	return nil
@@ -370,3 +392,37 @@ func (c *systemCollector) collectSatelites(client collector.Client, ch chan<- pr
 		ch <- prometheus.MustNewConstMetric(hardwareInfoDesc, prometheus.GaugeValue, float64(1), l...)
 	}
 }
+
+func (c *systemCollector) collectLicense(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) {
+	r := &licenseInformation{}
+	err := client.RunCommandAndParse("show system license usage", r)
+
+	if err != nil {
+		return
+	}
+	for _, lic := range r.LicenseInfo.License {
+		licenseLabels := append(labelValues,
+			strings.ToLower(lic.Name),
+			strings.ToLower(lic.Description))
+
+		ch <- prometheus.MustNewConstMetric(licenseUsedDesc, prometheus.GaugeValue, float64(lic.Used), licenseLabels...)
+		ch <- prometheus.MustNewConstMetric(licenseInstalledDesc, prometheus.GaugeValue, float64(lic.Installed), licenseLabels...)
+		ch <- prometheus.MustNewConstMetric(licenseNeededDesc, prometheus.GaugeValue, float64(lic.Needed), licenseLabels...)
+
+		expiry_str := strings.ToLower(lic.ValidityType)
+		expiry, err := time.Parse("2006-01-02 03:04:05 MST", expiry_str)
+		if err != nil {
+			if strings.Compare(expiry_str, "expired") == 0 {
+				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(-1), licenseLabels...)
+			} else if strings.Compare(expiry_str, "permanent") == 0 {
+				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(1)), licenseLabels...)
+			} else {
+				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(-1)), licenseLabels...)
+			}
+		} else {
+			license_ttl_days := time.Until(expiry).Hours() / 24.0
+			ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(license_ttl_days), licenseLabels...)
+		}
+	}
+}
+

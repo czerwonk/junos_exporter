@@ -130,7 +130,7 @@ func (c *interfaceDiagnosticsCollector) init() {
 	c.laserRxOpticalPowerHighWarnThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_high_warn_threshold_dbm", "Laser rx power high warn threshold_dbm in dBm", l, nil)
 	c.laserRxOpticalPowerLowWarnThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_low_warn_threshold_dbm", "Laser rx power low warn threshold_dbm in dBm", l, nil)
 
-	transceiver_labels := []string{"target", "name", "version", "part_number", "serial_number", "description"}
+	transceiver_labels := []string{"target", "name", "version", "part_number", "serial_number", "description", "speed"}
 	c.transceiverDesc = prometheus.NewDesc("junos_interface_transceiver", "Transceiver Info", transceiver_labels, nil)
 }
 
@@ -193,7 +193,6 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 		if err != nil {
 			return err
 		}
-
 		diagnostics = append(diagnostics, diagnosticsSatellite...)
 	}
 
@@ -263,22 +262,44 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 		}
 	}
 
+	ifMediaDict, err := c.interfaceInformation(client)
+	if err != nil {
+		return err
+	}
+
 	transceiverInfo, err := c.chassisHardwareInfos(client)
 	if err != nil {
 		return err
 	}
 
-	for _, t := range transceiverInfo {
+	interfaceDictList := make(map[string]*interfaceStatsAggregate)
 
+	for _, t := range transceiverInfo {
 		if diag, hit := diagnostics_dict[t.Name]; hit {
 			t.Name = diag.Name
-			continue
-		}
-		if t.Description == "SFP-T" {
+		} else if t.Description == "SFP-T" {
 			t.Name = "ge-" + t.Name
+		} else {
+			t.Name = "slot-" + t.Name
+			transceiver_labels := append(labelValues, t.Name, t.Version, t.PartNumber, t.SerialNumber, t.Description, "")
+			ch <- prometheus.MustNewConstMetric(c.transceiverDesc, prometheus.GaugeValue, 0, transceiver_labels...)
 			continue
 		}
-		t.Name = "slot-" + t.Name
+
+		s := interfaceStatsAggregate{
+			ChassisHardwareInfo: t,
+			InterfacesMediaInfo: (ifMediaDict[t.Name]),
+		}
+
+		interfaceDictList[t.Name] = &s
+		transceiver_labels := append(labelValues, t.Name, t.Version, t.PartNumber, t.SerialNumber, t.Description, s.InterfacesMediaInfo.Speed)
+
+		if s.InterfacesMediaInfo.AdminStatus == "up" && s.InterfacesMediaInfo.OperStatus == "up" {
+			ch <- prometheus.MustNewConstMetric(c.transceiverDesc, prometheus.GaugeValue, 1, transceiver_labels...)
+		} else {
+			ch <- prometheus.MustNewConstMetric(c.transceiverDesc, prometheus.GaugeValue, 0, transceiver_labels...)
+		}
+
 	}
 
 	return nil
@@ -304,23 +325,46 @@ func (c *interfaceDiagnosticsCollector) chassisHardwareInfos(client *rpc.Client)
 	return transceiverInfoFromRPCResult(x), nil
 }
 
+func (c *interfaceDiagnosticsCollector) interfaceInformation(client *rpc.Client) (map[string]*physicalInterface, error) {
+	var x = interfacesMediaStruct{}
+	err := client.RunCommandAndParse("show interfaces media", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	return interfaceMediaInfoFromRPCResult(&x.InterfaceInformation.PhysicalInterface), nil
+}
+
+func interfaceMediaInfoFromRPCResult(interfaceMediaList *[]physicalInterface) map[string]*physicalInterface {
+
+	interfaceMediaDict := make(map[string]*physicalInterface)
+
+	for _, i := range *interfaceMediaList {
+		iface := i
+		interfaceMediaDict[iface.Name] = &iface
+	}
+
+	return interfaceMediaDict
+}
+
 func transceiverInfoFromRPCResult(chassisHardware chassisHardware) []*chassisSubSubModule {
 	transceiverList := make([]*chassisSubSubModule, 0)
 
 	var chassisModules = chassisHardware.ChassisInventory.Chassis.ChassisModule
 	for _, module := range chassisModules {
+		if strings.Split(module.Name, " ")[0] != "FPC" {
+			continue
+		}
 		for _, subModule := range module.ChassisSubModule {
+			if strings.Split(subModule.Name, " ")[0] != "PIC" {
+				continue
+			}
 			for _, subSubModule := range subModule.ChassisSubSubModule {
-				i := strings.Split(module.Name, " ")[1]
-				j := strings.Split(subModule.Name, " ")[1]
-				k := strings.Split(subSubModule.Name, " ")[1]
+				fpc := strings.Split(module.Name, " ")[1]
+				pic := strings.Split(subModule.Name, " ")[1]
+				port := strings.Split(subSubModule.Name, " ")[1]
 
-				name := strings.Split(subSubModule.Name, " ")[0]
-				if name != "Xcvr" {
-					continue
-				}
-
-				id := i + "/" + j + "/" + k
+				id := fpc + "/" + pic + "/" + port
 				transceiver := &chassisSubSubModule{
 					Name:         id,
 					Version:      subSubModule.Version,

@@ -2,6 +2,52 @@
 
 package interfacediagnostics
 
+type interfacesMediaStruct struct {
+	InterfaceInformation struct {
+		PhysicalInterface []physicalInterface `xml:"physical-interface"`
+	} `xml:"interface-information"`
+}
+
+type physicalInterface struct {
+	Name             string `xml:"name"`
+	AdminStatus      string `xml:"admin-status"`
+	OperStatus       string `xml:"oper-status"`
+	LocalIndex       string `xml:"local-index"`
+	SnmpIndex        string `xml:"snmp-index"`
+	IfType           string `xml:"if-type"`
+	LinkLevelType    string `xml:"link-level-type"`
+	Mtu              string `xml:"mtu"`
+	Speed            string `xml:"speed"`
+	LinkType         string `xml:"link-type"`
+	InterfaceFlapped struct {
+		Seconds uint64 `xml:"seconds,attr"`
+		Value   string `xml:",chardata"`
+	} `xml:"interface-flapped"`
+	IfDeviceFlags ifDeviceFlags `xml:"if-device-flags"`
+	Stats         trafficStat   `xml:"traffic-statistics"`
+}
+
+type trafficStat struct {
+	InputBytes    uint64   `xml:"input-bytes"`
+	InputPackets  uint64   `xml:"input-packets"`
+	OutputBytes   uint64   `xml:"output-bytes"`
+	OutputPackets uint64   `xml:"output-packets"`
+	IPv6Traffic   ipv6Stat `xml:"ipv6-transit-statistics"`
+}
+type ipv6Stat struct {
+	InputBytes    uint64 `xml:"input-bytes"`
+	InputPackets  uint64 `xml:"input-packets"`
+	OutputBytes   uint64 `xml:"output-bytes"`
+	OutputPackets uint64 `xml:"output-packets"`
+}
+
+type ifDeviceFlags struct {
+	Present  bool `xml:"ifdf-present"`
+	Running  bool `xml:"ifdf-running"`
+	Loopback bool `xml:"ifdf-loopback"`
+	Down     bool `xml:"ifdf-down"`
+}
+
 type chassisHardware struct {
 	ChassisInventory chassisInventory `xml:"chassis-inventory"`
 }

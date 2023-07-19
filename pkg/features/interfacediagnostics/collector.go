@@ -270,27 +270,7 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 	return nil
 }
 
-func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client) ([]*interfaceDiagnostics, error) {
-	var x = result{}
-	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
-	if err != nil {
-		return nil, err
-	}
-
-	return interfaceDiagnosticsFromRPCResult(x), nil
-}
-
-func (c *interfaceDiagnosticsCollector) chassisHardwareInfos(client *rpc.Client) ([]*transceiverInformation, error) {
-	var x = chassisHardware{}
-	err := client.RunCommandAndParse("show chassis hardware", &x)
-	if err != nil {
-		return nil, err
-	}
-
-	return transceiverInfoFromRPCResult(client, x)
-}
-
-func (c *interfaceDiagnosticsCollector) interfaceInformation(client *rpc.Client) (map[string]*physicalInterface, error) {
+func (c *interfaceDiagnosticsCollector) interfaceMediaInfo(client *rpc.Client) (map[string]*physicalInterface, error) {
 	var x = interfacesMediaStruct{}
 	err := client.RunCommandAndParse("show interfaces media", &x)
 	if err != nil {
@@ -305,14 +285,26 @@ func interfaceMediaInfoFromRPCResult(interfaceMediaList *[]physicalInterface) ma
 	interfaceMediaDict := make(map[string]*physicalInterface)
 
 	for _, i := range *interfaceMediaList {
-		iface := i
-		interfaceMediaDict[iface.Name] = &iface
+		if strings.HasPrefix(i.Name, "xe") || strings.HasPrefix(i.Name, "ge") || strings.HasPrefix(i.Name, "et") {
+			iface := i
+			afterThirdIndex := iface.Name[3:]
+			interfaceMediaDict[afterThirdIndex] = &iface
+		}
 	}
-
 	return interfaceMediaDict
 }
 
-func transceiverInfoFromRPCResult(client *rpc.Client, chassisHardware chassisHardware) ([]*transceiverInformation, error) {
+func (c *interfaceDiagnosticsCollector) chassisHardwareInfos(client *rpc.Client) ([]*transceiverInformation, error) {
+	var x = chassisHardware{}
+	err := client.RunCommandAndParse("show chassis hardware", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.transceiverInfoFromRPCResult(client, x)
+}
+
+func (c *interfaceDiagnosticsCollector) transceiverInfoFromRPCResult(client *rpc.Client, chassisHardware chassisHardware) ([]*transceiverInformation, error) {
 	transceiverList := make([]*transceiverInformation, 0)
 
 	var chassisModules = chassisHardware.ChassisInventory.Chassis.ChassisModule
@@ -327,18 +319,18 @@ func transceiverInfoFromRPCResult(client *rpc.Client, chassisHardware chassisHar
 			fpc := strings.Split(module.Name, " ")[1]
 			pic := strings.Split(subModule.Name, " ")[1]
 
-			picPortsInformation, err := getPicPortsFromRPCResult(client, fpc, pic)
+			picPortsInformation, err := c.getPicPortsFromRPCResult(client, fpc, pic)
 			if err != nil {
 				return nil, err
 			}
 
 			for port, subSubModule := range subModule.ChassisSubSubModule {
 				port_name := strings.Split(subSubModule.Name, " ")[1]
-
+				subSubModule_pointer := subSubModule
 				id := fpc + "/" + pic + "/" + port_name
 				transceiver := transceiverInformation{
 					Name:                id,
-					ChassisHardwareInfo: &subSubModule,
+					ChassisHardwareInfo: &subSubModule_pointer,
 					PicPort:             &picPortsInformation[port],
 				}
 				transceiverList = append(transceiverList, &transceiver)
@@ -348,7 +340,7 @@ func transceiverInfoFromRPCResult(client *rpc.Client, chassisHardware chassisHar
 	return transceiverList, nil
 }
 
-func getPicPortsFromRPCResult(client *rpc.Client, fpc string, pic string) ([]picPort, error) {
+func (c *interfaceDiagnosticsCollector) getPicPortsFromRPCResult(client *rpc.Client, fpc string, pic string) ([]picPort, error) {
 	var x = fPCInformationStruct{}
 	command := fmt.Sprintf("show chassis pic fpc-slot %s pic-slot %s", fpc, pic)
 	err := client.RunCommandAndParse(command, &x)
@@ -361,7 +353,7 @@ func getPicPortsFromRPCResult(client *rpc.Client, fpc string, pic string) ([]pic
 
 func createTransceiverMetrics(c *interfaceDiagnosticsCollector, client *rpc.Client, diagnostics_dict map[string]*interfaceDiagnostics, ch chan<- prometheus.Metric, labelValues []string) error {
 
-	ifMediaDict, err := c.interfaceInformation(client)
+	ifMediaDict, err := c.interfaceMediaInfo(client)
 	if err != nil {
 		return err
 	}
@@ -374,20 +366,21 @@ func createTransceiverMetrics(c *interfaceDiagnosticsCollector, client *rpc.Clie
 	for _, t := range transceiverInfo {
 		chassisInfo := t.ChassisHardwareInfo
 		port_speed := "0"
+		oper_status := 0.0
 
-		if diag, hit := diagnostics_dict[t.Name]; hit {
-			t.Name = diag.Name
-			port_speed = ifMediaDict[t.Name].Speed
-		} else if t.ChassisHardwareInfo.Description == "SFP-T" {
-			t.Name = "ge-" + t.Name
-			port_speed = ifMediaDict[t.Name].Speed
+		if media, hit := ifMediaDict[t.Name]; hit {
+			if media.OperStatus == "up" {
+				oper_status = 1.0
+			}
+			t.Name = media.Name
+			port_speed = media.Speed
 		} else {
 			t.Name = "slot-" + t.Name
 		}
 
 		transceiver_labels := append(labelValues, t.Name, chassisInfo.SerialNumber, chassisInfo.Description, port_speed, t.PicPort.FiberMode, strings.TrimSpace(t.PicPort.SFPVendorName), strings.TrimSpace(t.PicPort.SFPVendorPno), t.PicPort.Wavelength)
 
-		ch <- prometheus.MustNewConstMetric(c.transceiverDesc, prometheus.GaugeValue, 1, transceiver_labels...)
+		ch <- prometheus.MustNewConstMetric(c.transceiverDesc, prometheus.GaugeValue, oper_status, transceiver_labels...)
 	}
 	return nil
 }
@@ -442,6 +435,16 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rp
 		return xml.Unmarshal(tmpByte, &x)
 	})
 
+	if err != nil {
+		return nil, err
+	}
+
+	return interfaceDiagnosticsFromRPCResult(x), nil
+}
+
+func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client) ([]*interfaceDiagnostics, error) {
+	var x = result{}
+	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
 	if err != nil {
 		return nil, err
 	}

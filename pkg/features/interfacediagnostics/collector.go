@@ -2,6 +2,7 @@ package interfacediagnostics
 
 import (
 	"encoding/xml"
+	"fmt"
 	"log"
 	"math"
 	"strconv"
@@ -130,7 +131,7 @@ func (c *interfaceDiagnosticsCollector) init() {
 	c.laserRxOpticalPowerHighWarnThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_high_warn_threshold_dbm", "Laser rx power high warn threshold_dbm in dBm", l, nil)
 	c.laserRxOpticalPowerLowWarnThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_low_warn_threshold_dbm", "Laser rx power low warn threshold_dbm in dBm", l, nil)
 
-	transceiver_labels := []string{"target", "name", "version", "part_number", "serial_number", "description", "speed"}
+	transceiver_labels := []string{"target", "name", "serial_number", "description", "speed", "fiber_type", "vendor_name", "vendor_part_number", "wavelength"}
 	c.transceiverDesc = prometheus.NewDesc("junos_interface_transceiver", "Transceiver Info", transceiver_labels, nil)
 }
 
@@ -262,46 +263,10 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 		}
 	}
 
-	ifMediaDict, err := c.interfaceInformation(client)
+	err = createTransceiverMetrics(c, client, diagnostics_dict, ch, labelValues)
 	if err != nil {
 		return err
 	}
-
-	transceiverInfo, err := c.chassisHardwareInfos(client)
-	if err != nil {
-		return err
-	}
-
-	interfaceDictList := make(map[string]*interfaceStatsAggregate)
-
-	for _, t := range transceiverInfo {
-		if diag, hit := diagnostics_dict[t.Name]; hit {
-			t.Name = diag.Name
-		} else if t.Description == "SFP-T" {
-			t.Name = "ge-" + t.Name
-		} else {
-			t.Name = "slot-" + t.Name
-			transceiver_labels := append(labelValues, t.Name, t.Version, t.PartNumber, t.SerialNumber, t.Description, "")
-			ch <- prometheus.MustNewConstMetric(c.transceiverDesc, prometheus.GaugeValue, 0, transceiver_labels...)
-			continue
-		}
-
-		s := interfaceStatsAggregate{
-			ChassisHardwareInfo: t,
-			InterfacesMediaInfo: (ifMediaDict[t.Name]),
-		}
-
-		interfaceDictList[t.Name] = &s
-		transceiver_labels := append(labelValues, t.Name, t.Version, t.PartNumber, t.SerialNumber, t.Description, s.InterfacesMediaInfo.Speed)
-
-		if s.InterfacesMediaInfo.AdminStatus == "up" && s.InterfacesMediaInfo.OperStatus == "up" {
-			ch <- prometheus.MustNewConstMetric(c.transceiverDesc, prometheus.GaugeValue, 1, transceiver_labels...)
-		} else {
-			ch <- prometheus.MustNewConstMetric(c.transceiverDesc, prometheus.GaugeValue, 0, transceiver_labels...)
-		}
-
-	}
-
 	return nil
 }
 
@@ -315,14 +280,14 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client)
 	return interfaceDiagnosticsFromRPCResult(x), nil
 }
 
-func (c *interfaceDiagnosticsCollector) chassisHardwareInfos(client *rpc.Client) ([]*chassisSubSubModule, error) {
+func (c *interfaceDiagnosticsCollector) chassisHardwareInfos(client *rpc.Client) ([]*transceiverInformation, error) {
 	var x = chassisHardware{}
 	err := client.RunCommandAndParse("show chassis hardware", &x)
 	if err != nil {
 		return nil, err
 	}
 
-	return transceiverInfoFromRPCResult(x), nil
+	return transceiverInfoFromRPCResult(client, x)
 }
 
 func (c *interfaceDiagnosticsCollector) interfaceInformation(client *rpc.Client) (map[string]*physicalInterface, error) {
@@ -347,8 +312,8 @@ func interfaceMediaInfoFromRPCResult(interfaceMediaList *[]physicalInterface) ma
 	return interfaceMediaDict
 }
 
-func transceiverInfoFromRPCResult(chassisHardware chassisHardware) []*chassisSubSubModule {
-	transceiverList := make([]*chassisSubSubModule, 0)
+func transceiverInfoFromRPCResult(client *rpc.Client, chassisHardware chassisHardware) ([]*transceiverInformation, error) {
+	transceiverList := make([]*transceiverInformation, 0)
 
 	var chassisModules = chassisHardware.ChassisInventory.Chassis.ChassisModule
 	for _, module := range chassisModules {
@@ -359,24 +324,72 @@ func transceiverInfoFromRPCResult(chassisHardware chassisHardware) []*chassisSub
 			if strings.Split(subModule.Name, " ")[0] != "PIC" {
 				continue
 			}
-			for _, subSubModule := range subModule.ChassisSubSubModule {
-				fpc := strings.Split(module.Name, " ")[1]
-				pic := strings.Split(subModule.Name, " ")[1]
-				port := strings.Split(subSubModule.Name, " ")[1]
+			fpc := strings.Split(module.Name, " ")[1]
+			pic := strings.Split(subModule.Name, " ")[1]
 
-				id := fpc + "/" + pic + "/" + port
-				transceiver := &chassisSubSubModule{
-					Name:         id,
-					Version:      subSubModule.Version,
-					PartNumber:   subSubModule.PartNumber,
-					SerialNumber: subSubModule.SerialNumber,
-					Description:  subSubModule.Description,
+			picPortsInformation, err := getPicPortsFromRPCResult(client, fpc, pic)
+			if err != nil {
+				return nil, err
+			}
+
+			for port, subSubModule := range subModule.ChassisSubSubModule {
+				port_name := strings.Split(subSubModule.Name, " ")[1]
+
+				id := fpc + "/" + pic + "/" + port_name
+				transceiver := transceiverInformation{
+					Name:                id,
+					ChassisHardwareInfo: &subSubModule,
+					PicPort:             &picPortsInformation[port],
 				}
-				transceiverList = append(transceiverList, transceiver)
+				transceiverList = append(transceiverList, &transceiver)
 			}
 		}
 	}
-	return transceiverList
+	return transceiverList, nil
+}
+
+func getPicPortsFromRPCResult(client *rpc.Client, fpc string, pic string) ([]picPort, error) {
+	var x = fPCInformationStruct{}
+	command := fmt.Sprintf("show chassis pic fpc-slot %s pic-slot %s", fpc, pic)
+	err := client.RunCommandAndParse(command, &x)
+	if err != nil {
+		return nil, err
+	}
+
+	return x.FPCInformation.FPC.PicDetail.PicPortInfoList, nil
+}
+
+func createTransceiverMetrics(c *interfaceDiagnosticsCollector, client *rpc.Client, diagnostics_dict map[string]*interfaceDiagnostics, ch chan<- prometheus.Metric, labelValues []string) error {
+
+	ifMediaDict, err := c.interfaceInformation(client)
+	if err != nil {
+		return err
+	}
+
+	transceiverInfo, err := c.chassisHardwareInfos(client)
+	if err != nil {
+		return err
+	}
+
+	for _, t := range transceiverInfo {
+		chassisInfo := t.ChassisHardwareInfo
+		port_speed := "0"
+
+		if diag, hit := diagnostics_dict[t.Name]; hit {
+			t.Name = diag.Name
+			port_speed = ifMediaDict[t.Name].Speed
+		} else if t.ChassisHardwareInfo.Description == "SFP-T" {
+			t.Name = "ge-" + t.Name
+			port_speed = ifMediaDict[t.Name].Speed
+		} else {
+			t.Name = "slot-" + t.Name
+		}
+
+		transceiver_labels := append(labelValues, t.Name, chassisInfo.SerialNumber, chassisInfo.Description, port_speed, t.PicPort.FiberMode, strings.TrimSpace(t.PicPort.SFPVendorName), strings.TrimSpace(t.PicPort.SFPVendorPno), t.PicPort.Wavelength)
+
+		ch <- prometheus.MustNewConstMetric(c.transceiverDesc, prometheus.GaugeValue, 1, transceiver_labels...)
+	}
+	return nil
 }
 
 func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rpc.Client) ([]*interfaceDiagnostics, error) {

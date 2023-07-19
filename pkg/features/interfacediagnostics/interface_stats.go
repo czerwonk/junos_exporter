@@ -1,6 +1,7 @@
 package interfacediagnostics
 
-type interfaceStatsAggregate struct {
+type transceiverInformation struct {
+	Name                string
 	ChassisHardwareInfo *chassisSubSubModule
-	InterfacesMediaInfo *physicalInterface
+	PicPort             *picPort
 }

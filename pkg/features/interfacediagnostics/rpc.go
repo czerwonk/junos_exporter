@@ -1,5 +1,37 @@
 package interfacediagnostics
 
+type fPCInformationStruct struct {
+	FPCInformation fPCInformation `xml:"fpc-information"`
+}
+type fPCInformation struct {
+	FPC fPC `xml:"fpc"`
+}
+
+type fPC struct {
+	PicDetail picDetail `xml:"pic-detail"`
+}
+
+type picDetail struct {
+	Slot            int       `xml:"slot"`
+	PicSlot         int       `xml:"pic-slot"`
+	PicType         string    `xml:"pic-type"`
+	State           string    `xml:"state"`
+	PicVersion      string    `xml:"pic-version"`
+	UpTime          string    `xml:"up-time"`
+	PicPortInfoList []picPort `xml:"port-information>port"`
+}
+
+type picPort struct {
+	PortNumber     int    `xml:"port-number"`
+	CableType      string `xml:"cable-type"`
+	FiberMode      string `xml:"fiber-mode"`
+	SFPVendorName  string `xml:"sfp-vendor-name"`
+	SFPVendorPno   string `xml:"sfp-vendor-pno"`
+	Wavelength     string `xml:"wavelength"`
+	SFPVendorFwVer string `xml:"sfp-vendor-fw-ver"`
+	SFPJnprVer     string `xml:"sfp-jnpr-ver"`
+}
+
 type interfacesMediaStruct struct {
 	InterfaceInformation struct {
 		PhysicalInterface []physicalInterface `xml:"physical-interface"`

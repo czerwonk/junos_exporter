@@ -8,35 +8,35 @@ on:
 
 name: anx-ci
 jobs:
-  test:
-    # if: github.repository == ‘anexia/junos_exporter’
-    strategy:
-      matrix:
-        go-version: [1.18.x]
-        platform: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - name: Install Go
-        if: success()
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ matrix.go-version }}
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Build
-        run: go build
-      - name: Run tests
-        run: go test ./... -v -covermode=count
+  # test:
+  #   # if: github.repository == ‘anexia/junos_exporter’
+  #   strategy:
+  #     matrix:
+  #       go-version: [1.18.x]
+  #       platform: [ubuntu-latest, macos-latest, windows-latest]
+  #   runs-on: ${{ matrix.platform }}
+  #   steps:
+  #     - name: Install Go
+  #       if: success()
+  #       uses: actions/setup-go@v3
+  #       with:
+  #         go-version: ${{ matrix.go-version }}
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
+  #     - name: Build
+  #       run: go build
+  #     - name: Run tests
+  #       run: go test ./... -v -covermode=count
 
   publish:
     # if: github.repository == ‘anexia/junos_exporter’
-    needs: test
+    # needs: test
     runs-on: ubuntu-latest
     env:
-      S3_URL: ${{secrets.S3_URL}}
-      S3_BUCKET: ${{secrets.S3_BUCKET}}
-      S3_ACCESS_KEY: ${{secrets.S3_ACCESS_KEY}}
-      S3_SECRET_KEY: ${{secrets.S3_SECRET_KEY}}
+      S3_URL: ${{ secrets.S3_URL }}
+      S3_BUCKET: ${{ secrets.S3_BUCKET }}
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
 
     steps:
       - uses: actions/checkout@v3

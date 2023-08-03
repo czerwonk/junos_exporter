@@ -39,6 +39,12 @@ jobs:
       S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
 
     steps:
+      - name: print_env
+        run: | 
+          echo $S3_URL
+          echo $S3_BUCKET
+          echo $S3_ACCESS_KEY
+
       - uses: actions/checkout@v3
 
       - name: Set up Go

@@ -39,12 +39,6 @@ jobs:
       S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
 
     steps:
-      - name: print_env
-        run: | 
-          echo $S3_URL
-          echo $S3_BUCKET
-          echo $S3_ACCESS_KEY
-
       - uses: actions/checkout@v3
 
       - name: Set up Go
@@ -65,7 +59,7 @@ jobs:
       - name: publish anx-prod to s3://$S3_BUCKET/public/junos_exporter/$GITHUB_REF_NAME/junos_exporter
         run: |
           pip install s4cmd
-          s4cmd --debug put --endpoint-url https://$S3_URL -f junos_exporter s3://$S3_BUCKET/public/junos_exporter/$GITHUB_REF_NAME/junos_exporter
+          s4cmd --debug --force --dry-run put --endpoint-url https://$S3_URL  junos_exporter s3://$S3_BUCKET/public/junos_exporter/$GITHUB_REF_NAME/junos_exporter
         if: github.ref_type == 'tag' || github.ref == 'refs/heads/anx-prod'
 
       - name: "publish feature-branch to s3://$S3_BUCKET/public/junos_exporter/staging/junos_exporter"

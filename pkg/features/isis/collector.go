@@ -1,10 +1,11 @@
+// SPDX-License-Identifier: MIT
+
 package isis
 
 import (
 	"strconv"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -44,7 +45,7 @@ func (*isisCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *isisCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *isisCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	adjancies, err := c.isisAdjancies(client)
 	if err != nil {
 		return err
@@ -79,7 +80,7 @@ func (c *isisCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric,
 	return nil
 }
 
-func (c *isisCollector) isisAdjancies(client *rpc.Client) (*adjacencies, error) {
+func (c *isisCollector) isisAdjancies(client collector.Client) (*adjacencies, error) {
 	up := 0
 	total := 0
 

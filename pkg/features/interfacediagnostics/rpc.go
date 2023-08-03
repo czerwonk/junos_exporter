@@ -1,4 +1,126 @@
+// SPDX-License-Identifier: MIT
+
 package interfacediagnostics
+
+type fPCInformationStruct struct {
+	FPCInformation fPCInformation `xml:"fpc-information"`
+}
+type fPCInformation struct {
+	FPC fPC `xml:"fpc"`
+}
+
+type fPC struct {
+	PicDetail picDetail `xml:"pic-detail"`
+}
+
+type picDetail struct {
+	Slot            int       `xml:"slot"`
+	PicSlot         int       `xml:"pic-slot"`
+	PicType         string    `xml:"pic-type"`
+	State           string    `xml:"state"`
+	PicVersion      string    `xml:"pic-version"`
+	UpTime          string    `xml:"up-time"`
+	PicPortInfoList []picPort `xml:"port-information>port"`
+}
+
+type picPort struct {
+	PortNumber     int    `xml:"port-number"`
+	CableType      string `xml:"cable-type"`
+	FiberMode      string `xml:"fiber-mode"`
+	SFPVendorName  string `xml:"sfp-vendor-name"`
+	SFPVendorPno   string `xml:"sfp-vendor-pno"`
+	Wavelength     string `xml:"wavelength"`
+	SFPVendorFwVer string `xml:"sfp-vendor-fw-ver"`
+	SFPJnprVer     string `xml:"sfp-jnpr-ver"`
+}
+
+type interfacesMediaStruct struct {
+	InterfaceInformation struct {
+		PhysicalInterface []physicalInterface `xml:"physical-interface"`
+	} `xml:"interface-information"`
+}
+
+type physicalInterface struct {
+	Name             string `xml:"name"`
+	AdminStatus      string `xml:"admin-status"`
+	OperStatus       string `xml:"oper-status"`
+	LocalIndex       string `xml:"local-index"`
+	SnmpIndex        string `xml:"snmp-index"`
+	IfType           string `xml:"if-type"`
+	LinkLevelType    string `xml:"link-level-type"`
+	Mtu              string `xml:"mtu"`
+	Speed            string `xml:"speed"`
+	LinkType         string `xml:"link-type"`
+	InterfaceFlapped struct {
+		Seconds uint64 `xml:"seconds,attr"`
+		Value   string `xml:",chardata"`
+	} `xml:"interface-flapped"`
+	IfDeviceFlags ifDeviceFlags `xml:"if-device-flags"`
+	Stats         trafficStat   `xml:"traffic-statistics"`
+}
+
+type trafficStat struct {
+	InputBytes    uint64   `xml:"input-bytes"`
+	InputPackets  uint64   `xml:"input-packets"`
+	OutputBytes   uint64   `xml:"output-bytes"`
+	OutputPackets uint64   `xml:"output-packets"`
+	IPv6Traffic   ipv6Stat `xml:"ipv6-transit-statistics"`
+}
+type ipv6Stat struct {
+	InputBytes    uint64 `xml:"input-bytes"`
+	InputPackets  uint64 `xml:"input-packets"`
+	OutputBytes   uint64 `xml:"output-bytes"`
+	OutputPackets uint64 `xml:"output-packets"`
+}
+
+type ifDeviceFlags struct {
+	Present  bool `xml:"ifdf-present"`
+	Running  bool `xml:"ifdf-running"`
+	Loopback bool `xml:"ifdf-loopback"`
+	Down     bool `xml:"ifdf-down"`
+}
+
+type chassisHardware struct {
+	ChassisInventory chassisInventory `xml:"chassis-inventory"`
+}
+
+type chassisInventory struct {
+	Chassis chassis `xml:"chassis"`
+}
+
+type chassis struct {
+	Name          string          `xml:"name"`
+	SerialNumber  string          `xml:"serial-number"`
+	Description   string          `xml:"description"`
+	ChassisModule []chassisModule `xml:"chassis-module"`
+}
+
+type chassisModule struct {
+	Name             string             `xml:"name"`
+	PartNumber       string             `xml:"part-number"`
+	SerialNumber     string             `xml:"serial-number"`
+	Description      string             `xml:"description"`
+	CleiCode         string             `xml:"clei-code"`
+	ModelNumber      string             `xml:"model-number"`
+	ChassisSubModule []chassisSubModule `xml:"chassis-sub-module"`
+}
+
+type chassisSubModule struct {
+	Name                string                `xml:"name"`
+	PartNumber          string                `xml:"part-number"`
+	SerialNumber        string                `xml:"serial-number"`
+	Description         string                `xml:"description"`
+	CleiCode            string                `xml:"clei-code"`
+	ModelNumber         string                `xml:"model-number"`
+	ChassisSubSubModule []chassisSubSubModule `xml:"chassis-sub-sub-module"`
+}
+type chassisSubSubModule struct {
+	Name         string `xml:"name"`
+	Version      string `xml:"version"`
+	PartNumber   string `xml:"part-number"`
+	SerialNumber string `xml:"serial-number"`
+	Description  string `xml:"description"`
+}
 
 type result struct {
 	Information struct {

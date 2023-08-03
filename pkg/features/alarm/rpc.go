@@ -1,9 +1,31 @@
+// SPDX-License-Identifier: MIT
+
 package alarm
 
-type result struct {
+import (
+	"encoding/xml"
+)
+
+type singleEngineResult struct {
+	XMLName xml.Name `xml:"rpc-reply"`
+	Information alarmInformation `xml:"alarm-information"`
+}
+
+type multiEngineResult struct {
+	XMLName xml.Name `xml:"rpc-reply"`
 	Information struct {
-		Details []details `xml:"alarm-detail"`
-	} `xml:"alarm-information"`
+		RoutingEngines []routingEngine `xml:"multi-routing-engine-item"`
+	} `xml:"multi-routing-engine-results"`
+}
+
+type routingEngine struct {
+	Name    string    `xml:"re-name"`
+	AlarmInfo alarmInformation `xml:"alarm-information"`
+}
+
+type alarmInformation struct {
+	XMLName xml.Name `xml:"alarm-information"`
+	Details []details `xml:"alarm-detail"`
 }
 
 type details struct {

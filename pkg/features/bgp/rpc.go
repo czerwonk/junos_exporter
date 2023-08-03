@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package bgp
 
 type result struct {

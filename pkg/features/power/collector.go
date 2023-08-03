@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package power
 
 import (
@@ -5,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -80,7 +81,7 @@ func (*powerCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *powerCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *powerCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	stateValues := map[string]int{
 		"Online":  1,
 		"Present": 2,

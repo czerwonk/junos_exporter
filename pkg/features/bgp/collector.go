@@ -1,10 +1,11 @@
+// SPDX-License-Identifier: MIT
+
 package bgp
 
 import (
 	"math"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"strings"
@@ -14,6 +15,7 @@ const prefix string = "junos_bgp_session_"
 
 var (
 	upDesc                      *prometheus.Desc
+	stateDesc                   *prometheus.Desc
 	receivedPrefixesDesc        *prometheus.Desc
 	acceptedPrefixesDesc        *prometheus.Desc
 	rejectedPrefixesDesc        *prometheus.Desc
@@ -29,6 +31,7 @@ var (
 func init() {
 	l := []string{"target", "asn", "ip", "description", "group"}
 	upDesc = prometheus.NewDesc(prefix+"up", "Session is up (1 = Established)", l, nil)
+	stateDesc = prometheus.NewDesc(prefix+"state", "State of the bgp Session (1 = Active, 2 = Connect, 3 = Established, 4 = Idle, 5 = OpenConfirm, 6 = OpenSent, 7 = route reflector client, 0 = Other)", l, nil)
 	inputMessagesDesc = prometheus.NewDesc(prefix+"messages_input_count", "Number of received messages", l, nil)
 	outputMessagesDesc = prometheus.NewDesc(prefix+"messages_output_count", "Number of transmitted messages", l, nil)
 	flapsDesc = prometheus.NewDesc(prefix+"flap_count", "Number of session flaps", l, nil)
@@ -74,7 +77,7 @@ func (*bgpCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *bgpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *bgpCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	err := c.collect(client, ch, labelValues)
 	if err != nil {
 		return err
@@ -83,7 +86,7 @@ func (c *bgpCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, 
 	return nil
 }
 
-func (c *bgpCollector) collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *bgpCollector) collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = result{}
 	var cmd strings.Builder
 	cmd.WriteString("show bgp neighbor")
@@ -113,6 +116,7 @@ func (c *bgpCollector) collectForPeer(p peer, ch chan<- prometheus.Metric, label
 	}
 
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, float64(up), l...)
+	ch <- prometheus.MustNewConstMetric(stateDesc, prometheus.GaugeValue, bgpStateToNumber(p.State), l...)
 	ch <- prometheus.MustNewConstMetric(inputMessagesDesc, prometheus.GaugeValue, float64(p.InputMessages), l...)
 	ch <- prometheus.MustNewConstMetric(outputMessagesDesc, prometheus.GaugeValue, float64(p.OutputMessages), l...)
 	ch <- prometheus.MustNewConstMetric(flapsDesc, prometheus.GaugeValue, float64(p.Flaps), l...)
@@ -156,5 +160,26 @@ func (*bgpCollector) collectRIBForPeer(p peer, ch chan<- prometheus.Metric, labe
 				ch <- prometheus.MustNewConstMetric(prefixesLimitPercentageDesc, prometheus.GaugeValue, math.Round(prefixesLimitPercent*100)/100, l...)
 			}
 		}
+	}
+}
+
+func bgpStateToNumber(bgpState string) float64 {
+	switch bgpState {
+	case "Active":
+		return 1
+	case "Connect":
+		return 2
+	case "Established":
+		return 3
+	case "Idle":
+		return 4
+	case "Openconfirm":
+		return 5
+	case "OpenSent":
+		return 6
+	case "route reflector client":
+		return 7
+	default:
+		return 0
 	}
 }

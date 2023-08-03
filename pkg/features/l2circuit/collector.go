@@ -1,10 +1,11 @@
+// SPDX-License-Identifier: MIT
+
 package l2circuit
 
 import (
 	"regexp"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -72,11 +73,7 @@ func (*l2circuitCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *l2circuitCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	return c.collectL2circuitMetrics(client, ch, labelValues)
-}
-
-func (c *l2circuitCollector) collectL2circuitMetrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *l2circuitCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = result{}
 	err := client.RunCommandAndParse("show l2circuit connections brief", &x)
 	if err != nil {
@@ -100,7 +97,7 @@ func (c *l2circuitCollector) collectL2circuitMetrics(client *rpc.Client, ch chan
 	return nil
 }
 
-func (c *l2circuitCollector) collectForConnection(client *rpc.Client, ch chan<- prometheus.Metric,
+func (c *l2circuitCollector) collectForConnection(client collector.Client, ch chan<- prometheus.Metric,
 	conn connection, labelValues []string, connCount int) {
 	idStr := conn.ID
 	idInt := re.FindStringSubmatch(idStr)

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package system
 
 import (
@@ -9,7 +11,6 @@ import (
 	"math"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -153,7 +154,7 @@ func (*systemCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *systemCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *systemCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	err := c.CollectSystem(client, ch, labelValues)
 	if err != nil {
 		return err
@@ -162,7 +163,7 @@ func (c *systemCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metri
 	return nil
 }
 
-func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *systemCollector) CollectSystem(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	err := c.collectBuffers(client, ch, labelValues)
 	if err != nil {
 		return fmt.Errorf("could not get buffer information: %w", err)
@@ -173,18 +174,18 @@ func (c *systemCollector) CollectSystem(client *rpc.Client, ch chan<- prometheus
 		return fmt.Errorf("could not get system information: %w", err)
 	}
 
-	if client.Satellite {
+	if client.IsSatelliteEnabled() {
 		c.collectSatelites(client, ch, labelValues)
 	}
 
-	if client.License {
+	if client.IsScrapingLicenseEnabled() {
 		c.collectLicense(client, ch, labelValues)
 	}
 
 	return nil
 }
 
-func (c *systemCollector) collectBuffers(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *systemCollector) collectBuffers(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	r := &buffers{}
 	err := client.RunCommandAndParse("show system buffers", r)
 	if err != nil {
@@ -349,7 +350,7 @@ func (c *systemCollector) collectBuffers(client *rpc.Client, ch chan<- prometheu
 	return nil
 }
 
-func (c *systemCollector) collectSystemInformation(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *systemCollector) collectSystemInformation(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	r := &systemInformation{}
 	err := client.RunCommandAndParse("show system information", r)
 	if err != nil {
@@ -369,7 +370,7 @@ func (c *systemCollector) collectSystemInformation(client *rpc.Client, ch chan<-
 	return nil
 }
 
-func (c *systemCollector) collectSatelites(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *systemCollector) collectSatelites(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) {
 	r := &satelliteChassis{}
 	err := client.RunCommandAndParse("show chassis satellite detail", r)
 	if err != nil {
@@ -392,34 +393,36 @@ func (c *systemCollector) collectSatelites(client *rpc.Client, ch chan<- prometh
 	}
 }
 
-func (c *systemCollector) collectLicense(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *systemCollector) collectLicense(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) {
 	r := &licenseInformation{}
 	err := client.RunCommandAndParse("show system license usage", r)
 
-	if err == nil {
-		for i := range r.LicenseInfo.License {
-			licenseLabels := append(labelValues,
-				strings.ToLower(r.LicenseInfo.License[i].Name),
-				strings.ToLower(r.LicenseInfo.License[i].Description))
+	if err != nil {
+		return
+	}
+	for _, lic := range r.LicenseInfo.License {
+		licenseLabels := append(labelValues,
+			strings.ToLower(lic.Name),
+			strings.ToLower(lic.Description))
 
-			ch <- prometheus.MustNewConstMetric(licenseUsedDesc, prometheus.GaugeValue, float64(r.LicenseInfo.License[i].Used), licenseLabels...)
-			ch <- prometheus.MustNewConstMetric(licenseInstalledDesc, prometheus.GaugeValue, float64(r.LicenseInfo.License[i].Installed), licenseLabels...)
-			ch <- prometheus.MustNewConstMetric(licenseNeededDesc, prometheus.GaugeValue, float64(r.LicenseInfo.License[i].Needed), licenseLabels...)
+		ch <- prometheus.MustNewConstMetric(licenseUsedDesc, prometheus.GaugeValue, float64(lic.Used), licenseLabels...)
+		ch <- prometheus.MustNewConstMetric(licenseInstalledDesc, prometheus.GaugeValue, float64(lic.Installed), licenseLabels...)
+		ch <- prometheus.MustNewConstMetric(licenseNeededDesc, prometheus.GaugeValue, float64(lic.Needed), licenseLabels...)
 
-			expiry_str := strings.ToLower(r.LicenseInfo.License[i].ValidityType)
-			expiry, err := time.Parse("2006-01-02 03:04:05 MST", expiry_str)
-			if err != nil {
-				if strings.Compare(expiry_str, "expired") == 0 {
-					ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(-1), licenseLabels...)
-				} else if strings.Compare(expiry_str, "permanent") == 0 {
-					ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(1)), licenseLabels...)
-				} else {
-					ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(-1)), licenseLabels...)
-				}
+		expiry_str := strings.ToLower(lic.ValidityType)
+		expiry, err := time.Parse("2006-01-02 03:04:05 MST", expiry_str)
+		if err != nil {
+			if strings.Compare(expiry_str, "expired") == 0 {
+				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(-1), licenseLabels...)
+			} else if strings.Compare(expiry_str, "permanent") == 0 {
+				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(1)), licenseLabels...)
 			} else {
-				license_ttl_days := time.Until(expiry).Hours() / 24.0
-				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(license_ttl_days), licenseLabels...)
+				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(-1)), licenseLabels...)
 			}
+		} else {
+			license_ttl_days := time.Until(expiry).Hours() / 24.0
+			ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(license_ttl_days), licenseLabels...)
 		}
 	}
 }
+

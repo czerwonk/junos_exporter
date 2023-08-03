@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package route
 
 type result struct {

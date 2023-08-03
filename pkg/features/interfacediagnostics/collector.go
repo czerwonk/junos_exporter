@@ -1,14 +1,16 @@
+// SPDX-License-Identifier: MIT
+
 package interfacediagnostics
 
 import (
 	"encoding/xml"
+	"fmt"
 	"log"
 	"math"
 	"strconv"
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/interfacelabels"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/prometheus/client_golang/prometheus"
@@ -62,6 +64,8 @@ type interfaceDiagnosticsCollector struct {
 
 	rxSignalAvgOpticalPowerDesc    *prometheus.Desc
 	rxSignalAvgOpticalPowerDbmDesc *prometheus.Desc
+
+	transceiverDesc *prometheus.Desc
 }
 
 // NewCollector creates a new collector
@@ -127,6 +131,9 @@ func (c *interfaceDiagnosticsCollector) init() {
 	c.laserRxOpticalPowerLowAlarmThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_low_alarm_threshold_dbm", "Laser rx power low alarm threshold_dbm in dBm", l, nil)
 	c.laserRxOpticalPowerHighWarnThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_high_warn_threshold_dbm", "Laser rx power high warn threshold_dbm in dBm", l, nil)
 	c.laserRxOpticalPowerLowWarnThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_low_warn_threshold_dbm", "Laser rx power low warn threshold_dbm in dBm", l, nil)
+
+	transceiver_labels := []string{"target", "name", "serial_number", "description", "speed", "fiber_type", "vendor_name", "vendor_part_number", "wavelength"}
+	c.transceiverDesc = prometheus.NewDesc("junos_interface_transceiver", "Transceiver Info", transceiver_labels, nil)
 }
 
 // Describe describes the metrics
@@ -171,26 +178,33 @@ func (c *interfaceDiagnosticsCollector) Describe(ch chan<- *prometheus.Desc) {
 
 	ch <- c.rxSignalAvgOpticalPowerDesc
 	ch <- c.rxSignalAvgOpticalPowerDbmDesc
+
+	ch <- c.transceiverDesc
 }
 
 // Collect collects metrics from JunOS
-func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *interfaceDiagnosticsCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	diagnostics, err := c.interfaceDiagnostics(client)
 	if err != nil {
 		return err
 	}
 
 	// add satellite details if feature is enabled
-	if client.Satellite {
+	if client.IsSatelliteEnabled() {
 		diagnosticsSatellite, err := c.interfaceDiagnosticsSatellite(client)
 		if err != nil {
 			return err
 		}
-
 		diagnostics = append(diagnostics, diagnosticsSatellite...)
 	}
 
+	diagnostics_dict := make(map[string]*interfaceDiagnostics)
+
 	for _, d := range diagnostics {
+
+		index := strings.Split(d.Name, "-")[1]
+		diagnostics_dict[index] = d
+
 		l := append(labelValues, d.Name)
 		l = append(l, c.labels.ValuesForInterface(client.Device(), d.Name)...)
 
@@ -250,20 +264,129 @@ func (c *interfaceDiagnosticsCollector) Collect(client *rpc.Client, ch chan<- pr
 		}
 	}
 
+	err = createTransceiverMetrics(c, client, diagnostics_dict, ch, labelValues)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client *rpc.Client) ([]*interfaceDiagnostics, error) {
-	var x = result{}
-	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
+func (c *interfaceDiagnosticsCollector) interfaceMediaInfo(client collector.Client) (map[string]*physicalInterface, error) {
+	var x = interfacesMediaStruct{}
+	err := client.RunCommandAndParse("show interfaces media", &x)
 	if err != nil {
 		return nil, err
 	}
 
-	return interfaceDiagnosticsFromRPCResult(x), nil
+	return interfaceMediaInfoFromRPCResult(&x.InterfaceInformation.PhysicalInterface), nil
 }
 
-func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rpc.Client) ([]*interfaceDiagnostics, error) {
+func interfaceMediaInfoFromRPCResult(interfaceMediaList *[]physicalInterface) map[string]*physicalInterface {
+
+	interfaceMediaDict := make(map[string]*physicalInterface)
+
+	for _, i := range *interfaceMediaList {
+		if strings.HasPrefix(i.Name, "xe") || strings.HasPrefix(i.Name, "ge") || strings.HasPrefix(i.Name, "et") {
+			iface := i
+			slotIndex := iface.Name[3:]
+			interfaceMediaDict[slotIndex] = &iface
+		}
+	}
+	return interfaceMediaDict
+}
+
+func (c *interfaceDiagnosticsCollector) chassisHardwareInfos(client collector.Client) ([]*transceiverInformation, error) {
+	var x = chassisHardware{}
+	err := client.RunCommandAndParse("show chassis hardware", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.transceiverInfoFromRPCResult(client, x)
+}
+
+func (c *interfaceDiagnosticsCollector) transceiverInfoFromRPCResult(client collector.Client, chassisHardware chassisHardware) ([]*transceiverInformation, error) {
+	transceiverList := make([]*transceiverInformation, 0)
+
+	var chassisModules = chassisHardware.ChassisInventory.Chassis.ChassisModule
+	for _, module := range chassisModules {
+		if strings.Split(module.Name, " ")[0] != "FPC" {
+			continue
+		}
+		for _, subModule := range module.ChassisSubModule {
+			if strings.Split(subModule.Name, " ")[0] != "PIC" {
+				continue
+			}
+			fpc := strings.Split(module.Name, " ")[1]
+			pic := strings.Split(subModule.Name, " ")[1]
+
+			picPortsInformation, err := c.getPicPortsFromRPCResult(client, fpc, pic)
+			if err != nil {
+				return nil, err
+			}
+
+			for port, subSubModule := range subModule.ChassisSubSubModule {
+				port_name := strings.Split(subSubModule.Name, " ")[1]
+				subSubModule_pointer := subSubModule
+				id := fpc + "/" + pic + "/" + port_name
+				transceiver := transceiverInformation{
+					Name:                id,
+					ChassisHardwareInfo: &subSubModule_pointer,
+					PicPort:             &picPortsInformation[port],
+				}
+				transceiverList = append(transceiverList, &transceiver)
+			}
+		}
+	}
+	return transceiverList, nil
+}
+
+func (c *interfaceDiagnosticsCollector) getPicPortsFromRPCResult(client collector.Client, fpc string, pic string) ([]picPort, error) {
+	var x = fPCInformationStruct{}
+	command := fmt.Sprintf("show chassis pic fpc-slot %s pic-slot %s", fpc, pic)
+	err := client.RunCommandAndParse(command, &x)
+	if err != nil {
+		return nil, err
+	}
+
+	return x.FPCInformation.FPC.PicDetail.PicPortInfoList, nil
+}
+
+func createTransceiverMetrics(c *interfaceDiagnosticsCollector, client collector.Client, diagnostics_dict map[string]*interfaceDiagnostics, ch chan<- prometheus.Metric, labelValues []string) error {
+
+	ifMediaDict, err := c.interfaceMediaInfo(client)
+	if err != nil {
+		return err
+	}
+
+	transceiverInfo, err := c.chassisHardwareInfos(client)
+	if err != nil {
+		return err
+	}
+
+	for _, t := range transceiverInfo {
+		chassisInfo := t.ChassisHardwareInfo
+		port_speed := "0"
+		oper_status := 0.0
+
+		if media, hit := ifMediaDict[t.Name]; hit {
+			if media.OperStatus == "up" {
+				oper_status = 1.0
+			}
+			t.Name = media.Name
+			port_speed = media.Speed
+		} else {
+			t.Name = "slot-" + t.Name
+		}
+
+		transceiver_labels := append(labelValues, t.Name, chassisInfo.SerialNumber, chassisInfo.Description, port_speed, t.PicPort.FiberMode, strings.TrimSpace(t.PicPort.SFPVendorName), strings.TrimSpace(t.PicPort.SFPVendorPno), t.PicPort.Wavelength)
+
+		ch <- prometheus.MustNewConstMetric(c.transceiverDesc, prometheus.GaugeValue, oper_status, transceiver_labels...)
+	}
+	return nil
+}
+
+func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client collector.Client) ([]*interfaceDiagnostics, error) {
 	var x = result{}
 
 	// NOTE: Junos is broken and delivers incorrect XML
@@ -313,6 +436,16 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client *rp
 		return xml.Unmarshal(tmpByte, &x)
 	})
 
+	if err != nil {
+		return nil, err
+	}
+
+	return interfaceDiagnosticsFromRPCResult(x), nil
+}
+
+func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client collector.Client) ([]*interfaceDiagnostics, error) {
+	var x = result{}
+	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
 	if err != nil {
 		return nil, err
 	}

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package ipsec
 
 import (
@@ -6,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -47,7 +48,7 @@ func (*ipsecCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *ipsecCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *ipsecCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = multiEngineResult{}
 	err := client.RunCommandAndParseWithParser("show security ipsec security-associations", func(b []byte) error {
 		return parseXML(b, &x)

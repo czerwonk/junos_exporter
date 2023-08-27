@@ -4,21 +4,18 @@ package ipsec
 
 import "encoding/xml"
 
-type multiEngineResult struct {
-	XMLName xml.Name           `xml:"rpc-reply"`
-	Results multiEngineResults `xml:"multi-routing-engine-results"`
-}
-
-type multiEngineResults struct {
+type multiRoutingEngineResults struct {
+	XMLName        xml.Name        `xml:"multi-routing-engine-results"`
 	RoutingEngines []routingEngine `xml:"multi-routing-engine-item"`
 }
 
 type routingEngine struct {
-	Name  string      `xml:"re-name"`
-	IPSec information `xml:"ipsec-security-associations-information"`
+	Name  string                          `xml:"re-name"`
+	IPSec securityAssociationsInformation `xml:"ipsec-security-associations-information"`
 }
 
-type information struct {
+type securityAssociationsInformation struct {
+	XMLName              xml.Name                   `xml:"ipsec-security-associations-information"`
 	ActiveTunnels        int                        `xml:"total-active-tunnels"`
 	SecurityAssociations []securityAssociationBlock `xml:"ipsec-security-associations-block"`
 }
@@ -46,39 +43,33 @@ type securityAssociation struct {
 	VirtualSystem          string `xml:"sa-virtual-system"`
 }
 
-type singleEngineResult struct {
-	XMLName xml.Name    `xml:"rpc-reply"`
-	IPSec   information `xml:"ipsec-security-associations-information"`
-}
-
 // ConfigurationSecurityIpsec is used for xml unmarshalling
 // In order to get the number of configured VPNs
 type configurationSecurityResult struct {
-	Configuration struct {
-		Security struct {
-			Ipsec struct {
-				Proposal struct {
-					Text                    string `xml:",chardata"`
-					Name                    string `xml:"name"`
-					Protocol                string `xml:"protocol"`
-					AuthenticationAlgorithm string `xml:"authentication-algorithm"`
-					EncryptionAlgorithm     string `xml:"encryption-algorithm"`
-					LifetimeSeconds         string `xml:"lifetime-seconds"`
-				} `xml:"proposal"`
-				Policy struct {
-					Name      string `xml:"name"`
-					Proposals string `xml:"proposals"`
-				} `xml:"policy"`
-				Vpn []struct {
-					Name          string `xml:"name"`
-					BindInterface string `xml:"bind-interface"`
-					Ike           struct {
-						Gateway     string `xml:"gateway"`
-						IPSecPolicy string `xml:"ipsec-policy"`
-					} `xml:"ike"`
-					EstablishTunnels string `xml:"establish-tunnels"`
-				} `xml:"vpn"`
-			} `xml:"ipsec"`
-		} `xml:"security"`
-	} `xml:"configuration"`
+	XMLName  xml.Name `xml:"configuration"`
+	Security struct {
+		Ipsec struct {
+			Proposal struct {
+				Text                    string `xml:",chardata"`
+				Name                    string `xml:"name"`
+				Protocol                string `xml:"protocol"`
+				AuthenticationAlgorithm string `xml:"authentication-algorithm"`
+				EncryptionAlgorithm     string `xml:"encryption-algorithm"`
+				LifetimeSeconds         string `xml:"lifetime-seconds"`
+			} `xml:"proposal"`
+			Policy struct {
+				Name      string `xml:"name"`
+				Proposals string `xml:"proposals"`
+			} `xml:"policy"`
+			Vpn []struct {
+				Name          string `xml:"name"`
+				BindInterface string `xml:"bind-interface"`
+				Ike           struct {
+					Gateway     string `xml:"gateway"`
+					IPSecPolicy string `xml:"ipsec-policy"`
+				} `xml:"ike"`
+				EstablishTunnels string `xml:"establish-tunnels"`
+			} `xml:"vpn"`
+		} `xml:"ipsec"`
+	} `xml:"security"`
 }

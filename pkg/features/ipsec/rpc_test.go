@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/czerwonk/junos_exporter/pkg/rpc"
 )
 
 func TestParseSRXOutputMultiRE(t *testing.T) {
@@ -154,21 +156,27 @@ func TestParseSRXOutputMultiRE(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := multiEngineResult{}
-	err := parseXML([]byte(body), &rpc)
+	var b, err = rpc.UnpackRpcReply([]byte(body))
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result := multiRoutingEngineResults{}
+	err = parseXML(b, &result)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// test routing engine 0
-	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].IPSec)
+	assert.NotEmpty(t, result.RoutingEngines[0].IPSec)
 
-	assert.Equal(t, "node0", rpc.Results.RoutingEngines[0].Name, "re-name")
+	assert.Equal(t, "node0", result.RoutingEngines[0].Name, "re-name")
 
-	assert.Equal(t, 2, rpc.Results.RoutingEngines[0].IPSec.ActiveTunnels, "total-active-tunnels")
+	assert.Equal(t, 2, result.RoutingEngines[0].IPSec.ActiveTunnels, "total-active-tunnels")
 
-	f := rpc.Results.RoutingEngines[0].IPSec.SecurityAssociations[0]
+	f := result.RoutingEngines[0].IPSec.SecurityAssociations[0]
 
 	assert.Equal(t, "up", f.State, "state")
 
@@ -321,20 +329,26 @@ func TestParseSRXOutput(t *testing.T) {
     </cli>
 </rpc-reply>`
 
-	rpc := multiEngineResult{}
-	err := parseXML([]byte(body), &rpc)
+	var b, err = rpc.UnpackRpcReply([]byte(body))
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].IPSec)
+	result := multiRoutingEngineResults{}
+	err = parseXML(b, &result)
 
-	assert.Equal(t, "N/A", rpc.Results.RoutingEngines[0].Name, "re-name")
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	assert.Equal(t, 2, rpc.Results.RoutingEngines[0].IPSec.ActiveTunnels, "total-active-tunnels")
+	assert.NotEmpty(t, result.RoutingEngines[0].IPSec)
 
-	f := rpc.Results.RoutingEngines[0].IPSec.SecurityAssociations[0]
+	assert.Equal(t, "N/A", result.RoutingEngines[0].Name, "re-name")
+
+	assert.Equal(t, 2, result.RoutingEngines[0].IPSec.ActiveTunnels, "total-active-tunnels")
+
+	f := result.RoutingEngines[0].IPSec.SecurityAssociations[0]
 
 	assert.Equal(t, "up", f.State, "state")
 
@@ -387,20 +401,26 @@ func TestParseConfigOutput(t *testing.T) {
     </configuration>
 </rpc-reply>`
 
-	rpc := configurationSecurityResult{}
-	err := xml.Unmarshal([]byte(body), &rpc)
+	var b, err = rpc.UnpackRpcReply([]byte(body))
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.Configuration.Security.Ipsec)
+	result := configurationSecurityResult{}
+	err = xml.Unmarshal(b, &result)
 
-	assert.Equal(t, "test-ipsec1", rpc.Configuration.Security.Ipsec.Proposal.Name)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	assert.Equal(t, "test-ipsec1", rpc.Configuration.Security.Ipsec.Policy.Name)
+	assert.NotEmpty(t, result.Security.Ipsec)
 
-	f := rpc.Configuration.Security.Ipsec.Vpn
+	assert.Equal(t, "test-ipsec1", result.Security.Ipsec.Proposal.Name)
+
+	assert.Equal(t, "test-ipsec1", result.Security.Ipsec.Policy.Name)
+
+	f := result.Security.Ipsec.Vpn
 
 	assert.Equal(t, "vpn1", f[0].Name, "name")
 

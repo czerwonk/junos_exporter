@@ -77,7 +77,7 @@ func (c *rpmCollector) collect(client collector.Client, ch chan<- prometheus.Met
 		return err
 	}
 
-	for _, probe := range x.Results.Probes {
+	for _, probe := range x.Probes {
 		c.collectForProbe(probe, ch, labelValues)
 	}
 

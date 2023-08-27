@@ -5,8 +5,8 @@ package rpc
 import (
 	"encoding/xml"
 	"fmt"
-	"log"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
+	"log"
 )
 
 // Parser parses XML of RPC-Output
@@ -27,9 +27,9 @@ func WithSatellite() ClientOption {
 }
 
 func WithLicenseInformation() ClientOption {
-  return func(cl *Client) {
-    cl.license = true
-  }
+	return func(cl *Client) {
+		cl.license = true
+	}
 }
 
 // Client sends commands to JunOS and parses results
@@ -51,6 +51,20 @@ func NewClient(ssh *connector.SSHConnection, opts ...ClientOption) *Client {
 	return cl
 }
 
+func UnpackRpcReply(data []byte) ([]byte, error) {
+	var reply *rpcReply
+	var err = xml.Unmarshal(data, &reply)
+
+	if err != nil {
+		return nil, &RpcReplyXmlParserError{
+			RawResponse: data,
+			Err:         err,
+		}
+	}
+
+	return reply.Body, nil
+}
+
 // RunCommandAndParse runs a command on JunOS and unmarshals the XML result
 func (c *Client) RunCommandAndParse(cmd string, obj interface{}) error {
 	return c.RunCommandAndParseWithParser(cmd, func(b []byte) error {
@@ -64,13 +78,23 @@ func (c *Client) RunCommandAndParseWithParser(cmd string, parser Parser) error {
 		log.Printf("Running command on %s: %s\n", c.conn.Host(), cmd)
 	}
 
-	b, err := c.conn.RunCommand(fmt.Sprintf("%s | display xml", cmd))
+	var err error
+	var b []byte
+
+	b, err = c.conn.RunCommand(fmt.Sprintf("%s | display xml", cmd))
+
 	if err != nil {
 		return err
 	}
 
 	if c.debug {
 		log.Printf("Output for %s: %s\n", c.conn.Host(), string(b))
+	}
+
+	b, err = UnpackRpcReply(b)
+
+	if err != nil {
+		return err
 	}
 
 	err = parser(b)

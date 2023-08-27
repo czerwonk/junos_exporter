@@ -2,10 +2,13 @@
 
 package interfaces
 
+import (
+	"encoding/xml"
+)
+
 type result struct {
-	Information struct {
-		Interfaces []phyInterface `xml:"physical-interface"`
-	} `xml:"interface-information"`
+	XMLName    xml.Name       `xml:"interface-information"`
+	Interfaces []phyInterface `xml:"physical-interface"`
 }
 
 type phyInterface struct {

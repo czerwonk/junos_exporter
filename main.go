@@ -86,6 +86,7 @@ var (
 	connManager                 *connector.SSHConnectionManager
 	reloadCh                    chan chan error
 	configMu                    sync.RWMutex
+	subscriberEnabled           = flag.Bool("subscriber.enabled", false, "Scrape subscribers detail")
 )
 
 func init() {
@@ -244,7 +245,7 @@ func loadConfigFromFlags() *config.Config {
 	f.VPWS = *vpwsEnabled
 	f.MPLSLSP = *mplsLSPEnabled
 	f.License = *licenseEnabled
-
+	f.Subscriber = *subscriberEnabled
 	return c
 }
 

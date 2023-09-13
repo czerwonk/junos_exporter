@@ -66,6 +66,7 @@ type FeatureConfig struct {
 	VPWS                bool `yaml:"vpws,omitempty"`
 	VRRP                bool `yaml:"vrrp,omitempty"`
 	License             bool `yaml:"license,omitempty"`
+	Subscriber          bool `yaml:"subscriber,omitempty"`
 }
 
 // New creates a new config

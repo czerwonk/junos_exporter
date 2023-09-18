@@ -2,7 +2,10 @@
 
 package bgp
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 func groupForPeer(p peer, groups groupMap) string {
 	if len(p.Group) > 0 {
@@ -35,4 +38,12 @@ func bgpStateToNumber(bgpState string) float64 {
 	default:
 		return 0
 	}
+}
+
+func localASNForPeer(p peer) string {
+	if p.OptionInformation.LocalAs > 0 {
+		return strconv.FormatInt(p.OptionInformation.LocalAs, 10)
+	}
+
+	return strconv.FormatInt(p.OptionInformation.LocalSystemAs, 10)
 }

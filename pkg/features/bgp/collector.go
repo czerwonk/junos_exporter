@@ -5,7 +5,6 @@ package bgp
 import (
 	"fmt"
 	"math"
-	"strconv"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/prometheus/client_golang/prometheus"
@@ -173,7 +172,7 @@ func (c *bgpCollector) collectForPeer(p peer, groups groupMap, ch chan<- prometh
 	ch <- prometheus.MustNewConstMetric(holdTimeDesc, prometheus.GaugeValue, float64(p.OptionInformation.Holdtime), l...)
 
 	infoValues := append(l,
-		strconv.FormatInt(p.OptionInformation.LocalAs, 10),
+		localASNForPeer(p),
 		formatPolicy(p.OptionInformation.ImportPolicy),
 		formatPolicy(p.OptionInformation.ExportPolicy))
 	ch <- prometheus.MustNewConstMetric(infoDesc, prometheus.GaugeValue, 1, infoValues...)

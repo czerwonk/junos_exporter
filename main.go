@@ -24,7 +24,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "0.12.1"
+const version string = "0.12.2"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -261,7 +261,7 @@ func connectionManager() *connector.SSHConnectionManager {
 
 func startServer() {
 	log.Infof("Starting JunOS exporter (Version: %s)", version)
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte(`<html>
 			<head><title>JunOS Exporter (Version ` + version + `)</title></head>
 			<body>
@@ -323,7 +323,7 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := newJunosCollector(ctx, devs, connManager, logicalSystem)
+	c := newJunosCollector(ctx, devs, logicalSystem)
 	reg.MustRegister(c)
 
 	l := log.New()

@@ -43,6 +43,7 @@ type optionInformation struct {
 	PrefixLimit     prefixLimit `xml:"prefix-limit"`
 	LocalAs         int64       `xml:"local-as"`
 	LocalSystemAs   int64       `xml:"local-system-as"`
+	Options         string      `xml:"bgp-options"`
 }
 
 type prefixLimit struct {

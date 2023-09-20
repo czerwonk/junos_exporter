@@ -41,7 +41,7 @@ type junosCollector struct {
 	ctx        context.Context
 }
 
-func newJunosCollector(ctx context.Context, devices []*connector.Device, connectionManager *connector.SSHConnectionManager, logicalSystem string) *junosCollector {
+func newJunosCollector(ctx context.Context, devices []*connector.Device, logicalSystem string) *junosCollector {
 	l := interfacelabels.NewDynamicLabels()
 
 	clients := make(map[*connector.Device]*rpc.Client)
@@ -117,7 +117,7 @@ func clientForDevice(device *connector.Device, connManager *connector.SSHConnect
 	}
 
 	if cfg.Features.License {
-    opts = append(opts, rpc.WithLicenseInformation())
+		opts = append(opts, rpc.WithLicenseInformation())
 	}
 
 	c := rpc.NewClient(conn, opts...)

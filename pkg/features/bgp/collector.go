@@ -44,7 +44,7 @@ func init() {
 	preferenceDesc = prometheus.NewDesc(prefix+"preference", "Preference configured for the session", l, nil)
 	holdTimeDesc = prometheus.NewDesc(prefix+"hold_time_seconds", "Hold time configured for the session", l, nil)
 
-	infoLabels := append(l, "local_as", "import_policy", "export_policy")
+	infoLabels := append(l, "local_as", "import_policy", "export_policy", "options")
 	infoDesc = prometheus.NewDesc(prefix+"info", "Information about the session (e.g. configuration)", infoLabels, nil)
 
 	l = append(l, "table")
@@ -174,7 +174,8 @@ func (c *bgpCollector) collectForPeer(p peer, groups groupMap, ch chan<- prometh
 	infoValues := append(l,
 		localASNForPeer(p),
 		formatPolicy(p.OptionInformation.ImportPolicy),
-		formatPolicy(p.OptionInformation.ExportPolicy))
+		formatPolicy(p.OptionInformation.ExportPolicy),
+		p.OptionInformation.Options)
 	ch <- prometheus.MustNewConstMetric(infoDesc, prometheus.GaugeValue, 1, infoValues...)
 
 	c.collectRIBForPeer(p, ch, l)

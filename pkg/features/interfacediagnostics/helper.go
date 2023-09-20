@@ -5,6 +5,7 @@ package interfacediagnostics
 import (
 	"math"
 	"strconv"
+	"strings"
 )
 
 func dbmStringToFloat(value string) float64 {
@@ -102,4 +103,18 @@ func interfaceDiagnosticsFromRPCResult(res result) []*interfaceDiagnostics {
 	}
 
 	return diagnostics
+}
+
+func interfaceMediaInfoFromRPCResult(interfaceMediaList *[]physicalInterface) map[string]*physicalInterface {
+	interfaceMediaDict := make(map[string]*physicalInterface)
+
+	for _, i := range *interfaceMediaList {
+		if strings.HasPrefix(i.Name, "xe") || strings.HasPrefix(i.Name, "ge") || strings.HasPrefix(i.Name, "et") {
+			iface := i
+			slotIndex := iface.Name[3:]
+			interfaceMediaDict[slotIndex] = &iface
+		}
+	}
+
+	return interfaceMediaDict
 }

@@ -279,20 +279,6 @@ func (c *interfaceDiagnosticsCollector) interfaceMediaInfo(client collector.Clie
 	return interfaceMediaInfoFromRPCResult(&x.InterfaceInformation.PhysicalInterface), nil
 }
 
-func interfaceMediaInfoFromRPCResult(interfaceMediaList *[]physicalInterface) map[string]*physicalInterface {
-	interfaceMediaDict := make(map[string]*physicalInterface)
-
-	for _, i := range *interfaceMediaList {
-		if strings.HasPrefix(i.Name, "xe") || strings.HasPrefix(i.Name, "ge") || strings.HasPrefix(i.Name, "et") {
-			iface := i
-			slotIndex := iface.Name[3:]
-			interfaceMediaDict[slotIndex] = &iface
-		}
-	}
-
-	return interfaceMediaDict
-}
-
 func (c *interfaceDiagnosticsCollector) chassisHardwareInfos(client collector.Client) ([]*transceiverInformation, error) {
 	var x = chassisHardware{}
 	err := client.RunCommandAndParse("show chassis hardware", &x)

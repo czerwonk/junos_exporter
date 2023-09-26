@@ -9,6 +9,6 @@ type subcsribers_information struct {
 type subscriber struct {
 	AccessType     string `xml:"access-type"`
 	Interface      string `xml:"interface"`
-	AgentCircuitId string `xml:"agent-circuit-id"`
-	AgentRemoteId  string `xml:"agent-remote-id"`
+	AgentCircuitID string `xml:"agent-circuit-id"`
+	AgentRemoteID  string `xml:"agent-remote-id"`
 }

@@ -9,11 +9,11 @@ import (
 
 const prefix string = "junos_subscriber_info"
 
-var subscriberInfo *prometheus.Desc
+var subscriberInfoDesc *prometheus.Desc
 
 func init() {
 	l := []string{"target", "interface", "agent_circuit_id", "agent_remote_id"}
-	subscriberInfo = prometheus.NewDesc(prefix+"", "Subscriber Detail", l, nil)
+	subscriberInfoDesc = prometheus.NewDesc(prefix+"", "Subscriber Detail", l, nil)
 }
 
 // Name implements collector.RPCCollector.
@@ -28,7 +28,7 @@ func NewCollector() collector.RPCCollector {
 
 // Describe describes the metrics
 func (*subcsribers_information) Describe(ch chan<- *prometheus.Desc) {
-	ch <- subscriberInfo
+	ch <- subscriberInfoDesc
 }
 
 // Collect collects metrics from JunOS
@@ -40,8 +40,8 @@ func (c *subcsribers_information) Collect(client collector.Client, ch chan<- pro
 	}
 
 	for _, subscriber := range x.SubscribersInformation.Subscriber {
-		labels := append(labelValues, subscriber.Interface, subscriber.AgentCircuitId, subscriber.AgentRemoteId)
-		ch <- prometheus.MustNewConstMetric(subscriberInfo, prometheus.CounterValue, 1, labels...)
+		labels := append(labelValues, subscriber.Interface, subscriber.AgentCircuitID, subscriber.AgentRemoteID)
+		ch <- prometheus.MustNewConstMetric(subscriberInfoDesc, prometheus.CounterValue, 1, labels...)
 	}
 
 	return nil

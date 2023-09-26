@@ -81,12 +81,12 @@ var (
 	tracingEnabled              = flag.Bool("tracing.enabled", false, "Enables tracing using OpenTelemetry")
 	tracingProvider             = flag.String("tracing.provider", "", "Sets the tracing provider (stdout or collector)")
 	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
+	subscriberEnabled           = flag.Bool("subscriber.enabled", false, "Scrape subscribers detail")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
 	reloadCh                    chan chan error
 	configMu                    sync.RWMutex
-	subscriberEnabled           = flag.Bool("subscriber.enabled", false, "Scrape subscribers detail")
 )
 
 func init() {

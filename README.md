@@ -51,7 +51,7 @@ The following metrics are supported by now:
 * L2circuits (tunnel state, number of tunnels)
 * LDP (number of neighbors, sessions and session states)
 * VRRP (state per interface)
-
+* Subscribers Information (show subscribers client-type dhcp detail)
 
 ## Feature specific mappings
 Some collected time series behave like enums - Integer values represent a certain state/meaning.

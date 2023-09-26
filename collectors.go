@@ -34,6 +34,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/security"
 	"github.com/czerwonk/junos_exporter/pkg/features/securitypolicies"
 	"github.com/czerwonk/junos_exporter/pkg/features/storage"
+	"github.com/czerwonk/junos_exporter/pkg/features/subscriber"
 	"github.com/czerwonk/junos_exporter/pkg/features/system"
 	"github.com/czerwonk/junos_exporter/pkg/features/vpws"
 	"github.com/czerwonk/junos_exporter/pkg/features/vrrp"
@@ -112,6 +113,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "vrrp", f.VRRP, vrrp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "vpws", f.VPWS, vpws.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "mpls_lsp", f.MPLSLSP, mplslsp.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "subscriber", f.Subscriber, subscriber.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

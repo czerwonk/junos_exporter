@@ -32,6 +32,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/rpki"
 	"github.com/czerwonk/junos_exporter/pkg/features/rpm"
 	"github.com/czerwonk/junos_exporter/pkg/features/security"
+	"github.com/czerwonk/junos_exporter/pkg/features/securityike"
 	"github.com/czerwonk/junos_exporter/pkg/features/securitypolicies"
 	"github.com/czerwonk/junos_exporter/pkg/features/storage"
 	"github.com/czerwonk/junos_exporter/pkg/features/subscriber"
@@ -105,6 +106,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "rpki", f.RPKI, rpki.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "rpm", f.RPM, rpm.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "security", f.Security, security.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "security_ike", f.SecurityIKE, securityike.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "security_policies", f.SecurityPolicies, securitypolicies.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "storage", f.Storage, storage.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "system", (f.System || f.License), system.NewCollector)

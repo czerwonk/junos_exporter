@@ -33,6 +33,7 @@ var (
 	sshHosts                    = flag.String("ssh.targets", "", "Hosts to scrape")
 	sshUsername                 = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
 	sshKeyFile                  = flag.String("ssh.keyfile", "", "Public key file to use when connecting to junos devices using ssh")
+	sshKeyPassphrase            = flag.String("ssh.keyPassphrase", "", "Passphrase to decrypt key file if it's encrypted")
 	sshPassword                 = flag.String("ssh.password", "", "Password to use when connecting to junos devices using ssh")
 	sshReconnectInterval        = flag.Duration("ssh.reconnect-interval", 30*time.Second, "Duration to wait before reconnecting to a device after connection got lost")
 	sshKeepAliveInterval        = flag.Duration("ssh.keep-alive-interval", 10*time.Second, "Duration to wait between keep alive messages")

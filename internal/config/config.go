@@ -25,6 +25,7 @@ type DeviceConfig struct {
 	Username      string         `yaml:"username,omitempty"`
 	Password      string         `yaml:"password,omitempty"`
 	KeyFile       string         `yaml:"key_file,omitempty"`
+	KeyPassphrase string         `yaml:"key_passphrase,omitempty"`
 	Features      *FeatureConfig `yaml:"features,omitempty"`
 	IfDescReg     string         `yaml:"interface_description_regex,omitempty"`
 	IsHostPattern bool           `yaml:"host_pattern,omitempty"`
@@ -54,6 +55,7 @@ type FeatureConfig struct {
 	Accounting          bool `yaml:"accounting,omitempty"`
 	IPSec               bool `yaml:"ipsec,omitempty"`
 	Security            bool `yaml:"security,omitempty"`
+	SecurityIKE         bool `yaml:"security_ike,omitempty"`
 	SecurityPolicies    bool `yaml:"security_policies,omitempty"`
 	FPC                 bool `yaml:"fpc,omitempty"`
 	RPKI                bool `yaml:"rpki,omitempty"`

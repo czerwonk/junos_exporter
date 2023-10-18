@@ -20,6 +20,10 @@ func init() {
 	nameRe = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]*$`)
 }
 
+func DefaultInterfaceDescRegex() *regexp.Regexp {
+	return regexp.MustCompile(`\[([^=\]]+)(=[^\]]+)?\]`)
+}
+
 // NewDynamicLabels create a new instance of DynamicLabels
 func NewDynamicLabels() *DynamicLabels {
 	return &DynamicLabels{

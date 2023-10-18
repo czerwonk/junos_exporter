@@ -13,7 +13,7 @@ import (
 func TestParseDescriptions(t *testing.T) {
 	t.Run("Test default", func(t *testing.T) {
 		l := NewDynamicLabels()
-		regex := regexp.MustCompile(`\[([^=\]]+)(=[^\]]+)?\]`)
+		regex := DefaultInterfaceDescRegex()
 
 		if1 := phyInterface{
 			Name:        "xe-0/0/0",
@@ -26,17 +26,22 @@ func TestParseDescriptions(t *testing.T) {
 		if3 := phyInterface{
 			Name: "xe-0/0/3",
 		}
+		if4 := phyInterface{
+			Name:        "irb.216",
+			Description: "Internal: Test-Network [vrf=AS4711]",
+		}
 
 		d1 := &connector.Device{Host: "device1"}
 		d2 := &connector.Device{Host: "device2"}
 
 		l.parseDescriptions(d1, []phyInterface{if1}, regex)
-		l.parseDescriptions(d2, []phyInterface{if2}, regex)
+		l.parseDescriptions(d2, []phyInterface{if2, if3, if4}, regex)
 
-		assert.Equal(t, []string{"tag1", "foo", "bar"}, l.LabelNames(), "Label names")
-		assert.Equal(t, []string{"1", "x", ""}, l.ValuesForInterface(d1, if1.Name), "Values if1")
-		assert.Equal(t, []string{"", "y", "123"}, l.ValuesForInterface(d2, if2.Name), "Values if2")
-		assert.Equal(t, []string{"", "", ""}, l.ValuesForInterface(d2, if3.Name), "Values if3")
+		assert.Equal(t, []string{"tag1", "foo", "bar", "vrf"}, l.LabelNames(), "Label names")
+		assert.Equal(t, []string{"1", "x", "", ""}, l.ValuesForInterface(d1, if1.Name), "Values if1")
+		assert.Equal(t, []string{"", "y", "123", ""}, l.ValuesForInterface(d2, if2.Name), "Values if2")
+		assert.Equal(t, []string{"", "", "", ""}, l.ValuesForInterface(d2, if3.Name), "Values if3")
+		assert.Equal(t, []string{"", "", "", "AS4711"}, l.ValuesForInterface(d2, if4.Name), "Values if4")
 	})
 
 	t.Run("Test custom regex", func(t *testing.T) {

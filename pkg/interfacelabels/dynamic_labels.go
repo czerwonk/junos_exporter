@@ -58,7 +58,8 @@ func (l *DynamicLabels) CollectDescriptions(device *connector.Device, client col
 		return errors.Wrap(err, "could not retrieve interface descriptions for "+device.Host)
 	}
 
-	l.parseDescriptions(device, r.Information.Interfaces, ifDescReg)
+	l.parseDescriptions(device, r.Information.LogicalInterfaces, ifDescReg)
+	l.parseDescriptions(device, r.Information.PhysicalInterfaces, ifDescReg)
 
 	return nil
 }
@@ -91,7 +92,7 @@ func (l *DynamicLabels) ValuesForInterface(device *connector.Device, ifaceName s
 	return labels
 }
 
-func (l *DynamicLabels) parseDescriptions(device *connector.Device, ifaces []phyInterface, ifDescReg *regexp.Regexp) {
+func (l *DynamicLabels) parseDescriptions(device *connector.Device, ifaces []interfaceDescription, ifDescReg *regexp.Regexp) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -110,7 +111,7 @@ func (l *DynamicLabels) parseDescriptions(device *connector.Device, ifaces []phy
 	}
 }
 
-func (l *DynamicLabels) parseDescription(iface phyInterface, ifDescReg *regexp.Regexp) []*interfaceLabel {
+func (l *DynamicLabels) parseDescription(iface interfaceDescription, ifDescReg *regexp.Regexp) []*interfaceLabel {
 	labels := make([]*interfaceLabel, 0)
 
 	if len(iface.Description) == 0 {

@@ -428,3 +428,196 @@ func TestParseMultiREOutputSRX(t *testing.T) {
 	assert.Equal(t, "Power Supply 1", f.Name, "name")
 	assert.Equal(t, "OK", f.Status, "status")
 }
+
+func TestParseNoMultiREOutputEX(t *testing.T) {
+	body := `<rpc-reply xmlns:junos="http://xml.juniper.net/junos/21XXX/junos">
+    <environment-information xmlns="http://xml.juniper.net/junos/21XXX/junos-chassis">
+        <environment-item>
+            <name>FPC 0 Power Supply 0</name>
+            <class>Power</class>
+            <status>OK</status>
+        </environment-item>
+        <environment-item>
+            <name>FPC 0 Power Supply 1</name>
+            <class>Power</class>
+            <status>OK</status>
+        </environment-item>
+        <environment-item>
+            <name>FPC 1 Power Supply 0</name>
+            <class>Power</class>
+            <status>OK</status>
+        </environment-item>
+        <environment-item>
+            <name>FPC 1 Power Supply 1</name>
+            <class>Power</class>
+            <status>OK</status>
+        </environment-item>
+        <environment-item>
+            <name>FPC 0 CPU</name>
+            <class>Temp</class>
+            <status>OK</status>
+            <temperature junos:celsius="65">65 degrees C / 149 degrees F</temperature>
+        </environment-item>
+        <environment-item>
+            <name>FPC 0 NW-PFE</name>
+            <class>Temp</class>
+            <status>OK</status>
+            <temperature junos:celsius="48">48 degrees C / 118 degrees F</temperature>
+        </environment-item>
+        <environment-item>
+            <name>FPC 0 SE-PFE</name>
+            <class>Temp</class>
+            <status>OK</status>
+            <temperature junos:celsius="49">49 degrees C / 120 degrees F</temperature>
+        </environment-item>
+        <environment-item>
+            <name>FPC 0 PHY-2/3</name>
+            <class>Temp</class>
+            <status>OK</status>
+            <temperature junos:celsius="48">48 degrees C / 118 degrees F</temperature>
+        </environment-item>
+        <environment-item>
+            <name>FPC 0 MGMT PHY</name>
+            <class>Temp</class>
+            <status>OK</status>
+            <temperature junos:celsius="47">47 degrees C / 116 degrees F</temperature>
+        </environment-item>
+        <environment-item>
+            <name>FPC 0 PHY-4/5</name>
+            <class>Temp</class>         
+            <status>OK</status>         
+            <temperature junos:celsius="50">50 degrees C / 122 degrees F</temperature>
+        </environment-item>             
+        <environment-item>              
+            <name>FPC 1 CPU</name>      
+            <class>Temp</class>         
+            <status>OK</status>         
+            <temperature junos:celsius="65">65 degrees C / 149 degrees F</temperature>
+        </environment-item>             
+        <environment-item>              
+            <name>FPC 1 NW-PFE</name>   
+            <class>Temp</class>         
+            <status>OK</status>         
+            <temperature junos:celsius="46">46 degrees C / 114 degrees F</temperature>
+        </environment-item>             
+        <environment-item>              
+            <name>FPC 1 SE-PFE</name>   
+            <class>Temp</class>         
+            <status>OK</status>         
+            <temperature junos:celsius="48">48 degrees C / 118 degrees F</temperature>
+        </environment-item>             
+        <environment-item>              
+            <name>FPC 1 PHY-2/3</name>  
+            <class>Temp</class>         
+            <status>OK</status>         
+            <temperature junos:celsius="48">48 degrees C / 118 degrees F</temperature>
+        </environment-item>             
+        <environment-item>              
+            <name>FPC 1 MGMT PHY</name> 
+            <class>Temp</class>
+            <status>OK</status>
+            <temperature junos:celsius="46">46 degrees C / 114 degrees F</temperature>
+        </environment-item>
+        <environment-item>
+            <name>FPC 1 PHY-4/5</name>
+            <class>Temp</class>
+            <status>OK</status>
+            <temperature junos:celsius="47">47 degrees C / 116 degrees F</temperature>
+        </environment-item>
+        <environment-item>
+            <name>FPC 0 Fan 0</name>
+            <class>Fans</class>
+            <status>OK</status>
+            <comment>Spinning at normal speed</comment>
+        </environment-item>
+        <environment-item>
+            <name>FPC 0 Fan 0 Airflow</name>
+            <class>Fans</class>
+            <status>OK</status>
+            <comment>Airflow Out (AFO)</comment>
+        </environment-item>
+        <environment-item>
+            <name>FPC 0 Fan 1</name>
+            <class>Fans</class>
+            <status>OK</status>
+            <comment>Spinning at normal speed</comment>
+        </environment-item>
+        <environment-item>
+            <name>FPC 0 Fan 1 Airflow</name>
+            <class>Fans</class>
+            <status>OK</status>
+            <comment>Airflow Out (AFO)</comment>
+        </environment-item>
+        <environment-item>
+            <name>FPC 1 Fan 0</name>
+            <class>Fans</class>
+            <status>OK</status>
+            <comment>Spinning at normal speed</comment>
+        </environment-item>
+        <environment-item>
+            <name>FPC 1 Fan 0 Airflow</name>
+            <class>Fans</class>
+            <status>OK</status>
+            <comment>Airflow Out (AFO)</comment>
+        </environment-item>
+        <environment-item>
+            <name>FPC 1 Fan 1</name>
+            <class>Fans</class>
+            <status>OK</status>
+            <comment>Spinning at normal speed</comment>
+        </environment-item>
+        <environment-item>
+            <name>FPC 1 Fan 1 Airflow</name>
+            <class>Fans</class>
+            <status>OK</status>
+            <comment>Airflow Out (AFO)</comment>
+        </environment-item>
+    </environment-information>
+    <cli>
+        <banner>{master:0}</banner>
+    </cli>
+</rpc-reply>`
+
+	rpc := multiEngineResult{}
+	err := parseXML([]byte(body), &rpc)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].EnvironmentInformation)
+
+	assert.Equal(t, "N/A", rpc.Results.RoutingEngines[0].Name, "re-name")
+
+	f := rpc.Results.RoutingEngines[0].EnvironmentInformation.Items[0]
+
+	assert.Equal(t, "FPC 0 Power Supply 0", f.Name, "name")
+	assert.Equal(t, "OK", f.Status, "status")
+
+	f = rpc.Results.RoutingEngines[0].EnvironmentInformation.Items[3]
+
+	assert.Equal(t, "FPC 1 Power Supply 1", f.Name, "name")
+	assert.Equal(t, "OK", f.Status, "status")
+
+	f = rpc.Results.RoutingEngines[0].EnvironmentInformation.Items[4]
+
+	assert.Equal(t, "FPC 0 CPU", f.Name, "name")
+	assert.Equal(t, "OK", f.Status, "status")
+	assert.Equal(t, float64(65), f.Temperature.Value, "temperature")
+
+	f = rpc.Results.RoutingEngines[0].EnvironmentInformation.Items[15]
+
+	assert.Equal(t, "FPC 1 PHY-4/5", f.Name, "name")
+	assert.Equal(t, "OK", f.Status, "status")
+	assert.Equal(t, float64(47), f.Temperature.Value, "temperature")
+
+	f = rpc.Results.RoutingEngines[0].EnvironmentInformation.Items[16]
+
+	assert.Equal(t, "FPC 0 Fan 0", f.Name, "name")
+	assert.Equal(t, "OK", f.Status, "status")
+
+	f = rpc.Results.RoutingEngines[0].EnvironmentInformation.Items[23]
+
+	assert.Equal(t, "FPC 1 Fan 1 Airflow", f.Name, "name")
+	assert.Equal(t, "OK", f.Status, "status")
+}

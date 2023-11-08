@@ -4,7 +4,7 @@ WORKDIR /go/junos_exporter
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /go/bin/junos_exporter
 
 FROM alpine
-ENV SSH_KEYFILE "/ssh-keyfile"
+ENV SSH_KEYFILE ""
 ENV CONFIG_FILE "/config.yml"
 ENV ALARM_FILTER ""
 ENV CMD_FLAGS ""

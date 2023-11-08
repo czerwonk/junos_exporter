@@ -32,8 +32,10 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/rpki"
 	"github.com/czerwonk/junos_exporter/pkg/features/rpm"
 	"github.com/czerwonk/junos_exporter/pkg/features/security"
+	"github.com/czerwonk/junos_exporter/pkg/features/securityike"
 	"github.com/czerwonk/junos_exporter/pkg/features/securitypolicies"
 	"github.com/czerwonk/junos_exporter/pkg/features/storage"
+	"github.com/czerwonk/junos_exporter/pkg/features/subscriber"
 	"github.com/czerwonk/junos_exporter/pkg/features/system"
 	"github.com/czerwonk/junos_exporter/pkg/features/vpws"
 	"github.com/czerwonk/junos_exporter/pkg/features/vrrp"
@@ -104,14 +106,16 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	c.addCollectorIfEnabledForDevice(device, "rpki", f.RPKI, rpki.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "rpm", f.RPM, rpm.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "security", f.Security, security.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "security_ike", f.SecurityIKE, securityike.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "security_policies", f.SecurityPolicies, securitypolicies.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "storage", f.Storage, storage.NewCollector)
-	c.addCollectorIfEnabledForDevice(device, "system", f.System, system.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "system", (f.System || f.License), system.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "power", f.Power, power.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "mac", f.MAC, mac.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "vrrp", f.VRRP, vrrp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "vpws", f.VPWS, vpws.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "mpls_lsp", f.MPLSLSP, mplslsp.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "subscriber", f.Subscriber, subscriber.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

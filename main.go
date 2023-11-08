@@ -24,7 +24,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "0.11.0"
+const version string = "0.12.3"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -33,6 +33,7 @@ var (
 	sshHosts                    = flag.String("ssh.targets", "", "Hosts to scrape")
 	sshUsername                 = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
 	sshKeyFile                  = flag.String("ssh.keyfile", "", "Public key file to use when connecting to junos devices using ssh")
+	sshKeyPassphrase            = flag.String("ssh.keyPassphrase", "", "Passphrase to decrypt key file if it's encrypted")
 	sshPassword                 = flag.String("ssh.password", "", "Password to use when connecting to junos devices using ssh")
 	sshReconnectInterval        = flag.Duration("ssh.reconnect-interval", 30*time.Second, "Duration to wait before reconnecting to a device after connection got lost")
 	sshKeepAliveInterval        = flag.Duration("ssh.keep-alive-interval", 10*time.Second, "Duration to wait between keep alive messages")
@@ -66,7 +67,7 @@ var (
 	macEnabled                  = flag.Bool("mac.enabled", false, "Scrape MAC address table metrics")
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
 	configFile                  = flag.String("config.file", "", "Path to config file")
-	dynamicIfaceLabels          = flag.Bool("dynamic-interface-labels", true, "Parse interface descriptions to get labels dynamicly")
+	dynamicIfaceLabels          = flag.Bool("dynamic-interface-labels", true, "Parse interface descriptions to get labels dynamically")
 	interfaceDescriptionRegex   = flag.String("interface-description-regex", "", "give a regex to retrieve the interface description labels")
 	lsEnabled                   = flag.Bool("logical-systems.enabled", false, "Enable logical systems support")
 	powerEnabled                = flag.Bool("power.enabled", true, "Scrape power metrics")
@@ -74,12 +75,14 @@ var (
 	bfdEnabled                  = flag.Bool("bfd.enabled", false, "Scrape BFD metrics")
 	vpwsEnabled                 = flag.Bool("vpws.enabled", false, "Scrape EVPN VPWS metrics")
 	mplsLSPEnabled              = flag.Bool("mpls_lsp.enabled", false, "Scrape MPLS LSP metrics")
+	licenseEnabled              = flag.Bool("license.enabled", false, "Scrape license metrics")
 	tlsEnabled                  = flag.Bool("tls.enabled", false, "Enables TLS")
 	tlsCertChainPath            = flag.String("tls.cert-file", "", "Path to TLS cert file")
 	tlsKeyPath                  = flag.String("tls.key-file", "", "Path to TLS key file")
 	tracingEnabled              = flag.Bool("tracing.enabled", false, "Enables tracing using OpenTelemetry")
 	tracingProvider             = flag.String("tracing.provider", "", "Sets the tracing provider (stdout or collector)")
 	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
+	subscriberEnabled           = flag.Bool("subscriber.enabled", false, "Scrape subscribers detail")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -242,7 +245,8 @@ func loadConfigFromFlags() *config.Config {
 	f.BFD = *bfdEnabled
 	f.VPWS = *vpwsEnabled
 	f.MPLSLSP = *mplsLSPEnabled
-
+	f.License = *licenseEnabled
+	f.Subscriber = *subscriberEnabled
 	return c
 }
 
@@ -259,7 +263,7 @@ func connectionManager() *connector.SSHConnectionManager {
 
 func startServer() {
 	log.Infof("Starting JunOS exporter (Version: %s)", version)
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte(`<html>
 			<head><title>JunOS Exporter (Version ` + version + `)</title></head>
 			<body>
@@ -321,7 +325,7 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := newJunosCollector(ctx, devs, connManager, logicalSystem)
+	c := newJunosCollector(ctx, devs, logicalSystem)
 	reg.MustRegister(c)
 
 	l := log.New()

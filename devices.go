@@ -75,11 +75,11 @@ func authForDevice(device *config.DeviceConfig, cfg *config.Config) (connector.A
 	}
 
 	if device.KeyFile != "" {
-		return authForKeyFile(user, device.KeyFile)
+		return authForKeyFile(user, device.KeyFile, device.KeyPassphrase)
 	}
 
 	if *sshKeyFile != "" {
-		return authForKeyFile(user, *sshKeyFile)
+		return authForKeyFile(user, *sshKeyFile, *sshKeyPassphrase)
 	}
 
 	if device.Password != "" {
@@ -97,14 +97,14 @@ func authForDevice(device *config.DeviceConfig, cfg *config.Config) (connector.A
 	return nil, errors.New("no valid authentication method available")
 }
 
-func authForKeyFile(username, keyFile string) (connector.AuthMethod, error) {
+func authForKeyFile(username, keyFile, keyPassphrase string) (connector.AuthMethod, error) {
 	f, err := os.Open(keyFile)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not open ssh key file")
 	}
 	defer f.Close()
 
-	auth, err := connector.AuthByKey(username, f)
+	auth, err := connector.AuthByKey(username, f, keyPassphrase)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not load ssh private key file")
 	}

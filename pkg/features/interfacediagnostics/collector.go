@@ -4,9 +4,8 @@ package interfacediagnostics
 
 import (
 	"encoding/xml"
+	"fmt"
 	"log"
-	"math"
-	"strconv"
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/interfacelabels"
@@ -63,6 +62,8 @@ type interfaceDiagnosticsCollector struct {
 
 	rxSignalAvgOpticalPowerDesc    *prometheus.Desc
 	rxSignalAvgOpticalPowerDbmDesc *prometheus.Desc
+
+	transceiverDesc *prometheus.Desc
 }
 
 // NewCollector creates a new collector
@@ -128,6 +129,9 @@ func (c *interfaceDiagnosticsCollector) init() {
 	c.laserRxOpticalPowerLowAlarmThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_low_alarm_threshold_dbm", "Laser rx power low alarm threshold_dbm in dBm", l, nil)
 	c.laserRxOpticalPowerHighWarnThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_high_warn_threshold_dbm", "Laser rx power high warn threshold_dbm in dBm", l, nil)
 	c.laserRxOpticalPowerLowWarnThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_low_warn_threshold_dbm", "Laser rx power low warn threshold_dbm in dBm", l, nil)
+
+	transceiver_labels := []string{"target", "name", "serial_number", "description", "speed", "fiber_type", "vendor_name", "vendor_part_number", "wavelength"}
+	c.transceiverDesc = prometheus.NewDesc("junos_interface_transceiver", "Transceiver Info", transceiver_labels, nil)
 }
 
 // Describe describes the metrics
@@ -172,6 +176,8 @@ func (c *interfaceDiagnosticsCollector) Describe(ch chan<- *prometheus.Desc) {
 
 	ch <- c.rxSignalAvgOpticalPowerDesc
 	ch <- c.rxSignalAvgOpticalPowerDbmDesc
+
+	ch <- c.transceiverDesc
 }
 
 // Collect collects metrics from JunOS
@@ -187,11 +193,15 @@ func (c *interfaceDiagnosticsCollector) Collect(client collector.Client, ch chan
 		if err != nil {
 			return err
 		}
-
 		diagnostics = append(diagnostics, diagnosticsSatellite...)
 	}
 
+	diagnostics_dict := make(map[string]*interfaceDiagnostics)
+
 	for _, d := range diagnostics {
+		index := strings.Split(d.Name, "-")[1]
+		diagnostics_dict[index] = d
+
 		l := append(labelValues, d.Name)
 		l = append(l, c.labels.ValuesForInterface(client.Device(), d.Name)...)
 
@@ -251,17 +261,114 @@ func (c *interfaceDiagnosticsCollector) Collect(client collector.Client, ch chan
 		}
 	}
 
+	err = c.createTransceiverMetrics(client, ch, labelValues)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client collector.Client) ([]*interfaceDiagnostics, error) {
-	var x = result{}
-	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
+func (c *interfaceDiagnosticsCollector) interfaceMediaInfo(client collector.Client) (map[string]*physicalInterface, error) {
+	var x = interfacesMediaStruct{}
+	err := client.RunCommandAndParse("show interfaces media", &x)
 	if err != nil {
 		return nil, err
 	}
 
-	return interfaceDiagnosticsFromRPCResult(x), nil
+	return interfaceMediaInfoFromRPCResult(&x.InterfaceInformation.PhysicalInterface), nil
+}
+
+func (c *interfaceDiagnosticsCollector) chassisHardwareInfos(client collector.Client) ([]*transceiverInformation, error) {
+	var x = chassisHardware{}
+	err := client.RunCommandAndParse("show chassis hardware", &x)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.transceiverInfoFromRPCResult(client, x)
+}
+
+func (c *interfaceDiagnosticsCollector) transceiverInfoFromRPCResult(client collector.Client, chassisHardware chassisHardware) ([]*transceiverInformation, error) {
+	transceiverList := make([]*transceiverInformation, 0)
+
+	var chassisModules = chassisHardware.ChassisInventory.Chassis.ChassisModule
+	for _, module := range chassisModules {
+		if strings.Split(module.Name, " ")[0] != "FPC" {
+			continue
+		}
+		for _, subModule := range module.ChassisSubModule {
+			if strings.Split(subModule.Name, " ")[0] != "PIC" {
+				continue
+			}
+			fpc := strings.Split(module.Name, " ")[1]
+			pic := strings.Split(subModule.Name, " ")[1]
+
+			picPortsInformation, err := c.getPicPortsFromRPCResult(client, fpc, pic)
+			if err != nil {
+				return nil, err
+			}
+
+			for port, subSubModule := range subModule.ChassisSubSubModule {
+				port_name := strings.Split(subSubModule.Name, " ")[1]
+				subSubModule_pointer := subSubModule
+				id := fpc + "/" + pic + "/" + port_name
+				transceiver := transceiverInformation{
+					Name:                id,
+					ChassisHardwareInfo: &subSubModule_pointer,
+					PicPort:             &picPortsInformation[port],
+				}
+				transceiverList = append(transceiverList, &transceiver)
+			}
+		}
+	}
+
+	return transceiverList, nil
+}
+
+func (c *interfaceDiagnosticsCollector) getPicPortsFromRPCResult(client collector.Client, fpc string, pic string) ([]picPort, error) {
+	var x = fPCInformationStruct{}
+	command := fmt.Sprintf("show chassis pic fpc-slot %s pic-slot %s", fpc, pic)
+	err := client.RunCommandAndParse(command, &x)
+	if err != nil {
+		return nil, err
+	}
+
+	return x.FPCInformation.FPC.PicDetail.PicPortInfoList, nil
+}
+
+func (c *interfaceDiagnosticsCollector) createTransceiverMetrics(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	ifMediaDict, err := c.interfaceMediaInfo(client)
+	if err != nil {
+		return err
+	}
+
+	transceiverInfo, err := c.chassisHardwareInfos(client)
+	if err != nil {
+		return err
+	}
+
+	for _, t := range transceiverInfo {
+		chassisInfo := t.ChassisHardwareInfo
+		port_speed := "0"
+		oper_status := 0.0
+
+		if media, hit := ifMediaDict[t.Name]; hit {
+			if media.OperStatus == "up" {
+				oper_status = 1.0
+			}
+			t.Name = media.Name
+			port_speed = media.Speed
+		} else {
+			t.Name = "slot-" + t.Name
+		}
+
+		transceiver_labels := append(labelValues, t.Name, chassisInfo.SerialNumber, chassisInfo.Description, port_speed, t.PicPort.FiberMode, strings.TrimSpace(t.PicPort.SFPVendorName), strings.TrimSpace(t.PicPort.SFPVendorPno), t.PicPort.Wavelength)
+
+		ch <- prometheus.MustNewConstMetric(c.transceiverDesc, prometheus.GaugeValue, oper_status, transceiver_labels...)
+	}
+
+	return nil
 }
 
 func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client collector.Client) ([]*interfaceDiagnostics, error) {
@@ -321,99 +428,12 @@ func (c *interfaceDiagnosticsCollector) interfaceDiagnosticsSatellite(client col
 	return interfaceDiagnosticsFromRPCResult(x), nil
 }
 
-func interfaceDiagnosticsFromRPCResult(res result) []*interfaceDiagnostics {
-	diagnostics := make([]*interfaceDiagnostics, 0)
-
-	for _, diag := range res.Information.Diagnostics {
-		if diag.Diagnostics.NA == "N/A" {
-			continue
-		}
-
-		d := &interfaceDiagnostics{
-			Index:                              "",
-			Name:                               diag.Name,
-			LaserBiasCurrent:                   float64(diag.Diagnostics.LaserBiasCurrent),
-			LaserBiasCurrentHighAlarmThreshold: float64(diag.Diagnostics.LaserBiasCurrentHighAlarmThreshold),
-			LaserBiasCurrentLowAlarmThreshold:  float64(diag.Diagnostics.LaserBiasCurrentLowAlarmThreshold),
-			LaserBiasCurrentHighWarnThreshold:  float64(diag.Diagnostics.LaserBiasCurrentHighWarnThreshold),
-			LaserBiasCurrentLowWarnThreshold:   float64(diag.Diagnostics.LaserBiasCurrentLowWarnThreshold),
-
-			LaserOutputPower:                   float64(diag.Diagnostics.LaserOutputPower),
-			LaserOutputPowerHighAlarmThreshold: float64(diag.Diagnostics.LaserTxOpticalPowerHighAlarmThreshold),
-			LaserOutputPowerLowAlarmThreshold:  float64(diag.Diagnostics.LaserTxOpticalPowerLowAlarmThreshold),
-			LaserOutputPowerHighWarnThreshold:  float64(diag.Diagnostics.LaserTxOpticalPowerHighWarnThreshold),
-			LaserOutputPowerLowWarnThreshold:   float64(diag.Diagnostics.LaserTxOpticalPowerLowWarnThreshold),
-
-			ModuleTemperature:                   float64(diag.Diagnostics.ModuleTemperature.Value),
-			ModuleTemperatureHighAlarmThreshold: float64(diag.Diagnostics.ModuleTemperatureHighAlarmThreshold.Value),
-			ModuleTemperatureLowAlarmThreshold:  float64(diag.Diagnostics.ModuleTemperatureLowAlarmThreshold.Value),
-			ModuleTemperatureHighWarnThreshold:  float64(diag.Diagnostics.ModuleTemperatureHighWarnThreshold.Value),
-			ModuleTemperatureLowWarnThreshold:   float64(diag.Diagnostics.ModuleTemperatureLowWarnThreshold.Value),
-
-			LaserOutputPowerDbm:                   dbmStringToFloat(diag.Diagnostics.LaserOutputPowerDbm),
-			LaserOutputPowerHighAlarmThresholdDbm: dbmStringToFloat(diag.Diagnostics.LaserTxOpticalPowerHighAlarmThresholdDbm),
-			LaserOutputPowerLowAlarmThresholdDbm:  dbmStringToFloat(diag.Diagnostics.LaserTxOpticalPowerLowAlarmThresholdDbm),
-			LaserOutputPowerHighWarnThresholdDbm:  dbmStringToFloat(diag.Diagnostics.LaserTxOpticalPowerHighWarnThresholdDbm),
-			LaserOutputPowerLowWarnThresholdDbm:   dbmStringToFloat(diag.Diagnostics.LaserTxOpticalPowerLowWarnThresholdDbm),
-
-			ModuleVoltage:                   float64(diag.Diagnostics.ModuleVoltage),
-			ModuleVoltageHighAlarmThreshold: float64(diag.Diagnostics.ModuleVoltageHighAlarmThreshold),
-			ModuleVoltageLowAlarmThreshold:  float64(diag.Diagnostics.ModuleVoltageLowAlarmThreshold),
-			ModuleVoltageHighWarnThreshold:  float64(diag.Diagnostics.ModuleVoltageHighWarnThreshold),
-			ModuleVoltageLowWarnThreshold:   float64(diag.Diagnostics.ModuleVoltageLowWarnThreshold),
-
-			RxSignalAvgOpticalPower:               float64(diag.Diagnostics.RxSignalAvgOpticalPower),
-			RxSignalAvgOpticalPowerDbm:            dbmStringToFloat(diag.Diagnostics.RxSignalAvgOpticalPowerDbm),
-			LaserRxOpticalPower:                   float64(diag.Diagnostics.LaserRxOpticalPower),
-			LaserRxOpticalPowerHighAlarmThreshold: float64(diag.Diagnostics.LaserRxOpticalPowerHighAlarmThreshold),
-			LaserRxOpticalPowerLowAlarmThreshold:  float64(diag.Diagnostics.LaserRxOpticalPowerLowAlarmThreshold),
-			LaserRxOpticalPowerHighWarnThreshold:  float64(diag.Diagnostics.LaserRxOpticalPowerHighWarnThreshold),
-			LaserRxOpticalPowerLowWarnThreshold:   float64(diag.Diagnostics.LaserRxOpticalPowerLowWarnThreshold),
-
-			LaserRxOpticalPowerDbm:                   dbmStringToFloat(diag.Diagnostics.LaserRxOpticalPowerDbm),
-			LaserRxOpticalPowerHighAlarmThresholdDbm: dbmStringToFloat(diag.Diagnostics.LaserRxOpticalPowerHighAlarmThresholdDbm),
-			LaserRxOpticalPowerLowAlarmThresholdDbm:  dbmStringToFloat(diag.Diagnostics.LaserRxOpticalPowerLowAlarmThresholdDbm),
-			LaserRxOpticalPowerHighWarnThresholdDbm:  dbmStringToFloat(diag.Diagnostics.LaserRxOpticalPowerHighWarnThresholdDbm),
-			LaserRxOpticalPowerLowWarnThresholdDbm:   dbmStringToFloat(diag.Diagnostics.LaserRxOpticalPowerLowWarnThresholdDbm),
-		}
-
-		if len(diag.Diagnostics.Lanes) > 0 {
-			for _, lane := range diag.Diagnostics.Lanes {
-				l := &interfaceDiagnostics{
-					Index:                  lane.LaneIndex,
-					Name:                   diag.Name,
-					LaserBiasCurrent:       float64(lane.LaserBiasCurrent),
-					LaserOutputPower:       float64(lane.LaserOutputPower),
-					LaserOutputPowerDbm:    dbmStringToFloat(lane.LaserOutputPowerDbm),
-					LaserRxOpticalPower:    float64(lane.LaserRxOpticalPower),
-					LaserRxOpticalPowerDbm: dbmStringToFloat(lane.LaserRxOpticalPowerDbm),
-				}
-
-				d.Lanes = append(d.Lanes, l)
-			}
-
-			/* For some interfaces with 0 lanes there sometimes is  <rx-signal-avg-optical-power> instead of
-			<laser-rx-optical-power> in the xml/json response and vice-versa.*/
-		} else if diag.Diagnostics.LaserRxOpticalPowerDbm == "" {
-			d.LaserRxOpticalPower = d.RxSignalAvgOpticalPower
-			d.LaserRxOpticalPowerDbm = d.RxSignalAvgOpticalPowerDbm
-
-		} else if diag.Diagnostics.RxSignalAvgOpticalPowerDbm == "" {
-			d.RxSignalAvgOpticalPower = d.LaserRxOpticalPower
-			d.RxSignalAvgOpticalPowerDbm = d.LaserRxOpticalPowerDbm
-		}
-
-		diagnostics = append(diagnostics, d)
+func (c *interfaceDiagnosticsCollector) interfaceDiagnostics(client collector.Client) ([]*interfaceDiagnostics, error) {
+	var x = result{}
+	err := client.RunCommandAndParse("show interfaces diagnostics optics", &x)
+	if err != nil {
+		return nil, err
 	}
 
-	return diagnostics
-}
-
-func dbmStringToFloat(value string) float64 {
-	f, err := strconv.ParseFloat(value, 64)
-	if err == nil {
-		return f
-	}
-
-	return math.Inf(-1)
+	return interfaceDiagnosticsFromRPCResult(x), nil
 }

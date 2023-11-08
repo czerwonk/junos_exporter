@@ -25,6 +25,7 @@ type DeviceConfig struct {
 	Username      string         `yaml:"username,omitempty"`
 	Password      string         `yaml:"password,omitempty"`
 	KeyFile       string         `yaml:"key_file,omitempty"`
+	KeyPassphrase string         `yaml:"key_passphrase,omitempty"`
 	Features      *FeatureConfig `yaml:"features,omitempty"`
 	IfDescReg     string         `yaml:"interface_description_regex,omitempty"`
 	IsHostPattern bool           `yaml:"host_pattern,omitempty"`
@@ -54,6 +55,7 @@ type FeatureConfig struct {
 	Accounting          bool `yaml:"accounting,omitempty"`
 	IPSec               bool `yaml:"ipsec,omitempty"`
 	Security            bool `yaml:"security,omitempty"`
+	SecurityIKE         bool `yaml:"security_ike,omitempty"`
 	SecurityPolicies    bool `yaml:"security_policies,omitempty"`
 	FPC                 bool `yaml:"fpc,omitempty"`
 	RPKI                bool `yaml:"rpki,omitempty"`
@@ -65,6 +67,8 @@ type FeatureConfig struct {
 	MPLSLSP             bool `yaml:"mpls_lsp,omitempty"`
 	VPWS                bool `yaml:"vpws,omitempty"`
 	VRRP                bool `yaml:"vrrp,omitempty"`
+	License             bool `yaml:"license,omitempty"`
+	Subscriber          bool `yaml:"subscriber,omitempty"`
 }
 
 // New creates a new config
@@ -136,6 +140,7 @@ func setDefaultValues(c *Config) {
 	f.VPWS = false
 	f.VRRP = false
 	f.BFD = false
+	f.License = false
 }
 
 // FeaturesForDevice gets the feature set configured for a device

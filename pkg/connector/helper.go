@@ -9,13 +9,19 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func loadPrivateKey(r io.Reader) (ssh.AuthMethod, error) {
+func loadPrivateKey(r io.Reader, keyPassphrase string) (ssh.AuthMethod, error) {
 	b, err := io.ReadAll(r)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not read from reader")
 	}
 
-	key, err := ssh.ParsePrivateKey(b)
+	var key ssh.Signer
+	if keyPassphrase == "" {
+		key, err = ssh.ParsePrivateKey(b)
+	} else {
+		key, err = ssh.ParsePrivateKeyWithPassphrase(b, []byte(keyPassphrase))
+	}
+
 	if err != nil {
 		return nil, errors.Wrap(err, "could not parse private key")
 	}

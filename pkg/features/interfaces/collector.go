@@ -172,7 +172,7 @@ func (c *interfaceCollector) Collect(client collector.Client, ch chan<- promethe
 
 func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfaceStats, error) {
 	var x = result{}
-	err := client.RunCommandAndParse("show interfaces extensive \"[!(dm)!(ei)]*\"", &x)
+	err := client.RunCommandAndParse("show interfaces extensive \"[!dm]*\"", &x)
 	if err != nil {
 		return nil, err
 	}

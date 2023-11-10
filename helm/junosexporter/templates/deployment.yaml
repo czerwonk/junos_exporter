@@ -11,6 +11,13 @@ spec:
       {{- include "junos_exporter.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      {{- if .Values.rollOutJunosExporterPods }}
+      annotations:
+        {{- if .Values.rollOutJunosExporterPods }}
+        # ensure pods roll when configmap updates
+        junos-exporter.github.io/junos-exporter-configmap-checksum: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum | quote }}
+        {{- end }}
+      {{- end }}
       labels:
         {{- include "junos_exporter.selectorLabels" . | nindent 8 }}
     spec:

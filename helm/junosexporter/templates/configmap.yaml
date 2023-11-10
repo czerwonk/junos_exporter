@@ -6,7 +6,6 @@ data:
     {{- toYaml .Values.configyml | nindent 4 }}
 metadata:
   name: {{ .Release.Name }}-configmap
-  namespace: {{ .Values.namespace }}
   labels:
     {{- include "junos_exporter.labels" . | nindent 4 }}
 {{- end }}

@@ -4,8 +4,6 @@
 
 replicaCount: 1
 
-namespace: monitoring
-
 # prometheusOperator is the relase label for prometheus-operator to look at the servicemonitor
 prometheusOperator: prometheus-operator
 

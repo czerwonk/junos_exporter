@@ -28,7 +28,7 @@ extraEnv: []
 extraArgs: []
 
 # configyml is the configfile for the exporter
-# configyml: |-
+# configyml:
 #     devices:
 #       - host: srx.example.com
 #         username: junos_exporter

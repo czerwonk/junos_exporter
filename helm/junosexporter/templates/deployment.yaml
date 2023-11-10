@@ -38,6 +38,9 @@ spec:
           {{- end }}
           - name: CONFIG_FILE
             value: "/config/config.yml"
+          {{- with .Values.extraEnv }}
+          {{- toYaml . | trim | nindent 10 }}
+          {{- end }}
           volumeMounts:
           - mountPath: /config
             name: {{ .Release.Name }}-configmap

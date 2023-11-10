@@ -1,3 +1,4 @@
+{{- if .Values.configyml }}
 apiVersion: v1
 kind: ConfigMap
 data:
@@ -7,4 +8,4 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     {{- include "junos_exporter.labels" . | nindent 4 }}
-      
+{{- end }}

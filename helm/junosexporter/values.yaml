@@ -28,22 +28,22 @@ extraEnv: []
 extraArgs: []
 
 # configyml is the configfile for the exporter
-configyml: |-
-    devices:
-      - host: srx.example.com
-        username: junos_exporter
-        keyfile: /config/ssh-keyfile
-
-    features:
-      bgp: false
-      ospf: false
-      isis: false
-      l2circuit: false
-      environment: true
-      routes: true
-      routing_engine: true
-      interface_diagnostic: true
-      power: true
+# configyml: |-
+#     devices:
+#       - host: srx.example.com
+#         username: junos_exporter
+#         keyfile: /config/ssh-keyfile
+#
+#     features:
+#       bgp: false
+#       ospf: false
+#       isis: false
+#       l2circuit: false
+#       environment: true
+#       routes: true
+#       routing_engine: true
+#       interface_diagnostic: true
+#       power: true
 
 #serviceMonitor.scapeTimeout needs to be high since junos_exporter uses ssh
 #serviceMonitor.interval needs to be higher than scrapeTimeout

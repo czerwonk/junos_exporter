@@ -42,17 +42,23 @@ spec:
           - name: SSH_KEYFILE
             value: "/ssh/ssh-keyfile"
           {{- end }}
+          {{- if .Values.configyml }}
           - name: CONFIG_FILE
             value: "/config/config.yml"
+          {{- end }}
           {{- with .Values.extraEnv }}
           {{- toYaml . | trim | nindent 10 }}
           {{- end }}
+          {{- if or .Values.configyml .Values.sshkey }}
           volumeMounts:
+          {{- if .Values.configyml }}
           - mountPath: /config
             name: {{ .Release.Name }}-configmap
+          {{- end }}
           {{- if .Values.sshkey }}
           - mountPath: /ssh
             name: {{ .Release.Name }}-sshkey
+          {{- end }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

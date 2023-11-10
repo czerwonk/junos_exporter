@@ -1,5 +1,5 @@
 apiVersion: v2
-name: junos_exporter
+name: junos-exporter
 description: junos_exporter deployment for prometheus-operator
 
 # A chart can be either an 'application' or a 'library' chart.

@@ -64,6 +64,19 @@ spec:
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      {{- if or .Values.configyml .Values.sshkey }}
+      volumes:
+        {{- if .Values.configyml }}
+        - name: {{ .Release.Name }}-configmap
+          configMap:
+            name: {{ .Release.Name }}-configmap
+        {{- end }}
+        {{- if .Values.sshkey }}
+        - name: {{ .Release.Name }}-sshkey
+          secret:
+            secretName: {{ .Release.Name }}-sshkey
+        {{- end }}
+      {{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

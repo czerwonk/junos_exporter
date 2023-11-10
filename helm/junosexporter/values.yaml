@@ -48,6 +48,7 @@ extraArgs: []
 #serviceMonitor.scapeTimeout needs to be high since junos_exporter uses ssh
 #serviceMonitor.interval needs to be higher than scrapeTimeout
 serviceMonitor:
+  enabled: true
   scrapeTimeout: 60s
   interval: 120s
   jobLabel: jobLabel

@@ -38,6 +38,9 @@ spec:
           - /app/junos_exporter
           {{- if .Values.extraArgs }}
           args:
+          {{- if .Values.configyml }}
+          - -config.file=/config/config.yml
+          {{- end }}
           {{- with .Values.extraArgs }}
           {{- toYaml . | trim | nindent 10 }}
           {{- end }}
@@ -50,10 +53,6 @@ spec:
           {{- if .Values.sshkey }}
           - name: SSH_KEYFILE
             value: "/ssh/ssh-keyfile"
-          {{- end }}
-          {{- if .Values.configyml }}
-          - name: CONFIG_FILE
-            value: "/config/config.yml"
           {{- end }}
           {{- with .Values.extraEnv }}
           {{- toYaml . | trim | nindent 10 }}

@@ -2,7 +2,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ .Release.Name }}-serviceMonitor
+  name: {{ .Release.Name }}-servicemonitor
   namespace: {{ .Values.namespace }}
   release: {{ .Values.prometheusOperator }}
   labels:

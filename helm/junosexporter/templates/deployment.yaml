@@ -32,15 +32,19 @@ spec:
               containerPort: 9326
               protocol: TCP
           env:
+          {{- if .Values.sshkey }}
           - name: SSH_KEYFILE
             value: "/ssh/ssh-keyfile"
+          {{- end }}
           - name: CONFIG_FILE
             value: "/config/config.yml"
           volumeMounts:
           - mountPath: /config
             name: {{ .Release.Name }}-configmap
+          {{- if .Values.sshkey }}
           - mountPath: /ssh
             name: {{ .Release.Name }}-sshkey
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
     {{- with .Values.nodeSelector }}

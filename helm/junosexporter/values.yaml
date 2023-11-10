@@ -24,6 +24,9 @@ fullnameOverride: ""
 # Additional junos_exporter container environment variables.
 extraEnv: []
 
+# Additional junos_exporter container arguments.
+extraArgs: []
+
 # configyml is the configfile for the exporter
 configyml: |-
     devices:

@@ -27,6 +27,12 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.extraArgs }}
+          args:
+          {{- with .Values.extraArgs }}
+          {{- toYaml . | trim | nindent 10 }}
+          {{- end }}
+          {{- end }}
           ports:
             - name: metrics
               containerPort: 9326

@@ -27,6 +27,8 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+          - /app/junos_exporter
           {{- if .Values.extraArgs }}
           args:
           {{- with .Values.extraArgs }}

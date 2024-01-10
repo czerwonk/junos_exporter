@@ -37,7 +37,6 @@ func (*subcsribers_information) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *subcsribers_information) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-
 	var x = subcsribers_information{}
 	err := client.RunCommandAndParse("show subscribers client-type dhcp detail", &x) //TODO: see if client-type dhcp can be left out
 	if err != nil {
@@ -94,4 +93,5 @@ func findUnderlyingInterface(client collector.Client, ifName string, logicalIfMa
 	}
 
 	return findUnderlyingInterface(client, logicalIfName, logicalIfMap, maxDepth-1)
+
 }

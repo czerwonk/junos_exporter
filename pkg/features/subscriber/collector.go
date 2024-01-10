@@ -6,13 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 const prefix string = "junos_subscriber_info"
-
 var subscriberInfo *prometheus.Desc
 
 func init() {
@@ -37,7 +35,6 @@ func (*subcsribers_information) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *subcsribers_information) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-
 	var x = subcsribers_information{}
 	err := client.RunCommandAndParse("show subscribers client-type dhcp detail", &x) //TODO: see if client-type dhcp can be left out
 	if err != nil {
@@ -50,7 +47,7 @@ func (c *subcsribers_information) Collect(client collector.Client, ch chan<- pro
 	}
 
 	for _, subscriber := range x.SubscribersInformation.Subscriber {
-		underlying_interface, err := findUnderlyingInterface(client, subscriber.UnderlyingInterface, logicalInterfaceMap, 2)
+    underlying_interface, err := findUnderlyingInterface(client, subscriber.UnderlyingInterface, logicalInterfaceMap, 2)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -94,4 +91,6 @@ func findUnderlyingInterface(client collector.Client, ifName string, logicalIfMa
 	}
 
 	return findUnderlyingInterface(client, logicalIfName, logicalIfMap, maxDepth-1)
+
+  
 }

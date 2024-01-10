@@ -3,6 +3,7 @@
 package bgp
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
@@ -26,6 +27,10 @@ var (
 	flapsDesc                   *prometheus.Desc
 	prefixesLimitCountDesc      *prometheus.Desc
 	prefixesLimitPercentageDesc *prometheus.Desc
+	infoDesc                    *prometheus.Desc
+	medDesc                     *prometheus.Desc
+	preferenceDesc              *prometheus.Desc
+	holdTimeDesc                *prometheus.Desc
 )
 
 func init() {
@@ -35,6 +40,12 @@ func init() {
 	inputMessagesDesc = prometheus.NewDesc(prefix+"messages_input_count", "Number of received messages", l, nil)
 	outputMessagesDesc = prometheus.NewDesc(prefix+"messages_output_count", "Number of transmitted messages", l, nil)
 	flapsDesc = prometheus.NewDesc(prefix+"flap_count", "Number of session flaps", l, nil)
+	medDesc = prometheus.NewDesc(prefix+"metric_out", "MED configured for the session", l, nil)
+	preferenceDesc = prometheus.NewDesc(prefix+"preference", "Preference configured for the session", l, nil)
+	holdTimeDesc = prometheus.NewDesc(prefix+"hold_time_seconds", "Hold time configured for the session", l, nil)
+
+	infoLabels := append(l, "local_as", "import_policy", "export_policy", "options")
+	infoDesc = prometheus.NewDesc(prefix+"info", "Information about the session (e.g. configuration)", infoLabels, nil)
 
 	l = append(l, "table")
 
@@ -50,6 +61,8 @@ func init() {
 type bgpCollector struct {
 	LogicalSystem string
 }
+
+type groupMap map[int64]group
 
 // NewCollector creates a new collector
 func NewCollector(logicalSystem string) collector.RPCCollector {
@@ -74,6 +87,10 @@ func (*bgpCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- flapsDesc
 	ch <- prefixesLimitCountDesc
 	ch <- prefixesLimitPercentageDesc
+	ch <- infoDesc
+	ch <- medDesc
+	ch <- preferenceDesc
+	ch <- holdTimeDesc
 }
 
 // Collect collects metrics from JunOS
@@ -86,7 +103,33 @@ func (c *bgpCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 	return nil
 }
 
+func (c *bgpCollector) collectGroups(client collector.Client) (groupMap, error) {
+	var x = groupResult{}
+	var cmd strings.Builder
+	cmd.WriteString("show bgp group")
+	if c.LogicalSystem != "" {
+		cmd.WriteString(" logical-system " + c.LogicalSystem)
+	}
+
+	err := client.RunCommandAndParse(cmd.String(), &x)
+	if err != nil {
+		return nil, err
+	}
+
+	groups := make(groupMap)
+	for _, g := range x.Information.Groups {
+		groups[g.Index] = g
+	}
+
+	return groups, err
+}
+
 func (c *bgpCollector) collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	groups, err := c.collectGroups(client)
+	if err != nil {
+		return fmt.Errorf("could not retrieve BGP group information: %w", err)
+	}
+
 	var x = result{}
 	var cmd strings.Builder
 	cmd.WriteString("show bgp neighbor")
@@ -94,21 +137,25 @@ func (c *bgpCollector) collect(client collector.Client, ch chan<- prometheus.Met
 		cmd.WriteString(" logical-system " + c.LogicalSystem)
 	}
 
-	err := client.RunCommandAndParse(cmd.String(), &x)
+	err = client.RunCommandAndParse(cmd.String(), &x)
 	if err != nil {
 		return err
 	}
 
 	for _, peer := range x.Information.Peers {
-		c.collectForPeer(peer, ch, labelValues)
+		c.collectForPeer(peer, groups, ch, labelValues)
 	}
 
 	return nil
 }
 
-func (c *bgpCollector) collectForPeer(p peer, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *bgpCollector) collectForPeer(p peer, groups groupMap, ch chan<- prometheus.Metric, labelValues []string) {
 	ip := strings.Split(p.IP, "+")
-	l := append(labelValues, []string{p.ASN, ip[0], p.Description, p.Group}...)
+	l := append(labelValues, []string{
+		p.ASN,
+		ip[0],
+		p.Description,
+		groupForPeer(p, groups)}...)
 
 	up := 0
 	if p.State == "Established" {
@@ -120,6 +167,16 @@ func (c *bgpCollector) collectForPeer(p peer, ch chan<- prometheus.Metric, label
 	ch <- prometheus.MustNewConstMetric(inputMessagesDesc, prometheus.GaugeValue, float64(p.InputMessages), l...)
 	ch <- prometheus.MustNewConstMetric(outputMessagesDesc, prometheus.GaugeValue, float64(p.OutputMessages), l...)
 	ch <- prometheus.MustNewConstMetric(flapsDesc, prometheus.GaugeValue, float64(p.Flaps), l...)
+	ch <- prometheus.MustNewConstMetric(preferenceDesc, prometheus.GaugeValue, float64(p.OptionInformation.Preference), l...)
+	ch <- prometheus.MustNewConstMetric(medDesc, prometheus.GaugeValue, float64(p.OptionInformation.MetricOut), l...)
+	ch <- prometheus.MustNewConstMetric(holdTimeDesc, prometheus.GaugeValue, float64(p.OptionInformation.Holdtime), l...)
+
+	infoValues := append(l,
+		localASNForPeer(p),
+		formatPolicy(p.OptionInformation.ImportPolicy),
+		formatPolicy(p.OptionInformation.ExportPolicy),
+		p.OptionInformation.Options)
+	ch <- prometheus.MustNewConstMetric(infoDesc, prometheus.GaugeValue, 1, infoValues...)
 
 	c.collectRIBForPeer(p, ch, l)
 }
@@ -128,7 +185,7 @@ func (*bgpCollector) collectRIBForPeer(p peer, ch chan<- prometheus.Metric, labe
 	var rib_name string
 
 	// derive the name of the rib for which the prefix limit is configured by examining the NLRI type
-	switch nlri_type := p.BGPOI.PrefixLimit.NlriType; nlri_type {
+	switch nlri_type := p.OptionInformation.PrefixLimit.NlriType; nlri_type {
 	case "inet-unicast":
 		rib_name = "inet.0"
 	case "inet6-unicast":
@@ -142,8 +199,8 @@ func (*bgpCollector) collectRIBForPeer(p peer, ch chan<- prometheus.Metric, labe
 		rib_name = p.CFGRTI + "." + rib_name
 	}
 
-	if p.BGPOI.PrefixLimit.PrefixCount > 0 {
-		ch <- prometheus.MustNewConstMetric(prefixesLimitCountDesc, prometheus.GaugeValue, float64(p.BGPOI.PrefixLimit.PrefixCount), append(labelValues, rib_name)...)
+	if p.OptionInformation.PrefixLimit.PrefixCount > 0 {
+		ch <- prometheus.MustNewConstMetric(prefixesLimitCountDesc, prometheus.GaugeValue, float64(p.OptionInformation.PrefixLimit.PrefixCount), append(labelValues, rib_name)...)
 	}
 
 	for _, rib := range p.RIBs {
@@ -155,31 +212,10 @@ func (*bgpCollector) collectRIBForPeer(p peer, ch chan<- prometheus.Metric, labe
 		ch <- prometheus.MustNewConstMetric(advertisedPrefixesDesc, prometheus.GaugeValue, float64(rib.AdvertisedPrefixes), l...)
 
 		if rib.Name == rib_name {
-			if p.BGPOI.PrefixLimit.PrefixCount > 0 {
-				prefixesLimitPercent := float64(rib.ReceivedPrefixes) / float64(p.BGPOI.PrefixLimit.PrefixCount)
+			if p.OptionInformation.PrefixLimit.PrefixCount > 0 {
+				prefixesLimitPercent := float64(rib.ReceivedPrefixes) / float64(p.OptionInformation.PrefixLimit.PrefixCount)
 				ch <- prometheus.MustNewConstMetric(prefixesLimitPercentageDesc, prometheus.GaugeValue, math.Round(prefixesLimitPercent*100)/100, l...)
 			}
 		}
-	}
-}
-
-func bgpStateToNumber(bgpState string) float64 {
-	switch bgpState {
-	case "Active":
-		return 1
-	case "Connect":
-		return 2
-	case "Established":
-		return 3
-	case "Idle":
-		return 4
-	case "Openconfirm":
-		return 5
-	case "OpenSent":
-		return 6
-	case "route reflector client":
-		return 7
-	default:
-		return 0
 	}
 }

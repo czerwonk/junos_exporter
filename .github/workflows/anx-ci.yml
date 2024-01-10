@@ -29,7 +29,7 @@ jobs:
   #       run: go test ./... -v -covermode=count
 
   publish:
-    # if: github.repository == ‘anexia/junos_exporter’
+    if: github.repository == ‘anexia/junos_exporter’
     # needs: test
     runs-on: ubuntu-latest
     env:

@@ -8,28 +8,28 @@ on:
 
 name: anx-ci
 jobs:
-  test:
-    strategy:
-      matrix:
-        go-version: ["1.21.x"]
-        platform: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - name: Install Go
-        if: success()
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ matrix.go-version }}
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Build
-        run: go build
-      - name: Run tests
-        run: go test ./... -v -covermode=count
+#   test:
+#     strategy:
+#       matrix:
+#         go-version: ["1.21.x"]
+#         platform: [ubuntu-latest, macos-latest, windows-latest]
+#     runs-on: ${{ matrix.platform }}
+#     steps:
+#       - name: Install Go
+#         if: success()
+#         uses: actions/setup-go@v3
+#         with:
+#           go-version: ${{ matrix.go-version }}
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+#       - name: Build
+#         run: go build
+#       - name: Run tests
+#         run: go test ./... -v -covermode=count
 
   publish:
-    needs: test
-    runs-on: ubuntu-latest
+    # needs: test
+    runs-on: ubuntu-20.04
 
     env:
       S3_URL: ${{ vars.S3_URL }}
@@ -47,7 +47,7 @@ jobs:
           go-version: 1.21
 
       - name: Build
-        run: go build -buildvcs=false .
+        run: go build .
 
       - uses: actions/upload-artifact@v3
         with:

@@ -4,11 +4,12 @@ package interfacelabels
 
 type result struct {
 	Information struct {
-		Interfaces []phyInterface `xml:"physical-interface"`
+		PhysicalInterfaces []interfaceDescription `xml:"physical-interface"`
+		LogicalInterfaces  []interfaceDescription `xml:"logical-interface"`
 	} `xml:"interface-information"`
 }
 
-type phyInterface struct {
+type interfaceDescription struct {
 	Name        string `xml:"name"`
 	Description string `xml:"description"`
 }

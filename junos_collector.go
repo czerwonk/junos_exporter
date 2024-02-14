@@ -24,14 +24,12 @@ var (
 	scrapeCollectorDurationDesc *prometheus.Desc
 	scrapeDurationDesc          *prometheus.Desc
 	upDesc                      *prometheus.Desc
-	defaultIfDescReg            *regexp.Regexp
 )
 
 func init() {
 	upDesc = prometheus.NewDesc(prefix+"up", "Scrape of target was successful", []string{"target"}, nil)
 	scrapeDurationDesc = prometheus.NewDesc(prefix+"collector_duration_seconds", "Duration of a collector scrape for one target", []string{"target"}, nil)
 	scrapeCollectorDurationDesc = prometheus.NewDesc(prefix+"collect_duration_seconds", "Duration of a scrape by collector and target", []string{"target", "collector"}, nil)
-	defaultIfDescReg = regexp.MustCompile(`\[([^=\]]+)(=[^\]]+)?\]`)
 }
 
 type junosCollector struct {
@@ -41,7 +39,7 @@ type junosCollector struct {
 	ctx        context.Context
 }
 
-func newJunosCollector(ctx context.Context, devices []*connector.Device, connectionManager *connector.SSHConnectionManager, logicalSystem string) *junosCollector {
+func newJunosCollector(ctx context.Context, devices []*connector.Device, logicalSystem string) *junosCollector {
 	l := interfacelabels.NewDynamicLabels()
 
 	clients := make(map[*connector.Device]*rpc.Client)
@@ -98,7 +96,7 @@ func deviceInterfaceRegex(host string) *regexp.Regexp {
 		log.Errorf("global dynamic label regex (%s) invalid: %v", cfg.IfDescReg, err)
 	}
 
-	return defaultIfDescReg
+	return interfacelabels.DefaultInterfaceDescRegex()
 }
 
 func clientForDevice(device *connector.Device, connManager *connector.SSHConnectionManager) (*rpc.Client, error) {
@@ -117,7 +115,7 @@ func clientForDevice(device *connector.Device, connManager *connector.SSHConnect
 	}
 
 	if cfg.Features.License {
-    opts = append(opts, rpc.WithLicenseInformation())
+		opts = append(opts, rpc.WithLicenseInformation())
 	}
 
 	c := rpc.NewClient(conn, opts...)

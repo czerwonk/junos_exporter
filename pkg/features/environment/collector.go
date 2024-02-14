@@ -18,6 +18,8 @@ const prefix string = "junos_environment_"
 var (
 	temperaturesDesc *prometheus.Desc
 	powerSupplyDesc  *prometheus.Desc
+	fanStatusDesc    *prometheus.Desc
+	fanAirflowDesc   *prometheus.Desc
 	pemDesc          *prometheus.Desc
 	fanDesc          *prometheus.Desc
 	dcVoltageDesc    *prometheus.Desc
@@ -30,6 +32,8 @@ func init() {
 	l := []string{"target", "re_name", "item"}
 	temperaturesDesc = prometheus.NewDesc(prefix+"item_temp", "Temperature of the air flowing past", l, nil)
 	powerSupplyDesc = prometheus.NewDesc(prefix+"power_up", "Status of power supplies (1 OK, 2 Testing, 3 Failed, 4 Absent, 5 Present)", append(l, "status"), nil)
+	fanStatusDesc = prometheus.NewDesc(prefix+"fan_up", "Status of fans (1 OK, 2 Testing, 3 Failed, 4 Absent, 5 Present)", append(l, "status"), nil)
+	fanAirflowDesc = prometheus.NewDesc(prefix+"fan_airflow_up", "Status of	fan airflows (1 OK, 2 Testing, 3 Failed, 4 Absent, 5 Present)", append(l, "status"), nil)
 
 	pemDesc = prometheus.NewDesc(prefix+"pem_state", "State of PEM module. 1 - Online, 2 - Present, 3 - Empty", append(l, "state"), nil)
 	dcVoltageDesc = prometheus.NewDesc(prefix+"pem_voltage", "PEM voltage value", l, nil)
@@ -113,6 +117,13 @@ func (c *environmentCollector) environmentItems(client collector.Client, ch chan
 			if strings.Contains(item.Name, "Power Supply") || strings.Contains(item.Name, "PEM") {
 				l = append(l, item.Name, item.Status)
 				ch <- prometheus.MustNewConstMetric(powerSupplyDesc, prometheus.GaugeValue, float64(statusValues[item.Status]), l...)
+			} else if strings.Contains(item.Name, "Fan") {
+				l = append(l, item.Name, item.Status)
+				if strings.Contains(item.Name, "Airflow") {
+					ch <- prometheus.MustNewConstMetric(fanAirflowDesc, prometheus.GaugeValue, float64(statusValues[item.Status]), l...)
+				} else {
+					ch <- prometheus.MustNewConstMetric(fanStatusDesc, prometheus.GaugeValue, float64(statusValues[item.Status]), l...)
+				}
 			} else if item.Temperature != nil {
 				l = append(l, item.Name)
 				ch <- prometheus.MustNewConstMetric(temperaturesDesc, prometheus.GaugeValue, item.Temperature.Value, l...)

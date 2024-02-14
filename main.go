@@ -24,7 +24,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "0.11.0"
+const version string = "0.12.3"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -33,6 +33,7 @@ var (
 	sshHosts                    = flag.String("ssh.targets", "", "Hosts to scrape")
 	sshUsername                 = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
 	sshKeyFile                  = flag.String("ssh.keyfile", "", "Public key file to use when connecting to junos devices using ssh")
+	sshKeyPassphrase            = flag.String("ssh.keyPassphrase", "", "Passphrase to decrypt key file if it's encrypted")
 	sshPassword                 = flag.String("ssh.password", "", "Password to use when connecting to junos devices using ssh")
 	sshReconnectInterval        = flag.Duration("ssh.reconnect-interval", 30*time.Second, "Duration to wait before reconnecting to a device after connection got lost")
 	sshKeepAliveInterval        = flag.Duration("ssh.keep-alive-interval", 10*time.Second, "Duration to wait between keep alive messages")
@@ -81,12 +82,12 @@ var (
 	tracingEnabled              = flag.Bool("tracing.enabled", false, "Enables tracing using OpenTelemetry")
 	tracingProvider             = flag.String("tracing.provider", "", "Sets the tracing provider (stdout or collector)")
 	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
+	subscriberEnabled           = flag.Bool("subscriber.enabled", false, "Scrape subscribers detail")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
 	reloadCh                    chan chan error
 	configMu                    sync.RWMutex
-	subscriberEnabled           = flag.Bool("subscriber.enabled", false, "Scrape subscribers detail")
 )
 
 func init() {
@@ -262,7 +263,7 @@ func connectionManager() *connector.SSHConnectionManager {
 
 func startServer() {
 	log.Infof("Starting JunOS exporter (Version: %s)", version)
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte(`<html>
 			<head><title>JunOS Exporter (Version ` + version + `)</title></head>
 			<body>
@@ -324,7 +325,7 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := newJunosCollector(ctx, devs, connManager, logicalSystem)
+	c := newJunosCollector(ctx, devs, logicalSystem)
 	reg.MustRegister(c)
 
 	l := log.New()

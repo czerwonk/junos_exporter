@@ -11,6 +11,13 @@ spec:
       {{- include "junos_exporter.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      {{- if .Values.rollOutJunosExporterPods }}
+      annotations:
+        {{- if .Values.rollOutJunosExporterPods }}
+        # ensure pods roll when configmap updates
+        junos-exporter.github.io/junos-exporter-configmap-checksum: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum | quote }}
+        {{- end }}
+      {{- end }}
       labels:
         {{- include "junos_exporter.selectorLabels" . | nindent 8 }}
     spec:
@@ -27,22 +34,55 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+          - /app/junos_exporter
+          {{- if .Values.extraArgs }}
+          args:
+          {{- if .Values.configyml }}
+          - -config.file=/config/config.yml
+          {{- end }}
+          {{- with .Values.extraArgs }}
+          {{- toYaml . | trim | nindent 10 }}
+          {{- end }}
+          {{- end }}
           ports:
             - name: metrics
               containerPort: 9326
               protocol: TCP
           env:
+          {{- if .Values.sshkey }}
           - name: SSH_KEYFILE
             value: "/ssh/ssh-keyfile"
-          - name: CONFIG_FILE
-            value: "/config/config.yml"
+          {{- end }}
+          {{- with .Values.extraEnv }}
+          {{- toYaml . | trim | nindent 10 }}
+          {{- end }}
+          {{- if or .Values.configyml .Values.sshkey }}
           volumeMounts:
+          {{- if .Values.configyml }}
           - mountPath: /config
             name: {{ .Release.Name }}-configmap
+          {{- end }}
+          {{- if .Values.sshkey }}
           - mountPath: /ssh
             name: {{ .Release.Name }}-sshkey
+          {{- end }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      {{- if or .Values.configyml .Values.sshkey }}
+      volumes:
+        {{- if .Values.configyml }}
+        - name: {{ .Release.Name }}-configmap
+          configMap:
+            name: {{ .Release.Name }}-configmap
+        {{- end }}
+        {{- if .Values.sshkey }}
+        - name: {{ .Release.Name }}-sshkey
+          secret:
+            secretName: {{ .Release.Name }}-sshkey
+        {{- end }}
+      {{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

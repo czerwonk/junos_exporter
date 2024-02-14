@@ -9,17 +9,18 @@ type result struct {
 }
 
 type peer struct {
-	CFGRTI         string            `xml:"peer-cfg-rti"`
-	IP             string            `xml:"peer-address"`
-	ASN            string            `xml:"peer-as"`
-	State          string            `xml:"peer-state"`
-	Group          string            `xml:"peer-group"`
-	Description    string            `xml:"description"`
-	Flaps          int64             `xml:"flap-count"`
-	InputMessages  int64             `xml:"input-messages"`
-	OutputMessages int64             `xml:"output-messages"`
-	RIBs           []rib             `xml:"bgp-rib"`
-	BGPOI          optionInformation `xml:"bgp-option-information"`
+	CFGRTI            string            `xml:"peer-cfg-rti"`
+	IP                string            `xml:"peer-address"`
+	ASN               string            `xml:"peer-as"`
+	State             string            `xml:"peer-state"`
+	Group             string            `xml:"peer-group"`
+	GroupIndex        int64             `xml:"peer-group-index"`
+	Description       string            `xml:"description"`
+	Flaps             int64             `xml:"flap-count"`
+	InputMessages     int64             `xml:"input-messages"`
+	OutputMessages    int64             `xml:"output-messages"`
+	RIBs              []rib             `xml:"bgp-rib"`
+	OptionInformation optionInformation `xml:"bgp-option-information"`
 }
 
 type rib struct {
@@ -42,6 +43,7 @@ type optionInformation struct {
 	PrefixLimit     prefixLimit `xml:"prefix-limit"`
 	LocalAs         int64       `xml:"local-as"`
 	LocalSystemAs   int64       `xml:"local-system-as"`
+	Options         string      `xml:"bgp-options"`
 }
 
 type prefixLimit struct {
@@ -49,4 +51,14 @@ type prefixLimit struct {
 	PrefixCount       int64  `xml:"prefix-count"`
 	LimitAction       string `xml:"limit-action"`
 	WarningPercentage int64  `xml:"warning-percentage"`
+}
+
+type groupResult struct {
+	Information struct {
+		Groups []group `xml:"bgp-group"`
+	} `xml:"bgp-group-information"`
+}
+type group struct {
+	Index int64  `xml:"group-index"`
+	Name  string `xml:"name"`
 }

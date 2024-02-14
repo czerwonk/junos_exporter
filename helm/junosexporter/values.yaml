@@ -4,8 +4,6 @@
 
 replicaCount: 1
 
-namespace: monitoring
-
 # prometheusOperator is the relase label for prometheus-operator to look at the servicemonitor
 prometheusOperator: prometheus-operator
 
@@ -19,29 +17,36 @@ fullnameOverride: ""
 
 # sshkey is the base64 encoded id_rsa you want to use for authentication
 # generate sshkey with `cat $HOME/.ssh/id_rsa | base64 -w0 && echo`
-sshkey: QWRkIHlvdXIgb3duIGlkX3JzYSBoZXJl
+# sshkey: "QWRkIHlvdXIgb3duIGlkX3JzYSBoZXJl"
+
+# Additional junos_exporter container environment variables.
+extraEnv: []
+
+# Additional junos_exporter container arguments.
+extraArgs: []
 
 # configyml is the configfile for the exporter
-configyml: |-
-    devices:
-      - host: srx.example.com
-        username: junos_exporter
-        keyfile: /config/ssh-keyfile
-
-    features:
-      bgp: false
-      ospf: false
-      isis: false
-      l2circuit: false
-      environment: true
-      routes: true
-      routing_engine: true
-      interface_diagnostic: true
-      power: true
+# configyml:
+#     devices:
+#       - host: srx.example.com
+#         username: junos_exporter
+#         keyfile: /config/ssh-keyfile
+#
+#     features:
+#       bgp: false
+#       ospf: false
+#       isis: false
+#       l2circuit: false
+#       environment: true
+#       routes: true
+#       routing_engine: true
+#       interface_diagnostic: true
+#       power: true
 
 #serviceMonitor.scapeTimeout needs to be high since junos_exporter uses ssh
 #serviceMonitor.interval needs to be higher than scrapeTimeout
 serviceMonitor:
+  enabled: true
   scrapeTimeout: 60s
   interval: 120s
   jobLabel: jobLabel
@@ -85,3 +90,6 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+# Roll out junos-exporter pods automatically when configmap is updated.
+rollOutJunosExporterPods: false

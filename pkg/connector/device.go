@@ -26,8 +26,8 @@ func AuthByPassword(username, password string) AuthMethod {
 }
 
 // AuthByKey uses public key authentication
-func AuthByKey(username string, key io.Reader) (AuthMethod, error) {
-	pk, err := loadPrivateKey(key)
+func AuthByKey(username string, key io.Reader, keyPassphrase string) (AuthMethod, error) {
+	pk, err := loadPrivateKey(key, keyPassphrase)
 	if err != nil {
 		return nil, err
 	}

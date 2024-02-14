@@ -57,7 +57,7 @@ jobs:
           go-version: 1.21
 
       - name: Build
-        run: go build -ldflags="-buildvcs=false" .
+        run: go build -buildvcs=false .
 
       - uses: actions/upload-artifact@v3
         with:

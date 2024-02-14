@@ -33,7 +33,7 @@ jobs:
 
     # spin on debian 11 for the build in order to mirror our setup
     container:
-      image: debian:bullseye
+      image: code.anexia.com:4567/si/anexia-common/docker-registry/python/base:3.11-1.7
 
     env:
       S3_URL: ${{ vars.S3_URL }}

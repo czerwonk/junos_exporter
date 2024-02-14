@@ -41,13 +41,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Install ca-certificates package and update certificates
-      - name: Update CA certificates
-        run: |
-          apt-get update
-          apt-get install -y ca-certificates
-          update-ca-certificates
-
       - name: Set up Go
         uses: actions/setup-go@v3
         with:

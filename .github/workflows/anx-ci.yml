@@ -9,7 +9,6 @@ on:
 name: anx-ci
 jobs:
   test:
-    if: github.repository == anexia/junos_exporter
     strategy:
       matrix:
         go-version: [1.21]
@@ -29,7 +28,6 @@ jobs:
         run: go test ./... -v -covermode=count
 
   publish:
-    if: github.repository == anexia/junos_exporter
     needs: test
     runs-on: ubuntu-latest
     env:

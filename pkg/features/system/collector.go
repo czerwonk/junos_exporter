@@ -3,7 +3,9 @@
 package system
 
 import (
+	"encoding/xml"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"regexp"
 	"strconv"
 	"strings"
@@ -187,7 +189,16 @@ func (c *systemCollector) CollectSystem(client collector.Client, ch chan<- prome
 
 func (c *systemCollector) collectBuffers(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	r := &buffers{}
-	err := client.RunCommandAndParse("show system buffers", r)
+
+	err := client.RunCommandAndParseWithParser("show system buffers", func(b []byte) error {
+		if string(b[:]) == "\nerror: syntax error, expecting <command>: buffers\n" {
+			log.Debugf("system doesn't support system buffers command")
+			return nil
+		}
+
+		return xml.Unmarshal(b, &r)
+	})
+
 	if err != nil {
 		return err
 	}

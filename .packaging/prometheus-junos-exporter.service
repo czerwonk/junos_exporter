@@ -7,7 +7,7 @@ Restart=on-failure
 DynamicUser=yes
 User=prometheus
 EnvironmentFile=/etc/default/prometheus-junos-exporter
-ExecStart=/usr/local/bin/junos_exporter $ARGS
+ExecStart=/usr/bin/junos_exporter $ARGS
 
 [Install]
 WantedBy=multi-user.target

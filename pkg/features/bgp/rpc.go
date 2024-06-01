@@ -12,6 +12,7 @@ type peer struct {
 	CFGRTI            string            `xml:"peer-cfg-rti"`
 	IP                string            `xml:"peer-address"`
 	ASN               string            `xml:"peer-as"`
+	LocalASN          int64             `xml:"local-as"`
 	State             string            `xml:"peer-state"`
 	Group             string            `xml:"peer-group"`
 	GroupIndex        int64             `xml:"peer-group-index"`

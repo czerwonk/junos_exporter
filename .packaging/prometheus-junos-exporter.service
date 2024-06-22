@@ -1,5 +1,5 @@
 [Unit]
-Description=JunOS exporter for FreeRadius
+Description=Prometheus exporter for JunOS
 Documentation=https://github.com/czerwonk/junos_exporter/
 
 [Service]

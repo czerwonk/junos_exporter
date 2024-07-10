@@ -1,5 +1,5 @@
 [Unit]
-Description=JunOS exporter for FreeRadius
+Description=Prometheus exporter for JunOS
 Documentation=https://github.com/czerwonk/junos_exporter/
 
 [Service]
@@ -7,7 +7,7 @@ Restart=on-failure
 DynamicUser=yes
 User=prometheus
 EnvironmentFile=/etc/default/prometheus-junos-exporter
-ExecStart=/usr/local/bin/junos_exporter $ARGS
+ExecStart=/usr/bin/junos_exporter $ARGS
 
 [Install]
 WantedBy=multi-user.target

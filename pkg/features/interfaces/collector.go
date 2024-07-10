@@ -286,8 +286,8 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, device *conn
 		}
 
 		speed := "0"
-		if strings.Contains(s.Speed, "mbps") {
-			speed = strings.Replace(s.Speed, "mbps", "000000", 1)
+		if strings.Contains(strings.ToLower(s.Speed), "mbps") {
+			speed = strings.Replace(strings.ToLower(s.Speed), "mbps", "000000", 1)
 		}
 		if strings.Contains(s.Speed, "Gbps") {
 			speed = strings.Replace(s.Speed, "Gbps", "000000000", 1)
@@ -306,6 +306,9 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, device *conn
 		if strings.Contains(s.Speed, "Unlimited") {
 			speed = strings.Replace(s.Speed, "Unlimited", "0", 1)
 		}
+
+		// Trimming all white spaces in the entire string
+		speed = strings.ReplaceAll(speed, " ", "")
 
 		sp64, _ := strconv.ParseFloat(speed, 64)
 

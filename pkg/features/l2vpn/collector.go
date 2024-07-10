@@ -5,8 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/czerwonk/junos_exporter/collector"
-	"github.com/czerwonk/junos_exporter/rpc"
+	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -68,6 +67,7 @@ type l2vpnCollector struct {
 }
 
 // NewCollector creates a new collector
+// NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
 	return &l2vpnCollector{}
 }
@@ -84,11 +84,11 @@ func (*l2vpnCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect collects metrics from JunOS
-func (c *l2vpnCollector) Collect(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *l2vpnCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	return c.collectl2vpnMetrics(client, ch, labelValues)
 }
 
-func (c *l2vpnCollector) collectl2vpnMetrics(client *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *l2vpnCollector) collectl2vpnMetrics(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = l2vpnRpc{}
 	err := client.RunCommandAndParse("show l2vpn connections", &x)
 	if err != nil {
@@ -144,6 +144,5 @@ func string_to_date(date string) string {
 	if err != nil {
 		return ""
 	}
-	println(t.Unix())
 	return strconv.FormatInt(t.Unix(), 10)
 }

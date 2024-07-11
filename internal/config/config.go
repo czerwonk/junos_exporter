@@ -43,6 +43,7 @@ type FeatureConfig struct {
 	NAT                 bool `yaml:"nat,omitempty"`
 	NAT2                bool `yaml:"nat2,omitempty"`
 	L2Circuit           bool `yaml:"l2circuit,omitempty"`
+	L2Vpn               bool `yaml:"l2vpn,omitempty"`
 	LACP                bool `yaml:"lacp,omitempty"`
 	LDP                 bool `yaml:"ldp,omitempty"`
 	Routes              bool `yaml:"routes,omitempty"`
@@ -131,6 +132,7 @@ func setDefaultValues(c *Config) {
 	f.Accounting = false
 	f.FPC = false
 	f.L2Circuit = false
+	f.L2Vpn = false
 	f.RPKI = false
 	f.RPM = false
 	f.Satellite = false

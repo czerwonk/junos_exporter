@@ -17,6 +17,7 @@ devices:
       interface_queue: true
       interfaces: true
       l2circuit: true
+      l2vpn: true
       storage: true
       fpc: true
       firewall: true

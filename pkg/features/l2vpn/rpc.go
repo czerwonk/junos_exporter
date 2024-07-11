@@ -5,12 +5,12 @@ type l2vpnRpc struct {
 }
 
 type l2vpnInformation struct {
-	Instances []l2vpnInstance `xml:"instance"`
+	RoutingInstances []l2vpnRoutingInstance `xml:"instance"`
 }
 
-type l2vpnInstance struct {
-	InstanceName  string               `xml:"instance-name"`
-	ReferenceSite []l2vpnReferenceSite `xml:"reference-site"`
+type l2vpnRoutingInstance struct {
+	RoutingInstanceName string               `xml:"instance-name"`
+	ReferenceSite       []l2vpnReferenceSite `xml:"reference-site"`
 }
 
 type l2vpnReferenceSite struct {

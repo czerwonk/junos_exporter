@@ -1,0 +1,69 @@
+on:
+  push:
+    branches:
+      - anx-prod
+  pull_request:
+    branches:
+      - "**"
+
+name: anx-ci
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: ["1.21.x"]
+        platform: [ubuntu-latest, macos-latest, windows-latest, ubuntu-20.04]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Install Go
+        if: success()
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Build
+        run: go build
+      - name: Run tests
+        run: go test ./... -v -covermode=count
+
+  publish:
+    needs: test
+    runs-on: ubuntu-20.04
+
+    env:
+      S3_URL: ${{ vars.S3_URL }}
+      S3_BUCKET: ${{ vars.S3_BUCKET }}
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.21
+
+      - name: Build
+        run: go build .
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: junos_exporter
+          path: junos_exporter
+
+      - uses: actions/setup-python@v4
+
+      - name: publish anx-prod to s3://$S3_BUCKET/public/junos_exporter/$GITHUB_REF_NAME/junos_exporter
+        run: |
+          pip install s4cmd
+          s4cmd --force put --endpoint-url https://$S3_URL junos_exporter s3://$S3_BUCKET/public/junos_exporter/$GITHUB_REF_NAME/junos_exporter
+        if: github.ref_type == 'tag' || github.ref == 'refs/heads/anx-prod'
+
+      - name: "publish feature-branch to s3://$S3_BUCKET/public/junos_exporter/staging/junos_exporter"
+        run: |
+          pip install s4cmd
+          s4cmd --force put --endpoint-url https://$S3_URL -f junos_exporter s3://$S3_BUCKET/public/junos_exporter/staging/junos_exporter
+        # value only there if pull_request or pull_request_target
+        if: github.head_ref

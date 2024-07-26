@@ -53,6 +53,7 @@ func (c *interfaceQueueCollector) init() {
 	l := []string{"target", "name", "description"}
 	l = append(l, c.labels.LabelNames()...)
 	l = append(l, "queue_number")
+	l = append(l, "forwarding_class")
 
 	c.queuedPackets = prometheus.NewDesc(prefix+"queued_packets_count", "Number of queued packets", l, nil)
 	c.queuedBytes = prometheus.NewDesc(prefix+"queued_bytes_count", "Number of bytes of queued packets", l, nil)
@@ -125,6 +126,7 @@ func (c *interfaceQueueCollector) collectForInterface(iface physicalInterface, d
 
 func (c *interfaceQueueCollector) collectForQueue(queue queue, ch chan<- prometheus.Metric, labelValues []string) {
 	l := append(labelValues, queue.Number)
+	l = append(l, queue.ForwaringClassName)
 
 	ch <- prometheus.MustNewConstMetric(c.queuedPackets, prometheus.CounterValue, float64(queue.QueuedPackets), l...)
 	ch <- prometheus.MustNewConstMetric(c.queuedBytes, prometheus.CounterValue, float64(queue.QueuedBytes), l...)

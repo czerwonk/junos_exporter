@@ -40,7 +40,7 @@ func TestCollectorsRegistered(t *testing.T) {
 
 	cols := collectorsForDevices([]*connector.Device{{
 		Host: "::1",
-	}}, c, "", interfacelabels.NewDynamicLabels())
+	}}, c, "", interfacelabels.NewDynamicLabelManager())
 
 	assert.Equal(t, 20, len(cols.collectors), "collector count")
 }
@@ -88,7 +88,7 @@ func TestCollectorsForDevices(t *testing.T) {
 	d2 := &connector.Device{
 		Host: "2001:678:1e0::2",
 	}
-	cols := collectorsForDevices([]*connector.Device{d1, d2}, c, "", interfacelabels.NewDynamicLabels())
+	cols := collectorsForDevices([]*connector.Device{d1, d2}, c, "", interfacelabels.NewDynamicLabelManager())
 
 	assert.Equal(t, 20, len(cols.collectorsForDevice(d1)), "device 1 collector count")
 

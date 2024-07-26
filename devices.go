@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -56,10 +57,15 @@ func deviceFromDeviceConfig(device *config.DeviceConfig, hostname string, cfg *c
 	}
 
 	// check whether there is a device specific regex otherwise fallback to global regex
-	if len(device.IfDescReg) == 0 {
+	if len(device.IfDescRegStr) == 0 {
 		device.IfDescReg = cfg.IfDescReg
 	} else {
-		regexp.MustCompile(device.IfDescReg)
+		re, err := regexp.Compile(device.IfDescRegStr)
+		if err != nil {
+			return nil, fmt.Errorf("unable to compile device description regex for %q: %q: %w", hostname, device.IfDescRegStr, err)
+		}
+
+		device.IfDescReg = re
 	}
 
 	return &connector.Device{

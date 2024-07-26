@@ -21,14 +21,25 @@ type Config struct {
 	IfDescReg   *regexp.Regexp  `yaml:"-"`
 }
 
-func (c *Config) load() error {
-	if c.IfDescReStr != "" {
+func (c *Config) load(dynamicIfaceLabels bool) error {
+	if c.IfDescReStr != "" && dynamicIfaceLabels {
 		re, err := regexp.Compile(c.IfDescReStr)
 		if err != nil {
 			return fmt.Errorf("unable to compile interfce description regex %q: %w", c.IfDescReStr, err)
 		}
 
 		c.IfDescReg = re
+	}
+
+	for _, d := range c.Devices {
+		if d.IfDescRegStr != "" && dynamicIfaceLabels {
+			re, err := regexp.Compile(c.IfDescReStr)
+			if err != nil {
+				return fmt.Errorf("unable to compile interfce description regex %q: %w", c.IfDescReStr, err)
+			}
+
+			d.IfDescReg = re
+		}
 	}
 
 	return nil
@@ -98,7 +109,7 @@ func New() *Config {
 }
 
 // Load loads a config from reader
-func Load(reader io.Reader) (*Config, error) {
+func Load(reader io.Reader, dynamicIfaceLabels bool) (*Config, error) {
 	b, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
@@ -110,7 +121,7 @@ func Load(reader io.Reader) (*Config, error) {
 		return nil, err
 	}
 
-	err = c.load()
+	err = c.load(dynamicIfaceLabels)
 	if err != nil {
 		return nil, err
 	}

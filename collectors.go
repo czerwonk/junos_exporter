@@ -41,34 +41,31 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/system"
 	"github.com/czerwonk/junos_exporter/pkg/features/vpws"
 	"github.com/czerwonk/junos_exporter/pkg/features/vrrp"
-	"github.com/czerwonk/junos_exporter/pkg/interfacelabels"
 )
 
 type collectors struct {
 	logicalSystem string
-	dynamicLabels *interfacelabels.DynamicLabelManager
 	collectors    map[string]collector.RPCCollector
 	devices       map[string][]collector.RPCCollector
 	cfg           *config.Config
 }
 
-func collectorsForDevices(devices []*connector.Device, cfg *config.Config, logicalSystem string, dynamicLabels *interfacelabels.DynamicLabelManager) *collectors {
+func collectorsForDevices(devices []*connector.Device, cfg *config.Config, logicalSystem string) *collectors {
 	c := &collectors{
 		logicalSystem: logicalSystem,
-		dynamicLabels: dynamicLabels,
 		collectors:    make(map[string]collector.RPCCollector),
 		devices:       make(map[string][]collector.RPCCollector),
 		cfg:           cfg,
 	}
 
 	for _, d := range devices {
-		c.initCollectorsForDevices(d, cfg.IfDescReg)
+		c.initCollectorsForDevices(d, deviceInterfaceRegex(cfg, d.Host))
 	}
 
 	return c
 }
 
-func (c *collectors) initCollectorsForDevices(device *connector.Device, bgpDescRe *regexp.Regexp) {
+func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *regexp.Regexp) {
 	f := c.cfg.FeaturesForDevice(device.Host)
 
 	c.devices[device.Host] = make([]collector.RPCCollector, 0)
@@ -80,19 +77,19 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, bgpDescR
 	})
 	c.addCollectorIfEnabledForDevice(device, "bfd", f.BFD, bfd.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "bgp", f.BGP, func() collector.RPCCollector {
-		return bgp.NewCollector(c.logicalSystem, bgpDescRe)
+		return bgp.NewCollector(c.logicalSystem, descRe)
 	})
 	c.addCollectorIfEnabledForDevice(device, "env", f.Environment, environment.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "firewall", f.Firewall, firewall.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "fpc", f.FPC, fpc.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "ifacediag", f.InterfaceDiagnostic, func() collector.RPCCollector {
-		return interfacediagnostics.NewCollector(c.dynamicLabels)
+		return interfacediagnostics.NewCollector(descRe)
 	})
 	c.addCollectorIfEnabledForDevice(device, "ifacequeue", f.InterfaceQueue, func() collector.RPCCollector {
-		return interfacequeue.NewCollector(c.dynamicLabels)
+		return interfacequeue.NewCollector(descRe)
 	})
 	c.addCollectorIfEnabledForDevice(device, "iface", f.Interfaces, func() collector.RPCCollector {
-		return interfaces.NewCollector(c.dynamicLabels)
+		return interfaces.NewCollector(descRe)
 	})
 	c.addCollectorIfEnabledForDevice(device, "ipsec", f.IPSec, ipsec.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "isis", f.ISIS, isis.NewCollector)

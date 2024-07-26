@@ -205,7 +205,7 @@ func loadConfig() (*config.Config, error) {
 		return nil, err
 	}
 
-	return config.Load(bytes.NewReader(b))
+	return config.Load(bytes.NewReader(b), *dynamicIfaceLabels)
 }
 
 func loadConfigFromFlags() *config.Config {

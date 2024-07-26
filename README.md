@@ -214,7 +214,7 @@ features:
 ```
 
 ## Dynamic Interface Labels
-Version 0.9.5 introduced dynamic labels retrieved from the interface descriptions. Flags are supported a well. The first part (label name) has to comply to the following rules:
+Version 0.9.5 introduced dynamic labels retrieved from the interface descriptions. Version 0.12.4 added support for dynamic labels on BGP metrics. Flags are supported a well. The first part (label name) has to comply to the following rules:
 * must not begin with a figure
 * must only contain this charakters: A-Z,a-z,0-9,_
 * is treated lower case

@@ -2,14 +2,14 @@
 
 package interfacediagnostics
 
-type fPCInformationStruct struct {
-	FPCInformation fPCInformation `xml:"fpc-information"`
+type fpcInformationStruct struct {
+	FPCInformation fpcInformation `xml:"fpc-information"`
 }
-type fPCInformation struct {
-	FPC fPC `xml:"fpc"`
+type fpcInformation struct {
+	FPC fpc `xml:"fpc"`
 }
 
-type fPC struct {
+type fpc struct {
 	PicDetail picDetail `xml:"pic-detail"`
 }
 
@@ -46,6 +46,7 @@ type physicalInterface struct {
 	OperStatus       string `xml:"oper-status"`
 	LocalIndex       string `xml:"local-index"`
 	SnmpIndex        string `xml:"snmp-index"`
+	Description      string `xml:"description"`
 	IfType           string `xml:"if-type"`
 	LinkLevelType    string `xml:"link-level-type"`
 	Mtu              string `xml:"mtu"`

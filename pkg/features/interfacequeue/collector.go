@@ -12,7 +12,7 @@ import (
 const prefix = "junos_interface_queues_"
 
 // NewCollector creates an queue collector instance
-func NewCollector(labels *interfacelabels.DynamicLabels) collector.RPCCollector {
+func NewCollector(labels *interfacelabels.DynamicLabelManager) collector.RPCCollector {
 	c := &interfaceQueueCollector{
 		labels: labels,
 	}
@@ -22,7 +22,7 @@ func NewCollector(labels *interfacelabels.DynamicLabels) collector.RPCCollector 
 }
 
 type interfaceQueueCollector struct {
-	labels               *interfacelabels.DynamicLabels
+	labels               *interfacelabels.DynamicLabelManager
 	queuedPackets        *prometheus.Desc
 	queuedBytes          *prometheus.Desc
 	transferedPackets    *prometheus.Desc

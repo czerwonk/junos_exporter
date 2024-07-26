@@ -17,7 +17,7 @@ import (
 const prefix = "junos_interface_diagnostics_"
 
 type interfaceDiagnosticsCollector struct {
-	labels                                 *interfacelabels.DynamicLabels
+	labels                                 *interfacelabels.DynamicLabelManager
 	laserBiasCurrentDesc                   *prometheus.Desc
 	laserBiasCurrentHighAlarmThresholdDesc *prometheus.Desc
 	laserBiasCurrentLowAlarmThresholdDesc  *prometheus.Desc
@@ -67,7 +67,7 @@ type interfaceDiagnosticsCollector struct {
 }
 
 // NewCollector creates a new collector
-func NewCollector(labels *interfacelabels.DynamicLabels) collector.RPCCollector {
+func NewCollector(labels *interfacelabels.DynamicLabelManager) collector.RPCCollector {
 	c := &interfaceDiagnosticsCollector{
 		labels: labels,
 	}

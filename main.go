@@ -212,7 +212,7 @@ func loadConfigFromFlags() *config.Config {
 	c := config.New()
 	c.Targets = strings.Split(*sshHosts, ",")
 	c.LSEnabled = *lsEnabled
-	c.IfDescReg = *interfaceDescriptionRegex
+	c.IfDescReStr = *interfaceDescriptionRegex
 
 	f := &c.Features
 	f.Alarm = *alarmEnabled

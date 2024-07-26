@@ -12,7 +12,7 @@ import (
 
 func TestParseDescriptions(t *testing.T) {
 	t.Run("Test default", func(t *testing.T) {
-		l := NewDynamicLabels()
+		l := NewDynamicLabelManager()
 		regex := DefaultInterfaceDescRegex()
 
 		if1 := interfaceDescription{
@@ -45,7 +45,7 @@ func TestParseDescriptions(t *testing.T) {
 	})
 
 	t.Run("Test custom regex", func(t *testing.T) {
-		l := NewDynamicLabels()
+		l := NewDynamicLabelManager()
 		regex := regexp.MustCompile(`[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]`)
 
 		if1 := interfaceDescription{

@@ -40,7 +40,7 @@ type junosCollector struct {
 }
 
 func newJunosCollector(ctx context.Context, devices []*connector.Device, logicalSystem string) *junosCollector {
-	l := interfacelabels.NewDynamicLabels()
+	l := interfacelabels.NewDynamicLabelManager()
 
 	clients := make(map[*connector.Device]*rpc.Client)
 
@@ -78,22 +78,13 @@ func newJunosCollector(ctx context.Context, devices []*connector.Device, logical
 func deviceInterfaceRegex(host string) *regexp.Regexp {
 	dc := cfg.FindDeviceConfig(host)
 
-	if len(dc.IfDescReg) > 0 {
-		regex, err := regexp.Compile(dc.IfDescReg)
+	if len(dc.IfDescRegStr) > 0 {
+		regex, err := regexp.Compile(dc.IfDescRegStr)
 		if err == nil {
 			return regex
 		}
 
-		log.Errorf("device specific dynamic label regex %s invalid: %v", dc.IfDescReg, err)
-	}
-
-	if len(cfg.IfDescReg) > 0 {
-		regex, err := regexp.Compile(cfg.IfDescReg)
-		if err == nil {
-			return regex
-		}
-
-		log.Errorf("global dynamic label regex (%s) invalid: %v", cfg.IfDescReg, err)
+		log.Errorf("device specific dynamic label regex %s invalid: %v", dc.IfDescRegStr, err)
 	}
 
 	return interfacelabels.DefaultInterfaceDescRegex()

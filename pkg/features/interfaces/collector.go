@@ -16,7 +16,7 @@ const prefix = "junos_interface_"
 
 // Collector collects interface metrics
 type interfaceCollector struct {
-	labels                      *interfacelabels.DynamicLabels
+	labels                      *interfacelabels.DynamicLabelManager
 	receiveBytesDesc            *prometheus.Desc
 	receivePacketsDesc          *prometheus.Desc
 	receiveErrorsDesc           *prometheus.Desc
@@ -57,7 +57,7 @@ type interfaceCollector struct {
 }
 
 // NewCollector creates a new collector
-func NewCollector(labels *interfacelabels.DynamicLabels) collector.RPCCollector {
+func NewCollector(labels *interfacelabels.DynamicLabelManager) collector.RPCCollector {
 	c := &interfaceCollector{
 		labels: labels,
 	}

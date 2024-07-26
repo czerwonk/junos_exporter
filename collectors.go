@@ -3,6 +3,8 @@
 package main
 
 import (
+	"regexp"
+
 	"github.com/czerwonk/junos_exporter/internal/config"
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
@@ -44,13 +46,13 @@ import (
 
 type collectors struct {
 	logicalSystem string
-	dynamicLabels *interfacelabels.DynamicLabels
+	dynamicLabels *interfacelabels.DynamicLabelManager
 	collectors    map[string]collector.RPCCollector
 	devices       map[string][]collector.RPCCollector
 	cfg           *config.Config
 }
 
-func collectorsForDevices(devices []*connector.Device, cfg *config.Config, logicalSystem string, dynamicLabels *interfacelabels.DynamicLabels) *collectors {
+func collectorsForDevices(devices []*connector.Device, cfg *config.Config, logicalSystem string, dynamicLabels *interfacelabels.DynamicLabelManager) *collectors {
 	c := &collectors{
 		logicalSystem: logicalSystem,
 		dynamicLabels: dynamicLabels,
@@ -60,13 +62,13 @@ func collectorsForDevices(devices []*connector.Device, cfg *config.Config, logic
 	}
 
 	for _, d := range devices {
-		c.initCollectorsForDevices(d)
+		c.initCollectorsForDevices(d, cfg.IfDescReg)
 	}
 
 	return c
 }
 
-func (c *collectors) initCollectorsForDevices(device *connector.Device) {
+func (c *collectors) initCollectorsForDevices(device *connector.Device, bgpDescRe *regexp.Regexp) {
 	f := c.cfg.FeaturesForDevice(device.Host)
 
 	c.devices[device.Host] = make([]collector.RPCCollector, 0)
@@ -78,7 +80,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device) {
 	})
 	c.addCollectorIfEnabledForDevice(device, "bfd", f.BFD, bfd.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "bgp", f.BGP, func() collector.RPCCollector {
-		return bgp.NewCollector(c.logicalSystem)
+		return bgp.NewCollector(c.logicalSystem, bgpDescRe)
 	})
 	c.addCollectorIfEnabledForDevice(device, "env", f.Environment, environment.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "firewall", f.Firewall, firewall.NewCollector)

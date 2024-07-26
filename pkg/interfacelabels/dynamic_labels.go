@@ -24,18 +24,18 @@ func DefaultInterfaceDescRegex() *regexp.Regexp {
 	return regexp.MustCompile(`\[([^=\]]+)(=[^\]]+)?\]`)
 }
 
-// NewDynamicLabels create a new instance of DynamicLabels
-func NewDynamicLabels() *DynamicLabels {
-	return &DynamicLabels{
+// NewDynamicLabelManager create a new instance of DynamicLabels
+func NewDynamicLabelManager() *DynamicLabelManager {
+	return &DynamicLabelManager{
 		labelNames: make(map[string]int),
-		labels:     make(map[interfaceKey][]*interfaceLabel),
+		labels:     make(map[interfaceKey][]*InterfaceLabel),
 	}
 }
 
-// DynamicLabels parses and manages dynamic labels and label values
-type DynamicLabels struct {
+// DynamicLabelManager parses and manages dynamic labels and label values
+type DynamicLabelManager struct {
 	labelNames map[string]int
-	labels     map[interfaceKey][]*interfaceLabel
+	labels     map[interfaceKey][]*InterfaceLabel
 	labelCount int
 	mu         sync.Mutex
 }
@@ -45,13 +45,21 @@ type interfaceKey struct {
 	ifaceName string
 }
 
-type interfaceLabel struct {
+type InterfaceLabel struct {
 	name  string
 	value string
 }
 
+func (il *InterfaceLabel) Name() string {
+	return il.name
+}
+
+func (il *InterfaceLabel) Value() string {
+	return il.value
+}
+
 // CollectDescriptions collects labels from descriptions
-func (l *DynamicLabels) CollectDescriptions(device *connector.Device, client collector.Client, ifDescReg *regexp.Regexp) error {
+func (l *DynamicLabelManager) CollectDescriptions(device *connector.Device, client collector.Client, ifDescReg *regexp.Regexp) error {
 	r := &result{}
 	err := client.RunCommandAndParse("show interfaces descriptions", r)
 	if err != nil {
@@ -65,7 +73,7 @@ func (l *DynamicLabels) CollectDescriptions(device *connector.Device, client col
 }
 
 // LabelNames returns the names for all dynamic labels
-func (l *DynamicLabels) LabelNames() []string {
+func (l *DynamicLabelManager) LabelNames() []string {
 	names := make([]string, len(l.labelNames))
 
 	for k, v := range l.labelNames {
@@ -76,7 +84,7 @@ func (l *DynamicLabels) LabelNames() []string {
 }
 
 // ValuesForInterface returns the values for all dynamic labels
-func (l *DynamicLabels) ValuesForInterface(device *connector.Device, ifaceName string) []string {
+func (l *DynamicLabelManager) ValuesForInterface(device *connector.Device, ifaceName string) []string {
 	labels := make([]string, len(l.labelNames))
 
 	k := interfaceKey{host: device.Host, ifaceName: ifaceName}
@@ -92,12 +100,12 @@ func (l *DynamicLabels) ValuesForInterface(device *connector.Device, ifaceName s
 	return labels
 }
 
-func (l *DynamicLabels) parseDescriptions(device *connector.Device, ifaces []interfaceDescription, ifDescReg *regexp.Regexp) {
+func (l *DynamicLabelManager) parseDescriptions(device *connector.Device, ifaces []interfaceDescription, ifDescReg *regexp.Regexp) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	for _, in := range ifaces {
-		labels := l.parseDescription(in, ifDescReg)
+		labels := ParseDescription(in.Description, ifDescReg)
 
 		for _, la := range labels {
 			if _, found := l.labelNames[la.name]; !found {
@@ -111,14 +119,14 @@ func (l *DynamicLabels) parseDescriptions(device *connector.Device, ifaces []int
 	}
 }
 
-func (l *DynamicLabels) parseDescription(iface interfaceDescription, ifDescReg *regexp.Regexp) []*interfaceLabel {
-	labels := make([]*interfaceLabel, 0)
+func ParseDescription(description string, ifDescReg *regexp.Regexp) InterfaceLabels {
+	labels := make(InterfaceLabels, 0)
 
-	if len(iface.Description) == 0 {
+	if len(description) == 0 || ifDescReg == nil {
 		return labels
 	}
 
-	matches := ifDescReg.FindAllStringSubmatch(iface.Description, -1)
+	matches := ifDescReg.FindAllStringSubmatch(description, -1)
 	for _, m := range matches {
 		n := strings.ToLower(m[1])
 
@@ -126,7 +134,7 @@ func (l *DynamicLabels) parseDescription(iface interfaceDescription, ifDescReg *
 			continue
 		}
 
-		label := &interfaceLabel{
+		label := &InterfaceLabel{
 			name: n,
 		}
 
@@ -142,4 +150,24 @@ func (l *DynamicLabels) parseDescription(iface interfaceDescription, ifDescReg *
 	}
 
 	return labels
+}
+
+type InterfaceLabels []*InterfaceLabel
+
+func (ils InterfaceLabels) Keys() []string {
+	ret := make([]string, 0, len(ils))
+	for _, il := range ils {
+		ret = append(ret, il.name)
+	}
+
+	return ret
+}
+
+func (ils InterfaceLabels) Values() []string {
+	ret := make([]string, 0, len(ils))
+	for _, il := range ils {
+		ret = append(ret, il.value)
+	}
+
+	return ret
 }

@@ -3,6 +3,7 @@
 package config
 
 import (
+	"fmt"
 	"io"
 	"regexp"
 
@@ -11,12 +12,26 @@ import (
 
 // Config represents the configuration for the exporter
 type Config struct {
-	Password  string          `yaml:"password"`
-	Targets   []string        `yaml:"targets,omitempty"`
-	Devices   []*DeviceConfig `yaml:"devices,omitempty"`
-	Features  FeatureConfig   `yaml:"features,omitempty"`
-	LSEnabled bool            `yaml:"logical_systems,omitempty"`
-	IfDescReg string          `yaml:"interface_description_regex,omitempty"`
+	Password    string          `yaml:"password"`
+	Targets     []string        `yaml:"targets,omitempty"`
+	Devices     []*DeviceConfig `yaml:"devices,omitempty"`
+	Features    FeatureConfig   `yaml:"features,omitempty"`
+	LSEnabled   bool            `yaml:"logical_systems,omitempty"`
+	IfDescReStr string          `yaml:"interface_description_regex,omitempty"`
+	IfDescReg   *regexp.Regexp  `yaml:"-"`
+}
+
+func (c *Config) load() error {
+	if c.IfDescReStr != "" {
+		re, err := regexp.Compile(c.IfDescReStr)
+		if err != nil {
+			return fmt.Errorf("unable to compile interfce description regex %q: %w", c.IfDescReStr, err)
+		}
+
+		c.IfDescReg = re
+	}
+
+	return nil
 }
 
 // DeviceConfig is the config representation of 1 device
@@ -27,7 +42,8 @@ type DeviceConfig struct {
 	KeyFile       string         `yaml:"key_file,omitempty"`
 	KeyPassphrase string         `yaml:"key_passphrase,omitempty"`
 	Features      *FeatureConfig `yaml:"features,omitempty"`
-	IfDescReg     string         `yaml:"interface_description_regex,omitempty"`
+	IfDescRegStr  string         `yaml:"interface_description_regex,omitempty"`
+	IfDescReg     *regexp.Regexp `yaml:"-"`
 	IsHostPattern bool           `yaml:"host_pattern,omitempty"`
 	HostPattern   *regexp.Regexp
 }
@@ -94,6 +110,11 @@ func Load(reader io.Reader) (*Config, error) {
 		return nil, err
 	}
 
+	err = c.load()
+	if err != nil {
+		return nil, err
+	}
+
 	for _, device := range c.Devices {
 		if device.IsHostPattern {
 			hostPattern, err := regexp.Compile(device.Host)
@@ -110,7 +131,6 @@ func Load(reader io.Reader) (*Config, error) {
 func setDefaultValues(c *Config) {
 	c.Password = ""
 	c.LSEnabled = false
-	c.IfDescReg = ""
 	f := &c.Features
 	f.Alarm = true
 	f.BGP = true

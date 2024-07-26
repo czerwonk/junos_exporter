@@ -17,7 +17,7 @@ func TestShouldParse(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c, err := Load(bytes.NewReader(b))
+	c, err := Load(bytes.NewReader(b), true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +49,7 @@ func TestShouldUseDefaults(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c, err := Load(bytes.NewReader(b))
+	c, err := Load(bytes.NewReader(b), true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +78,7 @@ func TestShouldParseDevices(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c, err := Load(bytes.NewReader(b))
+	c, err := Load(bytes.NewReader(b), true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -124,7 +124,7 @@ func TestShouldParseDevicesWithPattern(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c, err := Load(bytes.NewReader(b))
+	c, err := Load(bytes.NewReader(b), true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -165,7 +165,7 @@ func TestShouldParseDevicesWithPatternInvalid(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c, err := Load(bytes.NewReader(b))
+	c, err := Load(bytes.NewReader(b), true)
 	if c != nil {
 		t.Fatal("Parsing should fail because of invalid pattern")
 	}
@@ -185,7 +185,7 @@ func TestFindDeviceConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	c, err := Load(bytes.NewReader(b))
+	c, err := Load(bytes.NewReader(b), true)
 	if err != nil {
 		t.Fatal(err)
 	}

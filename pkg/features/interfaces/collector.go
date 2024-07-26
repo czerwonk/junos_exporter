@@ -3,20 +3,18 @@
 package interfaces
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/connector"
-	"github.com/czerwonk/junos_exporter/pkg/interfacelabels"
+	"github.com/czerwonk/junos_exporter/pkg/dynamiclabels"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 const prefix = "junos_interface_"
 
-// Collector collects interface metrics
-type interfaceCollector struct {
-	labels                      *interfacelabels.DynamicLabelManager
+type description struct {
 	receiveBytesDesc            *prometheus.Desc
 	receivePacketsDesc          *prometheus.Desc
 	receiveErrorsDesc           *prometheus.Desc
@@ -56,12 +54,62 @@ type interfaceCollector struct {
 	transmitTotalErrorsDesc     *prometheus.Desc
 }
 
+func newDescriptions(dynLabels dynamiclabels.Labels) *description {
+	d := &description{}
+	l := []string{"target", "name", "description", "mac"}
+	l = append(l, dynLabels.Keys()...)
+
+	d.receiveBytesDesc = prometheus.NewDesc(prefix+"receive_bytes", "Received data in bytes", l, nil)
+	d.receivePacketsDesc = prometheus.NewDesc(prefix+"receive_packets_total", "Received packets", l, nil)
+	d.receiveErrorsDesc = prometheus.NewDesc(prefix+"receive_errors", "Number of errors caused by incoming packets", l, nil)
+	d.receiveDropsDesc = prometheus.NewDesc(prefix+"receive_drops", "Number of dropped incoming packets", l, nil)
+	d.interfaceSpeedDesc = prometheus.NewDesc(prefix+"speed", "speed in in bps", l, nil)
+	d.interfaceBPDUErrorDesc = prometheus.NewDesc(prefix+"error_bpdublock", "Flag which tells that there's a BPDU_Block on the interface (bool)", l, nil)
+	d.transmitBytesDesc = prometheus.NewDesc(prefix+"transmit_bytes", "Transmitted data in bytes", l, nil)
+	d.transmitPacketsDesc = prometheus.NewDesc(prefix+"transmit_packets_total", "Transmitted packets", l, nil)
+	d.transmitErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors", "Number of errors caused by outgoing packets", l, nil)
+	d.transmitDropsDesc = prometheus.NewDesc(prefix+"transmit_drops", "Number of dropped outgoing packets", l, nil)
+	d.ipv6receiveBytesDesc = prometheus.NewDesc(prefix+"IPv6_receive_bytes_total", "Received IPv6 data in bytes", l, nil)
+	d.ipv6receivePacketsDesc = prometheus.NewDesc(prefix+"IPv6_receive_packets_total", "Received IPv6 packets", l, nil)
+	d.ipv6transmitBytesDesc = prometheus.NewDesc(prefix+"IPv6_transmit_bytes_total", "Transmitted IPv6 data in bytes", l, nil)
+	d.ipv6transmitPacketsDesc = prometheus.NewDesc(prefix+"IPv6_transmit_packets_total", "Transmitted IPv6 packets", l, nil)
+	d.adminStatusDesc = prometheus.NewDesc(prefix+"admin_up", "Admin operational status", l, nil)
+	d.operStatusDesc = prometheus.NewDesc(prefix+"up", "Interface operational status", l, nil)
+	d.errorStatusDesc = prometheus.NewDesc(prefix+"error_status", "Admin and operational status differ", l, nil)
+	d.lastFlappedDesc = prometheus.NewDesc(prefix+"last_flapped_seconds", "Seconds since last flapped (-1 if never)", l, nil)
+	d.receiveUnicastsDesc = prometheus.NewDesc(prefix+"receive_unicasts_packets", "Received unicast packets", l, nil)
+	d.receiveBroadcastsDesc = prometheus.NewDesc(prefix+"receive_broadcasts_packets", "Received broadcast packets", l, nil)
+	d.receiveMulticastsDesc = prometheus.NewDesc(prefix+"receive_multicasts_packets", "Received multicast packets", l, nil)
+	d.receiveCRCErrorsDesc = prometheus.NewDesc(prefix+"receive_errors_crc_packets", "Number of CRC error incoming packets", l, nil)
+	d.transmitUnicastsDesc = prometheus.NewDesc(prefix+"transmit_unicasts_packets", "Transmitted unicast packets", l, nil)
+	d.transmitBroadcastsDesc = prometheus.NewDesc(prefix+"transmit_broadcasts_packets", "Transmitted broadcast packets", l, nil)
+	d.transmitMulticastsDesc = prometheus.NewDesc(prefix+"transmit_multicasts_packets", "Transmitted multicast packets", l, nil)
+	d.transmitCRCErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors_crc_packets", "Number of CRC error outgoing packets", l, nil)
+	d.fecCcwCountDesc = prometheus.NewDesc(prefix+"fec_ccw_count", "Number FEC Corrected Errors", l, nil)
+	d.fecNccwCountDesc = prometheus.NewDesc(prefix+"fec_nccw_count", "Number FEC Uncorrected Errors", l, nil)
+	d.fecCcwErrorRateDesc = prometheus.NewDesc(prefix+"fec_ccw_error_rate", "Number FEC Corrected Errors Rate", l, nil)
+	d.fecNccwErrorRateDesc = prometheus.NewDesc(prefix+"fec_nccw_error_rate", "Number FEC Uncorrected Errors Rate", l, nil)
+	d.receiveOversizedFramesDesc = prometheus.NewDesc(prefix+"receive_oversized_frames", "Number of received Oversize Frames", l, nil)
+	d.receiveJabberFramesDesc = prometheus.NewDesc(prefix+"receive_jabber_frames", "Number of received Jabber Frames", l, nil)
+	d.receiveFragmentFramesDesc = prometheus.NewDesc(prefix+"receive_fragment_frames", "Number of received Fragment Frames", l, nil)
+	d.receiveVlanTaggedFramesDesc = prometheus.NewDesc(prefix+"receive_vlan_tagged_frames", "Number of received Vlan Tagged Frames", l, nil)
+	d.receiveCodeViolationsDesc = prometheus.NewDesc(prefix+"receive_code_violations", "Number of received Code Violations", l, nil)
+	d.receiveTotalErrorsDesc = prometheus.NewDesc(prefix+"receive_total_errors", "Number of received Total Errors", l, nil)
+	d.transmitTotalErrorsDesc = prometheus.NewDesc(prefix+"transmit_total_errors", "Number of transmitted Total Errors", l, nil)
+
+	return d
+}
+
+// Collector collects interface metrics
+type interfaceCollector struct {
+	descriptionRe *regexp.Regexp
+}
+
 // NewCollector creates a new collector
-func NewCollector(labels *interfacelabels.DynamicLabelManager) collector.RPCCollector {
+func NewCollector(descRe *regexp.Regexp) collector.RPCCollector {
 	c := &interfaceCollector{
-		labels: labels,
+		descriptionRe: descRe,
 	}
-	c.init()
 
 	return c
 }
@@ -71,89 +119,46 @@ func (*interfaceCollector) Name() string {
 	return "Interfaces"
 }
 
-func (c *interfaceCollector) init() {
-	l := []string{"target", "name", "description", "mac"}
-	l = append(l, c.labels.LabelNames()...)
-
-	c.receiveBytesDesc = prometheus.NewDesc(prefix+"receive_bytes", "Received data in bytes", l, nil)
-	c.receivePacketsDesc = prometheus.NewDesc(prefix+"receive_packets_total", "Received packets", l, nil)
-	c.receiveErrorsDesc = prometheus.NewDesc(prefix+"receive_errors", "Number of errors caused by incoming packets", l, nil)
-	c.receiveDropsDesc = prometheus.NewDesc(prefix+"receive_drops", "Number of dropped incoming packets", l, nil)
-	c.interfaceSpeedDesc = prometheus.NewDesc(prefix+"speed", "speed in in bps", l, nil)
-	c.interfaceBPDUErrorDesc = prometheus.NewDesc(prefix+"error_bpdublock", "Flag which tells that there's a BPDU_Block on the interface (bool)", l, nil)
-	c.transmitBytesDesc = prometheus.NewDesc(prefix+"transmit_bytes", "Transmitted data in bytes", l, nil)
-	c.transmitPacketsDesc = prometheus.NewDesc(prefix+"transmit_packets_total", "Transmitted packets", l, nil)
-	c.transmitErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors", "Number of errors caused by outgoing packets", l, nil)
-	c.transmitDropsDesc = prometheus.NewDesc(prefix+"transmit_drops", "Number of dropped outgoing packets", l, nil)
-	c.ipv6receiveBytesDesc = prometheus.NewDesc(prefix+"IPv6_receive_bytes_total", "Received IPv6 data in bytes", l, nil)
-	c.ipv6receivePacketsDesc = prometheus.NewDesc(prefix+"IPv6_receive_packets_total", "Received IPv6 packets", l, nil)
-	c.ipv6transmitBytesDesc = prometheus.NewDesc(prefix+"IPv6_transmit_bytes_total", "Transmitted IPv6 data in bytes", l, nil)
-	c.ipv6transmitPacketsDesc = prometheus.NewDesc(prefix+"IPv6_transmit_packets_total", "Transmitted IPv6 packets", l, nil)
-	c.adminStatusDesc = prometheus.NewDesc(prefix+"admin_up", "Admin operational status", l, nil)
-	c.operStatusDesc = prometheus.NewDesc(prefix+"up", "Interface operational status", l, nil)
-	c.errorStatusDesc = prometheus.NewDesc(prefix+"error_status", "Admin and operational status differ", l, nil)
-	c.lastFlappedDesc = prometheus.NewDesc(prefix+"last_flapped_seconds", "Seconds since last flapped (-1 if never)", l, nil)
-	c.receiveUnicastsDesc = prometheus.NewDesc(prefix+"receive_unicasts_packets", "Received unicast packets", l, nil)
-	c.receiveBroadcastsDesc = prometheus.NewDesc(prefix+"receive_broadcasts_packets", "Received broadcast packets", l, nil)
-	c.receiveMulticastsDesc = prometheus.NewDesc(prefix+"receive_multicasts_packets", "Received multicast packets", l, nil)
-	c.receiveCRCErrorsDesc = prometheus.NewDesc(prefix+"receive_errors_crc_packets", "Number of CRC error incoming packets", l, nil)
-	c.transmitUnicastsDesc = prometheus.NewDesc(prefix+"transmit_unicasts_packets", "Transmitted unicast packets", l, nil)
-	c.transmitBroadcastsDesc = prometheus.NewDesc(prefix+"transmit_broadcasts_packets", "Transmitted broadcast packets", l, nil)
-	c.transmitMulticastsDesc = prometheus.NewDesc(prefix+"transmit_multicasts_packets", "Transmitted multicast packets", l, nil)
-	c.transmitCRCErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors_crc_packets", "Number of CRC error outgoing packets", l, nil)
-	c.fecCcwCountDesc = prometheus.NewDesc(prefix+"fec_ccw_count", "Number FEC Corrected Errors", l, nil)
-	c.fecNccwCountDesc = prometheus.NewDesc(prefix+"fec_nccw_count", "Number FEC Uncorrected Errors", l, nil)
-	c.fecCcwErrorRateDesc = prometheus.NewDesc(prefix+"fec_ccw_error_rate", "Number FEC Corrected Errors Rate", l, nil)
-	c.fecNccwErrorRateDesc = prometheus.NewDesc(prefix+"fec_nccw_error_rate", "Number FEC Uncorrected Errors Rate", l, nil)
-	c.receiveOversizedFramesDesc = prometheus.NewDesc(prefix+"receive_oversized_frames", "Number of received Oversize Frames", l, nil)
-	c.receiveJabberFramesDesc = prometheus.NewDesc(prefix+"receive_jabber_frames", "Number of received Jabber Frames", l, nil)
-	c.receiveFragmentFramesDesc = prometheus.NewDesc(prefix+"receive_fragment_frames", "Number of received Fragment Frames", l, nil)
-	c.receiveVlanTaggedFramesDesc = prometheus.NewDesc(prefix+"receive_vlan_tagged_frames", "Number of received Vlan Tagged Frames", l, nil)
-	c.receiveCodeViolationsDesc = prometheus.NewDesc(prefix+"receive_code_violations", "Number of received Code Violations", l, nil)
-	c.receiveTotalErrorsDesc = prometheus.NewDesc(prefix+"receive_total_errors", "Number of received Total Errors", l, nil)
-	c.transmitTotalErrorsDesc = prometheus.NewDesc(prefix+"transmit_total_errors", "Number of transmitted Total Errors", l, nil)
-
-}
-
 // Describe describes the metrics
-func (c *interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- c.receiveBytesDesc
-	ch <- c.receivePacketsDesc
-	ch <- c.receiveErrorsDesc
-	ch <- c.receiveDropsDesc
-	ch <- c.interfaceSpeedDesc
-	ch <- c.interfaceBPDUErrorDesc
-	ch <- c.transmitBytesDesc
-	ch <- c.transmitPacketsDesc
-	ch <- c.transmitDropsDesc
-	ch <- c.transmitErrorsDesc
-	ch <- c.ipv6receiveBytesDesc
-	ch <- c.ipv6receivePacketsDesc
-	ch <- c.ipv6transmitBytesDesc
-	ch <- c.ipv6transmitPacketsDesc
-	ch <- c.adminStatusDesc
-	ch <- c.operStatusDesc
-	ch <- c.errorStatusDesc
-	ch <- c.lastFlappedDesc
-	ch <- c.receiveUnicastsDesc
-	ch <- c.receiveBroadcastsDesc
-	ch <- c.receiveMulticastsDesc
-	ch <- c.receiveCRCErrorsDesc
-	ch <- c.transmitUnicastsDesc
-	ch <- c.transmitBroadcastsDesc
-	ch <- c.transmitMulticastsDesc
-	ch <- c.transmitCRCErrorsDesc
-	ch <- c.fecCcwCountDesc
-	ch <- c.fecNccwCountDesc
-	ch <- c.fecCcwErrorRateDesc
-	ch <- c.fecNccwErrorRateDesc
-	ch <- c.receiveOversizedFramesDesc
-	ch <- c.receiveJabberFramesDesc
-	ch <- c.receiveFragmentFramesDesc
-	ch <- c.receiveVlanTaggedFramesDesc
-	ch <- c.receiveCodeViolationsDesc
-	ch <- c.receiveTotalErrorsDesc
-	ch <- c.transmitTotalErrorsDesc
+func (*interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
+	d := newDescriptions(nil)
+	ch <- d.receiveBytesDesc
+	ch <- d.receivePacketsDesc
+	ch <- d.receiveErrorsDesc
+	ch <- d.receiveDropsDesc
+	ch <- d.interfaceSpeedDesc
+	ch <- d.interfaceBPDUErrorDesc
+	ch <- d.transmitBytesDesc
+	ch <- d.transmitPacketsDesc
+	ch <- d.transmitDropsDesc
+	ch <- d.transmitErrorsDesc
+	ch <- d.ipv6receiveBytesDesc
+	ch <- d.ipv6receivePacketsDesc
+	ch <- d.ipv6transmitBytesDesc
+	ch <- d.ipv6transmitPacketsDesc
+	ch <- d.adminStatusDesc
+	ch <- d.operStatusDesc
+	ch <- d.errorStatusDesc
+	ch <- d.lastFlappedDesc
+	ch <- d.receiveUnicastsDesc
+	ch <- d.receiveBroadcastsDesc
+	ch <- d.receiveMulticastsDesc
+	ch <- d.receiveCRCErrorsDesc
+	ch <- d.transmitUnicastsDesc
+	ch <- d.transmitBroadcastsDesc
+	ch <- d.transmitMulticastsDesc
+	ch <- d.transmitCRCErrorsDesc
+	ch <- d.fecCcwCountDesc
+	ch <- d.fecNccwCountDesc
+	ch <- d.fecCcwErrorRateDesc
+	ch <- d.fecNccwErrorRateDesc
+	ch <- d.receiveOversizedFramesDesc
+	ch <- d.receiveJabberFramesDesc
+	ch <- d.receiveFragmentFramesDesc
+	ch <- d.receiveVlanTaggedFramesDesc
+	ch <- d.receiveCodeViolationsDesc
+	ch <- d.receiveTotalErrorsDesc
+	ch <- d.transmitTotalErrorsDesc
 }
 
 // Collect collects metrics from JunOS
@@ -164,7 +169,7 @@ func (c *interfaceCollector) Collect(client collector.Client, ch chan<- promethe
 	}
 
 	for _, s := range stats {
-		c.collectForInterface(s, client.Device(), ch, labelValues)
+		c.collectForInterface(s, ch, labelValues)
 	}
 
 	return nil
@@ -258,18 +263,20 @@ func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfa
 	return stats, nil
 }
 
-func (c *interfaceCollector) collectForInterface(s *interfaceStats, device *connector.Device, ch chan<- prometheus.Metric, labelValues []string) {
-	l := append(labelValues, []string{s.Name, s.Description, s.Mac}...)
-	l = append(l, c.labels.ValuesForInterface(device, s.Name)...)
+func (c *interfaceCollector) collectForInterface(s *interfaceStats, ch chan<- prometheus.Metric, labelValues []string) {
+	lv := append(labelValues, []string{s.Name, s.Description, s.Mac}...)
+	dynLabels := dynamiclabels.ParseDescription(s.Description, c.descriptionRe)
+	lv = append(lv, dynLabels.Values()...)
+	d := newDescriptions(dynLabels)
 
-	ch <- prometheus.MustNewConstMetric(c.receiveBytesDesc, prometheus.CounterValue, s.ReceiveBytes, l...)
-	ch <- prometheus.MustNewConstMetric(c.receivePacketsDesc, prometheus.CounterValue, s.ReceivePackets, l...)
-	ch <- prometheus.MustNewConstMetric(c.transmitBytesDesc, prometheus.CounterValue, s.TransmitBytes, l...)
-	ch <- prometheus.MustNewConstMetric(c.transmitPacketsDesc, prometheus.CounterValue, s.TransmitPackets, l...)
-	ch <- prometheus.MustNewConstMetric(c.ipv6receiveBytesDesc, prometheus.CounterValue, s.IPv6ReceiveBytes, l...)
-	ch <- prometheus.MustNewConstMetric(c.ipv6receivePacketsDesc, prometheus.CounterValue, s.IPv6ReceivePackets, l...)
-	ch <- prometheus.MustNewConstMetric(c.ipv6transmitBytesDesc, prometheus.CounterValue, s.IPv6TransmitBytes, l...)
-	ch <- prometheus.MustNewConstMetric(c.ipv6transmitPacketsDesc, prometheus.CounterValue, s.IPv6TransmitPackets, l...)
+	ch <- prometheus.MustNewConstMetric(d.receiveBytesDesc, prometheus.CounterValue, s.ReceiveBytes, lv...)
+	ch <- prometheus.MustNewConstMetric(d.receivePacketsDesc, prometheus.CounterValue, s.ReceivePackets, lv...)
+	ch <- prometheus.MustNewConstMetric(d.transmitBytesDesc, prometheus.CounterValue, s.TransmitBytes, lv...)
+	ch <- prometheus.MustNewConstMetric(d.transmitPacketsDesc, prometheus.CounterValue, s.TransmitPackets, lv...)
+	ch <- prometheus.MustNewConstMetric(d.ipv6receiveBytesDesc, prometheus.CounterValue, s.IPv6ReceiveBytes, lv...)
+	ch <- prometheus.MustNewConstMetric(d.ipv6receivePacketsDesc, prometheus.CounterValue, s.IPv6ReceivePackets, lv...)
+	ch <- prometheus.MustNewConstMetric(d.ipv6transmitBytesDesc, prometheus.CounterValue, s.IPv6TransmitBytes, lv...)
+	ch <- prometheus.MustNewConstMetric(d.ipv6transmitPacketsDesc, prometheus.CounterValue, s.IPv6TransmitPackets, lv...)
 
 	if s.IsPhysical {
 		adminUp := 0
@@ -313,41 +320,41 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, device *conn
 		sp64, _ := strconv.ParseFloat(speed, 64)
 
 		if s.BPDUError {
-			ch <- prometheus.MustNewConstMetric(c.interfaceBPDUErrorDesc, prometheus.GaugeValue, float64(1), l...)
+			ch <- prometheus.MustNewConstMetric(d.interfaceBPDUErrorDesc, prometheus.GaugeValue, float64(1), lv...)
 		}
 
-		ch <- prometheus.MustNewConstMetric(c.adminStatusDesc, prometheus.GaugeValue, float64(adminUp), l...)
-		ch <- prometheus.MustNewConstMetric(c.operStatusDesc, prometheus.GaugeValue, float64(operUp), l...)
-		ch <- prometheus.MustNewConstMetric(c.errorStatusDesc, prometheus.GaugeValue, float64(err), l...)
-		ch <- prometheus.MustNewConstMetric(c.transmitErrorsDesc, prometheus.CounterValue, s.TransmitErrors, l...)
-		ch <- prometheus.MustNewConstMetric(c.transmitDropsDesc, prometheus.CounterValue, s.TransmitDrops, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveErrorsDesc, prometheus.CounterValue, s.ReceiveErrors, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveDropsDesc, prometheus.CounterValue, s.ReceiveDrops, l...)
-		ch <- prometheus.MustNewConstMetric(c.interfaceSpeedDesc, prometheus.GaugeValue, float64(sp64), l...)
+		ch <- prometheus.MustNewConstMetric(d.adminStatusDesc, prometheus.GaugeValue, float64(adminUp), lv...)
+		ch <- prometheus.MustNewConstMetric(d.operStatusDesc, prometheus.GaugeValue, float64(operUp), lv...)
+		ch <- prometheus.MustNewConstMetric(d.errorStatusDesc, prometheus.GaugeValue, float64(err), lv...)
+		ch <- prometheus.MustNewConstMetric(d.transmitErrorsDesc, prometheus.CounterValue, s.TransmitErrors, lv...)
+		ch <- prometheus.MustNewConstMetric(d.transmitDropsDesc, prometheus.CounterValue, s.TransmitDrops, lv...)
+		ch <- prometheus.MustNewConstMetric(d.receiveErrorsDesc, prometheus.CounterValue, s.ReceiveErrors, lv...)
+		ch <- prometheus.MustNewConstMetric(d.receiveDropsDesc, prometheus.CounterValue, s.ReceiveDrops, lv...)
+		ch <- prometheus.MustNewConstMetric(d.interfaceSpeedDesc, prometheus.GaugeValue, float64(sp64), lv...)
 
 		if s.LastFlapped != 0 {
-			ch <- prometheus.MustNewConstMetric(c.lastFlappedDesc, prometheus.GaugeValue, s.LastFlapped, l...)
+			ch <- prometheus.MustNewConstMetric(d.lastFlappedDesc, prometheus.GaugeValue, s.LastFlapped, lv...)
 		}
 
-		ch <- prometheus.MustNewConstMetric(c.receiveUnicastsDesc, prometheus.CounterValue, s.ReceiveUnicasts, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveBroadcastsDesc, prometheus.CounterValue, s.ReceiveBroadcasts, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveMulticastsDesc, prometheus.CounterValue, s.ReceiveMulticasts, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveCRCErrorsDesc, prometheus.CounterValue, s.ReceiveCRCErrors, l...)
-		ch <- prometheus.MustNewConstMetric(c.transmitUnicastsDesc, prometheus.CounterValue, s.TransmitUnicasts, l...)
-		ch <- prometheus.MustNewConstMetric(c.transmitBroadcastsDesc, prometheus.CounterValue, s.TransmitBroadcasts, l...)
-		ch <- prometheus.MustNewConstMetric(c.transmitMulticastsDesc, prometheus.CounterValue, s.TransmitMulticasts, l...)
-		ch <- prometheus.MustNewConstMetric(c.transmitCRCErrorsDesc, prometheus.CounterValue, s.TransmitCRCErrors, l...)
-		ch <- prometheus.MustNewConstMetric(c.fecCcwCountDesc, prometheus.CounterValue, s.FecCcwCount, l...)
-		ch <- prometheus.MustNewConstMetric(c.fecNccwCountDesc, prometheus.CounterValue, s.FecNccwCount, l...)
-		ch <- prometheus.MustNewConstMetric(c.fecCcwErrorRateDesc, prometheus.CounterValue, s.FecCcwErrorRate, l...)
-		ch <- prometheus.MustNewConstMetric(c.fecNccwErrorRateDesc, prometheus.CounterValue, s.FecNccwErrorRate, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveOversizedFramesDesc, prometheus.CounterValue, s.ReceiveOversizedFrames, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveJabberFramesDesc, prometheus.CounterValue, s.ReceiveJabberFrames, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveFragmentFramesDesc, prometheus.CounterValue, s.ReceiveFragmentFrames, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveVlanTaggedFramesDesc, prometheus.CounterValue, s.ReceiveVlanTaggedFrames, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveCodeViolationsDesc, prometheus.CounterValue, s.ReceiveCodeViolations, l...)
-		ch <- prometheus.MustNewConstMetric(c.receiveTotalErrorsDesc, prometheus.CounterValue, s.ReceiveTotalErrors, l...)
-		ch <- prometheus.MustNewConstMetric(c.transmitTotalErrorsDesc, prometheus.CounterValue, s.TransmitTotalErrors, l...)
+		ch <- prometheus.MustNewConstMetric(d.receiveUnicastsDesc, prometheus.CounterValue, s.ReceiveUnicasts, lv...)
+		ch <- prometheus.MustNewConstMetric(d.receiveBroadcastsDesc, prometheus.CounterValue, s.ReceiveBroadcasts, lv...)
+		ch <- prometheus.MustNewConstMetric(d.receiveMulticastsDesc, prometheus.CounterValue, s.ReceiveMulticasts, lv...)
+		ch <- prometheus.MustNewConstMetric(d.receiveCRCErrorsDesc, prometheus.CounterValue, s.ReceiveCRCErrors, lv...)
+		ch <- prometheus.MustNewConstMetric(d.transmitUnicastsDesc, prometheus.CounterValue, s.TransmitUnicasts, lv...)
+		ch <- prometheus.MustNewConstMetric(d.transmitBroadcastsDesc, prometheus.CounterValue, s.TransmitBroadcasts, lv...)
+		ch <- prometheus.MustNewConstMetric(d.transmitMulticastsDesc, prometheus.CounterValue, s.TransmitMulticasts, lv...)
+		ch <- prometheus.MustNewConstMetric(d.transmitCRCErrorsDesc, prometheus.CounterValue, s.TransmitCRCErrors, lv...)
+		ch <- prometheus.MustNewConstMetric(d.fecCcwCountDesc, prometheus.CounterValue, s.FecCcwCount, lv...)
+		ch <- prometheus.MustNewConstMetric(d.fecNccwCountDesc, prometheus.CounterValue, s.FecNccwCount, lv...)
+		ch <- prometheus.MustNewConstMetric(d.fecCcwErrorRateDesc, prometheus.CounterValue, s.FecCcwErrorRate, lv...)
+		ch <- prometheus.MustNewConstMetric(d.fecNccwErrorRateDesc, prometheus.CounterValue, s.FecNccwErrorRate, lv...)
+		ch <- prometheus.MustNewConstMetric(d.receiveOversizedFramesDesc, prometheus.CounterValue, s.ReceiveOversizedFrames, lv...)
+		ch <- prometheus.MustNewConstMetric(d.receiveJabberFramesDesc, prometheus.CounterValue, s.ReceiveJabberFrames, lv...)
+		ch <- prometheus.MustNewConstMetric(d.receiveFragmentFramesDesc, prometheus.CounterValue, s.ReceiveFragmentFrames, lv...)
+		ch <- prometheus.MustNewConstMetric(d.receiveVlanTaggedFramesDesc, prometheus.CounterValue, s.ReceiveVlanTaggedFrames, lv...)
+		ch <- prometheus.MustNewConstMetric(d.receiveCodeViolationsDesc, prometheus.CounterValue, s.ReceiveCodeViolations, lv...)
+		ch <- prometheus.MustNewConstMetric(d.receiveTotalErrorsDesc, prometheus.CounterValue, s.ReceiveTotalErrors, lv...)
+		ch <- prometheus.MustNewConstMetric(d.transmitTotalErrorsDesc, prometheus.CounterValue, s.TransmitTotalErrors, lv...)
 
 	}
 }

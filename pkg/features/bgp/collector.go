@@ -8,7 +8,7 @@ import (
 	"regexp"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/czerwonk/junos_exporter/pkg/interfacelabels"
+	"github.com/czerwonk/junos_exporter/pkg/dynamiclabels"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"strings"
@@ -35,7 +35,7 @@ type description struct {
 	holdTimeDesc                *prometheus.Desc
 }
 
-func newDescriptions(dynLabels interfacelabels.InterfaceLabels) *description {
+func newDescriptions(dynLabels dynamiclabels.Labels) *description {
 	d := &description{}
 
 	l := []string{"target", "asn", "ip", "description", "group"}
@@ -174,7 +174,7 @@ func (c *bgpCollector) collectForPeer(p peer, groups groupMap, ch chan<- prometh
 		up = 1
 	}
 
-	dynLabels := interfacelabels.ParseDescription(p.Description, c.descriptionRe)
+	dynLabels := dynamiclabels.ParseDescription(p.Description, c.descriptionRe)
 	lv = append(lv, dynLabels.Values()...)
 
 	d := newDescriptions(dynLabels)

@@ -8,14 +8,16 @@ import (
 	"sync"
 	"time"
 
+	"github.com/czerwonk/junos_exporter/internal/config"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
-	"github.com/czerwonk/junos_exporter/pkg/interfacelabels"
+	"github.com/czerwonk/junos_exporter/pkg/dynamiclabels"
 	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
-	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const prefix = "junos_"
@@ -40,8 +42,6 @@ type junosCollector struct {
 }
 
 func newJunosCollector(ctx context.Context, devices []*connector.Device, logicalSystem string) *junosCollector {
-	l := interfacelabels.NewDynamicLabelManager()
-
 	clients := make(map[*connector.Device]*rpc.Client)
 
 	for _, d := range devices {
@@ -52,42 +52,28 @@ func newJunosCollector(ctx context.Context, devices []*connector.Device, logical
 		}
 
 		clients[d] = cl
-		cta := &clientTracingAdapter{
-			cl:  cl,
-			ctx: ctx,
-		}
-
-		if *dynamicIfaceLabels {
-			regex := deviceInterfaceRegex(d.Host)
-			err = l.CollectDescriptions(d, cta, regex)
-			if err != nil {
-				log.Errorf("Could not get interface descriptions %s: %s", d, err)
-				continue
-			}
-		}
 	}
 
 	return &junosCollector{
 		devices:    devices,
-		collectors: collectorsForDevices(devices, cfg, logicalSystem, l),
+		collectors: collectorsForDevices(devices, cfg, logicalSystem),
 		clients:    clients,
 		ctx:        ctx,
 	}
 }
 
-func deviceInterfaceRegex(host string) *regexp.Regexp {
+func deviceInterfaceRegex(cfg *config.Config, host string) *regexp.Regexp {
 	dc := cfg.FindDeviceConfig(host)
 
-	if len(dc.IfDescRegStr) > 0 {
-		regex, err := regexp.Compile(dc.IfDescRegStr)
-		if err == nil {
-			return regex
-		}
-
-		log.Errorf("device specific dynamic label regex %s invalid: %v", dc.IfDescRegStr, err)
+	if dc != nil {
+		return dc.IfDescReg
 	}
 
-	return interfacelabels.DefaultInterfaceDescRegex()
+	if cfg.IfDescReg != nil {
+		return cfg.IfDescReg
+	}
+
+	return dynamiclabels.DefaultInterfaceDescRegex()
 }
 
 func clientForDevice(device *connector.Device, connManager *connector.SSHConnectionManager) (*rpc.Client, error) {

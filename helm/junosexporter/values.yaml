@@ -37,6 +37,7 @@ extraArgs: []
 #       ospf: false
 #       isis: false
 #       l2circuit: false
+#       l2vpn: false
 #       environment: true
 #       routes: true
 #       routing_engine: true

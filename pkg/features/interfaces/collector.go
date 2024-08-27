@@ -52,6 +52,7 @@ type description struct {
 	receiveCodeViolationsDesc   *prometheus.Desc
 	receiveTotalErrorsDesc      *prometheus.Desc
 	transmitTotalErrorsDesc     *prometheus.Desc
+	mtu                         *prometheus.Desc
 }
 
 func newDescriptions(dynLabels dynamiclabels.Labels) *description {
@@ -96,6 +97,7 @@ func newDescriptions(dynLabels dynamiclabels.Labels) *description {
 	d.receiveCodeViolationsDesc = prometheus.NewDesc(prefix+"receive_code_violations", "Number of received Code Violations", l, nil)
 	d.receiveTotalErrorsDesc = prometheus.NewDesc(prefix+"receive_total_errors", "Number of received Total Errors", l, nil)
 	d.transmitTotalErrorsDesc = prometheus.NewDesc(prefix+"transmit_total_errors", "Number of transmitted Total Errors", l, nil)
+	d.mtu = prometheus.NewDesc(prefix+"mtu", "configured MTU", l, nil)
 
 	return d
 }
@@ -159,6 +161,7 @@ func (*interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- d.receiveCodeViolationsDesc
 	ch <- d.receiveTotalErrorsDesc
 	ch <- d.transmitTotalErrorsDesc
+	ch <- d.mtu
 }
 
 // Collect collects metrics from JunOS
@@ -226,6 +229,7 @@ func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfa
 			ReceiveCodeViolations:   float64(phy.MACStatistics.InputCodeViolations),
 			ReceiveTotalErrors:      float64(phy.MACStatistics.InputTotalErrors),
 			TransmitTotalErrors:     float64(phy.MACStatistics.OutputTotalErrors),
+			MTU:                     phy.MTU,
 		}
 
 		if phy.InterfaceFlapped.Value != "Never" {
@@ -323,6 +327,12 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, ch chan<- pr
 			ch <- prometheus.MustNewConstMetric(d.interfaceBPDUErrorDesc, prometheus.GaugeValue, float64(1), lv...)
 		}
 
+		mtu := s.MTU
+		if strings.Contains(s.MTU, "Unlimited") {
+			mtu = "65535"
+		}
+		mtu64, _ := strconv.ParseFloat(mtu, 64)
+
 		ch <- prometheus.MustNewConstMetric(d.adminStatusDesc, prometheus.GaugeValue, float64(adminUp), lv...)
 		ch <- prometheus.MustNewConstMetric(d.operStatusDesc, prometheus.GaugeValue, float64(operUp), lv...)
 		ch <- prometheus.MustNewConstMetric(d.errorStatusDesc, prometheus.GaugeValue, float64(err), lv...)
@@ -331,6 +341,7 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, ch chan<- pr
 		ch <- prometheus.MustNewConstMetric(d.receiveErrorsDesc, prometheus.CounterValue, s.ReceiveErrors, lv...)
 		ch <- prometheus.MustNewConstMetric(d.receiveDropsDesc, prometheus.CounterValue, s.ReceiveDrops, lv...)
 		ch <- prometheus.MustNewConstMetric(d.interfaceSpeedDesc, prometheus.GaugeValue, float64(sp64), lv...)
+		ch <- prometheus.MustNewConstMetric(d.mtu, prometheus.GaugeValue, float64(mtu64), lv...)
 
 		if s.LastFlapped != 0 {
 			ch <- prometheus.MustNewConstMetric(d.lastFlappedDesc, prometheus.GaugeValue, s.LastFlapped, lv...)

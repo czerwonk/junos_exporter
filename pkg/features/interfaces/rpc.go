@@ -32,6 +32,7 @@ type phyInterface struct {
 	} `xml:"interface-flapped"`
 	MACStatistics ethernetMACStat `xml:"ethernet-mac-statistics"`
 	FECStatistics ethernetFECStat `xml:"ethernet-fec-statistics"`
+	MTU           string          `xml:"mtu"`
 }
 
 type logInterface struct {

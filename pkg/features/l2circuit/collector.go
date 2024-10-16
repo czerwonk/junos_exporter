@@ -104,11 +104,9 @@ func (c *l2circuitCollector) collectForConnection(client collector.Client, ch ch
 	idInt := re.FindStringSubmatch(idStr)
 	id := idInt[len(idInt)-1]
 
-	// Ajout de la description dans les labels
 	l := append(labelValues, id, conn.LocalInterface.Description)
 	state := l2circuitMap[conn.StatusString]
 
-	// Envoie des métriques avec la description incluse
 	ch <- prometheus.MustNewConstMetric(l2circuitConnectionsDesc, prometheus.GaugeValue, float64(connCount), l...)
 	ch <- prometheus.MustNewConstMetric(l2circuitConnectionStateDesc, prometheus.GaugeValue, float64(state), l...)
 }

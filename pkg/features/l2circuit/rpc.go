@@ -19,4 +19,9 @@ type connection struct {
 	ID           string `xml:"connection-id"`
 	Type         string `xml:"connection-type"`
 	StatusString string `xml:"connection-status"`
+    LocalInterface localInterface  `xml:"local-interface"`
+}
+type localInterface struct {
+	Name        string `xml:"interface-name"`
+	Description string `xml:"interface-description"`
 }

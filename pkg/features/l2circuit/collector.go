@@ -44,7 +44,7 @@ func init() {
 
 	l2circuitPrefix := "junos_l2circuit_"
 
-	l := []string{"target", "address", "vcid"}
+	l := []string{"target", "address", "vcid", "description"}  
 	l2StateDescription := "A l2circuit can have one of the following state-mappings EI: 0,MM: 1,EM: 2,CM: 3,VM: 4,OL: 5,NC: 6,BK: 7,CB: 8,LD: 9,RD: 10,XX: 11,NP: 12,Dn: 13,VC-Dn: 14, Up: 15, CF: 16,IB: 17,TM: 18,ST: 19,SP: 20,RS: 21,HS: 22"
 	l2circuitConnectionsDesc = prometheus.NewDesc(l2circuitPrefix+"connection_count", "Number of L2Circuits", l, nil)
 	l2circuitConnectionStateDesc = prometheus.NewDesc(l2circuitPrefix+"connection_status", l2StateDescription, l, nil)
@@ -75,7 +75,7 @@ func (*l2circuitCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *l2circuitCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = result{}
-	err := client.RunCommandAndParse("show l2circuit connections brief", &x)
+	err := client.RunCommandAndParse("show l2circuit connections extensive", &x)
 	if err != nil {
 		return err
 	}
@@ -99,12 +99,16 @@ func (c *l2circuitCollector) Collect(client collector.Client, ch chan<- promethe
 
 func (c *l2circuitCollector) collectForConnection(client collector.Client, ch chan<- prometheus.Metric,
 	conn connection, labelValues []string, connCount int) {
+
 	idStr := conn.ID
 	idInt := re.FindStringSubmatch(idStr)
 	id := idInt[len(idInt)-1]
-	l := append(labelValues, id)
+
+	// Ajout de la description dans les labels
+	l := append(labelValues, id, conn.LocalInterface.Description)
 	state := l2circuitMap[conn.StatusString]
 
+	// Envoie des métriques avec la description incluse
 	ch <- prometheus.MustNewConstMetric(l2circuitConnectionsDesc, prometheus.GaugeValue, float64(connCount), l...)
 	ch <- prometheus.MustNewConstMetric(l2circuitConnectionStateDesc, prometheus.GaugeValue, float64(state), l...)
 }

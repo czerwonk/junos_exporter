@@ -57,7 +57,7 @@ var (
 	interfaceDiagnosticsEnabled = flag.Bool("ifdiag.enabled", true, "Scrape optical interface diagnostic metrics")
 	ipsecEnabled                = flag.Bool("ipsec.enabled", false, "Scrape IPSec metrics")
 	securityEnabled             = flag.Bool("security.enabled", false, "Scrape security metrics")
-	securityPoliciesEnabled     = flag.Bool("security_policies.enabled", false, "Scrape security policy metrics")
+	securityPoliciesEnabled     = flag.Bool("security_policies.enabled", true, "Scrape security policy metrics")
 	storageEnabled              = flag.Bool("storage.enabled", true, "Scrape system storage metrics")
 	fpcEnabled                  = flag.Bool("fpc.enabled", true, "Scrape line card metrics")
 	accountingEnabled           = flag.Bool("accounting.enabled", false, "Scrape accounting flow metrics")
@@ -84,6 +84,7 @@ var (
 	tracingProvider             = flag.String("tracing.provider", "", "Sets the tracing provider (stdout or collector)")
 	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
 	subscriberEnabled           = flag.Bool("subscriber.enabled", false, "Scrape subscribers detail")
+	macsecEnabled               = flag.Bool("macsec.enabled", true, "Scrape MACSec metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -249,6 +250,7 @@ func loadConfigFromFlags() *config.Config {
 	f.MPLSLSP = *mplsLSPEnabled
 	f.License = *licenseEnabled
 	f.Subscriber = *subscriberEnabled
+	f.MACSec = *macsecEnabled
 	return c
 }
 

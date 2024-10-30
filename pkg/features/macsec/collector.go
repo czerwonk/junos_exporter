@@ -14,22 +14,24 @@ const prefix string = "junos_macsec_"
 
 // Metrics to collect for the feature
 var (
-	macsecConnectionInformationDesc      *prometheus.Desc
-	macsecInterfaceCommonInformationDesc *prometheus.Desc
-	macsecOffsetDesc                     *prometheus.Desc
-	macsecInboundPacketsDesc             *prometheus.Desc
-	macsecOutboundPacketsDesc            *prometheus.Desc
+	//macsecConnectionInformationDesc      *prometheus.Desc
+	//macsecInterfaceCommonInformationDesc *prometheus.Desc
+	//macsecOffsetDesc                     *prometheus.Desc
+	//macsecInboundPacketsDesc             *prometheus.Desc
+	macsecInterfaceDesc *prometheus.Desc
+	macsecStatsDesc     *prometheus.Desc
 )
 
 // Initialize metrics descriptions
 func init() {
-	//labels := []string{"interface_name", "ca_name", "cipher_suite", "sci"}
-	labels := []string{"host", "interface_name", "cipher_suit", "outgoing_packet_number", "sci", "created_since"}
-	macsecConnectionInformationDesc = prometheus.NewDesc(prefix+"connection_info", "Interfaces that have macsec", labels, nil)
-	macsecInterfaceCommonInformationDesc = prometheus.NewDesc(prefix+"amount_of_connections", "Information of specific interface", labels, nil)
-	macsecOffsetDesc = prometheus.NewDesc(prefix+"offset", "Information regarding the offset", labels, nil)
-	macsecInboundPacketsDesc = prometheus.NewDesc(prefix+"inbound_packets", "Information of inbound packets", labels, nil)
-	macsecOutboundPacketsDesc = prometheus.NewDesc(prefix+"outbound_packets", "Information of outbound packets", labels, nil)
+	labelsInterface := []string{"host", "interface_name", "ca_name", "cipher_suit", "outgoing_packet_number", "sci", "created_since", "outbound_channel_status"}
+	labelsStats := []string{"interface" /* todo add the rest*/}
+	//macsecConnectionInformationDesc = prometheus.NewDesc(prefix+"connection_info", "Interfaces that have macsec", labels, nil)
+	//macsecInterfaceCommonInformationDesc = prometheus.NewDesc(prefix+"amount_of_connections", "Information of specific interface", labels, nil)
+	//macsecOffsetDesc = prometheus.NewDesc(prefix+"offset", "Information regarding the offset", labels, nil)
+	//macsecInboundPacketsDesc = prometheus.NewDesc(prefix+"inbound_packets", "Information of inbound packets", labels, nil)
+	macsecInterfaceDesc = prometheus.NewDesc(prefix+"interface_info", "Information regarding interface", labelsInterface, nil)
+	macsecStatsDesc = prometheus.NewDesc(prefix+"stats_info", "Information regarding stats", labelsStats, nil)
 }
 
 // macsecCollector collects MACsec metrics
@@ -47,59 +49,68 @@ func (*macsecCollector) Name() string {
 
 // Describe describes the metrics
 func (*macsecCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- macsecConnectionInformationDesc
-	ch <- macsecInterfaceCommonInformationDesc
-	ch <- macsecOffsetDesc
-	ch <- macsecInboundPacketsDesc
-	ch <- macsecOutboundPacketsDesc
+	//ch <- macsecConnectionInformationDesc
+	//ch <- macsecInterfaceCommonInformationDesc
+	//ch <- macsecOffsetDesc
+	//ch <- macsecInboundPacketsDesc
+	ch <- macsecInterfaceDesc
 }
 
 // Collect collects metrics from JunOS
 func (c *macsecCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	fmt.Printf("\n INSIDE COLLECT")
-	var x result
+	var x resultInt
 	err := client.RunCommandAndParse("show security macsec connections", &x)
 	if err != nil {
 		return errors.Wrap(err, "failed to run command")
 	}
-
 	c.collectForSessions(x, ch, labelValues)
 	return nil
 }
 
 // collectForSessions collects metrics for the sessions
-func (c *macsecCollector) collectForSessions(sessions result, ch chan<- prometheus.Metric, labelValues []string) {
-	//var pn int
-	//var err error
-	//var labels []string
-	var addinionalLables []string
-	for _, iface := range sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation {
-		fmt.Printf("\n iface is %v", iface)
-		//labels := append(labelValues, iface.InterfaceName, iface.ConnectivityAssociationName, iface.CipherSuite /*, iface.Text*/)
+func (c *macsecCollector) collectForSessions(sessions resultInt, ch chan<- prometheus.Metric, labelValues []string) {
+	for interfaceCounter := 0; interfaceCounter < (len(sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation)); interfaceCounter++ {
+		labels := append(labelValues,
+			sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation[interfaceCounter].InterfaceName,
+			sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation[interfaceCounter].ConnectivityAssociationName,
+			sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation[interfaceCounter].CipherSuite,
+			sessions.MacsecConnectionInformation.OutboundSecureChannel[interfaceCounter].OutgoingPacketNumber,
+			sessions.MacsecConnectionInformation.OutboundSecureChannel[interfaceCounter].Sci,
+			sessions.MacsecConnectionInformation.OutboundSecureChannel[interfaceCounter].OutboundSecureAssociation.CreateTime.Text,
+			sessions.MacsecConnectionInformation.OutboundSecureChannel[interfaceCounter].OutboundSecureAssociation.AssociationNumberStatus)
+		pn, err := getPacketsNumber(sessions.MacsecConnectionInformation.OutboundSecureChannel[interfaceCounter].OutgoingPacketNumber)
+		if err != nil {
+			fmt.Printf("\n packet number is non-numerical. Maybe unmarshaling issues \n")
+		}
+		ch <- prometheus.MustNewConstMetric(macsecInterfaceDesc, prometheus.GaugeValue, float64(pn), labels...)
 
-		// Collecting the number of connections
+	}
+}
+
+/*
+
+	// Collecting the number of connections
 		//ch <- prometheus.MustNewConstMetric(macsecInterfaceCommonInformationDesc, prometheus.GaugeValue, float64(len(sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation)), labels...)
-
-		for _, interfaceInfo := range sessions.MacsecConnectionInformation.OutboundSecureChannel {
 			pn, err := getPacketsNumber(interfaceInfo.OutgoingPacketNumber)
+			fmt.Printf("%d", pn)
 			if err != nil {
 				fmt.Printf("\n packet number is non-numerical. Maybe unmarshaling issues \n")
 			}
-			fmt.Printf(" \\ņ label values are %s \n", labelValues)
+			fmt.Printf("\n label values are %s \n", labelValues)
 			//for _, outChannel := range sessions.MacsecConnectionInformation.OutboundSecureChannel {
 			//	labels = append(labelValues, iface.InterfaceName, iface.CipherSuite, outChannel.OutgoingPacketNumber, outChannel.Sci, outChannel.OutboundSecureAssociation.CreateTime.Text)
 			//}
 			for _, outChannel := range sessions.MacsecConnectionInformation.OutboundSecureChannel {
-				addinionalLables = append(labelValues, iface.InterfaceName, iface.CipherSuite, outChannel.OutgoingPacketNumber, outChannel.Sci, outChannel.OutboundSecureAssociation.CreateTime.Text)
+				additionalLables = append(labelValues, iface.InterfaceName, iface.CipherSuite, outChannel.OutgoingPacketNumber, outChannel.Sci, outChannel.OutboundSecureAssociation.CreateTime.Text)
+				fmt.Printf("\n ADDITIONAL LABELS are $s", additionalLables)
 			}
 			// Collecting outbound packets
-			fmt.Printf(" \\n labels are %s \n", labels)
-			//ch <- prometheus.MustNewConstMetric(macsecOutboundPacketsDesc, prometheus.GaugeValue, float64(pn), labels...)
+			//fmt.Printf(" \\n labels are %s \n", labels)
 		}
-		ch <- prometheus.MustNewConstMetric(macsecOutboundPacketsDesc, prometheus.GaugeValue, float64(pn), labels...)
+		//ch <- prometheus.MustNewConstMetric(macsecOutboundPacketsDesc, prometheus.GaugeValue, float64(pn), labels...)
 	}
 }
-
+*/
 // stateToFloat converts the status string to a float value
 func stateToFloat(status string) float64 {
 	if status == "inuse" {
@@ -134,12 +145,3 @@ func getPacketsNumber(packetsAsString string) (int, error) {
 	}
 	return i, nil
 }
-
-/*
-func getOutboundLabels(sessions result) (int, string, string, err){
-	for _, iface := range sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation {
-		packet_num := iface.
-	}
-
-	}
-*/

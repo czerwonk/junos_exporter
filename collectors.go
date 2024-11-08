@@ -3,7 +3,6 @@
 package main
 
 import (
-	"github.com/czerwonk/junos_exporter/pkg/features/macsec"
 	"regexp"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
@@ -26,6 +25,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/lacp"
 	"github.com/czerwonk/junos_exporter/pkg/features/ldp"
 	"github.com/czerwonk/junos_exporter/pkg/features/mac"
+	"github.com/czerwonk/junos_exporter/pkg/features/macsec"
 	"github.com/czerwonk/junos_exporter/pkg/features/mplslsp"
 	"github.com/czerwonk/junos_exporter/pkg/features/nat"
 	"github.com/czerwonk/junos_exporter/pkg/features/nat2"

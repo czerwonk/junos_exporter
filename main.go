@@ -18,9 +18,15 @@ import (
 	"go.opentelemetry.io/otel/codes"
 
 	"github.com/czerwonk/junos_exporter/pkg/connector"
+	"go.opentelemetry.io/otel/codes"
+
+	"github.com/czerwonk/junos_exporter/internal/config"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/otel/codes"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
@@ -166,7 +172,7 @@ func initChannels(ctx context.Context) {
 
 func shutdown() {
 	log.Infoln("Closing connections to devices")
-	connManager.Close()
+	connManager.CloseAll()
 	os.Exit(0)
 }
 
@@ -199,7 +205,7 @@ func reinitialize() error {
 	defer configMu.Unlock()
 
 	if connManager != nil {
-		connManager.Close()
+		connManager.CloseAll()
 		connManager = nil
 	}
 

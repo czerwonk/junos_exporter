@@ -124,7 +124,6 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "macsec", f.MACSec, macsec.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "arp", f.ARP, arp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "poe", f.Poe, poe.NewCollector)
-	c.addCollectorIfEnabledForDevice(device, "ddos_protection", f.DDOSProtection, ddosprotection.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

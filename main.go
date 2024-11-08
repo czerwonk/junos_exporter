@@ -84,6 +84,7 @@ var (
 	tracingProvider             = flag.String("tracing.provider", "", "Sets the tracing provider (stdout or collector)")
 	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
 	subscriberEnabled           = flag.Bool("subscriber.enabled", false, "Scrape subscribers detail")
+	macsecEnabled               = flag.Bool("macsec.enabled", true, "Scrape MACSec metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -249,6 +250,7 @@ func loadConfigFromFlags() *config.Config {
 	f.MPLSLSP = *mplsLSPEnabled
 	f.License = *licenseEnabled
 	f.Subscriber = *subscriberEnabled
+	f.MACSec = *macsecEnabled
 	return c
 }
 

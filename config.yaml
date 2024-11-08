@@ -1,0 +1,8 @@
+devices:
+  - host: ".*"
+    host_pattern: true
+    interface_description_regex: '([^=]+)(=[^,]+),?' # hint second match group needs to start with = to set it as value
+    features:
+      mac_sec: true
+      securitypolicies: false
+      route: false

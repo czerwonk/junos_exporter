@@ -97,6 +97,7 @@ type FeatureConfig struct {
 	VRRP                bool `yaml:"vrrp,omitempty"`
 	License             bool `yaml:"license,omitempty"`
 	Subscriber          bool `yaml:"subscriber,omitempty"`
+	MACSec              bool `yaml:"macsec,omitempty"`
 }
 
 // New creates a new config
@@ -174,6 +175,7 @@ func setDefaultValues(c *Config) {
 	f.VRRP = false
 	f.BFD = false
 	f.License = false
+	f.MACSec = true
 }
 
 // FeaturesForDevice gets the feature set configured for a device

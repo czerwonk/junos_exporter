@@ -163,7 +163,7 @@ func (*interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- d.receiveTotalErrorsDesc
 	ch <- d.transmitTotalErrorsDesc
 	ch <- d.mtu
-	ch <- d.fecMode
+	ch <- d.fecModeDesc
 }
 
 // Collect collects metrics from JunOS
@@ -368,7 +368,7 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, ch chan<- pr
 		ch <- prometheus.MustNewConstMetric(d.receiveCodeViolationsDesc, prometheus.CounterValue, s.ReceiveCodeViolations, lv...)
 		ch <- prometheus.MustNewConstMetric(d.receiveTotalErrorsDesc, prometheus.CounterValue, s.ReceiveTotalErrors, lv...)
 		ch <- prometheus.MustNewConstMetric(d.transmitTotalErrorsDesc, prometheus.CounterValue, s.TransmitTotalErrors, lv...)
-		ch <- prometheus.MustNewConstMetric(d.fecMode, prometheus.CounterValue, s.FecMode, lv...)
+		ch <- prometheus.MustNewConstMetric(d.fecModeDesc, prometheus.CounterValue, s.FecMode, lv...)
 
 	}
 }

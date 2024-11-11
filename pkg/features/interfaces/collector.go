@@ -369,7 +369,6 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, ch chan<- pr
 		ch <- prometheus.MustNewConstMetric(d.receiveTotalErrorsDesc, prometheus.CounterValue, s.ReceiveTotalErrors, lv...)
 		ch <- prometheus.MustNewConstMetric(d.transmitTotalErrorsDesc, prometheus.CounterValue, s.TransmitTotalErrors, lv...)
 		ch <- prometheus.MustNewConstMetric(d.fecModeDesc, prometheus.CounterValue, s.FECMode, lv...)
-
 	}
 }
 

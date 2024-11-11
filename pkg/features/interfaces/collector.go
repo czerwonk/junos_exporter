@@ -232,7 +232,7 @@ func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfa
 			ReceiveTotalErrors:      float64(phy.MACStatistics.InputTotalErrors),
 			TransmitTotalErrors:     float64(phy.MACStatistics.OutputTotalErrors),
 			MTU:                     phy.MTU,
-			FECMode:                 convertFECModeToFloat64(strings.ToLower(strings.TrimRight(phy.EthernetFecMode.EnabledFecMode, "\n"))),
+			FECMode:                 convertFECModeToFloat64(strings.ToLower(phy.EthernetFecMode.EnabledFecMode)),
 		}
 
 		if phy.InterfaceFlapped.Value != "Never" {

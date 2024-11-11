@@ -4,7 +4,7 @@
 
 replicaCount: 1
 
-# prometheusOperator is the relase label for prometheus-operator to look at the servicemonitor
+# prometheusOperator is the release label for prometheus-operator to look at the servicemonitor
 prometheusOperator: prometheus-operator
 
 image:
@@ -24,6 +24,10 @@ extraEnv: []
 
 # Additional junos_exporter container arguments.
 extraArgs: []
+
+# Additional volumes and mounts to add to the container.
+extraVolumes: []
+extraVolumeMounts: []
 
 # configyml is the configfile for the exporter
 # configyml:
@@ -57,7 +61,7 @@ serviceAccount:
   create: true
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name:
+  name: ""
 
 podSecurityContext: {}
   # fsGroup: 2000
@@ -92,5 +96,8 @@ tolerations: []
 
 affinity: {}
 
-# Roll out junos-exporter pods automatically when configmap is updated.
+# Annotations to add to the Deployment
+annotations: {}
+
+# Roll out junos-exporter pods automatically when configyml or sshkey is updated
 rollOutJunosExporterPods: false

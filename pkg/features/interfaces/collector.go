@@ -98,8 +98,8 @@ func newDescriptions(dynLabels dynamiclabels.Labels) *description {
 	d.receiveCodeViolationsDesc = prometheus.NewDesc(prefix+"receive_code_violations", "Number of received Code Violations", l, nil)
 	d.receiveTotalErrorsDesc = prometheus.NewDesc(prefix+"receive_total_errors", "Number of received Total Errors", l, nil)
 	d.transmitTotalErrorsDesc = prometheus.NewDesc(prefix+"transmit_total_errors", "Number of transmitted Total Errors", l, nil)
-	d.mtuDesc = prometheus.NewDesc(prefix+"mtu", "configured MTU", l, nil)
-	d.fecModeDesc = prometheus.NewDesc(prefix+"fec_mode", "Mode of FEC. 0 for none, 1 for default, 2 for fec74, 3 for fec91, 4 for fec108", l, nil)
+	d.mtu = prometheus.NewDesc(prefix+"mtu", "configured MTU", l, nil)
+
 	return d
 }
 
@@ -162,8 +162,7 @@ func (*interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- d.receiveCodeViolationsDesc
 	ch <- d.receiveTotalErrorsDesc
 	ch <- d.transmitTotalErrorsDesc
-	ch <- d.mtuDesc
-	ch <- d.fecModeDesc
+	ch <- d.mtu
 }
 
 // Collect collects metrics from JunOS
@@ -232,7 +231,6 @@ func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfa
 			ReceiveTotalErrors:      float64(phy.MACStatistics.InputTotalErrors),
 			TransmitTotalErrors:     float64(phy.MACStatistics.OutputTotalErrors),
 			MTU:                     phy.MTU,
-			FECMode:                 convertFECModeToFloat64(strings.ToLower(phy.EthernetFecMode.EnabledFecMode)),
 		}
 
 		if phy.InterfaceFlapped.Value != "Never" {
@@ -335,6 +333,7 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, ch chan<- pr
 			mtu = "65535"
 		}
 		mtu64, _ := strconv.ParseFloat(mtu, 64)
+
 		ch <- prometheus.MustNewConstMetric(d.adminStatusDesc, prometheus.GaugeValue, float64(adminUp), lv...)
 		ch <- prometheus.MustNewConstMetric(d.operStatusDesc, prometheus.GaugeValue, float64(operUp), lv...)
 		ch <- prometheus.MustNewConstMetric(d.errorStatusDesc, prometheus.GaugeValue, float64(err), lv...)
@@ -343,7 +342,7 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, ch chan<- pr
 		ch <- prometheus.MustNewConstMetric(d.receiveErrorsDesc, prometheus.CounterValue, s.ReceiveErrors, lv...)
 		ch <- prometheus.MustNewConstMetric(d.receiveDropsDesc, prometheus.CounterValue, s.ReceiveDrops, lv...)
 		ch <- prometheus.MustNewConstMetric(d.interfaceSpeedDesc, prometheus.GaugeValue, float64(sp64), lv...)
-		ch <- prometheus.MustNewConstMetric(d.mtuDesc, prometheus.GaugeValue, float64(mtu64), lv...)
+		ch <- prometheus.MustNewConstMetric(d.mtu, prometheus.GaugeValue, float64(mtu64), lv...)
 
 		if s.LastFlapped != 0 {
 			ch <- prometheus.MustNewConstMetric(d.lastFlappedDesc, prometheus.GaugeValue, s.LastFlapped, lv...)
@@ -368,21 +367,6 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, ch chan<- pr
 		ch <- prometheus.MustNewConstMetric(d.receiveCodeViolationsDesc, prometheus.CounterValue, s.ReceiveCodeViolations, lv...)
 		ch <- prometheus.MustNewConstMetric(d.receiveTotalErrorsDesc, prometheus.CounterValue, s.ReceiveTotalErrors, lv...)
 		ch <- prometheus.MustNewConstMetric(d.transmitTotalErrorsDesc, prometheus.CounterValue, s.TransmitTotalErrors, lv...)
-		ch <- prometheus.MustNewConstMetric(d.fecModeDesc, prometheus.CounterValue, s.FECMode, lv...)
-	}
-}
 
-func convertFECModeToFloat64(s string) float64 {
-	switch s {
-	case "none":
-		return 0
-	case "fec74":
-		return 2
-	case "fec91":
-		return 3
-	case "fec108":
-		return 4
-	default:
-		return 1
 	}
 }

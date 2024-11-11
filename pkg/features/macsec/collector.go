@@ -14,6 +14,12 @@ const prefix string = "junos_macsec_"
 
 // Metrics to collect for the feature
 var (
+	macsecTXPacketCountDesc                       *prometheus.Desc
+	macsecTXChannelStatusDesc                     *prometheus.Desc
+	macsecIncludeSCIDesc                          *prometheus.Desc
+	macsecReplayProtectDesc                       *prometheus.Desc
+	macsecKeyServerOffsetDesc                     *prometheus.Desc
+	macsecEncryptionDesc                          *prometheus.Desc
 	//macsecConnectionDesc
 	macsecTXPacketCountDesc   *prometheus.Desc
 	macsecTXChannelStatusDesc *prometheus.Desc
@@ -38,7 +44,7 @@ var (
 
 // Initialize metrics descriptions
 func init() {
-	labelsInterface := []string{"target", "interface", "ca" /*, "cipher", "sci", "outbound_channel_status"*/}
+	labelsInterface := []string{"target", "interface", "ca"}
 	labelsStats := []string{"target", "interface"}
 	macsecTXPacketCountDesc = prometheus.NewDesc(prefix+"interface_transmit_packet_count", "Information regarding transmitted packets by interface", labelsInterface, nil)
 	macsecTXChannelStatusDesc = prometheus.NewDesc(prefix+"tx_channel_status", "Information regarding the status of outbound channel secure association. 1 for inuse", labelsInterface, nil)
@@ -103,7 +109,6 @@ func (c *macsecCollector) Collect(client collector.Client, ch chan<- prometheus.
 		return errors.Wrap(err, "failed to run command 'show security macsec connections'")
 	}
 	c.collectForInterfaces(i, ch, labelValues)
-
 	var s resultStats
 	err = client.RunCommandAndParse("show security macsec statistics", &s)
 	if err != nil {
@@ -115,22 +120,22 @@ func (c *macsecCollector) Collect(client collector.Client, ch chan<- prometheus.
 
 // collectForSessions collects metrics for the sessions
 func (c *macsecCollector) collectForInterfaces(sessions resultInt, ch chan<- prometheus.Metric, labelValues []string) {
-	for interfaceCounter := 0; interfaceCounter < (len(sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation)); interfaceCounter++ {
+	for c, mici := range sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation {
 		labels := append(labelValues,
-			sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation[interfaceCounter].InterfaceName,
-			sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation[interfaceCounter].ConnectivityAssociationName)
-		pn, err := getPacketsNumber(sessions.MacsecConnectionInformation.OutboundSecureChannel[interfaceCounter].OutgoingPacketNumber)
+			mici.InterfaceName,
+			mici.ConnectivityAssociationName)
+		pn, err := strconv.Atoi(sessions.MacsecConnectionInformation.OutboundSecureChannel[c].OutgoingPacketNumber)
 		if err != nil {
-			fmt.Printf("\n packet number is non-numerical. Maybe unmarshaling issues \n")
+			log.Errorf("unable to convert outgoing packets number: %q", sessions.MacsecConnectionInformation.OutboundSecureChannel[c].OutgoingPacketNumber)
 		}
-		sci := getIncludeSCIAsInt(sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation[interfaceCounter].IncludeSci)
-		rp := getReplayProtectedAsInt(sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation[interfaceCounter].ReplayProtect)
-		kso, err := getKeyServerOffsetAsInt(sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation[interfaceCounter].Offset)
+		sci := convertYesNoToInt(strings.TrimRight(mici.IncludeSci, "\n"))
+		rp := convertOnOffToInt(strings.TrimRight(mici.ReplayProtect, "\n"))
+		kso, err := strconv.Atoi(mici.Offset)
 		if err != nil {
-			fmt.Printf("\n offset is non-numerical. Maybe unmarshaling issues \n")
+			log.Errorf("unable to convert offset: %q", mici.Offset)
 		}
-		status := stateToFloat(sessions.MacsecConnectionInformation.OutboundSecureChannel[interfaceCounter].OutboundSecureAssociation.AssociationNumberStatus)
-		enc := getEncryptionAsInt(sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation[interfaceCounter].Encryption)
+		status := stateToFloat(sessions.MacsecConnectionInformation.OutboundSecureChannel[c].OutboundSecureAssociation.AssociationNumberStatus)
+		enc := convertOnOffToInt(strings.TrimRight(mici.Encryption, "\n"))
 		ch <- prometheus.MustNewConstMetric(macsecTXPacketCountDesc, prometheus.CounterValue, float64(pn), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecIncludeSCIDesc, prometheus.GaugeValue, float64(sci), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecReplayProtectDesc, prometheus.GaugeValue, float64(rp), labels...)
@@ -156,7 +161,6 @@ func (c *macsecCollector) collectForStats(sessions resultStats, ch chan<- promet
 		ch <- prometheus.MustNewConstMetric(macsecSecureAssociationRXAcceptedPacketsDesc, prometheus.CounterValue, float64(sessions.MacsecStatistics.SecureAssociationReceived[interfaceCounter].OkPackets), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecSecureAssociationRXValidatedBytesDesc, prometheus.CounterValue, float64(sessions.MacsecStatistics.SecureAssociationReceived[interfaceCounter].ValidatedBytes), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecSecureAssociationRXDecryptedBytesDesc, prometheus.CounterValue, float64(sessions.MacsecStatistics.SecureAssociationReceived[interfaceCounter].DecryptedBytes), labels...)
-
 	}
 }
 
@@ -168,63 +172,26 @@ func stateToFloat(status string) float64 {
 	return 0
 }
 
-// getInterfaceNumber converts interface name to number
-func getInterfaceNumber(nameAsString string) (int, error) {
-	result := strings.SplitAfter(nameAsString, "/")
-	i, err := strconv.Atoi(result[len(result)-1])
-	if err != nil {
-		return 0, err
-	}
-	return i, nil
-}
-
-// getPacketsNumber converts packet number string to integer
-func getPacketsNumber(packetsAsString string) (int, error) {
-	i, err := strconv.Atoi(packetsAsString)
-	if err != nil {
-		return 0, err
-	}
-	return i, nil
-}
-
-// getIncludeSCIAsInt returns 0, 1 or 2  depending on if SCI is off, on or not clear
-func getIncludeSCIAsInt(sciAsString string) int {
-	if strings.TrimRight(sciAsString, "\n") == "no" {
+// convertYesNoToInt returns 0, 1 or 2  depending on the input string value
+func convertYesNoToInt(s string) int {
+	switch s {
+	case "no":
 		return 0
-	} else if strings.TrimRight(sciAsString, "\n") == "yes" {
+	case "yes":
 		return 1
-	} else {
+	default:
 		return 2
 	}
 }
 
-// getReplayProtectedAsInt returns replay protected value as int
-func getReplayProtectedAsInt(replay string) int {
-	if strings.TrimRight(replay, "\n") == "off" {
+// convertOnOffToInt returns 0, 1 or 2  depending on the input string value
+func convertOnOffToInt(s string) int {
+	switch s {
+	case "off":
 		return 0
-	} else if strings.TrimRight(replay, "\n") == "on" {
+	case "on":
 		return 1
-	} else {
-		return 2
-	}
-}
-
-// getKeyServerOffsetAsInt converts offset value to number
-func getKeyServerOffsetAsInt(offset string) (int, error) {
-	i, err := strconv.Atoi(offset)
-	if err != nil {
-		return 0, err
-	}
-	return i, nil
-}
-
-// getEncryptionAsInt returns encryption status as int
-func getEncryptionAsInt(enc string) int {
-	if strings.TrimRight(enc, "\n") == "off" {
-		return 0
-	} else if strings.TrimRight(enc, "\n") == "on" {
-		return 1
-	} else {
+	default:
 		return 2
 	}
 }

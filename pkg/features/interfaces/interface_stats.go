@@ -45,5 +45,5 @@ type interfaceStats struct {
 	ReceiveTotalErrors      float64
 	TransmitTotalErrors     float64
 	MTU                     string
-	FecMode                 float64
+	FECMode                 float64
 }

@@ -14,14 +14,12 @@ const prefix string = "junos_macsec_"
 
 // Metrics to collect for the feature
 var (
-	//macsecConnectionDesc - scrapes "show security macsec connections" command
-	macsecTXPacketCountDesc   *prometheus.Desc
-	macsecTXChannelStatusDesc *prometheus.Desc
-	macsecIncludeSCIDesc      *prometheus.Desc
-	macsecReplayProtectDesc   *prometheus.Desc
-	macsecKeyServerOffsetDesc *prometheus.Desc
-	macsecEncryptionDesc      *prometheus.Desc
-	//macsecStatsDesc - scrapes "show security macsec statistics" command
+	macsecTXPacketCountDesc                       *prometheus.Desc
+	macsecTXChannelStatusDesc                     *prometheus.Desc
+	macsecIncludeSCIDesc                          *prometheus.Desc
+	macsecReplayProtectDesc                       *prometheus.Desc
+	macsecKeyServerOffsetDesc                     *prometheus.Desc
+	macsecEncryptionDesc                          *prometheus.Desc
 	macsecSecureChannelTXEncryptedPacketsDesc     *prometheus.Desc
 	macsecSecureChannelTXEncryptedBytessDesc      *prometheus.Desc
 	macsecSecureChannelTXProtectedPacketsDesc     *prometheus.Desc

@@ -98,8 +98,8 @@ func newDescriptions(dynLabels dynamiclabels.Labels) *description {
 	d.receiveCodeViolationsDesc = prometheus.NewDesc(prefix+"receive_code_violations", "Number of received Code Violations", l, nil)
 	d.receiveTotalErrorsDesc = prometheus.NewDesc(prefix+"receive_total_errors", "Number of received Total Errors", l, nil)
 	d.transmitTotalErrorsDesc = prometheus.NewDesc(prefix+"transmit_total_errors", "Number of transmitted Total Errors", l, nil)
-	d.mtu = prometheus.NewDesc(prefix+"mtu", "configured MTU", l, nil)
-	d.fecModeDesc = prometheus.NewDesc(prefix+"fec_mode", "Mode of FEC. 0 for none, 1 for fec74, 2 for fec91, 3 for fec108, 4 for unknown", l, nil)
+	d.mtuDesc = prometheus.NewDesc(prefix+"mtu", "configured MTU", l, nil)
+	d.fecModeDesc = prometheus.NewDesc(prefix+"fec_mode", "Mode of FEC. 0 for none, 1 for default, 2 for fec74, 3 for fec91, 4 for fec108", l, nil)
 	return d
 }
 
@@ -163,7 +163,7 @@ func (*interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- d.receiveTotalErrorsDesc
 	ch <- d.transmitTotalErrorsDesc
 	ch <- d.mtu
-	ch <- d.fecMode
+	ch <- d.fecModeDesc
 }
 
 // Collect collects metrics from JunOS
@@ -368,7 +368,7 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, ch chan<- pr
 		ch <- prometheus.MustNewConstMetric(d.receiveCodeViolationsDesc, prometheus.CounterValue, s.ReceiveCodeViolations, lv...)
 		ch <- prometheus.MustNewConstMetric(d.receiveTotalErrorsDesc, prometheus.CounterValue, s.ReceiveTotalErrors, lv...)
 		ch <- prometheus.MustNewConstMetric(d.transmitTotalErrorsDesc, prometheus.CounterValue, s.TransmitTotalErrors, lv...)
-		ch <- prometheus.MustNewConstMetric(d.fecMode, prometheus.CounterValue, s.FecMode, lv...)
+		ch <- prometheus.MustNewConstMetric(d.fecModeDesc, prometheus.CounterValue, s.FecMode, lv...)
 
 	}
 }

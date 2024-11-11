@@ -53,7 +53,7 @@ type description struct {
 	receiveTotalErrorsDesc      *prometheus.Desc
 	transmitTotalErrorsDesc     *prometheus.Desc
 	mtu                         *prometheus.Desc
-	fecMode                     *prometheus.Desc
+	fecModeDesc                 *prometheus.Desc
 }
 
 func newDescriptions(dynLabels dynamiclabels.Labels) *description {
@@ -99,8 +99,7 @@ func newDescriptions(dynLabels dynamiclabels.Labels) *description {
 	d.receiveTotalErrorsDesc = prometheus.NewDesc(prefix+"receive_total_errors", "Number of received Total Errors", l, nil)
 	d.transmitTotalErrorsDesc = prometheus.NewDesc(prefix+"transmit_total_errors", "Number of transmitted Total Errors", l, nil)
 	d.mtu = prometheus.NewDesc(prefix+"mtu", "configured MTU", l, nil)
-	d.transmitTotalErrorsDesc = prometheus.NewDesc(prefix+"transmit_total_errors", "Number of transmitted Total Errors", l, nil)
-	d.fecMode = prometheus.NewDesc(prefix+"fec_mode", "Mode of FEC. 0 for none, 1 for fec74, 2 for fec91, 3 for fec108, 4 for unknown", l, nil)
+	d.fecModeDesc = prometheus.NewDesc(prefix+"fec_mode", "Mode of FEC. 0 for none, 1 for fec74, 2 for fec91, 3 for fec108, 4 for unknown", l, nil)
 	return d
 }
 
@@ -379,12 +378,12 @@ func convertFECModeToFloat64(s string) float64 {
 	case "none":
 		return 0
 	case "fec74":
-		return 1
-	case "fec91":
 		return 2
-	case "fec108":
+	case "fec91":
 		return 3
-	default:
+	case "fec108":
 		return 4
+	default:
+		return 1
 	}
 }

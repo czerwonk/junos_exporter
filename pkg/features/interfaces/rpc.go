@@ -30,9 +30,10 @@ type phyInterface struct {
 		Seconds uint64 `xml:"seconds,attr"`
 		Value   string `xml:",chardata"`
 	} `xml:"interface-flapped"`
-	MACStatistics ethernetMACStat `xml:"ethernet-mac-statistics"`
-	FECStatistics ethernetFECStat `xml:"ethernet-fec-statistics"`
-	MTU           string          `xml:"mtu"`
+	MACStatistics   ethernetMACStat `xml:"ethernet-mac-statistics"`
+	EthernetFecMode ethernetFECMode `xml:"ethernet-fec-mode"`
+	FECStatistics   ethernetFECStat `xml:"ethernet-fec-statistics"`
+	MTU             string          `xml:"mtu"`
 }
 
 type logInterface struct {
@@ -87,4 +88,10 @@ type ethernetFECStat struct {
 	NumberfecNccwCount     uint64 `xml:"fec_nccw_count"`
 	NumberfecCcwErrorRate  uint64 `xml:"fec_ccw_error_rate"`
 	NumberfecNccwErrorRate uint64 `xml:"fec_nccw_error_rate"`
+}
+
+type ethernetFECMode struct {
+	Text           string `xml:",chardata"`
+	Style          string `xml:"style,attr"`
+	EnabledFecMode string `xml:"enabled_fec_mode"`
 }

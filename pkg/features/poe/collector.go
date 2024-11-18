@@ -20,7 +20,7 @@ var (
 
 // Initialize metrics descriptions
 func init() {
-	labels := []string{"interface"}
+	labels := []string{"target", "interface"}
 	poeEnabledDesc = prometheus.NewDesc(prefix+"enabled", "Information about interface status", labels, nil)
 	poeStatusDesc = prometheus.NewDesc(prefix+"status", "Information about interface PoE status", labels, nil)
 	poePowerLimitDesc = prometheus.NewDesc(prefix+"power_limit", "Information about interface PoE power limit", labels, nil)

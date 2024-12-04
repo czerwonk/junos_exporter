@@ -85,6 +85,7 @@ var (
 	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
 	subscriberEnabled           = flag.Bool("subscriber.enabled", false, "Scrape subscribers detail")
 	macsecEnabled               = flag.Bool("macsec.enabled", true, "Scrape MACSec metrics")
+	poeEnabled                  = flag.Bool("poe.enabled", true, "Scrape PoE metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -251,6 +252,7 @@ func loadConfigFromFlags() *config.Config {
 	f.License = *licenseEnabled
 	f.Subscriber = *subscriberEnabled
 	f.MACSec = *macsecEnabled
+	f.Poe = *poeEnabled
 	return c
 }
 

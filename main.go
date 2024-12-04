@@ -15,13 +15,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"go.opentelemetry.io/otel/codes"
 
-	"github.com/czerwonk/junos_exporter/internal/config"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/czerwonk/junos_exporter/internal/config"
 )
 
 const version string = "0.12.5"
@@ -43,7 +45,7 @@ var (
 	alarmEnabled                = flag.Bool("alarm.enabled", true, "Scrape Alarm metrics")
 	bgpEnabled                  = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
 	ospfEnabled                 = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
-	isisEnabled                 = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
+	isisEnabled                 = flag.Bool("isis.enabled", true, "Scrape ISIS metrics")
 	l2circuitEnabled            = flag.Bool("l2circuit.enabled", false, "Scrape l2circuit metrics")
 	l2vpnEnabled                = flag.Bool("l2vpn.enabled", false, "Scrape l2vpn metrics")
 	natEnabled                  = flag.Bool("nat.enabled", false, "Scrape NAT metrics")
@@ -85,6 +87,7 @@ var (
 	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
 	subscriberEnabled           = flag.Bool("subscriber.enabled", false, "Scrape subscribers detail")
 	macsecEnabled               = flag.Bool("macsec.enabled", true, "Scrape MACSec metrics")
+	arpEnabled                  = flag.Bool("arps.enabled", true, "Scrape ARPs metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -251,6 +254,7 @@ func loadConfigFromFlags() *config.Config {
 	f.License = *licenseEnabled
 	f.Subscriber = *subscriberEnabled
 	f.MACSec = *macsecEnabled
+	f.ARP = *arpEnabled
 	return c
 }
 

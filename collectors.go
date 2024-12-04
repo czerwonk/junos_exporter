@@ -10,6 +10,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"github.com/czerwonk/junos_exporter/pkg/features/accounting"
 	"github.com/czerwonk/junos_exporter/pkg/features/alarm"
+	"github.com/czerwonk/junos_exporter/pkg/features/arp"
 	"github.com/czerwonk/junos_exporter/pkg/features/bfd"
 	"github.com/czerwonk/junos_exporter/pkg/features/bgp"
 	"github.com/czerwonk/junos_exporter/pkg/features/environment"
@@ -119,6 +120,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "mpls_lsp", f.MPLSLSP, mplslsp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "subscriber", f.Subscriber, subscriber.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "macsec", f.MACSec, macsec.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "arp", f.ARP, arp.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

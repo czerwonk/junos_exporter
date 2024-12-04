@@ -38,13 +38,13 @@ func (c *arpCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 	if err != nil {
 		return errors.Wrap(err, "failed to run command 'show arp no-resolve'")
 	}
-	interfaces_map := make(map[string]int64)
+	interfaces_map := make(map[string]float64)
 	for _, a := range arps.ArpTableInformation.ArpTableEntry {
 		interfaces_map[a.InterfaceName] += 1
 	}
 	for key, value := range interfaces_map {
 		labels := append(labelValues, key)
-		ch <- prometheus.MustNewConstMetric(arpEntriesCountDesc, prometheus.CounterValue, float64(value), labels...)
+		ch <- prometheus.MustNewConstMetric(arpEntriesCountDesc, prometheus.CounterValue, value, labels...)
 	}
 	return nil
 }

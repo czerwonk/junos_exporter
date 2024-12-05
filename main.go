@@ -18,7 +18,6 @@ import (
 	"go.opentelemetry.io/otel/codes"
 
 	"github.com/czerwonk/junos_exporter/pkg/connector"
-	"go.opentelemetry.io/otel/codes"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
@@ -28,11 +27,9 @@ import (
 	"go.opentelemetry.io/otel/codes"
 
 	log "github.com/sirupsen/logrus"
-
-	"github.com/czerwonk/junos_exporter/internal/config"
 )
 
-const version string = "0.13.0"
+const version string = "0.12.4"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -92,9 +89,6 @@ var (
 	tracingProvider             = flag.String("tracing.provider", "", "Sets the tracing provider (stdout or collector)")
 	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
 	subscriberEnabled           = flag.Bool("subscriber.enabled", false, "Scrape subscribers detail")
-	macsecEnabled               = flag.Bool("macsec.enabled", true, "Scrape MACSec metrics")
-	arpEnabled                  = flag.Bool("arps.enabled", true, "Scrape ARP metrics")
-	poeEnabled                  = flag.Bool("poe.enabled", true, "Scrape PoE metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -132,12 +126,12 @@ func main() {
 	}
 	defer shutdownTracing()
 
-	initChannels(ctx)
+	initChannels()
 
 	startServer()
 }
 
-func initChannels(ctx context.Context) {
+func initChannels() {
 	hup := make(chan os.Signal, 1)
 	signal.Notify(hup, syscall.SIGHUP)
 
@@ -161,19 +155,13 @@ func initChannels(ctx context.Context) {
 				} else {
 					rc <- nil
 				}
-			case <-ctx.Done():
-				shutdown()
 			case <-term:
-				shutdown()
+				log.Infoln("Closing connections to devices")
+				connManager.Close()
+				os.Exit(0)
 			}
 		}
 	}()
-}
-
-func shutdown() {
-	log.Infoln("Closing connections to devices")
-	connManager.CloseAll()
-	os.Exit(0)
 }
 
 func printVersion() {
@@ -205,7 +193,7 @@ func reinitialize() error {
 	defer configMu.Unlock()
 
 	if connManager != nil {
-		connManager.CloseAll()
+		connManager.Close()
 		connManager = nil
 	}
 
@@ -266,9 +254,6 @@ func loadConfigFromFlags() *config.Config {
 	f.MPLSLSP = *mplsLSPEnabled
 	f.License = *licenseEnabled
 	f.Subscriber = *subscriberEnabled
-	f.MACSec = *macsecEnabled
-	f.ARP = *arpEnabled
-	f.Poe = *poeEnabled
 	return c
 }
 
@@ -355,8 +340,7 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
 		ErrorLog:      l,
-		ErrorHandling: promhttp.ContinueOnError,
-	}).ServeHTTP(w, r)
+		ErrorHandling: promhttp.ContinueOnError}).ServeHTTP(w, r)
 }
 
 func devicesForRequest(r *http.Request) ([]*connector.Device, error) {

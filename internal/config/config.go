@@ -98,6 +98,7 @@ type FeatureConfig struct {
 	License             bool `yaml:"license,omitempty"`
 	Subscriber          bool `yaml:"subscriber,omitempty"`
 	MACSec              bool `yaml:"macsec,omitempty"`
+	ARP                 bool `yaml:"arp,omitempty"`
 }
 
 // New creates a new config

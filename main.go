@@ -25,7 +25,7 @@ import (
 	"github.com/czerwonk/junos_exporter/internal/config"
 )
 
-const version string = "0.12.6"
+const version string = "0.12.7"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")

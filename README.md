@@ -52,6 +52,7 @@ The following metrics are supported by now:
 * LDP (number of neighbors, sessions and session states)
 * VRRP (state per interface)
 * Subscribers Information (show subscribers client-type dhcp detail)
+* PoE (show poe interface)
 
 ## Feature specific mappings
 Some collected time series behave like enums - Integer values represent a certain state/meaning.

@@ -99,6 +99,7 @@ type FeatureConfig struct {
 	Subscriber          bool `yaml:"subscriber,omitempty"`
 	MACSec              bool `yaml:"macsec,omitempty"`
 	ARP                 bool `yaml:"arp,omitempty"`
+	Poe                 bool `yaml:"poe,omitempty"`
 }
 
 // New creates a new config
@@ -177,6 +178,7 @@ func setDefaultValues(c *Config) {
 	f.BFD = false
 	f.License = false
 	f.MACSec = true
+	f.Poe = false
 }
 
 // FeaturesForDevice gets the feature set configured for a device

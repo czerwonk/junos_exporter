@@ -15,13 +15,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"go.opentelemetry.io/otel/codes"
 
-	"github.com/czerwonk/junos_exporter/internal/config"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/czerwonk/junos_exporter/internal/config"
 )
 
 const version string = "0.12.6"
@@ -85,6 +87,7 @@ var (
 	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
 	subscriberEnabled           = flag.Bool("subscriber.enabled", false, "Scrape subscribers detail")
 	macsecEnabled               = flag.Bool("macsec.enabled", true, "Scrape MACSec metrics")
+	arpEnabled                  = flag.Bool("arps.enabled", true, "Scrape ARP metrics")
 	poeEnabled                  = flag.Bool("poe.enabled", true, "Scrape PoE metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
@@ -252,6 +255,7 @@ func loadConfigFromFlags() *config.Config {
 	f.License = *licenseEnabled
 	f.Subscriber = *subscriberEnabled
 	f.MACSec = *macsecEnabled
+	f.ARP = *arpEnabled
 	f.Poe = *poeEnabled
 	return c
 }

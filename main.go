@@ -15,15 +15,14 @@ import (
 	"syscall"
 	"time"
 
-	"go.opentelemetry.io/otel/codes"
-
+	"github.com/czerwonk/junos_exporter/internal/config"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel/codes"
 
-	"github.com/czerwonk/junos_exporter/internal/config"
+	log "github.com/sirupsen/logrus"
 )
 
 const version string = "0.12.7"
@@ -126,12 +125,12 @@ func main() {
 	}
 	defer shutdownTracing()
 
-	initChannels()
+	initChannels(ctx)
 
 	startServer()
 }
 
-func initChannels() {
+func initChannels(ctx context.Context) {
 	hup := make(chan os.Signal, 1)
 	signal.Notify(hup, syscall.SIGHUP)
 
@@ -155,13 +154,19 @@ func initChannels() {
 				} else {
 					rc <- nil
 				}
+			case <-ctx.Done():
+				shutdown()
 			case <-term:
-				log.Infoln("Closing connections to devices")
-				connManager.Close()
-				os.Exit(0)
+				shutdown()
 			}
 		}
 	}()
+}
+
+func shutdown() {
+	log.Infoln("Closing connections to devices")
+	connManager.Close()
+	os.Exit(0)
 }
 
 func printVersion() {

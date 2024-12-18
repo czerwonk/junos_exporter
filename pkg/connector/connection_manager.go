@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const timeoutInSeconds = 5

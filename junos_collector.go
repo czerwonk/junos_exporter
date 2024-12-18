@@ -77,7 +77,7 @@ func deviceInterfaceRegex(cfg *config.Config, host string) *regexp.Regexp {
 }
 
 func clientForDevice(device *connector.Device, connManager *connector.SSHConnectionManager) (*rpc.Client, error) {
-	conn, err := connManager.Connect(device)
+	conn, err := connManager.GetSSHConnection(device)
 	if err != nil {
 		return nil, err
 	}

@@ -26,7 +26,7 @@ import (
 	"github.com/czerwonk/junos_exporter/internal/config"
 )
 
-const version string = "0.12.8"
+const version string = "0.13.0"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -349,7 +349,8 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
 		ErrorLog:      l,
-		ErrorHandling: promhttp.ContinueOnError}).ServeHTTP(w, r)
+		ErrorHandling: promhttp.ContinueOnError,
+	}).ServeHTTP(w, r)
 }
 
 func devicesForRequest(r *http.Request) ([]*connector.Device, error) {

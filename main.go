@@ -165,7 +165,7 @@ func initChannels(ctx context.Context) {
 
 func shutdown() {
 	log.Infoln("Closing connections to devices")
-	connManager.Close()
+	connManager.CloseAll()
 	os.Exit(0)
 }
 
@@ -198,7 +198,7 @@ func reinitialize() error {
 	defer configMu.Unlock()
 
 	if connManager != nil {
-		connManager.Close()
+		connManager.CloseAll()
 		connManager = nil
 	}
 

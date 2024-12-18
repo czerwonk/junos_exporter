@@ -4,6 +4,7 @@ package connector
 
 import (
 	"bytes"
+	"fmt"
 	"net"
 	"sync"
 	"time"
@@ -31,12 +32,12 @@ func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 	c.lastUsed = time.Now()
 
 	if c.client == nil {
-		return nil, errors.New("not connected")
+		return nil, errors.New(fmt.Sprintf("not connected with %s", c.conn.RemoteAddr().String()))
 	}
 
 	session, err := c.client.NewSession()
 	if err != nil {
-		return nil, errors.Wrap(err, "could not open session")
+		return nil, errors.Wrapf(err, "could not open session with %s", c.conn.RemoteAddr().String())
 	}
 	defer session.Close()
 
@@ -45,7 +46,7 @@ func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 
 	err = session.Run(cmd)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not run command")
+		return nil, errors.Wrapf(err, "could not run command %q on %s", cmd, c.conn.RemoteAddr().String())
 	}
 
 	return b.Bytes(), nil

@@ -19,7 +19,6 @@ import (
 	"go.opentelemetry.io/otel/codes"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
-	"github.com/czerwonk/junos_exporter/pkg/connector"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -93,6 +92,7 @@ var (
 	macsecEnabled               = flag.Bool("macsec.enabled", true, "Scrape MACSec metrics")
 	arpEnabled                  = flag.Bool("arps.enabled", true, "Scrape ARP metrics")
 	poeEnabled                  = flag.Bool("poe.enabled", true, "Scrape PoE metrics")
+	ddosProtectionEnabled       = flag.Bool("ddos_protection.enabled", true, "Scrape DDoS protection metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -259,6 +259,7 @@ func loadConfigFromFlags() *config.Config {
 	f.License = *licenseEnabled
 	f.Subscriber = *subscriberEnabled
 	f.MACSec = *macsecEnabled
+	f.DDOSProtection = *ddosProtectionEnabled
 	f.ARP = *arpEnabled
 	f.Poe = *poeEnabled
 	return c

@@ -100,6 +100,7 @@ type FeatureConfig struct {
 	MACSec              bool `yaml:"macsec,omitempty"`
 	ARP                 bool `yaml:"arp,omitempty"`
 	Poe                 bool `yaml:"poe,omitempty"`
+	DDOSProtection      bool `yaml:"ddos_protection,omitempty"`
 }
 
 // New creates a new config
@@ -179,6 +180,7 @@ func setDefaultValues(c *Config) {
 	f.License = false
 	f.MACSec = true
 	f.Poe = false
+	f.DDOSProtection = true
 }
 
 // FeaturesForDevice gets the feature set configured for a device

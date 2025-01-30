@@ -178,6 +178,7 @@ func setDefaultValues(c *Config) {
 	f.VRRP = false
 	f.BFD = false
 	f.License = false
+	f.MACSec = true
 }
 
 // FeaturesForDevice gets the feature set configured for a device

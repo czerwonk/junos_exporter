@@ -15,9 +15,8 @@ import (
 	"syscall"
 	"time"
 
-	"go.opentelemetry.io/otel/codes"
-
 	"github.com/czerwonk/junos_exporter/pkg/connector"
+	"go.opentelemetry.io/otel/codes"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
@@ -27,9 +26,11 @@ import (
 	"go.opentelemetry.io/otel/codes"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/czerwonk/junos_exporter/internal/config"
 )
 
-const version string = "0.12.4"
+const version string = "0.12.5"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -89,6 +90,7 @@ var (
 	tracingProvider             = flag.String("tracing.provider", "", "Sets the tracing provider (stdout or collector)")
 	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
 	subscriberEnabled           = flag.Bool("subscriber.enabled", false, "Scrape subscribers detail")
+	macsecEnabled               = flag.Bool("macsec.enabled", true, "Scrape MACSec metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -254,6 +256,7 @@ func loadConfigFromFlags() *config.Config {
 	f.MPLSLSP = *mplsLSPEnabled
 	f.License = *licenseEnabled
 	f.Subscriber = *subscriberEnabled
+	f.MACSec = *macsecEnabled
 	return c
 }
 

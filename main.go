@@ -89,7 +89,7 @@ var (
 	macsecEnabled               = flag.Bool("macsec.enabled", true, "Scrape MACSec metrics")
 	arpEnabled                  = flag.Bool("arps.enabled", true, "Scrape ARP metrics")
 	poeEnabled                  = flag.Bool("poe.enabled", true, "Scrape PoE metrics")
-	ddosProtectionEnabled       = flag.Bool("ddos_protection.enabled", true, "Scrape DDoS protection metrics")
+	ddosProtectionEnabled       = flag.Bool("ddos_protection.enabled", false, "Scrape DDoS protection metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager

@@ -180,7 +180,7 @@ func setDefaultValues(c *Config) {
 	f.License = false
 	f.MACSec = true
 	f.Poe = false
-	f.DDOSProtection = true
+	f.DDOSProtection = false
 }
 
 // FeaturesForDevice gets the feature set configured for a device

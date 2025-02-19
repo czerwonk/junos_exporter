@@ -23,8 +23,6 @@ import (
 	"go.opentelemetry.io/otel/codes"
 
 	log "github.com/sirupsen/logrus"
-
-	"github.com/czerwonk/junos_exporter/internal/config"
 )
 
 const version string = "0.13.0"

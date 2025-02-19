@@ -2,12 +2,13 @@
 package macsec
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
-	"strconv"
-	"strings"
 )
 
 const prefix string = "junos_macsec_"
@@ -20,14 +21,6 @@ var (
 	macsecReplayProtectDesc                       *prometheus.Desc
 	macsecKeyServerOffsetDesc                     *prometheus.Desc
 	macsecEncryptionDesc                          *prometheus.Desc
-	//macsecConnectionDesc
-	macsecTXPacketCountDesc   *prometheus.Desc
-	macsecTXChannelStatusDesc *prometheus.Desc
-	macsecIncludeSCIDesc      *prometheus.Desc
-	macsecReplayProtectDesc   *prometheus.Desc
-	macsecKeyServerOffsetDesc *prometheus.Desc
-	macsecEncryptionDesc      *prometheus.Desc
-	//macsecStatsDesc
 	macsecSecureChannelTXEncryptedPacketsDesc     *prometheus.Desc
 	macsecSecureChannelTXEncryptedBytessDesc      *prometheus.Desc
 	macsecSecureChannelTXProtectedPacketsDesc     *prometheus.Desc

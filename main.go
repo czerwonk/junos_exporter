@@ -334,9 +334,10 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 
 	logicalSystem := r.URL.Query().Get("ls")
 	if !cfg.LSEnabled && logicalSystem != "" {
+		err := fmt.Errorf("Logical systems not enabled but the logical system '%s' in parameters", logicalSystem)
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		http.Error(w, fmt.Sprintf("Logical systems not enabled but the logical system '%s' in parameters", logicalSystem), 400)
+		http.Error(w, err.Error(), 400)
 		return
 	}
 

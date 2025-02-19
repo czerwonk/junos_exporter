@@ -122,6 +122,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "subscriber", f.Subscriber, subscriber.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "macsec", f.MACSec, macsec.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "arp", f.ARP, arp.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "poe", f.Poe, poe.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

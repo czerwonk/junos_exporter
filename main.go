@@ -15,10 +15,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/czerwonk/junos_exporter/pkg/connector"
-	"go.opentelemetry.io/otel/codes"
-
 	"github.com/czerwonk/junos_exporter/internal/config"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -29,7 +27,7 @@ import (
 	"github.com/czerwonk/junos_exporter/internal/config"
 )
 
-const version string = "0.12.6"
+const version string = "0.13.0"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -129,12 +127,12 @@ func main() {
 	}
 	defer shutdownTracing()
 
-	initChannels()
+	initChannels(ctx)
 
 	startServer()
 }
 
-func initChannels() {
+func initChannels(ctx context.Context) {
 	hup := make(chan os.Signal, 1)
 	signal.Notify(hup, syscall.SIGHUP)
 
@@ -158,13 +156,19 @@ func initChannels() {
 				} else {
 					rc <- nil
 				}
+			case <-ctx.Done():
+				shutdown()
 			case <-term:
-				log.Infoln("Closing connections to devices")
-				connManager.Close()
-				os.Exit(0)
+				shutdown()
 			}
 		}
 	}()
+}
+
+func shutdown() {
+	log.Infoln("Closing connections to devices")
+	connManager.CloseAll()
+	os.Exit(0)
 }
 
 func printVersion() {
@@ -196,7 +200,7 @@ func reinitialize() error {
 	defer configMu.Unlock()
 
 	if connManager != nil {
-		connManager.Close()
+		connManager.CloseAll()
 		connManager = nil
 	}
 
@@ -346,7 +350,8 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
 		ErrorLog:      l,
-		ErrorHandling: promhttp.ContinueOnError}).ServeHTTP(w, r)
+		ErrorHandling: promhttp.ContinueOnError,
+	}).ServeHTTP(w, r)
 }
 
 func devicesForRequest(r *http.Request) ([]*connector.Device, error) {

@@ -162,7 +162,7 @@ func (*interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- d.receiveCodeViolationsDesc
 	ch <- d.receiveTotalErrorsDesc
 	ch <- d.transmitTotalErrorsDesc
-	ch <- d.mtu
+	ch <- d.mtuDesc
 	ch <- d.fecModeDesc
 }
 
@@ -232,7 +232,7 @@ func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfa
 			ReceiveTotalErrors:      float64(phy.MACStatistics.InputTotalErrors),
 			TransmitTotalErrors:     float64(phy.MACStatistics.OutputTotalErrors),
 			MTU:                     phy.MTU,
-			FecMode:                 convertFECModeToFloat64(strings.ToLower(strings.TrimRight(phy.EthernetFecMode.EnabledFecMode, "\n"))),
+			FECMode:                 convertFECModeToFloat64(strings.ToLower(strings.TrimRight(phy.EthernetFecMode.EnabledFecMode, "\n"))),
 		}
 
 		if phy.InterfaceFlapped.Value != "Never" {

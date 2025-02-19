@@ -3,8 +3,10 @@
 package main
 
 import (
-	"github.com/czerwonk/junos_exporter/pkg/features/poe"
 	"regexp"
+
+	"github.com/czerwonk/junos_exporter/pkg/features/ddosprotection"
+	"github.com/czerwonk/junos_exporter/pkg/features/poe"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
 	"github.com/czerwonk/junos_exporter/pkg/collector"
@@ -14,7 +16,6 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/arp"
 	"github.com/czerwonk/junos_exporter/pkg/features/bfd"
 	"github.com/czerwonk/junos_exporter/pkg/features/bgp"
-	"github.com/czerwonk/junos_exporter/pkg/features/ddosprotection"
 	"github.com/czerwonk/junos_exporter/pkg/features/environment"
 	"github.com/czerwonk/junos_exporter/pkg/features/firewall"
 	"github.com/czerwonk/junos_exporter/pkg/features/fpc"
@@ -28,6 +29,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/lacp"
 	"github.com/czerwonk/junos_exporter/pkg/features/ldp"
 	"github.com/czerwonk/junos_exporter/pkg/features/mac"
+	"github.com/czerwonk/junos_exporter/pkg/features/macsec"
 	"github.com/czerwonk/junos_exporter/pkg/features/mplslsp"
 	"github.com/czerwonk/junos_exporter/pkg/features/nat"
 	"github.com/czerwonk/junos_exporter/pkg/features/nat2"
@@ -123,6 +125,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "macsec", f.MACSec, macsec.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "arp", f.ARP, arp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "poe", f.Poe, poe.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "ddosprotection", f.DDOSProtection, ddosprotection.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

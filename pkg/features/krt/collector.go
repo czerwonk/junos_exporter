@@ -1,6 +1,8 @@
 package krt
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -40,7 +42,8 @@ func (c *krtCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 
 func (c *krtCollector) collectKRT(k KRTReply, ch chan<- prometheus.Metric, labelValues []string) {
 	for _, q := range k.KrtQueueInformation.KrtQueue {
-		labelValues = append(labelValues, q.KrtqType)
-		ch <- prometheus.MustNewConstMetric(queueLengthDesc, prometheus.GaugeValue, q.KrtqQueueLength, labelValues...)
+		labels := append(labelValues, q.KrtqType)
+		fmt.Printf("labelValues: %v\n", labelValues)
+		ch <- prometheus.MustNewConstMetric(queueLengthDesc, prometheus.GaugeValue, q.KrtqQueueLength, labels...)
 	}
 }

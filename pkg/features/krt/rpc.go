@@ -2,7 +2,7 @@ package krt
 
 import "encoding/xml"
 
-type KRTReply struct {
+type resultKRT struct {
 	XMLName             xml.Name `xml:"rpc-reply"`
 	Text                string   `xml:",chardata"`
 	Junos               string   `xml:"junos,attr"`

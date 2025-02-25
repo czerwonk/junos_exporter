@@ -31,7 +31,7 @@ func (c *krtCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *krtCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var k KRTReply
+	var k resultKRT
 	err := client.RunCommandAndParse("show krt queue", &k)
 	if err != nil {
 		return errors.Wrap(err, "failed to run command 'show krt queue'")
@@ -40,7 +40,7 @@ func (c *krtCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 	return nil
 }
 
-func (c *krtCollector) collectKRT(k KRTReply, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *krtCollector) collectKRT(k resultKRT, ch chan<- prometheus.Metric, labelValues []string) {
 	for _, q := range k.KrtQueueInformation.KrtQueue {
 		labels := append(labelValues, q.KrtqType)
 		fmt.Printf("labelValues: %v\n", labelValues)

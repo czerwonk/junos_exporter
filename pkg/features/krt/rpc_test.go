@@ -147,10 +147,10 @@ func TestParseXML(t *testing.T) {
 
 	var results resultKRT
 
-	// Parse the XML data for statistics
+	// Parse the XML data for krt queue
 	err := xml.Unmarshal([]byte(resultsData), &results)
 	assert.NoError(t, err)
-
+	// check the values pf queue length
 	assert.Equal(t, float64(1), results.KrtQueueInformation.KrtQueue[0].KrtqQueueLength)
 	assert.Equal(t, float64(11), results.KrtQueueInformation.KrtQueue[1].KrtqQueueLength)
 	assert.Equal(t, float64(111), results.KrtQueueInformation.KrtQueue[2].KrtqQueueLength)

@@ -24,6 +24,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/interfaces"
 	"github.com/czerwonk/junos_exporter/pkg/features/ipsec"
 	"github.com/czerwonk/junos_exporter/pkg/features/isis"
+	"github.com/czerwonk/junos_exporter/pkg/features/krt"
 	"github.com/czerwonk/junos_exporter/pkg/features/l2circuit"
 	"github.com/czerwonk/junos_exporter/pkg/features/l2vpn"
 	"github.com/czerwonk/junos_exporter/pkg/features/lacp"
@@ -126,6 +127,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "arp", f.ARP, arp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "poe", f.Poe, poe.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "ddosprotection", f.DDOSProtection, ddosprotection.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "krt", f.KRT, krt.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

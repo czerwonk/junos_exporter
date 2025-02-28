@@ -88,6 +88,7 @@ var (
 	macsecEnabled               = flag.Bool("macsec.enabled", true, "Scrape MACSec metrics")
 	arpEnabled                  = flag.Bool("arps.enabled", true, "Scrape ARP metrics")
 	poeEnabled                  = flag.Bool("poe.enabled", true, "Scrape PoE metrics")
+	krtEnabled                  = flag.Bool("krt.enabled", false, "Scrape KRT queue metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -262,6 +263,7 @@ func loadConfigFromFlags() *config.Config {
 	f.MACSec = *macsecEnabled
 	f.ARP = *arpEnabled
 	f.Poe = *poeEnabled
+	f.KRT = *krtEnabled
 	return c
 }
 

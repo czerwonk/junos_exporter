@@ -420,20 +420,19 @@ func (c *systemCollector) collectLicense(client collector.Client, ch chan<- prom
 		ch <- prometheus.MustNewConstMetric(licenseInstalledDesc, prometheus.GaugeValue, float64(lic.Installed), licenseLabels...)
 		ch <- prometheus.MustNewConstMetric(licenseNeededDesc, prometheus.GaugeValue, float64(lic.Needed), licenseLabels...)
 
-		expiry_str := strings.ToLower(lic.ValidityType)
-		expiry, err := time.Parse("2006-01-02 03:04:05 MST", expiry_str)
-		if err != nil {
-			if strings.Compare(expiry_str, "expired") == 0 {
-				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(-1), licenseLabels...)
-			} else if strings.Compare(expiry_str, "permanent") == 0 {
-				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(1)), licenseLabels...)
-			} else {
-				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(-1)), licenseLabels...)
-			}
+		if strings.Compare(lic.ValidityType, "expired") == 0 {
+			ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(-1), licenseLabels...)
+		} else if strings.Compare(lic.ValidityType, "permanent") == 0 {
+			ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(1)), licenseLabels...)
 		} else {
-			license_ttl_days := time.Until(expiry).Hours() / 24.0
-			ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(license_ttl_days), licenseLabels...)
+			expiry_str := strings.ToLower(lic.EndDate)
+			expiry, err := time.Parse("2006-01-02", expiry_str)
+			if err != nil {
+					ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(-1)), licenseLabels...)
+			} else {
+				license_ttl_days := time.Until(expiry).Hours() / 24.0
+				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(license_ttl_days), licenseLabels...)
+			}
 		}
 	}
 }
-

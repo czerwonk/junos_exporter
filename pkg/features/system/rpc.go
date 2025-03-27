@@ -82,6 +82,7 @@ type licenseInformation struct {
 			Used int `xml:"used-licensed"`
 			Needed int `xml:"needed"`
 			ValidityType string `xml:"validity-type"`
+			EndDate string `xml:"end-date"`
 		} `xml:"feature-summary"`
 	} `xml:"license-usage-summary"`
 }

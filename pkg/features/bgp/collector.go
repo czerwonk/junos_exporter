@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"math"
 	"regexp"
+	"strings"
+
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/dynamiclabels"
-	"github.com/prometheus/client_golang/prometheus"
-
-	"strings"
 )
 
 const prefix string = "junos_bgp_session_"
@@ -38,7 +38,7 @@ type description struct {
 func newDescriptions(dynLabels dynamiclabels.Labels) *description {
 	d := &description{}
 
-	l := []string{"target", "asn", "ip", "description", "group"}
+	l := []string{"target", "asn", "ip", "description", "group", "local_interface"}
 	l = append(l, dynLabels.Keys()...)
 	d.upDesc = prometheus.NewDesc(prefix+"up", "Session is up (1 = Established)", l, nil)
 	d.stateDesc = prometheus.NewDesc(prefix+"state", "State of the bgp Session (1 = Active, 2 = Connect, 3 = Established, 4 = Idle, 5 = OpenConfirm, 6 = OpenSent, 7 = route reflector client, 0 = Other)", l, nil)
@@ -167,7 +167,8 @@ func (c *bgpCollector) collectForPeer(p peer, groups groupMap, ch chan<- prometh
 		p.ASN,
 		ip[0],
 		p.Description,
-		groupForPeer(p, groups)}...)
+		groupForPeer(p, groups),
+		p.LocalInterfaceName}...)
 
 	up := 0
 	if p.State == "Established" {

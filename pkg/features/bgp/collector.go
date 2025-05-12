@@ -38,7 +38,7 @@ type description struct {
 func newDescriptions(dynLabels dynamiclabels.Labels) *description {
 	d := &description{}
 
-	l := []string{"target", "asn", "ip", "description", "group", "local_interface"}
+	l := []string{"target", "asn", "ip", "description", "group"}
 	l = append(l, dynLabels.Keys()...)
 	d.upDesc = prometheus.NewDesc(prefix+"up", "Session is up (1 = Established)", l, nil)
 	d.stateDesc = prometheus.NewDesc(prefix+"state", "State of the bgp Session (1 = Active, 2 = Connect, 3 = Established, 4 = Idle, 5 = OpenConfirm, 6 = OpenSent, 7 = route reflector client, 0 = Other)", l, nil)
@@ -167,8 +167,7 @@ func (c *bgpCollector) collectForPeer(p peer, groups groupMap, ch chan<- prometh
 		p.ASN,
 		ip[0],
 		p.Description,
-		groupForPeer(p, groups),
-		p.LocalInterfaceName}...)
+		groupForPeer(p, groups)}...)
 
 	up := 0
 	if p.State == "Established" {
@@ -176,6 +175,11 @@ func (c *bgpCollector) collectForPeer(p peer, groups groupMap, ch chan<- prometh
 	}
 
 	dynLabels := dynamiclabels.ParseDescription(p.Description, c.descriptionRe)
+	if p.LocalInterfaceName != "" {
+		dynLabels = append(dynLabels,
+			dynamiclabels.New("interface", p.LocalInterfaceName))
+	}
+
 	lv = append(lv, dynLabels.Values()...)
 
 	d := newDescriptions(dynLabels)

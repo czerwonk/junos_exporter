@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"math"
 	"regexp"
+	"strings"
+
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/dynamiclabels"
-	"github.com/prometheus/client_golang/prometheus"
-
-	"strings"
 )
 
 const prefix string = "junos_bgp_session_"
@@ -175,6 +175,11 @@ func (c *bgpCollector) collectForPeer(p peer, groups groupMap, ch chan<- prometh
 	}
 
 	dynLabels := dynamiclabels.ParseDescription(p.Description, c.descriptionRe)
+	if p.LocalInterfaceName != "" {
+		dynLabels = append(dynLabels,
+			dynamiclabels.New("interface", p.LocalInterfaceName))
+	}
+
 	lv = append(lv, dynLabels.Values()...)
 
 	d := newDescriptions(dynLabels)

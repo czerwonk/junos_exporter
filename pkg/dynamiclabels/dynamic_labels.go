@@ -84,3 +84,7 @@ func (ils Labels) Values() []string {
 
 	return ret
 }
+
+func New(name string, value string) *Label {
+	return &Label{name, value}
+}

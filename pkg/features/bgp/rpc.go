@@ -9,19 +9,20 @@ type result struct {
 }
 
 type peer struct {
-	CFGRTI            string            `xml:"peer-cfg-rti"`
-	IP                string            `xml:"peer-address"`
-	ASN               string            `xml:"peer-as"`
-	LocalASN          int64             `xml:"local-as"`
-	State             string            `xml:"peer-state"`
-	Group             string            `xml:"peer-group"`
-	GroupIndex        int64             `xml:"peer-group-index"`
-	Description       string            `xml:"description"`
-	Flaps             int64             `xml:"flap-count"`
-	InputMessages     int64             `xml:"input-messages"`
-	OutputMessages    int64             `xml:"output-messages"`
-	RIBs              []rib             `xml:"bgp-rib"`
-	OptionInformation optionInformation `xml:"bgp-option-information"`
+	CFGRTI             string            `xml:"peer-cfg-rti"`
+	IP                 string            `xml:"peer-address"`
+	ASN                string            `xml:"peer-as"`
+	LocalASN           int64             `xml:"local-as"`
+	State              string            `xml:"peer-state"`
+	Group              string            `xml:"peer-group"`
+	GroupIndex         int64             `xml:"peer-group-index"`
+	Description        string            `xml:"description"`
+	Flaps              int64             `xml:"flap-count"`
+	InputMessages      int64             `xml:"input-messages"`
+	OutputMessages     int64             `xml:"output-messages"`
+	RIBs               []rib             `xml:"bgp-rib"`
+	OptionInformation  optionInformation `xml:"bgp-option-information"`
+	LocalInterfaceName string            `xml:"local-interface-name"`
 }
 
 type rib struct {

@@ -48,3 +48,30 @@ type interfaces struct {
 		Banner string `xml:"banner"`
 	} `xml:"cli"`
 }
+
+type backupCoverage struct {
+	XMLName                       xml.Name `xml:"rpc-reply"`
+	Text                          string   `xml:",chardata"`
+	Junos                         string   `xml:"junos,attr"`
+	IsisBackupCoverageInformation struct {
+		Text               string `xml:",chardata"`
+		Xmlns              string `xml:"xmlns,attr"`
+		IsisBackupCoverage struct {
+			Text                          string `xml:",chardata"`
+			IsisTopologyID                string `xml:"isis-topology-id"`
+			Level                         string `xml:"level"`
+			IsisNodeCoverage              string `xml:"isis-node-coverage"`
+			IsisRouteCoverageIpv4         string `xml:"isis-route-coverage-ipv4"`
+			IsisRouteCoverageIpv6         string `xml:"isis-route-coverage-ipv6"`
+			IsisRouteCoverageClns         string `xml:"isis-route-coverage-clns"`
+			IsisRouteCoverageIpv4Mpls     string `xml:"isis-route-coverage-ipv4-mpls"`
+			IsisRouteCoverageIpv6Mpls     string `xml:"isis-route-coverage-ipv6-mpls"`
+			IsisRouteCoverageIpv4MplsSspf string `xml:"isis-route-coverage-ipv4-mpls-sspf"`
+			IsisRouteCoverageIpv6MplsSspf string `xml:"isis-route-coverage-ipv6-mpls-sspf"`
+		} `xml:"isis-backup-coverage"`
+	} `xml:"isis-backup-coverage-information"`
+	Cli struct {
+		Text   string `xml:",chardata"`
+		Banner string `xml:"banner"`
+	} `xml:"cli"`
+}

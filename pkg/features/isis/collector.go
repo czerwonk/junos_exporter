@@ -3,6 +3,7 @@
 package isis
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -15,18 +16,26 @@ import (
 const prefix string = "junos_isis_"
 
 var (
-	upCountDesc       *prometheus.Desc
-	totalCountDesc    *prometheus.Desc
-	adjStateDesc      *prometheus.Desc
-	adjCountDesc      *prometheus.Desc
-	adjPriorityDesc   *prometheus.Desc
-	adjMetricDesc     *prometheus.Desc
-	adjHelloTimerDesc *prometheus.Desc
-	adjHoldTimerDesc  *prometheus.Desc
-	lspIntervalDesc   *prometheus.Desc
-	csnpIntervalDesc  *prometheus.Desc
-	helloPaddingDesc  *prometheus.Desc
-	maxHelloSizeDesc  *prometheus.Desc
+	upCountDesc                   *prometheus.Desc
+	totalCountDesc                *prometheus.Desc
+	adjStateDesc                  *prometheus.Desc
+	adjCountDesc                  *prometheus.Desc
+	adjPriorityDesc               *prometheus.Desc
+	adjMetricDesc                 *prometheus.Desc
+	adjHelloTimerDesc             *prometheus.Desc
+	adjHoldTimerDesc              *prometheus.Desc
+	lspIntervalDesc               *prometheus.Desc
+	csnpIntervalDesc              *prometheus.Desc
+	helloPaddingDesc              *prometheus.Desc
+	maxHelloSizeDesc              *prometheus.Desc
+	nodeCoverageDesc              *prometheus.Desc
+	routeIPv4CoverageDesc         *prometheus.Desc
+	routeIPv4MPLSCoverageDesc     *prometheus.Desc
+	routeIPv4MPLSSSPFCoverageDesc *prometheus.Desc
+	routeIPv6CoverageDesc         *prometheus.Desc
+	routeIPv6MPLSCoverageDesc     *prometheus.Desc
+	routeIPv6MPLSSSPFCoverageDesc *prometheus.Desc
+	routeCLNSCoverageDesc         *prometheus.Desc
 )
 
 func init() {
@@ -46,6 +55,15 @@ func init() {
 	adjMetricDesc = prometheus.NewDesc(prefix+"adjacency_metric", "The ISIS adjacency metric", interfaceMetricsLabels, nil)
 	adjHelloTimerDesc = prometheus.NewDesc(prefix+"adjacency_hello_timer_seconds", "The ISIS adjacency hello timer", interfaceMetricsLabels, nil)
 	adjHoldTimerDesc = prometheus.NewDesc(prefix+"adjacency_hold_timer_seconds", "The ISIS adjacency hold timer", interfaceMetricsLabels, nil)
+	coverageLabels := []string{"target", "topology", "level"}
+	nodeCoverageDesc = prometheus.NewDesc(prefix+"node_coverage", "The ISIS node coverage in percents", coverageLabels, nil)
+	routeIPv4CoverageDesc = prometheus.NewDesc(prefix+"route_ipv4_coverage", "The ISIS route IPv4 coverage in percents", coverageLabels, nil)
+	routeIPv4MPLSCoverageDesc = prometheus.NewDesc(prefix+"route_ipv4_mpls_coverage", "The ISIS route IPv4 MPLS coverage in percents", coverageLabels, nil)
+	routeIPv4MPLSSSPFCoverageDesc = prometheus.NewDesc(prefix+"route_ipv4_mpls_ssspf_coverage", "The ISIS route IPv4 MPLS SSSPF coverage in percents", coverageLabels, nil)
+	routeIPv6CoverageDesc = prometheus.NewDesc(prefix+"route_ipv6_coverage", "The ISIS route IPv6 coverage in percents", coverageLabels, nil)
+	routeIPv6MPLSCoverageDesc = prometheus.NewDesc(prefix+"route_ipv6_mpls_coverage", "The ISIS route IPv6 MPLS coverage in percents", coverageLabels, nil)
+	routeIPv6MPLSSSPFCoverageDesc = prometheus.NewDesc(prefix+"route_ipv6_mpls_ssspf_coverage", "The ISIS route IPv6 MPLS SSSPF coverage in percents", coverageLabels, nil)
+	routeCLNSCoverageDesc = prometheus.NewDesc(prefix+"route_clns_coverage", "The ISIS route CLNS coverage in percents", coverageLabels, nil)
 }
 
 type isisCollector struct {
@@ -74,6 +92,14 @@ func (*isisCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- csnpIntervalDesc
 	ch <- helloPaddingDesc
 	ch <- maxHelloSizeDesc
+	ch <- nodeCoverageDesc
+	ch <- routeIPv4CoverageDesc
+	ch <- routeIPv4MPLSCoverageDesc
+	ch <- routeIPv4MPLSSSPFCoverageDesc
+	ch <- routeIPv6CoverageDesc
+	ch <- routeIPv6MPLSCoverageDesc
+	ch <- routeIPv6MPLSSSPFCoverageDesc
+	ch <- routeCLNSCoverageDesc
 }
 
 // Collect collects metrics from JunOS
@@ -115,6 +141,13 @@ func (c *isisCollector) Collect(client collector.Client, ch chan<- prometheus.Me
 		return errors.Wrap(err, "failed to run command 'show isis interface extensive'")
 	}
 	c.isisInterfaces(ifas, ch, labelValues)
+
+	var coverage backupCoverage
+	err = client.RunCommandAndParse("show isis backup coverage", &coverage)
+	if err != nil {
+		return errors.Wrap(err, "failed to run command 'show isis backup coverage'")
+	}
+	c.isisBackupCoverage(coverage, ch, labelValues)
 	return nil
 }
 
@@ -160,6 +193,19 @@ func (c *isisCollector) isisInterfaces(interfaces interfaces, ch chan<- promethe
 	}
 }
 
+func (c *isisCollector) isisBackupCoverage(coverage backupCoverage, ch chan<- prometheus.Metric, labelValues []string) {
+	//coverage is a struct and not [] so ranging over it is not possible
+	compactCoverage := coverage.IsisBackupCoverageInformation.IsisBackupCoverage
+	labels := append(labelValues, compactCoverage.IsisTopologyID, compactCoverage.Level)
+	ch <- prometheus.MustNewConstMetric(nodeCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisNodeCoverage), labels...)
+	ch <- prometheus.MustNewConstMetric(routeIPv4CoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv4), labels...)
+	ch <- prometheus.MustNewConstMetric(routeIPv4MPLSCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv4MplsSspf), labels...)
+	ch <- prometheus.MustNewConstMetric(routeIPv6CoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv6), labels...)
+	ch <- prometheus.MustNewConstMetric(routeIPv6MPLSCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv6Mpls), labels...)
+	ch <- prometheus.MustNewConstMetric(routeIPv6MPLSSSPFCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv6MplsSspf), labels...)
+	ch <- prometheus.MustNewConstMetric(routeCLNSCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageClns), labels...)
+}
+
 func getHelloPadding(h string) float64 {
 	switch strings.ToLower(h) {
 	case "adaptive":
@@ -173,4 +219,15 @@ func getHelloPadding(h string) float64 {
 	default:
 		return 0.0
 	}
+}
+
+// percentageToFloat64 converts a string percentage in the format "0.00%" to a float64 value
+func percentageToFloat64(percentageStr string) float64 {
+	trimmed := strings.TrimSuffix(percentageStr, "%")
+	value, err := strconv.ParseFloat(trimmed, 64)
+	if err != nil {
+		fmt.Println("failed to turn percentage value into float64: %v", err)
+		return 0
+	}
+	return value / 100.0
 }

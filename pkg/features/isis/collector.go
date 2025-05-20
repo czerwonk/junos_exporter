@@ -219,8 +219,7 @@ func (c *isisCollector) isisBackupCoverage(coverage backupCoverage, ch chan<- pr
 func (c *isisCollector) isisBackupPath(backupPath backupSPF, ch chan<- prometheus.Metric, labelValues []string) {
 	for _, node := range backupPath.IsisSpfInformation.IsisSpf {
 		for _, bpSFPResult := range node.IsisBackupSpfResult {
-			for _, noBPPath := range bpSFPResult.NoCoverageReasonElement {
-				noBPPath.NoCoverageReason = noBPPath.NoCoverageReason + "b"
+			for _, _ = range bpSFPResult.NoCoverageReasonElement {
 				labelValues := append(labelValues, bpSFPResult.NodeID, "no backup path")
 				ch <- prometheus.MustNewConstMetric(backupPathDesc, prometheus.GaugeValue, 0.0, labelValues...)
 			}

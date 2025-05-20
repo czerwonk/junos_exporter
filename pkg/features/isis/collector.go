@@ -205,7 +205,6 @@ func (c *isisCollector) isisInterfaces(interfaces interfaces, ch chan<- promethe
 }
 
 func (c *isisCollector) isisBackupCoverage(coverage backupCoverage, ch chan<- prometheus.Metric, labelValues []string) {
-	//coverage is a struct and not [] so ranging over it is not possible
 	compactCoverage := coverage.IsisBackupCoverageInformation.IsisBackupCoverage
 	labels := append(labelValues, compactCoverage.IsisTopologyID, compactCoverage.Level)
 	ch <- prometheus.MustNewConstMetric(nodeCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisNodeCoverage), labels...)
@@ -250,7 +249,6 @@ func getHelloPadding(h string) float64 {
 	}
 }
 
-// percentageToFloat64 converts a string percentage in the format "0.00%" to a float64 value
 func percentageToFloat64(percentageStr string) float64 {
 	trimmed := strings.TrimSuffix(percentageStr, "%")
 	value, err := strconv.ParseFloat(trimmed, 64)

@@ -21,8 +21,6 @@ type adjacency struct {
 
 type interfaces struct {
 	XMLName                  xml.Name `xml:"rpc-reply"`
-	Text                     string   `xml:",chardata"`
-	Junos                    string   `xml:"junos,attr"`
 	IsisInterfaceInformation struct {
 		Text          string `xml:",chardata"`
 		Xmlns         string `xml:"xmlns,attr"`
@@ -51,11 +49,7 @@ type interfaces struct {
 
 type backupCoverage struct {
 	XMLName                       xml.Name `xml:"rpc-reply"`
-	Text                          string   `xml:",chardata"`
-	Junos                         string   `xml:"junos,attr"`
 	IsisBackupCoverageInformation struct {
-		Text               string `xml:",chardata"`
-		Xmlns              string `xml:"xmlns,attr"`
 		IsisBackupCoverage struct {
 			Text                          string `xml:",chardata"`
 			IsisTopologyID                string `xml:"isis-topology-id"`
@@ -70,43 +64,18 @@ type backupCoverage struct {
 			IsisRouteCoverageIpv6MplsSspf string `xml:"isis-route-coverage-ipv6-mpls-sspf"`
 		} `xml:"isis-backup-coverage"`
 	} `xml:"isis-backup-coverage-information"`
-	Cli struct {
-		Text   string `xml:",chardata"`
-		Banner string `xml:"banner"`
-	} `xml:"cli"`
 }
 
 type backupSPF struct {
 	XMLName            xml.Name `xml:"rpc-reply"`
-	Text               string   `xml:",chardata"`
-	Junos              string   `xml:"junos,attr"`
 	IsisSpfInformation struct {
-		Text    string `xml:",chardata"`
-		Xmlns   string `xml:"xmlns,attr"`
 		IsisSpf []struct {
-			Text                 string `xml:",chardata"`
-			IsisSpfResultsHeader struct {
-				Level int `xml:"level"` // Converted to int since it's numeric
-			} `xml:"isis-spf-results-header"`
-			NodeCount           float64 `xml:"node-count"` // Converted to int since it's numeric
 			IsisBackupSpfResult []struct {
-				NodeID         string `xml:"node-id"`
-				NodeAddress    string `xml:"node-address"`
-				NextHopElement []struct {
-					InterfaceName   string `xml:"interface-name"`
-					IsisNextHopType string `xml:"isis-next-hop-type"`
-					IsisNextHop     string `xml:"isis-next-hop"`
-					SNPA            string `xml:"snpa"`
-				} `xml:"next-hop-element"`
-				BackupRoot              string  `xml:"backup-root"`        // Singular field
-				BackupRootMetric        float64 `xml:"backup-root-metric"` // Converted to int
-				Metric                  float64 `xml:"metric"`             // Converted to int
-				BackupRootPreference    string  `xml:"backup-root-preference"`
+				NodeID                  string `xml:"node-id"`
 				NoCoverageReasonElement []struct {
 					IsisNextHopType  string `xml:"isis-next-hop-type"`
 					NoCoverageReason string `xml:"no-coverage-reason"`
 				} `xml:"no-coverage-reason-element"`
-				TrackItem            []string `xml:"track-item"`
 				BackupNextHopElement struct {
 					InterfaceName            string  `xml:"interface-name"`
 					IsisNextHopType          string  `xml:"isis-next-hop-type"`
@@ -117,60 +86,4 @@ type backupSPF struct {
 			} `xml:"isis-backup-spf-result"`
 		} `xml:"isis-spf"`
 	} `xml:"isis-spf-information"`
-	Cli struct {
-		Banner string `xml:"banner"`
-	} `xml:"cli"`
 }
-
-/*type backupSPF struct {
-	XMLName            xml.Name `xml:"rpc-reply"`
-	Text               string   `xml:",chardata"`
-	Junos              string   `xml:"junos,attr"`
-	IsisSpfInformation struct {
-		Text    string `xml:",chardata"`
-		Xmlns   string `xml:"xmlns,attr"`
-		IsisSpf []struct {
-			Text                 string `xml:",chardata"`
-			IsisSpfResultsHeader struct {
-				Text  string `xml:",chardata"`
-				Level string `xml:"level"`
-			} `xml:"isis-spf-results-header"`
-			NodeCount           string `xml:"node-count"`
-			IsisBackupSpfResult []struct {
-				Text           string `xml:",chardata"`
-				NodeID         string `xml:"node-id"`
-				NodeAddress    string `xml:"node-address"`
-				NextHopElement []struct {
-					Text            string `xml:",chardata"`
-					InterfaceName   string `xml:"interface-name"`
-					IsisNextHopType string `xml:"isis-next-hop-type"`
-					IsisNextHop     string `xml:"isis-next-hop"`
-					Snpa            string `xml:"snpa"`
-				} `xml:"next-hop-element"`
-				BackupRoot              []string `xml:"backup-root"`
-				BackupRootMetric        []string `xml:"backup-root-metric"`
-				Metric                  []string `xml:"metric"`
-				BackupRootPreference    []string `xml:"backup-root-preference"`
-				NoCoverageReasonElement []struct {
-					Text             string `xml:",chardata"`
-					IsisNextHopType  string `xml:"isis-next-hop-type"`
-					NoCoverageReason string `xml:"no-coverage-reason"`
-				} `xml:"no-coverage-reason-element"`
-				TrackItem            []string `xml:"track-item"`
-				BackupNextHopElement struct {
-					Text                     string `xml:",chardata"`
-					InterfaceName            string `xml:"interface-name"`
-					IsisNextHopType          string `xml:"isis-next-hop-type"`
-					IsisBackupPrefixRefcount string `xml:"isis-backup-prefix-refcount"`
-					IsisNextHop              string `xml:"isis-next-hop"`
-					Snpa                     string `xml:"snpa"`
-				} `xml:"backup-next-hop-element"`
-			} `xml:"isis-backup-spf-result"`
-		} `xml:"isis-spf"`
-	} `xml:"isis-spf-information"`
-	Cli struct {
-		Text   string `xml:",chardata"`
-		Banner string `xml:"banner"`
-	} `xml:"cli"`
-}
-*/

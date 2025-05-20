@@ -36,6 +36,7 @@ var (
 	routeIPv6MPLSCoverageDesc     *prometheus.Desc
 	routeIPv6MPLSSSPFCoverageDesc *prometheus.Desc
 	routeCLNSCoverageDesc         *prometheus.Desc
+	backupPathDesc                *prometheus.Desc
 )
 
 func init() {
@@ -64,6 +65,8 @@ func init() {
 	routeIPv6MPLSCoverageDesc = prometheus.NewDesc(prefix+"route_ipv6_mpls_coverage", "The ISIS route IPv6 MPLS coverage in percents", coverageLabels, nil)
 	routeIPv6MPLSSSPFCoverageDesc = prometheus.NewDesc(prefix+"route_ipv6_mpls_ssspf_coverage", "The ISIS route IPv6 MPLS SSSPF coverage in percents", coverageLabels, nil)
 	routeCLNSCoverageDesc = prometheus.NewDesc(prefix+"route_clns_coverage", "The ISIS route CLNS coverage in percents", coverageLabels, nil)
+	backupPathLabels := []string{"target", "node_name", "backup_path"}
+	backupPathDesc = prometheus.NewDesc(prefix+"backup_path", "An ISIS backup path", backupPathLabels, nil)
 }
 
 type isisCollector struct {
@@ -100,6 +103,7 @@ func (*isisCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- routeIPv6MPLSCoverageDesc
 	ch <- routeIPv6MPLSSSPFCoverageDesc
 	ch <- routeCLNSCoverageDesc
+	ch <- backupPathDesc
 }
 
 // Collect collects metrics from JunOS
@@ -148,6 +152,13 @@ func (c *isisCollector) Collect(client collector.Client, ch chan<- prometheus.Me
 		return errors.Wrap(err, "failed to run command 'show isis backup coverage'")
 	}
 	c.isisBackupCoverage(coverage, ch, labelValues)
+
+	var backupPath backupSPF
+	err = client.RunCommandAndParse("show isis backup spf results", &backupPath)
+	if err != nil {
+		return errors.Wrap(err, "failed to run command 'show isis backup spf results'")
+	}
+	c.isisBackupPath(backupPath, ch, labelValues)
 	return nil
 }
 
@@ -204,6 +215,24 @@ func (c *isisCollector) isisBackupCoverage(coverage backupCoverage, ch chan<- pr
 	ch <- prometheus.MustNewConstMetric(routeIPv6MPLSCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv6Mpls), labels...)
 	ch <- prometheus.MustNewConstMetric(routeIPv6MPLSSSPFCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv6MplsSspf), labels...)
 	ch <- prometheus.MustNewConstMetric(routeCLNSCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageClns), labels...)
+}
+
+func (c *isisCollector) isisBackupPath(backupPath backupSPF, ch chan<- prometheus.Metric, labelValues []string) {
+	for _, node := range backupPath.IsisSpfInformation.IsisSpf {
+		for _, bpSFPResult := range node.IsisBackupSpfResult {
+			for _, noBPPath := range bpSFPResult.NoCoverageReasonElement {
+				noBPPath.NoCoverageReason = noBPPath.NoCoverageReason + "b"
+				labelValues := append(labelValues, bpSFPResult.NodeID, "no backup path")
+				ch <- prometheus.MustNewConstMetric(backupPathDesc, prometheus.GaugeValue, 0.0, labelValues...)
+			}
+			//what is a more elegant way to check if sub struct is not empty ?
+			if len(bpSFPResult.BackupNextHopElement.SNPA) > 1 && len(bpSFPResult.BackupNextHopElement.IsisNextHop) > 1 {
+				path := bpSFPResult.BackupNextHopElement.IsisNextHopType + ":" + bpSFPResult.BackupNextHopElement.IsisNextHop + ":" + bpSFPResult.BackupNextHopElement.InterfaceName + " and snpa is " + strings.TrimSpace(bpSFPResult.BackupNextHopElement.SNPA)
+				labelValues := append(labelValues, bpSFPResult.NodeID, path)
+				ch <- prometheus.MustNewConstMetric(backupPathDesc, prometheus.GaugeValue, 1.0, labelValues...)
+			}
+		}
+	}
 }
 
 func getHelloPadding(h string) float64 {

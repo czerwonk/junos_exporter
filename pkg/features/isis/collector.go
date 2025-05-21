@@ -252,7 +252,7 @@ func percentageToFloat64(percentageStr string) float64 {
 	trimmed := strings.TrimSuffix(percentageStr, "%")
 	value, err := strconv.ParseFloat(trimmed, 64)
 	if err != nil {
-		fmt.Println("failed to turn percentage value into float64: %v", err)
+		fmt.Println("failed to turn percentage value into float64: ", err)
 		return 0
 	}
 	return value / 100.0

@@ -4,12 +4,13 @@ package isis
 
 import (
 	"encoding/xml"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func testParseXML(t *testing.T) {
+func Test_ParseXML(t *testing.T) {
 	resultBackupData := `
 <rpc-reply xmlns:junos="http://xml.juniper.net/junos/23.4R2-S3.9/junos">
     <isis-spf-information xmlns="http://xml.juniper.net/junos/23.4R0/junos-routing">
@@ -23,6 +24,7 @@ func testParseXML(t *testing.T) {
             <isis-spf-results-header>
                 <level>2</level>
             </isis-spf-results-header>
+            <isis-backup-spf-result>
                 <node-id>bbbb01.01.00</node-id>
                 <node-address>0xd498000</node-address>
                 <next-hop-element>
@@ -103,19 +105,19 @@ func testParseXML(t *testing.T) {
 
 	var resultsSPF backupSPF
 	var resultsCoverage backupCoverage
-	// need to check wha everything passes
 	err := xml.Unmarshal([]byte(resultBackupData), &resultsSPF)
+	assert.Equal(t, nil, err)
 	assert.NoError(t, err)
-	assert.Len(t, resultsSPF.IsisSpfInformation.IsisSpf, 1)
-	assert.Len(t, resultsSPF.IsisSpfInformation.IsisSpf[0].IsisBackupSpfResult[0], 1)
-
-	assert.Equal(t, "30:30:30:30:30:30", resultsSPF.IsisSpfInformation.IsisSpf[0].IsisBackupSpfResult[0].BackupNextHopElement.SNPA)
-	assert.Empty(t, resultsSPF.IsisSpfInformation.IsisSpf[0].IsisBackupSpfResult[1])
+	assert.Len(t, resultsSPF.IsisSpfInformation.IsisSpf, 2)
+	assert.Len(t, resultsSPF.IsisSpfInformation.IsisSpf[1].IsisBackupSpfResult, 1)
+	assert.Equal(t, "30:30:30:30:30:30", strings.TrimSpace(resultsSPF.IsisSpfInformation.IsisSpf[1].IsisBackupSpfResult[0].BackupNextHopElement.SNPA))
 
 	err = xml.Unmarshal([]byte(resultsCoverageData), &resultsCoverage)
+	assert.Equal(t, nil, err)
 	assert.NoError(t, err)
-	assert.Len(t, resultsCoverage.IsisBackupCoverageInformation.IsisBackupCoverage, 1)
-
+	assert.Len(t, resultsCoverage.IsisBackupCoverageInformation.IsisBackupCoverage.Level, 1)
+	assert.Len(t, resultsCoverage.IsisBackupCoverageInformation.IsisBackupCoverage.IsisRouteCoverageIpv6, 6)
 	assert.Equal(t, "97.77%", resultsCoverage.IsisBackupCoverageInformation.IsisBackupCoverage.IsisNodeCoverage)
 	assert.Equal(t, "99.99%", resultsCoverage.IsisBackupCoverageInformation.IsisBackupCoverage.IsisRouteCoverageIpv6)
+
 }

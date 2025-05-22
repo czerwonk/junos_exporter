@@ -16,27 +16,30 @@ import (
 const prefix string = "junos_isis_"
 
 var (
-	upCountDesc                   *prometheus.Desc
-	totalCountDesc                *prometheus.Desc
-	adjStateDesc                  *prometheus.Desc
-	adjCountDesc                  *prometheus.Desc
-	adjPriorityDesc               *prometheus.Desc
-	adjMetricDesc                 *prometheus.Desc
-	adjHelloTimerDesc             *prometheus.Desc
-	adjHoldTimerDesc              *prometheus.Desc
-	lspIntervalDesc               *prometheus.Desc
-	csnpIntervalDesc              *prometheus.Desc
-	helloPaddingDesc              *prometheus.Desc
-	maxHelloSizeDesc              *prometheus.Desc
-	nodeCoverageDesc              *prometheus.Desc
-	routeIPv4CoverageDesc         *prometheus.Desc
-	routeIPv4MPLSCoverageDesc     *prometheus.Desc
-	routeIPv4MPLSSSPFCoverageDesc *prometheus.Desc
-	routeIPv6CoverageDesc         *prometheus.Desc
-	routeIPv6MPLSCoverageDesc     *prometheus.Desc
-	routeIPv6MPLSSSPFCoverageDesc *prometheus.Desc
-	routeCLNSCoverageDesc         *prometheus.Desc
-	backupPathDesc                *prometheus.Desc
+	upCountDesc       *prometheus.Desc
+	totalCountDesc    *prometheus.Desc
+	adjStateDesc      *prometheus.Desc
+	adjCountDesc      *prometheus.Desc
+	adjPriorityDesc   *prometheus.Desc
+	adjMetricDesc     *prometheus.Desc
+	adjHelloTimerDesc *prometheus.Desc
+	adjHoldTimerDesc  *prometheus.Desc
+	lspIntervalDesc   *prometheus.Desc
+	csnpIntervalDesc  *prometheus.Desc
+	helloPaddingDesc  *prometheus.Desc
+	maxHelloSizeDesc  *prometheus.Desc
+	nodeCoverageDesc  *prometheus.Desc
+	/*
+		routeIPv4CoverageDesc         *prometheus.Desc
+		routeIPv4MPLSCoverageDesc     *prometheus.Desc
+		routeIPv4MPLSSSPFCoverageDesc *prometheus.Desc
+		routeIPv6CoverageDesc         *prometheus.Desc
+		routeIPv6MPLSCoverageDesc     *prometheus.Desc
+		routeIPv6MPLSSSPFCoverageDesc *prometheus.Desc
+		routeCLNSCoverageDesc         *prometheus.Desc
+
+	*/
+	backupPathDesc *prometheus.Desc
 )
 
 func init() {
@@ -56,16 +59,18 @@ func init() {
 	adjMetricDesc = prometheus.NewDesc(prefix+"adjacency_metric", "The ISIS adjacency metric", interfaceMetricsLabels, nil)
 	adjHelloTimerDesc = prometheus.NewDesc(prefix+"adjacency_hello_timer_seconds", "The ISIS adjacency hello timer", interfaceMetricsLabels, nil)
 	adjHoldTimerDesc = prometheus.NewDesc(prefix+"adjacency_hold_timer_seconds", "The ISIS adjacency hold timer", interfaceMetricsLabels, nil)
-	coverageLabels := []string{"target", "topology", "level"}
-	nodeCoverageDesc = prometheus.NewDesc(prefix+"node_coverage", "The ISIS node coverage in percents", coverageLabels, nil)
-	routeIPv4CoverageDesc = prometheus.NewDesc(prefix+"route_ipv4_coverage", "The ISIS route IPv4 coverage in percents", coverageLabels, nil)
-	routeIPv4MPLSCoverageDesc = prometheus.NewDesc(prefix+"route_ipv4_mpls_coverage", "The ISIS route IPv4 MPLS coverage in percents", coverageLabels, nil)
-	routeIPv4MPLSSSPFCoverageDesc = prometheus.NewDesc(prefix+"route_ipv4_mpls_ssspf_coverage", "The ISIS route IPv4 MPLS SSSPF coverage in percents", coverageLabels, nil)
-	routeIPv6CoverageDesc = prometheus.NewDesc(prefix+"route_ipv6_coverage", "The ISIS route IPv6 coverage in percents", coverageLabels, nil)
-	routeIPv6MPLSCoverageDesc = prometheus.NewDesc(prefix+"route_ipv6_mpls_coverage", "The ISIS route IPv6 MPLS coverage in percents", coverageLabels, nil)
-	routeIPv6MPLSSSPFCoverageDesc = prometheus.NewDesc(prefix+"route_ipv6_mpls_ssspf_coverage", "The ISIS route IPv6 MPLS SSSPF coverage in percents", coverageLabels, nil)
-	routeCLNSCoverageDesc = prometheus.NewDesc(prefix+"route_clns_coverage", "The ISIS route CLNS coverage in percents", coverageLabels, nil)
-	backupPathLabels := []string{"target", "node_name", "backup_path"}
+	coverageLabels := []string{"target", "topology", "level", "node_coverage", "ipv4_route_coverage", "ipv6_route_coverage", "clns_route_coverage", "ipv4_mpls_route_coverage", "ipv6_mpls_route_coverage", "ipv4_mpls_sspf_route_coverage", "ipv6_mpls_sspf_route_coverage"}
+	nodeCoverageDesc = prometheus.NewDesc(prefix+"backup_node_coverage", "The ISIS backup node coverage in percents", coverageLabels, nil)
+	/*
+		routeIPv4CoverageDesc = prometheus.NewDesc(prefix+"backup_route_ipv4_coverage", "The ISIS backup  route IPv4 coverage in percents", coverageLabels, nil)
+		routeIPv4MPLSCoverageDesc = prometheus.NewDesc(prefix+"backup_route_ipv4_mpls_coverage", "The ISIS backup route IPv4 MPLS coverage in percents", coverageLabels, nil)
+		routeIPv4MPLSSSPFCoverageDesc = prometheus.NewDesc(prefix+"backup_route_ipv4_mpls_ssspf_coverage", "The ISIS backup  route IPv4 MPLS SSSPF coverage in percents", coverageLabels, nil)
+		routeIPv6CoverageDesc = prometheus.NewDesc(prefix+"backup_route_ipv6_coverage", "The ISIS backup route IPv6 coverage in percents", coverageLabels, nil)
+		routeIPv6MPLSCoverageDesc = prometheus.NewDesc(prefix+"backup_route_ipv6_mpls_coverage", "The ISIS backup route IPv6 MPLS coverage in percents", coverageLabels, nil)
+		routeIPv6MPLSSSPFCoverageDesc = prometheus.NewDesc(prefix+"backup_route_ipv6_mpls_ssspf_coverage", "The ISIS backup route IPv6 MPLS SSSPF coverage in percents", coverageLabels, nil)
+		routeCLNSCoverageDesc = prometheus.NewDesc(prefix+"backup_route_clns_coverage", "The ISIS backup route CLNS coverage in percents", coverageLabels, nil)
+	*/
+	backupPathLabels := []string{"target", "node_name", "backup_path_via", "backup_path_via_interface"}
 	backupPathDesc = prometheus.NewDesc(prefix+"backup_path", "An ISIS backup path", backupPathLabels, nil)
 }
 
@@ -96,13 +101,15 @@ func (*isisCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- helloPaddingDesc
 	ch <- maxHelloSizeDesc
 	ch <- nodeCoverageDesc
-	ch <- routeIPv4CoverageDesc
-	ch <- routeIPv4MPLSCoverageDesc
-	ch <- routeIPv4MPLSSSPFCoverageDesc
-	ch <- routeIPv6CoverageDesc
-	ch <- routeIPv6MPLSCoverageDesc
-	ch <- routeIPv6MPLSSSPFCoverageDesc
-	ch <- routeCLNSCoverageDesc
+	/*
+		ch <- routeIPv4CoverageDesc
+		ch <- routeIPv4MPLSCoverageDesc
+		ch <- routeIPv4MPLSSSPFCoverageDesc
+		ch <- routeIPv6CoverageDesc
+		ch <- routeIPv6MPLSCoverageDesc
+		ch <- routeIPv6MPLSSSPFCoverageDesc
+		ch <- routeCLNSCoverageDesc
+	*/
 	ch <- backupPathDesc
 }
 
@@ -206,27 +213,33 @@ func (c *isisCollector) isisInterfaces(interfaces interfaces, ch chan<- promethe
 
 func (c *isisCollector) isisBackupCoverage(coverage backupCoverage, ch chan<- prometheus.Metric, labelValues []string) {
 	compactCoverage := coverage.IsisBackupCoverageInformation.IsisBackupCoverage
-	labels := append(labelValues, compactCoverage.IsisTopologyID, compactCoverage.Level)
+	labels := append(labelValues, compactCoverage.IsisTopologyID, compactCoverage.Level, compactCoverage.IsisNodeCoverage,
+		compactCoverage.IsisRouteCoverageIpv4, compactCoverage.IsisRouteCoverageIpv6,
+		compactCoverage.IsisRouteCoverageClns, compactCoverage.IsisRouteCoverageIpv4Mpls,
+		compactCoverage.IsisRouteCoverageIpv6Mpls, compactCoverage.IsisRouteCoverageIpv4MplsSspf,
+		compactCoverage.IsisRouteCoverageIpv6MplsSspf)
+	/*
+		ch <- prometheus.MustNewConstMetric(nodeCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisNodeCoverage), labels...)
+		ch <- prometheus.MustNewConstMetric(routeIPv4CoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv4), labels...)
+		ch <- prometheus.MustNewConstMetric(routeIPv4MPLSCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv4MplsSspf), labels...)
+		ch <- prometheus.MustNewConstMetric(routeIPv6CoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv6), labels...)
+		ch <- prometheus.MustNewConstMetric(routeIPv6MPLSCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv6Mpls), labels...)
+		ch <- prometheus.MustNewConstMetric(routeIPv6MPLSSSPFCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv6MplsSspf), labels...)
+		ch <- prometheus.MustNewConstMetric(routeCLNSCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageClns), labels...)
+	*/
 	ch <- prometheus.MustNewConstMetric(nodeCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisNodeCoverage), labels...)
-	ch <- prometheus.MustNewConstMetric(routeIPv4CoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv4), labels...)
-	ch <- prometheus.MustNewConstMetric(routeIPv4MPLSCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv4MplsSspf), labels...)
-	ch <- prometheus.MustNewConstMetric(routeIPv6CoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv6), labels...)
-	ch <- prometheus.MustNewConstMetric(routeIPv6MPLSCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv6Mpls), labels...)
-	ch <- prometheus.MustNewConstMetric(routeIPv6MPLSSSPFCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageIpv6MplsSspf), labels...)
-	ch <- prometheus.MustNewConstMetric(routeCLNSCoverageDesc, prometheus.GaugeValue, percentageToFloat64(compactCoverage.IsisRouteCoverageClns), labels...)
 }
 
 func (c *isisCollector) isisBackupPath(backupPath backupSPF, ch chan<- prometheus.Metric, labelValues []string) {
 	for _, node := range backupPath.IsisSpfInformation.IsisSpf {
 		for _, bpSFPResult := range node.IsisBackupSpfResult {
 			for _, _ = range bpSFPResult.NoCoverageReasonElement {
-				labelValues := append(labelValues, bpSFPResult.NodeID, "no backup path")
+				labelValues := append(labelValues, trimTail(bpSFPResult.NodeID), "", "")
 				ch <- prometheus.MustNewConstMetric(backupPathDesc, prometheus.GaugeValue, 0.0, labelValues...)
 			}
 			//what is a more elegant way to check if sub struct is not empty ?
 			if len(bpSFPResult.BackupNextHopElement.SNPA) > 1 && len(bpSFPResult.BackupNextHopElement.IsisNextHop) > 1 {
-				path := bpSFPResult.BackupNextHopElement.IsisNextHopType + ":" + bpSFPResult.BackupNextHopElement.IsisNextHop + ":" + bpSFPResult.BackupNextHopElement.InterfaceName + " and snpa is " + strings.TrimSpace(bpSFPResult.BackupNextHopElement.SNPA)
-				labelValues := append(labelValues, bpSFPResult.NodeID, path)
+				labelValues := append(labelValues, trimTail(bpSFPResult.NodeID), bpSFPResult.BackupNextHopElement.IsisNextHop, bpSFPResult.BackupNextHopElement.InterfaceName)
 				ch <- prometheus.MustNewConstMetric(backupPathDesc, prometheus.GaugeValue, 1.0, labelValues...)
 			}
 		}
@@ -255,5 +268,13 @@ func percentageToFloat64(percentageStr string) float64 {
 		fmt.Println("failed to turn percentage value into float64: ", err)
 		return 0
 	}
-	return value / 100.0
+	return value
+}
+
+func trimTail(s string) string {
+	const suffix = ".00"
+	if strings.HasSuffix(s, suffix) {
+		return s[:len(s)-len(suffix)]
+	}
+	return s
 }

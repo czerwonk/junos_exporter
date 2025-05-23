@@ -201,7 +201,7 @@ func (c *isisCollector) isisBackupPath(backupPath backupSPF, ch chan<- prometheu
 				labelValues := append(labelValues, strings.TrimSuffix(bpSFPResult.NodeID, ".00"), "", "")
 				ch <- prometheus.MustNewConstMetric(backupPathDesc, prometheus.GaugeValue, 0.0, labelValues...)
 			}
-			if len(bpSFPResult.BackupNextHopElement.SNPA) > 1 && len(bpSFPResult.BackupNextHopElement.IsisNextHop) > 1 {
+			if bpSFPResult.BackupNextHopElement.SNPA != "" {
 				labelValues := append(labelValues, strings.TrimSuffix(bpSFPResult.NodeID, ".00"), bpSFPResult.BackupNextHopElement.IsisNextHop, bpSFPResult.BackupNextHopElement.InterfaceName)
 				ch <- prometheus.MustNewConstMetric(backupPathDesc, prometheus.GaugeValue, 1.0, labelValues...)
 			}

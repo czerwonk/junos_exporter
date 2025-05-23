@@ -1,0 +1,20 @@
+
+<rpc-reply xmlns:junos="http://xml.juniper.net/junos/23.4R2-S3.9/junos">
+    <isis-backup-coverage-information xmlns="http://xml.juniper.net/junos/23.4R0/junos-routing">
+        <isis-backup-coverage>
+            <isis-topology-id>IPV4 Unicast</isis-topology-id>
+            <level>2</level>
+            <isis-node-coverage>97.77%</isis-node-coverage>
+            <isis-route-coverage-ipv4>0.00%</isis-route-coverage-ipv4>
+            <isis-route-coverage-ipv6>99.99%</isis-route-coverage-ipv6>
+            <isis-route-coverage-clns>0.00%</isis-route-coverage-clns>
+            <isis-route-coverage-ipv4-mpls>0.00%</isis-route-coverage-ipv4-mpls>
+            <isis-route-coverage-ipv6-mpls>0.00%</isis-route-coverage-ipv6-mpls>
+            <isis-route-coverage-ipv4-mpls-sspf>0.00%</isis-route-coverage-ipv4-mpls-sspf>
+            <isis-route-coverage-ipv6-mpls-sspf>0.00%</isis-route-coverage-ipv6-mpls-sspf>
+        </isis-backup-coverage>
+    </isis-backup-coverage-information>
+    <cli>
+        <banner></banner>
+    </cli>
+</rpc-reply>

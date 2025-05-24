@@ -89,7 +89,6 @@ var (
 	arpEnabled                  = flag.Bool("arps.enabled", true, "Scrape ARP metrics")
 	poeEnabled                  = flag.Bool("poe.enabled", true, "Scrape PoE metrics")
 	krtEnabled                  = flag.Bool("krt.enabled", false, "Scrape KRT queue metrics")
-	twampEnabled                = flag.Bool("twamp.enabled", false, "Scrape TWAMP metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -265,7 +264,6 @@ func loadConfigFromFlags() *config.Config {
 	f.ARP = *arpEnabled
 	f.Poe = *poeEnabled
 	f.KRT = *krtEnabled
-	f.TWAMP = *twampEnabled
 	return c
 }
 

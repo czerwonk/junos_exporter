@@ -1,0 +1,213 @@
+# HELP junos_collect_duration_seconds Duration of a scrape by collector and target
+# TYPE junos_collect_duration_seconds gauge
+junos_collect_duration_seconds{collector="LDP",target="10.2.10.21"} 0.188349011
+junos_collect_duration_seconds{collector="MACsec",target="10.2.10.21"} 0.112027431
+junos_collect_duration_seconds{collector="Mac",target="10.2.10.21"} 0.057551846
+junos_collect_duration_seconds{collector="OSPF",target="10.2.10.21"} 0.114777153
+junos_collect_duration_seconds{collector="Storage",target="10.2.10.21"} 0.445895549
+junos_collect_duration_seconds{collector="twamp",target="10.2.10.21"} 0.066341176
+# HELP junos_collector_duration_seconds Duration of a collector scrape for one target
+# TYPE junos_collector_duration_seconds gauge
+junos_collector_duration_seconds{target="10.2.10.21"} 0.985019758
+# HELP junos_ldp_neighbor_count Number of LDP Neighbors
+# TYPE junos_ldp_neighbor_count gauge
+junos_ldp_neighbor_count{target="10.2.10.21"} 0
+# HELP junos_ldp_session_count Number of LDP Sessions
+# TYPE junos_ldp_session_count gauge
+junos_ldp_session_count{target="10.2.10.21"} 0
+# HELP junos_mac_table_dynamic_count Number of dynamic entries in table
+# TYPE junos_mac_table_dynamic_count gauge
+junos_mac_table_dynamic_count{target="10.2.10.21"} 0
+# HELP junos_mac_table_flood_count Number of flood entries in table
+# TYPE junos_mac_table_flood_count gauge
+junos_mac_table_flood_count{target="10.2.10.21"} 0
+# HELP junos_mac_table_recieve_count Number of L3 recieve route entries in table
+# TYPE junos_mac_table_recieve_count gauge
+junos_mac_table_recieve_count{target="10.2.10.21"} 0
+# HELP junos_mac_table_total_count Number of entries in table
+# TYPE junos_mac_table_total_count gauge
+junos_mac_table_total_count{target="10.2.10.21"} 0
+# HELP junos_ospf3_up OSPFv3 is up and running (1 = up)
+# TYPE junos_ospf3_up gauge
+junos_ospf3_up{target="10.2.10.21"} 0
+# HELP junos_ospf_up OSPF is up and running (1 = up)
+# TYPE junos_ospf_up gauge
+junos_ospf_up{target="10.2.10.21"} 0
+# HELP junos_storage_available_blocks_count Number of available blocks
+# TYPE junos_storage_available_blocks_count gauge
+junos_storage_available_blocks_count{device="/dev/loop0",mountpoint="/data/var/external",re_name="re0",target="10.2.10.21"} 2.9390672e+07
+junos_storage_available_blocks_count{device="/dev/loop1",mountpoint="/run/initramfs/uswitch/data/hashes/0a8363077b00ddc3879c919cb18c106227e50350",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop10",mountpoint="/run/initramfs/uswitch/data/hashes/0e89d49e9f8e7f4a12f34a478bfefba3db4acef6",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop11",mountpoint="/run/initramfs/uswitch/data/hashes/12ed469a034c6e8b6396ba1de5ff171923c6b141",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop12",mountpoint="/run/initramfs/uswitch/data/hashes/fa48aa7702288df1518bf23a04f2da2be1df3d44",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop13",mountpoint="/run/initramfs/uswitch/data/hashes/11d7e718a548c965726e90f898445b1232e92fb9",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop14",mountpoint="/run/initramfs/uswitch/data/hashes/5d448bf0fa89df7b6248429fc5f37a21636a47b2",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop15",mountpoint="/run/initramfs/uswitch/data/hashes/76ddbe8fc368f5bf6dd394c0891fa6daaccaa21c",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop16",mountpoint="/run/initramfs/uswitch/data/hashes/723f232dbda7380ee79c07f7b09c8be7bd36c9d7",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop17",mountpoint="/run/initramfs/uswitch/data/hashes/678206388cb7abb1ef4aa28c9ae3ab675a45f7e1",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop2",mountpoint="/run/initramfs/uswitch/data/hashes/777de68a7f2cbd09107df54ff73e05da66dbf698",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop3",mountpoint="/run/initramfs/uswitch/data/hashes/97be9ea1f195481e90b3881a6624fbfe03d34524",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop4",mountpoint="/run/initramfs/uswitch/data/hashes/d8366ddd06a10a954428792f6786c2202c1834dc",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop5",mountpoint="/run/initramfs/uswitch/data/hashes/d64c176c56cc0d2e661e01181e8c17c07802e09b",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop6",mountpoint="/run/initramfs/uswitch/data/hashes/8fee8964e7cd7c546b0817b4d6d564a00cb4a4fc",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop7",mountpoint="/run/initramfs/uswitch/data/hashes/f68f9c960672b29b2d8c1c6ff9ff02be26a63c29",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop8",mountpoint="/run/initramfs/uswitch/data/hashes/7de3e1ff62b3230e2899624fd9a2a86183f9645d",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/loop9",mountpoint="/run/initramfs/uswitch/data/hashes/093310afacc905676ff613708bac99c93500451a",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/root",mountpoint="/run/initramfs",re_name="re0",target="10.2.10.21"} 0
+junos_storage_available_blocks_count{device="/dev/sda1",mountpoint="/boot",re_name="re0",target="10.2.10.21"} 330089
+junos_storage_available_blocks_count{device="/dev/sda2",mountpoint="/soft",re_name="re0",target="10.2.10.21"} 5.716208e+07
+junos_storage_available_blocks_count{device="/dev/sda5",mountpoint="/data",re_name="re0",target="10.2.10.21"} 5.542816e+06
+junos_storage_available_blocks_count{device="/dev/sda6",mountpoint="/data/config",re_name="re0",target="10.2.10.21"} 1.871992e+06
+junos_storage_available_blocks_count{device="/dev/sda7",mountpoint="/var",re_name="re0",target="10.2.10.21"} 2.14501312e+08
+junos_storage_available_blocks_count{device="/tmp",mountpoint="/run/initramfs/uswitch/tmp",re_name="re0",target="10.2.10.21"} 6.5159328e+07
+junos_storage_available_blocks_count{device="/tmp",mountpoint="/tmp",re_name="re0",target="10.2.10.21"} 6.5159224e+07
+junos_storage_available_blocks_count{device="devtmpfs",mountpoint="/dev",re_name="re0",target="10.2.10.21"} 6.5114536e+07
+junos_storage_available_blocks_count{device="tmpfs",mountpoint="/dev/shm",re_name="re0",target="10.2.10.21"} 6.4764664e+07
+junos_storage_available_blocks_count{device="tmpfs",mountpoint="/run",re_name="re0",target="10.2.10.21"} 6.5145992e+07
+junos_storage_available_blocks_count{device="tmpfs",mountpoint="/run/user/2002",re_name="re0",target="10.2.10.21"} 1.3031864e+07
+junos_storage_available_blocks_count{device="tmpfs",mountpoint="/run/user/2003",re_name="re0",target="10.2.10.21"} 1.3031864e+07
+junos_storage_available_blocks_count{device="tmpfs",mountpoint="/sys/fs/cgroup",re_name="re0",target="10.2.10.21"} 6.5159328e+07
+junos_storage_available_blocks_count{device="uswitchd",mountpoint="/",re_name="re0",target="10.2.10.21"} 0
+# HELP junos_storage_total_blocks_count Total number of blocks
+# TYPE junos_storage_total_blocks_count gauge
+junos_storage_total_blocks_count{device="/dev/loop0",mountpoint="/data/var/external",re_name="re0",target="10.2.10.21"} 3.1078288e+07
+junos_storage_total_blocks_count{device="/dev/loop1",mountpoint="/run/initramfs/uswitch/data/hashes/0a8363077b00ddc3879c919cb18c106227e50350",re_name="re0",target="10.2.10.21"} 14176
+junos_storage_total_blocks_count{device="/dev/loop10",mountpoint="/run/initramfs/uswitch/data/hashes/0e89d49e9f8e7f4a12f34a478bfefba3db4acef6",re_name="re0",target="10.2.10.21"} 16768
+junos_storage_total_blocks_count{device="/dev/loop11",mountpoint="/run/initramfs/uswitch/data/hashes/12ed469a034c6e8b6396ba1de5ff171923c6b141",re_name="re0",target="10.2.10.21"} 576
+junos_storage_total_blocks_count{device="/dev/loop12",mountpoint="/run/initramfs/uswitch/data/hashes/fa48aa7702288df1518bf23a04f2da2be1df3d44",re_name="re0",target="10.2.10.21"} 36304
+junos_storage_total_blocks_count{device="/dev/loop13",mountpoint="/run/initramfs/uswitch/data/hashes/11d7e718a548c965726e90f898445b1232e92fb9",re_name="re0",target="10.2.10.21"} 20896
+junos_storage_total_blocks_count{device="/dev/loop14",mountpoint="/run/initramfs/uswitch/data/hashes/5d448bf0fa89df7b6248429fc5f37a21636a47b2",re_name="re0",target="10.2.10.21"} 66112
+junos_storage_total_blocks_count{device="/dev/loop15",mountpoint="/run/initramfs/uswitch/data/hashes/76ddbe8fc368f5bf6dd394c0891fa6daaccaa21c",re_name="re0",target="10.2.10.21"} 50304
+junos_storage_total_blocks_count{device="/dev/loop16",mountpoint="/run/initramfs/uswitch/data/hashes/723f232dbda7380ee79c07f7b09c8be7bd36c9d7",re_name="re0",target="10.2.10.21"} 129296
+junos_storage_total_blocks_count{device="/dev/loop17",mountpoint="/run/initramfs/uswitch/data/hashes/678206388cb7abb1ef4aa28c9ae3ab675a45f7e1",re_name="re0",target="10.2.10.21"} 16
+junos_storage_total_blocks_count{device="/dev/loop2",mountpoint="/run/initramfs/uswitch/data/hashes/777de68a7f2cbd09107df54ff73e05da66dbf698",re_name="re0",target="10.2.10.21"} 240928
+junos_storage_total_blocks_count{device="/dev/loop3",mountpoint="/run/initramfs/uswitch/data/hashes/97be9ea1f195481e90b3881a6624fbfe03d34524",re_name="re0",target="10.2.10.21"} 2288
+junos_storage_total_blocks_count{device="/dev/loop4",mountpoint="/run/initramfs/uswitch/data/hashes/d8366ddd06a10a954428792f6786c2202c1834dc",re_name="re0",target="10.2.10.21"} 75520
+junos_storage_total_blocks_count{device="/dev/loop5",mountpoint="/run/initramfs/uswitch/data/hashes/d64c176c56cc0d2e661e01181e8c17c07802e09b",re_name="re0",target="10.2.10.21"} 73904
+junos_storage_total_blocks_count{device="/dev/loop6",mountpoint="/run/initramfs/uswitch/data/hashes/8fee8964e7cd7c546b0817b4d6d564a00cb4a4fc",re_name="re0",target="10.2.10.21"} 1616
+junos_storage_total_blocks_count{device="/dev/loop7",mountpoint="/run/initramfs/uswitch/data/hashes/f68f9c960672b29b2d8c1c6ff9ff02be26a63c29",re_name="re0",target="10.2.10.21"} 19824
+junos_storage_total_blocks_count{device="/dev/loop8",mountpoint="/run/initramfs/uswitch/data/hashes/7de3e1ff62b3230e2899624fd9a2a86183f9645d",re_name="re0",target="10.2.10.21"} 134240
+junos_storage_total_blocks_count{device="/dev/loop9",mountpoint="/run/initramfs/uswitch/data/hashes/093310afacc905676ff613708bac99c93500451a",re_name="re0",target="10.2.10.21"} 1.527744e+06
+junos_storage_total_blocks_count{device="/dev/root",mountpoint="/run/initramfs",re_name="re0",target="10.2.10.21"} 75520
+junos_storage_total_blocks_count{device="/dev/sda1",mountpoint="/boot",re_name="re0",target="10.2.10.21"} 401250
+junos_storage_total_blocks_count{device="/dev/sda2",mountpoint="/soft",re_name="re0",target="10.2.10.21"} 6.6055712e+07
+junos_storage_total_blocks_count{device="/dev/sda5",mountpoint="/data",re_name="re0",target="10.2.10.21"} 6.110752e+06
+junos_storage_total_blocks_count{device="/dev/sda6",mountpoint="/data/config",re_name="re0",target="10.2.10.21"} 2.015024e+06
+junos_storage_total_blocks_count{device="/dev/sda7",mountpoint="/var",re_name="re0",target="10.2.10.21"} 3.01907776e+08
+junos_storage_total_blocks_count{device="/tmp",mountpoint="/run/initramfs/uswitch/tmp",re_name="re0",target="10.2.10.21"} 6.5159328e+07
+junos_storage_total_blocks_count{device="/tmp",mountpoint="/tmp",re_name="re0",target="10.2.10.21"} 6.5159328e+07
+junos_storage_total_blocks_count{device="devtmpfs",mountpoint="/dev",re_name="re0",target="10.2.10.21"} 6.5114536e+07
+junos_storage_total_blocks_count{device="tmpfs",mountpoint="/dev/shm",re_name="re0",target="10.2.10.21"} 6.5159328e+07
+junos_storage_total_blocks_count{device="tmpfs",mountpoint="/run",re_name="re0",target="10.2.10.21"} 6.5159328e+07
+junos_storage_total_blocks_count{device="tmpfs",mountpoint="/run/user/2002",re_name="re0",target="10.2.10.21"} 1.3031864e+07
+junos_storage_total_blocks_count{device="tmpfs",mountpoint="/run/user/2003",re_name="re0",target="10.2.10.21"} 1.3031864e+07
+junos_storage_total_blocks_count{device="tmpfs",mountpoint="/sys/fs/cgroup",re_name="re0",target="10.2.10.21"} 6.5159328e+07
+junos_storage_total_blocks_count{device="uswitchd",mountpoint="/",re_name="re0",target="10.2.10.21"} 576
+# HELP junos_storage_used_blocks_count Number of used blocks
+# TYPE junos_storage_used_blocks_count gauge
+junos_storage_used_blocks_count{device="/dev/loop0",mountpoint="/data/var/external",re_name="re0",target="10.2.10.21"} 81984
+junos_storage_used_blocks_count{device="/dev/loop1",mountpoint="/run/initramfs/uswitch/data/hashes/0a8363077b00ddc3879c919cb18c106227e50350",re_name="re0",target="10.2.10.21"} 14176
+junos_storage_used_blocks_count{device="/dev/loop10",mountpoint="/run/initramfs/uswitch/data/hashes/0e89d49e9f8e7f4a12f34a478bfefba3db4acef6",re_name="re0",target="10.2.10.21"} 16768
+junos_storage_used_blocks_count{device="/dev/loop11",mountpoint="/run/initramfs/uswitch/data/hashes/12ed469a034c6e8b6396ba1de5ff171923c6b141",re_name="re0",target="10.2.10.21"} 576
+junos_storage_used_blocks_count{device="/dev/loop12",mountpoint="/run/initramfs/uswitch/data/hashes/fa48aa7702288df1518bf23a04f2da2be1df3d44",re_name="re0",target="10.2.10.21"} 36304
+junos_storage_used_blocks_count{device="/dev/loop13",mountpoint="/run/initramfs/uswitch/data/hashes/11d7e718a548c965726e90f898445b1232e92fb9",re_name="re0",target="10.2.10.21"} 20896
+junos_storage_used_blocks_count{device="/dev/loop14",mountpoint="/run/initramfs/uswitch/data/hashes/5d448bf0fa89df7b6248429fc5f37a21636a47b2",re_name="re0",target="10.2.10.21"} 66112
+junos_storage_used_blocks_count{device="/dev/loop15",mountpoint="/run/initramfs/uswitch/data/hashes/76ddbe8fc368f5bf6dd394c0891fa6daaccaa21c",re_name="re0",target="10.2.10.21"} 50304
+junos_storage_used_blocks_count{device="/dev/loop16",mountpoint="/run/initramfs/uswitch/data/hashes/723f232dbda7380ee79c07f7b09c8be7bd36c9d7",re_name="re0",target="10.2.10.21"} 129296
+junos_storage_used_blocks_count{device="/dev/loop17",mountpoint="/run/initramfs/uswitch/data/hashes/678206388cb7abb1ef4aa28c9ae3ab675a45f7e1",re_name="re0",target="10.2.10.21"} 16
+junos_storage_used_blocks_count{device="/dev/loop2",mountpoint="/run/initramfs/uswitch/data/hashes/777de68a7f2cbd09107df54ff73e05da66dbf698",re_name="re0",target="10.2.10.21"} 240928
+junos_storage_used_blocks_count{device="/dev/loop3",mountpoint="/run/initramfs/uswitch/data/hashes/97be9ea1f195481e90b3881a6624fbfe03d34524",re_name="re0",target="10.2.10.21"} 2288
+junos_storage_used_blocks_count{device="/dev/loop4",mountpoint="/run/initramfs/uswitch/data/hashes/d8366ddd06a10a954428792f6786c2202c1834dc",re_name="re0",target="10.2.10.21"} 75520
+junos_storage_used_blocks_count{device="/dev/loop5",mountpoint="/run/initramfs/uswitch/data/hashes/d64c176c56cc0d2e661e01181e8c17c07802e09b",re_name="re0",target="10.2.10.21"} 73904
+junos_storage_used_blocks_count{device="/dev/loop6",mountpoint="/run/initramfs/uswitch/data/hashes/8fee8964e7cd7c546b0817b4d6d564a00cb4a4fc",re_name="re0",target="10.2.10.21"} 1616
+junos_storage_used_blocks_count{device="/dev/loop7",mountpoint="/run/initramfs/uswitch/data/hashes/f68f9c960672b29b2d8c1c6ff9ff02be26a63c29",re_name="re0",target="10.2.10.21"} 19824
+junos_storage_used_blocks_count{device="/dev/loop8",mountpoint="/run/initramfs/uswitch/data/hashes/7de3e1ff62b3230e2899624fd9a2a86183f9645d",re_name="re0",target="10.2.10.21"} 134240
+junos_storage_used_blocks_count{device="/dev/loop9",mountpoint="/run/initramfs/uswitch/data/hashes/093310afacc905676ff613708bac99c93500451a",re_name="re0",target="10.2.10.21"} 1.527744e+06
+junos_storage_used_blocks_count{device="/dev/root",mountpoint="/run/initramfs",re_name="re0",target="10.2.10.21"} 75520
+junos_storage_used_blocks_count{device="/dev/sda1",mountpoint="/boot",re_name="re0",target="10.2.10.21"} 71161
+junos_storage_used_blocks_count{device="/dev/sda2",mountpoint="/soft",re_name="re0",target="10.2.10.21"} 5.505424e+06
+junos_storage_used_blocks_count{device="/dev/sda5",mountpoint="/data",re_name="re0",target="10.2.10.21"} 220600
+junos_storage_used_blocks_count{device="/dev/sda6",mountpoint="/data/config",re_name="re0",target="10.2.10.21"} 5408
+junos_storage_used_blocks_count{device="/dev/sda7",mountpoint="/var",re_name="re0",target="10.2.10.21"} 7.2052696e+07
+junos_storage_used_blocks_count{device="/tmp",mountpoint="/run/initramfs/uswitch/tmp",re_name="re0",target="10.2.10.21"} 0
+junos_storage_used_blocks_count{device="/tmp",mountpoint="/tmp",re_name="re0",target="10.2.10.21"} 104
+junos_storage_used_blocks_count{device="devtmpfs",mountpoint="/dev",re_name="re0",target="10.2.10.21"} 0
+junos_storage_used_blocks_count{device="tmpfs",mountpoint="/dev/shm",re_name="re0",target="10.2.10.21"} 394664
+junos_storage_used_blocks_count{device="tmpfs",mountpoint="/run",re_name="re0",target="10.2.10.21"} 13336
+junos_storage_used_blocks_count{device="tmpfs",mountpoint="/run/user/2002",re_name="re0",target="10.2.10.21"} 0
+junos_storage_used_blocks_count{device="tmpfs",mountpoint="/run/user/2003",re_name="re0",target="10.2.10.21"} 0
+junos_storage_used_blocks_count{device="tmpfs",mountpoint="/sys/fs/cgroup",re_name="re0",target="10.2.10.21"} 0
+junos_storage_used_blocks_count{device="uswitchd",mountpoint="/",re_name="re0",target="10.2.10.21"} 576
+# HELP junos_storage_used_percent Percent of used storage
+# TYPE junos_storage_used_percent gauge
+junos_storage_used_percent{device="/dev/loop0",mountpoint="/data/var/external",re_name="re0",target="10.2.10.21"} 1
+junos_storage_used_percent{device="/dev/loop1",mountpoint="/run/initramfs/uswitch/data/hashes/0a8363077b00ddc3879c919cb18c106227e50350",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop10",mountpoint="/run/initramfs/uswitch/data/hashes/0e89d49e9f8e7f4a12f34a478bfefba3db4acef6",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop11",mountpoint="/run/initramfs/uswitch/data/hashes/12ed469a034c6e8b6396ba1de5ff171923c6b141",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop12",mountpoint="/run/initramfs/uswitch/data/hashes/fa48aa7702288df1518bf23a04f2da2be1df3d44",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop13",mountpoint="/run/initramfs/uswitch/data/hashes/11d7e718a548c965726e90f898445b1232e92fb9",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop14",mountpoint="/run/initramfs/uswitch/data/hashes/5d448bf0fa89df7b6248429fc5f37a21636a47b2",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop15",mountpoint="/run/initramfs/uswitch/data/hashes/76ddbe8fc368f5bf6dd394c0891fa6daaccaa21c",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop16",mountpoint="/run/initramfs/uswitch/data/hashes/723f232dbda7380ee79c07f7b09c8be7bd36c9d7",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop17",mountpoint="/run/initramfs/uswitch/data/hashes/678206388cb7abb1ef4aa28c9ae3ab675a45f7e1",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop2",mountpoint="/run/initramfs/uswitch/data/hashes/777de68a7f2cbd09107df54ff73e05da66dbf698",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop3",mountpoint="/run/initramfs/uswitch/data/hashes/97be9ea1f195481e90b3881a6624fbfe03d34524",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop4",mountpoint="/run/initramfs/uswitch/data/hashes/d8366ddd06a10a954428792f6786c2202c1834dc",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop5",mountpoint="/run/initramfs/uswitch/data/hashes/d64c176c56cc0d2e661e01181e8c17c07802e09b",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop6",mountpoint="/run/initramfs/uswitch/data/hashes/8fee8964e7cd7c546b0817b4d6d564a00cb4a4fc",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop7",mountpoint="/run/initramfs/uswitch/data/hashes/f68f9c960672b29b2d8c1c6ff9ff02be26a63c29",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop8",mountpoint="/run/initramfs/uswitch/data/hashes/7de3e1ff62b3230e2899624fd9a2a86183f9645d",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/loop9",mountpoint="/run/initramfs/uswitch/data/hashes/093310afacc905676ff613708bac99c93500451a",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/root",mountpoint="/run/initramfs",re_name="re0",target="10.2.10.21"} 100
+junos_storage_used_percent{device="/dev/sda1",mountpoint="/boot",re_name="re0",target="10.2.10.21"} 18
+junos_storage_used_percent{device="/dev/sda2",mountpoint="/soft",re_name="re0",target="10.2.10.21"} 9
+junos_storage_used_percent{device="/dev/sda5",mountpoint="/data",re_name="re0",target="10.2.10.21"} 4
+junos_storage_used_percent{device="/dev/sda6",mountpoint="/data/config",re_name="re0",target="10.2.10.21"} 1
+junos_storage_used_percent{device="/dev/sda7",mountpoint="/var",re_name="re0",target="10.2.10.21"} 26
+junos_storage_used_percent{device="/tmp",mountpoint="/run/initramfs/uswitch/tmp",re_name="re0",target="10.2.10.21"} 0
+junos_storage_used_percent{device="/tmp",mountpoint="/tmp",re_name="re0",target="10.2.10.21"} 1
+junos_storage_used_percent{device="devtmpfs",mountpoint="/dev",re_name="re0",target="10.2.10.21"} 0
+junos_storage_used_percent{device="tmpfs",mountpoint="/dev/shm",re_name="re0",target="10.2.10.21"} 1
+junos_storage_used_percent{device="tmpfs",mountpoint="/run",re_name="re0",target="10.2.10.21"} 1
+junos_storage_used_percent{device="tmpfs",mountpoint="/run/user/2002",re_name="re0",target="10.2.10.21"} 0
+junos_storage_used_percent{device="tmpfs",mountpoint="/run/user/2003",re_name="re0",target="10.2.10.21"} 0
+junos_storage_used_percent{device="tmpfs",mountpoint="/sys/fs/cgroup",re_name="re0",target="10.2.10.21"} 0
+junos_storage_used_percent{device="uswitchd",mountpoint="/",re_name="re0",target="10.2.10.21"} 100
+# HELP junos_twamp_probe_results_egress_jitter_current Egress Jitter for the most recently completed test, in microseconds
+# TYPE junos_twamp_probe_results_egress_jitter_current gauge
+junos_twamp_probe_results_egress_jitter_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.11",test="PE1_PT",type="twamp"} 0
+junos_twamp_probe_results_egress_jitter_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.12",test="PE2_PT",type="twamp"} 0
+junos_twamp_probe_results_egress_jitter_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.31",test="PE1_BY",type="twamp"} 0
+# HELP junos_twamp_probe_results_ingress_jitter_current Ingress Jitter for the most recently completed test, in microseconds
+# TYPE junos_twamp_probe_results_ingress_jitter_current gauge
+junos_twamp_probe_results_ingress_jitter_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.11",test="PE1_PT",type="twamp"} 0
+junos_twamp_probe_results_ingress_jitter_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.12",test="PE2_PT",type="twamp"} 0
+junos_twamp_probe_results_ingress_jitter_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.31",test="PE1_BY",type="twamp"} 0
+# HELP junos_twamp_probe_results_loss_percent_current Percentage of probes lost during the most recently completed test
+# TYPE junos_twamp_probe_results_loss_percent_current gauge
+junos_twamp_probe_results_loss_percent_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.11",test="PE1_PT",type="twamp"} 0
+junos_twamp_probe_results_loss_percent_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.12",test="PE2_PT",type="twamp"} 0
+junos_twamp_probe_results_loss_percent_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.31",test="PE1_BY",type="twamp"} 0
+# HELP junos_twamp_probe_results_received_total Number of probe responses received within the current test
+# TYPE junos_twamp_probe_results_received_total gauge
+junos_twamp_probe_results_received_total{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.11",test="PE1_PT",type="twamp"} 30
+junos_twamp_probe_results_received_total{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.12",test="PE2_PT",type="twamp"} 30
+junos_twamp_probe_results_received_total{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.31",test="PE1_BY",type="twamp"} 30
+# HELP junos_twamp_probe_results_rtt_current RTT for the most recently completed test, in microseconds
+# TYPE junos_twamp_probe_results_rtt_current gauge
+junos_twamp_probe_results_rtt_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.11",test="PE1_PT",type="twamp"} 87
+junos_twamp_probe_results_rtt_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.12",test="PE2_PT",type="twamp"} 153
+junos_twamp_probe_results_rtt_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.31",test="PE1_BY",type="twamp"} 101
+# HELP junos_twamp_probe_results_rtt_jitter_current Jitter for the most recently completed test, in microseconds
+# TYPE junos_twamp_probe_results_rtt_jitter_current gauge
+junos_twamp_probe_results_rtt_jitter_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.11",test="PE1_PT",type="twamp"} 73
+junos_twamp_probe_results_rtt_jitter_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.12",test="PE2_PT",type="twamp"} 24
+junos_twamp_probe_results_rtt_jitter_current{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.31",test="PE1_BY",type="twamp"} 4
+# HELP junos_twamp_probe_results_sent_total Number of probes sent within the current test
+# TYPE junos_twamp_probe_results_sent_total gauge
+junos_twamp_probe_results_sent_total{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.11",test="PE1_PT",type="twamp"} 30
+junos_twamp_probe_results_sent_total{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.12",test="PE2_PT",type="twamp"} 30
+junos_twamp_probe_results_sent_total{owner="TWAMP",source_address="10.0.0.21",target="10.2.10.21",target_address="10.0.0.31",test="PE1_BY",type="twamp"} 30
+# HELP junos_up Scrape of target was successful
+# TYPE junos_up gauge
+junos_up{target="10.2.10.21"} 1

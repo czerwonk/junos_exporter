@@ -10,13 +10,16 @@ import (
 const prefix string = "junos_twamp_probe_results_"
 
 var (
-	currLossPercentDesc      *prometheus.Desc
-	currRTTDesc              *prometheus.Desc
-	currRTTJitterDesc        *prometheus.Desc
-	currRTTIngressJitterDesc *prometheus.Desc
-	currRTTEgressJitterDesc  *prometheus.Desc
-	totalSentDesc            *prometheus.Desc
-	totalReceivedDesc        *prometheus.Desc
+	currLossPercentDesc        *prometheus.Desc
+	currRTTDesc                *prometheus.Desc
+	currRTTJitterDesc          *prometheus.Desc
+	totalSentDesc              *prometheus.Desc
+	totalReceivedDesc          *prometheus.Desc
+	currMeasurementAvgDesc     *prometheus.Desc
+	currMeasurementMinDesc     *prometheus.Desc
+	currMeasurementMaxDesc     *prometheus.Desc
+	currMeasurementStddevDesc  *prometheus.Desc
+	currMeasurementSamplesDesc *prometheus.Desc
 )
 
 func init() {
@@ -26,8 +29,11 @@ func init() {
 	currLossPercentDesc = prometheus.NewDesc(prefix+"loss_percent_current", "Percentage of probes lost during the most recently completed test", l, nil)
 	currRTTDesc = prometheus.NewDesc(prefix+"rtt_current", "RTT for the most recently completed test, in microseconds", l, nil)
 	currRTTJitterDesc = prometheus.NewDesc(prefix+"rtt_jitter_current", "Jitter for the most recently completed test, in microseconds", l, nil)
-	currRTTIngressJitterDesc = prometheus.NewDesc(prefix+"ingress_jitter_current", "Ingress Jitter for the most recently completed test, in microseconds", l, nil)
-	currRTTEgressJitterDesc = prometheus.NewDesc(prefix+"egress_jitter_current", "Egress Jitter for the most recently completed test, in microseconds", l, nil)
+	currMeasurementAvgDesc = prometheus.NewDesc(prefix+"measurment_avg_current", "Measurment Avg for the most recently completed test, in microseconds", l, nil)
+	currMeasurementMinDesc = prometheus.NewDesc(prefix+"measurment_min_current", "Measurment Min the most recently completed test, in microseconds", l, nil)
+	currMeasurementMaxDesc = prometheus.NewDesc(prefix+"measurment_max_current", "Measurment Max the most recently completed test, in microseconds", l, nil)
+	currMeasurementStddevDesc = prometheus.NewDesc(prefix+"measurment_stddev_current", "Measurment Stddev for the most recently completed test, in microseconds", l, nil)
+	currMeasurementSamplesDesc = prometheus.NewDesc(prefix+"measurment_samples_current", "Number of Samples most recently completed test, in microseconds", l, nil)
 }
 
 type twampCollector struct{}
@@ -49,8 +55,11 @@ func (*twampCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- currLossPercentDesc
 	ch <- currRTTDesc
 	ch <- currRTTJitterDesc
-	ch <- currRTTIngressJitterDesc
-	ch <- currRTTEgressJitterDesc
+	ch <- currMeasurementAvgDesc
+	ch <- currMeasurementMinDesc
+	ch <- currMeasurementMaxDesc
+	ch <- currMeasurementStddevDesc
+	ch <- currMeasurementSamplesDesc
 }
 
 // Collect collects metrics from JunOS
@@ -70,7 +79,6 @@ func (c *twampCollector) collect(client collector.Client, ch chan<- prometheus.M
 	if err != nil {
 		return err
 	}
-
 	for _, probe := range x.Results.Probes {
 		c.collectForProbe(probe, ch, labelValues)
 	}
@@ -82,8 +90,6 @@ func (c *twampCollector) collectForProbe(p probe, ch chan<- prometheus.Metric, l
 	l := append(labelValues, []string{p.Owner, p.Test, p.TargetAddress, p.SourceAddress, p.Type}...)
 	ch <- prometheus.MustNewConstMetric(currRTTDesc, prometheus.GaugeValue, float64(p.GenericSampleResults.RTT), l...)
 	ch <- prometheus.MustNewConstMetric(currRTTJitterDesc, prometheus.GaugeValue, float64(p.GenericSampleResults.RTTJitter), l...)
-	ch <- prometheus.MustNewConstMetric(currRTTIngressJitterDesc, prometheus.GaugeValue, float64(p.GenericSampleResults.IngressJitter), l...)
-	ch <- prometheus.MustNewConstMetric(currRTTEgressJitterDesc, prometheus.GaugeValue, float64(p.GenericSampleResults.EgressJitter), l...)
 
 	for _, aggResult := range p.GenericAggregateResults {
 		if aggResult.AggregateType == "last test" {
@@ -92,19 +98,16 @@ func (c *twampCollector) collectForProbe(p probe, ch chan<- prometheus.Metric, l
 			ch <- prometheus.MustNewConstMetric(currLossPercentDesc, prometheus.GaugeValue, float64(aggResult.LossPercentage), l...)
 
 			// Loop through measurements within this aggregate result
-			//			if len(aggResult.GenericAggregateMeasurement) > 0 {
-			//				// Example: Print details of the first measurement type (e.g., Round trip time)
-			//				// You can add more logic here to find specific measurement types if needed
-			//				for k, measurement := range aggResult.GenericAggregateMeasurement {
-			//					fmt.Printf("      Measurement #%d (%s):\n", k+1, measurement.MeasurementType)
-			//					fmt.Printf("        Avg: %d, Min: %d, Max: %d, StdDev: %d, Samples: %d\n",
-			//						measurement.MeasurementAvg,
-			//						measurement.MeasurementMin,
-			//						measurement.MeasurementMax,
-			//						measurement.MeasurementStddev,
-			//						measurement.MeasurementSamples)
-			//				}
-			//			}
+			if len(aggResult.GenericAggregateMeasurement) > 0 {
+				for _, measurement := range aggResult.GenericAggregateMeasurement {
+					l := append(labelValues, []string{p.Owner, p.Test, p.TargetAddress, p.SourceAddress, measurement.MeasurementType}...)
+					ch <- prometheus.MustNewConstMetric(currMeasurementAvgDesc, prometheus.GaugeValue, float64(measurement.MeasurementAvg), l...)
+					ch <- prometheus.MustNewConstMetric(currMeasurementMinDesc, prometheus.GaugeValue, float64(measurement.MeasurementMin), l...)
+					ch <- prometheus.MustNewConstMetric(currMeasurementMaxDesc, prometheus.GaugeValue, float64(measurement.MeasurementMax), l...)
+					ch <- prometheus.MustNewConstMetric(currMeasurementStddevDesc, prometheus.GaugeValue, float64(measurement.MeasurementStddev), l...)
+					ch <- prometheus.MustNewConstMetric(currMeasurementSamplesDesc, prometheus.GaugeValue, float64(measurement.MeasurementSamples), l...)
+				}
+			}
 		}
 	}
 }

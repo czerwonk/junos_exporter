@@ -498,9 +498,12 @@ func TestTwamp(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// test first routing engine
+	// test rtt
 	assert.Equal(t, "192.168.54.99", rpc.Results.Probes[0].TargetAddress, "target-address")
 	assert.Equal(t, int64(121), rpc.Results.Probes[0].GenericSampleResults.RTT, "rtt")
+	//<measurement-max>194</measurement-max>
+	assert.Equal(t, int64(194), rpc.Results.Probes[0].GenericAggregateResults[1].GenericAggregateMeasurement[0].MeasurementMax, "measurement-max")
+
 }
 
 func parseXML(b []byte, res *result) error {

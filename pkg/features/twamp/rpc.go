@@ -28,8 +28,6 @@ type GenericSampleResults struct {
 	OffloadStatus string `xml:"offload-status"`
 	RTT           int64  `xml:"rtt"`
 	RTTJitter     int64  `xml:"rtt-jitter"`
-	EgressJitter  int64  `xml:"egress-jitter"`
-	IngressJitter int64  `xml:"ingress-jitter"`
 }
 
 // GenericAggregateResults holds aggregated data for different periods

@@ -118,7 +118,7 @@ func (c *macsecCollector) collectForInterfaces(sessions resultInt, ch chan<- pro
 		labels := append(labelValues,
 			mici.InterfaceName,
 			mici.ConnectivityAssociationName)
-		if len(sessions.MacsecConnectionInformation.OutboundSecureChannel) > 6 {
+		if len(sessions.MacsecConnectionInformation.OutboundSecureChannel) > c {
 			pn, err := strconv.Atoi(sessions.MacsecConnectionInformation.OutboundSecureChannel[c].OutgoingPacketNumber)
 			if err != nil {
 				log.Errorf("unable to convert outgoing packets number: %q", sessions.MacsecConnectionInformation.OutboundSecureChannel[c].OutgoingPacketNumber)
@@ -138,7 +138,7 @@ func (c *macsecCollector) collectForInterfaces(sessions resultInt, ch chan<- pro
 		ch <- prometheus.MustNewConstMetric(macsecReplayProtectDesc, prometheus.GaugeValue, float64(rp), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecKeyServerOffsetDesc, prometheus.GaugeValue, float64(kso), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecEncryptionDesc, prometheus.GaugeValue, float64(enc), labels...)
-		if len(sessions.MacsecConnectionInformation.OutboundSecureChannel) > 6 {
+		if len(sessions.MacsecConnectionInformation.OutboundSecureChannel) > c {
 			status := stateToFloat(sessions.MacsecConnectionInformation.OutboundSecureChannel[c].OutboundSecureAssociation.AssociationNumberStatus)
 			ch <- prometheus.MustNewConstMetric(macsecTXChannelStatusDesc, prometheus.GaugeValue, status, labels...)
 		}

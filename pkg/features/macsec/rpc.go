@@ -21,11 +21,11 @@ type resultInt struct {
 			ReplayProtect               string `xml:"replay-protect"`
 			ReplayProtectWindow         string `xml:"replay-protect-window"`
 		} `xml:"macsec-interface-common-information"`
-		CreateTime []struct {
+		CreateTime struct {
 			Text    string `xml:",chardata"`
 			Seconds string `xml:"seconds,attr"`
 		} `xml:"create-time"`
-		OutboundSecureChannel []struct {
+		OutboundSecureChannel *struct {
 			Text                      string `xml:",chardata"`
 			Sci                       string `xml:"sci"`
 			OutgoingPacketNumber      string `xml:"outgoing-packet-number"`

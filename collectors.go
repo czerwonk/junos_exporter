@@ -46,6 +46,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/storage"
 	"github.com/czerwonk/junos_exporter/pkg/features/subscriber"
 	"github.com/czerwonk/junos_exporter/pkg/features/system"
+	"github.com/czerwonk/junos_exporter/pkg/features/twamp"
 	"github.com/czerwonk/junos_exporter/pkg/features/vpws"
 	"github.com/czerwonk/junos_exporter/pkg/features/vrrp"
 )
@@ -128,6 +129,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "poe", f.Poe, poe.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "ddosprotection", f.DDOSProtection, ddosprotection.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "krt", f.KRT, krt.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "twamp", f.TWAMP, twamp.NewCollector)
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

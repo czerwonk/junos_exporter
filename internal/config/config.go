@@ -102,6 +102,7 @@ type FeatureConfig struct {
 	Poe                 bool `yaml:"poe,omitempty"`
 	DDOSProtection      bool `yaml:"ddos_protection,omitempty"`
 	KRT                 bool `yaml:"krt,omitempty"`
+	TWAMP               bool `yaml:"twamp,omitempty"`
 }
 
 // New creates a new config

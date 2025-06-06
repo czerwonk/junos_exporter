@@ -169,7 +169,7 @@ func (c *systemCollector) Collect(client collector.Client, ch chan<- prometheus.
 func (c *systemCollector) CollectSystem(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	err := c.collectBuffers(client, ch, labelValues)
 	if err != nil {
-		log.Errorf("could not get buffer information: %w", err)
+		return fmt.Errorf("could not get system buffers: %w", err)
 	}
 
 	err = c.collectSystemInformation(client, ch, labelValues)

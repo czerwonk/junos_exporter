@@ -114,7 +114,7 @@ func (c *environmentCollector) environmentItems(client collector.Client, ch chan
 		l := labelValues
 		for _, item := range re.EnvironmentInformation.Items {
 			l = append(labelValues, re.Name)
-			if strings.Contains(item.Name, "Power Supply") || strings.Contains(item.Name, "PEM") {
+			if strings.Contains(item.Name, "Power Supply") || strings.Contains(item.Name, "PEM") || strings.Contains(item.Name, "PSM") {
 				l = append(l, item.Name, item.Status)
 				ch <- prometheus.MustNewConstMetric(powerSupplyDesc, prometheus.GaugeValue, float64(statusValues[item.Status]), l...)
 			} else if strings.Contains(item.Name, "Fan") {
@@ -141,13 +141,19 @@ func (c *environmentCollector) environmentPEMItems(client collector.Client, ch c
 		"Online":  1,
 		"Present": 2,
 		"Empty":   3,
+		"Offline": 4,
 	}
 
 	err := client.RunCommandAndParseWithParser("show chassis environment pem", func(b []byte) error {
 		return parseXML(b, &x)
 	})
 	if err != nil {
-		return err
+		err := client.RunCommandAndParseWithParser("show chassis environment psm", func(b []byte) error {
+			return parseXML(b, &x)
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, re := range x.Results.RoutingEngines {

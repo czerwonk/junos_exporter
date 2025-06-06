@@ -25,6 +25,3 @@ config/tests/config_local.yml
 .vscode*
 notes.txt
 .DS_Store/
-metrics.txt
-metrics_mx.txt
-metrics_ptx.txt

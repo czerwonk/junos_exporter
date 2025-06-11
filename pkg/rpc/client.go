@@ -85,7 +85,7 @@ func (c *Client) RunCommandAndParseWithParser(cmd string, parser Parser) error {
 	return err
 }
 
-// This custom parser takes care of the case where we have an empty <outbound-secure-channel>
+// This custom parser takes care of the case where we have an empty <outbound-secure-channel> in macsec feature
 func (c *Client) RunCommandAndParseWithParserCustom(cmd string, parser Parser) error {
 	if c.debug {
 		log.Printf("Running command on %s: %s\n", c.conn.Host(), cmd)

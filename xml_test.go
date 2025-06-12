@@ -4,6 +4,9 @@ import (
 	"encoding/xml"
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type OutboundChannel struct {
@@ -35,10 +38,17 @@ func (r *Root) UnmarshalXML(d *xml.Decoder, _ xml.StartElement) error {
 		if err != nil {
 			return err
 		}
+
+		switch tok.(type) {
+		case xml.CharData:
+			continue // ignore whitespace
+		case xml.EndElement:
+			return nil
+		}
+
 		elem, ok := tok.(xml.StartElement)
 		if !ok {
-			fmt.Printf("invalid token encountered: %T\n", tok)
-			continue
+			return fmt.Errorf("invalid token encountered: %T", tok)
 		}
 		switch elem.Name.Local {
 		case "interface":
@@ -71,9 +81,13 @@ func TestXMLUnmarshal(t *testing.T) {
 		t.Error(err)
 	}
 
-	fmt.Println("found interfaces:")
-	for _, intf := range target.Interfaces {
-		fmt.Printf("%#v\n", intf)
-		fmt.Printf("outbound: %#v\n", intf.OutChannel)
-	}
+	require.Len(t, target.Interfaces, 3)
+	assert.Equal(t, "et-0/0/0", target.Interfaces[0].Name)
+	assert.Equal(t, "1", target.Interfaces[0].OutChannel.ID)
+
+	assert.Equal(t, "et-0/0/1", target.Interfaces[1].Name)
+	assert.Nil(t, target.Interfaces[1].OutChannel)
+
+	assert.Equal(t, "et-0/0/2", target.Interfaces[2].Name)
+	assert.Equal(t, "3", target.Interfaces[2].OutChannel.ID)
 }

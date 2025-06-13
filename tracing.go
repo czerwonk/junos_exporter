@@ -6,8 +6,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/czerwonk/junos_exporter/pkg/connector"
-	"github.com/czerwonk/junos_exporter/pkg/rpc"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -21,6 +19,9 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
+
+	"github.com/czerwonk/junos_exporter/pkg/connector"
+	"github.com/czerwonk/junos_exporter/pkg/rpc"
 )
 
 var tracer = otel.GetTracerProvider().Tracer(
@@ -126,6 +127,39 @@ func (cta *clientTracingAdapter) RunCommandAndParseWithParser(cmd string, parser
 	defer span.End()
 
 	err := cta.cl.RunCommandAndParseWithParser(cmd, parser)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+
+	return err
+}
+
+// RunCommandAndParseCustom implements RunCommandAndParseCustom of the collector.Client interface
+func (cta *clientTracingAdapter) RunCommandAndParseCustom(cmd string, obj interface{}) error {
+	_, span := tracer.Start(cta.ctx, "RunCommandAndParseCustom", trace.WithAttributes(
+		attribute.String("command", cmd),
+	))
+	defer span.End()
+
+	err := cta.cl.RunCommandAndParseCustom(cmd, obj) // <-- CORRECT: calls the custom method
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+
+	return err
+
+}
+
+// RunCommandAndParseWithParserCustom implements RunCommandAndParseWithParserCustom of the collector.Client interface
+func (cta *clientTracingAdapter) RunCommandAndParseWithParserCustom(cmd string, parser rpc.Parser) error {
+	_, span := tracer.Start(cta.ctx, "RunCommandAndParseWithParserCustom", trace.WithAttributes(
+		attribute.String("command", cmd),
+	))
+	defer span.End()
+
+	err := cta.cl.RunCommandAndParseWithParserCustom(cmd, parser)
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())

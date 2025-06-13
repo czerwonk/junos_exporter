@@ -5,9 +5,10 @@ package collector
 import (
 	"context"
 
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"github.com/czerwonk/junos_exporter/pkg/rpc"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 type Client interface {
@@ -17,9 +18,15 @@ type Client interface {
 	// RunCommandAndParseWithParser runs a command on JunOS and unmarshals the XML result using the specified parser function
 	RunCommandAndParseWithParser(cmd string, parser rpc.Parser) error
 
+	// RunCommandAndParseCustom runs a command on JunOS and unmarshalls it using a custom xml parser for edge case in macsec feature
+	RunCommandAndParseCustom(cmd string, obj interface{}) error
+
+	// RunCommandAndParseWithParserCustom runs a command on JunOS and processes the XML result using a custom parser function for a macsec edge case
+	RunCommandAndParseWithParserCustom(cmd string, parser rpc.Parser) error
+
 	// IsSatelliteEnabled returns if sattelite features are enabled on the device
 	IsSatelliteEnabled() bool
-	
+
 	IsScrapingLicenseEnabled() bool
 
 	// Device returns device information for the connected device

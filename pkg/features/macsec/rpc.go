@@ -59,6 +59,17 @@ type resultInt struct {
 	} `xml:"cli"`
 }
 
+// Main response structure for MACSEC connections
+// OutboundSecureChannelInfo contains outbound secure channel data
+/*
+type OutboundSecureChannelInfo struct {
+	Text                      string                `xml:",chardata"`
+	Sci                       string                `xml:"sci"`
+	OutgoingPacketNumber      string                `xml:"outgoing-packet-number"`
+	OutboundSecureAssociation SecureAssociationInfo `xml:"outbound-secure-association"`
+}
+*/
+
 // structure for the statistics reply
 type resultStats struct {
 	XMLName          xml.Name         `xml:"rpc-reply"`

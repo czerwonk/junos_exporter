@@ -98,7 +98,7 @@ func (*macsecCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *macsecCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var i resultInt
-	err := client.RunCommandAndParse("show security macsec connections", &i)
+	err := client.RunCommandAndParseCustom("show security macsec connections", &i)
 	if err != nil {
 		return errors.Wrap(err, "failed to run command 'show security macsec connections'")
 	}
@@ -139,6 +139,53 @@ func (c *macsecCollector) collectForInterfaces(sessions resultInt, ch chan<- pro
 	}
 }
 
+/*
+	func (c *macsecCollector) collectForInterfaces(sessions resultInt, ch chan<- prometheus.Metric, labelValues []string) {
+		outboundChannels := sessions.MacsecConnectionInformation.OutboundSecureChannel
+		for _, oc := range outboundChannels {
+			fmt.Println(oc.OutgoingPacketNumber)
+		}
+		for i, mici := range sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation {
+			labels := append(labelValues,
+				mici.InterfaceName,
+				mici.ConnectivityAssociationName)
+
+			// Check if we have a corresponding outbound channel
+			var pn int
+			var status float64
+
+			// Only try to access the outbound channel if it exists
+			if i < len(outboundChannels) {
+				outboundChannel := outboundChannels[i]
+				if pnVal, err := strconv.Atoi(outboundChannel.OutgoingPacketNumber); err == nil {
+					pn = pnVal
+				} else {
+					log.Errorf("unable to convert outgoing packets number: %q", outboundChannel.OutgoingPacketNumber)
+				}
+				status = stateToFloat(outboundChannel.OutboundSecureAssociation.AssociationNumberStatus)
+			} else {
+				// Default values for missing outbound channel
+				pn = 0
+				status = 0
+			}
+
+			sci := convertYesNoToInt(strings.TrimRight(mici.IncludeSci, "\n"))
+			rp := convertOnOffToInt(strings.TrimRight(mici.ReplayProtect, "\n"))
+			kso, err := strconv.Atoi(mici.Offset)
+			if err != nil {
+				log.Errorf("unable to convert offset: %q", mici.Offset)
+			}
+			enc := convertOnOffToInt(strings.TrimRight(mici.Encryption, "\n"))
+
+			ch <- prometheus.MustNewConstMetric(macsecTXPacketCountDesc, prometheus.CounterValue, float64(pn), labels...)
+			ch <- prometheus.MustNewConstMetric(macsecIncludeSCIDesc, prometheus.GaugeValue, float64(sci), labels...)
+			ch <- prometheus.MustNewConstMetric(macsecReplayProtectDesc, prometheus.GaugeValue, float64(rp), labels...)
+			ch <- prometheus.MustNewConstMetric(macsecKeyServerOffsetDesc, prometheus.GaugeValue, float64(kso), labels...)
+			ch <- prometheus.MustNewConstMetric(macsecEncryptionDesc, prometheus.GaugeValue, float64(enc), labels...)
+			ch <- prometheus.MustNewConstMetric(macsecTXChannelStatusDesc, prometheus.GaugeValue, status, labels...)
+		}
+	}
+*/
 func (c *macsecCollector) collectForStats(sessions resultStats, ch chan<- prometheus.Metric, labelValues []string) {
 	for interfaceCounter := 0; interfaceCounter < (len(sessions.MacsecStatistics.Interfaces)); interfaceCounter++ {
 		labels := append(labelValues,

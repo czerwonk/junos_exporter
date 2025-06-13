@@ -4,6 +4,7 @@ package macsec
 
 import (
 	"encoding/xml"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -53,23 +54,6 @@ func TestParseXML(t *testing.T) {
             <replay-protect-window>0</replay-protect-window>
         </macsec-interface-common-information>
         <create-time junos:seconds="784806">1w2d 02:00:06</create-time>
-        <outbound-secure-channel>
-            <sci>B4:F9:5D:8C:A7:99/1</sci>
-            <outgoing-packet-number>185812349</outgoing-packet-number>
-            <outbound-secure-association>
-                <association-number>0</association-number>
-                <association-number-status>inuse</association-number-status>
-                <create-time junos:seconds="784806">1w2d 02:00:06</create-time>
-            </outbound-secure-association>
-        </outbound-secure-channel>
-        <inbound-secure-channel>
-            <sci>20:93:39:38:51:19/1</sci>
-            <inbound-secure-association>
-                <association-number>0</association-number>
-                <association-number-status>inuse</association-number-status>
-                <create-time junos:seconds="784806">1w2d 02:00:06</create-time>
-            </inbound-secure-association>
-        </inbound-secure-channel>
         <macsec-interface-common-information>
             <interface-name>et-0/0/6</interface-name>
             <connectivity-association-name>bb01.dub01-bb01.lhr01</connectivity-association-name>
@@ -223,7 +207,7 @@ func TestParseXML(t *testing.T) {
         <banner></banner>
     </cli>
 </rpc-reply>`
-
+	//expected := resultInt{}
 	var resultInt resultInt
 	var resultStats resultStats
 
@@ -248,8 +232,13 @@ func TestParseXML(t *testing.T) {
 	assert.Equal(t, "0", resultInt.MacsecConnectionInformation.MacsecInterfaceCommonInformation[1].Offset)
 	assert.Equal(t, "on", resultInt.MacsecConnectionInformation.MacsecInterfaceCommonInformation[1].ReplayProtect)
 	assert.Equal(t, "yes", resultInt.MacsecConnectionInformation.MacsecInterfaceCommonInformation[1].IncludeSci)
-	assert.Equal(t, "185812349", resultInt.MacsecConnectionInformation.OutboundSecureChannel[1].OutgoingPacketNumber)
+	//assert.Equal(t, "185812349", resultInt.MacsecConnectionInformation.OutboundSecureChannel[1].OutgoingPacketNumber)
 
+	//testing outbound-secure-channel edge case when it is missing on one of the interfaces
+	assert.Equal(t, "4543932225", resultInt.MacsecConnectionInformation.OutboundSecureChannel[2].OutgoingPacketNumber)
+	for _, connection := range resultInt.MacsecConnectionInformation.OutboundSecureChannel {
+		fmt.Println(connection.OutgoingPacketNumber)
+	}
 	// Parse the XML data for statistics
 	err = xml.Unmarshal([]byte(resultStatsData), &resultStats)
 	assert.NoError(t, err)

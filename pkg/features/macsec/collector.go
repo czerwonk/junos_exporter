@@ -152,9 +152,6 @@ func (c *macsecCollector) collectForInterfaces(sessions resultInt, ch chan<- pro
 		ch <- prometheus.MustNewConstMetric(macsecReplayProtectDesc, prometheus.GaugeValue, float64(rp), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecKeyServerOffsetDesc, prometheus.GaugeValue, float64(kso), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecEncryptionDesc, prometheus.GaugeValue, float64(enc), labels...)
-		//getting the mac address of the interface that currently being proccessed
-		//currentMAC := interfacesToMACs[mici.InterfaceName]
-		//maybe next command should loop on outbound connections
 		for k := 0; k < len(sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation); k++ {
 			fmt.Printf("value is %s \n", interfacesToMACs[mici.InterfaceName])
 			outboundMAC := strings.SplitN(strings.TrimSpace(strings.ToLower(sessions.MacsecConnectionInformation.OutboundSecureChannel[k].Sci)), "/", 2)

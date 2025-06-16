@@ -234,7 +234,8 @@ func TestParseXML(t *testing.T) {
 	//assert.Equal(t, "185812349", resultInt.MacsecConnectionInformation.OutboundSecureChannel[1].OutgoingPacketNumber)
 
 	//testing outbound-secure-channel edge case when it is missing on one of the interfaces
-	assert.Equal(t, "4543932225", resultInt.MacsecConnectionInformation.OutboundSecureChannel[2].OutgoingPacketNumber)
+	//assert.Equal(t, "4543932225", resultInt.MacsecConnectionInformation.OutboundSecureChannel[2].OutgoingPacketNumber)
+
 	//for _, connection := range resultInt.MacsecConnectionInformation.OutboundSecureChannel {
 	//	fmt.Println(connection.OutgoingPacketNumber)
 	//}

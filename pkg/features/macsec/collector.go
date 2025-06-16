@@ -2,6 +2,7 @@
 package macsec
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -35,6 +36,8 @@ var (
 	macsecSecureAssociationRXValidatedBytesDesc   *prometheus.Desc
 	macsecSecureAssociationRXDecryptedBytesDesc   *prometheus.Desc
 )
+
+var interfacesInfos allInterfaces
 
 // Initialize metrics descriptions
 func init() {
@@ -97,8 +100,14 @@ func (*macsecCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *macsecCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	//collecting interface information for future interface-mac address mapping for outbound secure connection
+	err := client.RunCommandAndParse("show interfaces", &interfacesInfos)
+	if err != nil {
+		return errors.Wrap(err, "failed to run command 'show interfaces'")
+	}
+
 	var i resultInt
-	err := client.RunCommandAndParseCustom("show security macsec connections", &i)
+	err = client.RunCommandAndParse("show security macsec connections", &i)
 	if err != nil {
 		return errors.Wrap(err, "failed to run command 'show security macsec connections'")
 	}
@@ -114,78 +123,64 @@ func (c *macsecCollector) Collect(client collector.Client, ch chan<- prometheus.
 
 // collectForSessions collects metrics for the sessions
 func (c *macsecCollector) collectForInterfaces(sessions resultInt, ch chan<- prometheus.Metric, labelValues []string) {
-	for c, mici := range sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation {
-		labels := append(labelValues,
+	var labels []string
+	interfacesToMACs := make(map[string]string)
+	for _, mici := range sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation {
+		interfacesToMACs[mici.InterfaceName] = ""
+	}
+	for _, phyInt := range interfacesInfos.InterfaceInformation.PhysicalInterface {
+		if _, ok := interfacesToMACs[phyInt.Name]; ok {
+			interfacesToMACs[phyInt.Name] = strings.TrimSpace(strings.ToLower(phyInt.HardwarePhysicalAddress.Text))
+		}
+	}
+
+	//for key, value := range interfacesToMACs {
+	//	fmt.Printf("key is %s and value is %s \n", key, value)
+	//}
+	for _, mici := range sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation {
+		labels = append(labelValues,
 			mici.InterfaceName,
 			mici.ConnectivityAssociationName)
-		pn, err := strconv.Atoi(sessions.MacsecConnectionInformation.OutboundSecureChannel[c].OutgoingPacketNumber)
-		if err != nil {
-			log.Errorf("unable to convert outgoing packets number: %q", sessions.MacsecConnectionInformation.OutboundSecureChannel[c].OutgoingPacketNumber)
-		}
 		sci := convertYesNoToInt(strings.TrimRight(mici.IncludeSci, "\n"))
 		rp := convertOnOffToInt(strings.TrimRight(mici.ReplayProtect, "\n"))
 		kso, err := strconv.Atoi(mici.Offset)
 		if err != nil {
 			log.Errorf("unable to convert offset: %q", mici.Offset)
 		}
-		status := stateToFloat(sessions.MacsecConnectionInformation.OutboundSecureChannel[c].OutboundSecureAssociation.AssociationNumberStatus)
 		enc := convertOnOffToInt(strings.TrimRight(mici.Encryption, "\n"))
-		ch <- prometheus.MustNewConstMetric(macsecTXPacketCountDesc, prometheus.CounterValue, float64(pn), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecIncludeSCIDesc, prometheus.GaugeValue, float64(sci), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecReplayProtectDesc, prometheus.GaugeValue, float64(rp), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecKeyServerOffsetDesc, prometheus.GaugeValue, float64(kso), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecEncryptionDesc, prometheus.GaugeValue, float64(enc), labels...)
-		ch <- prometheus.MustNewConstMetric(macsecTXChannelStatusDesc, prometheus.GaugeValue, status, labels...)
+		//getting the mac address of the interface that currently being proccessed
+		//currentMAC := interfacesToMACs[mici.InterfaceName]
+		//maybe next command should loop on outbound connections
+		for k := 0; k < len(sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation); k++ {
+			fmt.Printf("value is %s \n", interfacesToMACs[mici.InterfaceName])
+			outboundMAC := strings.SplitN(strings.TrimSpace(strings.ToLower(sessions.MacsecConnectionInformation.OutboundSecureChannel[k].Sci)), "/", 2)
+			fmt.Printf("outboundMac is %s \n", outboundMAC[0])
+			if strings.Contains(strings.TrimSpace(strings.ToLower(outboundMAC[0])), interfacesToMACs[mici.InterfaceName]) && k < len(sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation) {
+				fmt.Printf("%s exists in the map\n", outboundMAC[0])
+				pn, err := strconv.Atoi(sessions.MacsecConnectionInformation.OutboundSecureChannel[k].OutgoingPacketNumber)
+				if err != nil {
+					log.Errorf("unable to convert outgoing packets number: %q", sessions.MacsecConnectionInformation.OutboundSecureChannel[k].OutgoingPacketNumber)
+				}
+				ch <- prometheus.MustNewConstMetric(macsecTXPacketCountDesc, prometheus.CounterValue, float64(pn), labels...)
+				status := stateToFloat(sessions.MacsecConnectionInformation.OutboundSecureChannel[k].OutboundSecureAssociation.AssociationNumberStatus)
+				ch <- prometheus.MustNewConstMetric(macsecTXChannelStatusDesc, prometheus.GaugeValue, status, labels...)
+				k++
+			} else {
+				fmt.Printf("%s does not exist in the map\n", outboundMAC[0])
+				if k != 0 && k < len(sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation) {
+					k++
+				} else {
+					continue
+				}
+			}
+		}
 	}
 }
 
-/*
-	func (c *macsecCollector) collectForInterfaces(sessions resultInt, ch chan<- prometheus.Metric, labelValues []string) {
-		outboundChannels := sessions.MacsecConnectionInformation.OutboundSecureChannel
-		for _, oc := range outboundChannels {
-			fmt.Println(oc.OutgoingPacketNumber)
-		}
-		for i, mici := range sessions.MacsecConnectionInformation.MacsecInterfaceCommonInformation {
-			labels := append(labelValues,
-				mici.InterfaceName,
-				mici.ConnectivityAssociationName)
-
-			// Check if we have a corresponding outbound channel
-			var pn int
-			var status float64
-
-			// Only try to access the outbound channel if it exists
-			if i < len(outboundChannels) {
-				outboundChannel := outboundChannels[i]
-				if pnVal, err := strconv.Atoi(outboundChannel.OutgoingPacketNumber); err == nil {
-					pn = pnVal
-				} else {
-					log.Errorf("unable to convert outgoing packets number: %q", outboundChannel.OutgoingPacketNumber)
-				}
-				status = stateToFloat(outboundChannel.OutboundSecureAssociation.AssociationNumberStatus)
-			} else {
-				// Default values for missing outbound channel
-				pn = 0
-				status = 0
-			}
-
-			sci := convertYesNoToInt(strings.TrimRight(mici.IncludeSci, "\n"))
-			rp := convertOnOffToInt(strings.TrimRight(mici.ReplayProtect, "\n"))
-			kso, err := strconv.Atoi(mici.Offset)
-			if err != nil {
-				log.Errorf("unable to convert offset: %q", mici.Offset)
-			}
-			enc := convertOnOffToInt(strings.TrimRight(mici.Encryption, "\n"))
-
-			ch <- prometheus.MustNewConstMetric(macsecTXPacketCountDesc, prometheus.CounterValue, float64(pn), labels...)
-			ch <- prometheus.MustNewConstMetric(macsecIncludeSCIDesc, prometheus.GaugeValue, float64(sci), labels...)
-			ch <- prometheus.MustNewConstMetric(macsecReplayProtectDesc, prometheus.GaugeValue, float64(rp), labels...)
-			ch <- prometheus.MustNewConstMetric(macsecKeyServerOffsetDesc, prometheus.GaugeValue, float64(kso), labels...)
-			ch <- prometheus.MustNewConstMetric(macsecEncryptionDesc, prometheus.GaugeValue, float64(enc), labels...)
-			ch <- prometheus.MustNewConstMetric(macsecTXChannelStatusDesc, prometheus.GaugeValue, status, labels...)
-		}
-	}
-*/
 func (c *macsecCollector) collectForStats(sessions resultStats, ch chan<- prometheus.Metric, labelValues []string) {
 	for interfaceCounter := 0; interfaceCounter < (len(sessions.MacsecStatistics.Interfaces)); interfaceCounter++ {
 		labels := append(labelValues,
@@ -235,4 +230,14 @@ func convertOnOffToInt(s string) int {
 	default:
 		return 2
 	}
+}
+
+func valueExistsIgnoreCase(m map[string]string, value string) bool {
+	valueLower := strings.ToLower(value)
+	for _, v := range m {
+		if strings.ToLower(v) == valueLower {
+			return true
+		}
+	}
+	return false
 }

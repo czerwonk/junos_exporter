@@ -4,7 +4,6 @@ package macsec
 
 import (
 	"encoding/xml"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -210,7 +209,7 @@ func TestParseXML(t *testing.T) {
 	//expected := resultInt{}
 	var resultInt resultInt
 	var resultStats resultStats
-
+	//list_of_interfaces := [4]string{"et-0/0/0", "set-0/0/1", "et-0/0/6", "et-0/0/7"}
 	// Parse the XML data for Interfaces
 	err := xml.Unmarshal([]byte(resultIntData), &resultInt)
 	assert.NoError(t, err)
@@ -236,9 +235,9 @@ func TestParseXML(t *testing.T) {
 
 	//testing outbound-secure-channel edge case when it is missing on one of the interfaces
 	assert.Equal(t, "4543932225", resultInt.MacsecConnectionInformation.OutboundSecureChannel[2].OutgoingPacketNumber)
-	for _, connection := range resultInt.MacsecConnectionInformation.OutboundSecureChannel {
-		fmt.Println(connection.OutgoingPacketNumber)
-	}
+	//for _, connection := range resultInt.MacsecConnectionInformation.OutboundSecureChannel {
+	//	fmt.Println(connection.OutgoingPacketNumber)
+	//}
 	// Parse the XML data for statistics
 	err = xml.Unmarshal([]byte(resultStatsData), &resultStats)
 	assert.NoError(t, err)

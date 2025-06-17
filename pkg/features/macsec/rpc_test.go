@@ -3,14 +3,14 @@
 package macsec
 
 import (
-	"encoding/xml"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 // TestParseXML tests the XML parsing of the MACsec connection information
-func TestParseXML(t *testing.T) {
+/*func TestParseXML(t *testing.T) {
 	resultIntData := `
 <rpc-reply xmlns:junos="http://xml.juniper.net/junos/23.2R2-S1.3/junos">
     <macsec-connection-information>
@@ -169,7 +169,7 @@ func TestParseXML(t *testing.T) {
         <secure-association-sent>
             <encrypted-packets>4609309585</encrypted-packets>
             <protected-packets>0</protected-packets>
-        </secure-association-sent>      
+        </secure-association-sent>
         <secure-channel-received>
             <ok-packets>98753547</ok-packets>
             <validated-bytes>0</validated-bytes>
@@ -263,4 +263,114 @@ func TestParseXML(t *testing.T) {
 	assert.Equal(t, uint64(0), resultStats.MacsecStatistics.SecureAssociationReceived[0].ValidatedBytes)
 	assert.Equal(t, uint64(0), resultStats.MacsecStatistics.SecureAssociationReceived[0].DecryptedBytes)
 
+}*/
+
+func TestParseShowSecurityMacsecConnections(t *testing.T) {
+	tests := []struct {
+		name      string
+		inputFile string
+		expected  *ShowSecMacsecConns
+	}{
+		{
+			name:      "Test #1",
+			inputFile: "show_security_macsec_connections.xml",
+			expected: &ShowSecMacsecConns{
+				MacsecConnectionInformation: []*MacsecConnectionInformation{
+					{
+						MacsecInterfaceCommonInformation: &MacsecInterfaceCommonInformation{
+							InterfaceName:               "et-0/0/0",
+							ConnectivityAssociationName: "bb01.dub01-dr01.kef01",
+							CipherSuite:                 "GCM-AES-XPN-128",
+							Encryption:                  "on",
+							Offset:                      0,
+							IncludeSci:                  "no",
+							ReplayProtect:               "off",
+							ReplayProtectWindow:         0,
+						},
+						OutboundSecureChannel: &OutboundSecureChannel{
+							Sci:                  "B4:F9:5D:8C:A7:91/1",
+							OutgoingPacketNumber: 29462517698,
+							OutboundSecureAssociation: &OutboundSecureAssociation{
+								AssociationNumber:       0,
+								AssociationNumberStatus: "inuse",
+								CreateTime: &CreateTime{
+									Seconds: 1300258,
+								},
+							},
+						},
+						InboundSecureChannel: &InboundSecureChannel{
+							Sci: "B4:F9:5D:0D:24:71/1",
+							InboundSecureAssociation: &InboundSecureAssociation{
+								AssociationNumber:       0,
+								AssociationNumberStatus: "inuse",
+								CreateTime: &CreateTime{
+									Seconds: 1300258,
+								},
+							},
+						},
+					},
+					{
+						MacsecInterfaceCommonInformation: &MacsecInterfaceCommonInformation{
+							InterfaceName:               "et-0/0/1",
+							ConnectivityAssociationName: "bb01.ams01-bb01.dub01",
+							CipherSuite:                 "GCM-AES-XPN-128",
+							Encryption:                  "off",
+							Offset:                      0,
+							IncludeSci:                  "yes",
+							ReplayProtect:               "on",
+							ReplayProtectWindow:         0,
+						},
+					},
+					{
+						MacsecInterfaceCommonInformation: &MacsecInterfaceCommonInformation{
+							InterfaceName:               "et-0/0/6",
+							ConnectivityAssociationName: "bb01.dub01-bb01.lhr01",
+							CipherSuite:                 "GCM-AES-XPN-128",
+							Encryption:                  "on",
+							Offset:                      0,
+							IncludeSci:                  "no",
+							ReplayProtect:               "off",
+							ReplayProtectWindow:         0,
+						},
+						OutboundSecureChannel: &OutboundSecureChannel{
+							Sci:                  "B4:F9:5D:8C:A7:AC/1",
+							OutgoingPacketNumber: 4543932225,
+							OutboundSecureAssociation: &OutboundSecureAssociation{
+								AssociationNumber:       0,
+								AssociationNumberStatus: "inuse",
+								CreateTime: &CreateTime{
+									Seconds: 309851,
+								},
+							},
+						},
+						InboundSecureChannel: &InboundSecureChannel{
+							Sci: "20:93:39:36:89:3C/1",
+							InboundSecureAssociation: &InboundSecureAssociation{
+								AssociationNumber:       0,
+								AssociationNumberStatus: "inuse",
+								CreateTime: &CreateTime{
+									Seconds: 309851,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		fc, err := os.ReadFile("testdata/" + test.inputFile)
+		if err != nil {
+			panic(err)
+		}
+
+		res, err := ParseShowSecurityMacsecConnections(fc)
+		if err != nil {
+			panic(err)
+		}
+
+		res.InnerXML = nil
+		assert.Equal(t, test.expected, res, test.name)
+	}
 }

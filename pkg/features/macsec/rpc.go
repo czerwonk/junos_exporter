@@ -4,71 +4,54 @@ import (
 	"encoding/xml"
 )
 
-type resultInt struct {
-	XMLName                     xml.Name `xml:"rpc-reply"`
-	Text                        string   `xml:",chardata"`
-	Junos                       string   `xml:"junos,attr"`
-	MacsecConnectionInformation struct {
-		Text                             string `xml:",chardata"`
-		MacsecInterfaceCommonInformation []struct {
-			Text                        string `xml:",chardata"`
-			InterfaceName               string `xml:"interface-name"`
-			ConnectivityAssociationName string `xml:"connectivity-association-name"`
-			CipherSuite                 string `xml:"cipher-suite"`
-			Encryption                  string `xml:"encryption"`
-			Offset                      string `xml:"offset"`
-			IncludeSci                  string `xml:"include-sci"`
-			ReplayProtect               string `xml:"replay-protect"`
-			ReplayProtectWindow         string `xml:"replay-protect-window"`
-		} `xml:"macsec-interface-common-information"`
-		CreateTime []struct {
-			Text    string `xml:",chardata"`
-			Seconds string `xml:"seconds,attr"`
-		} `xml:"create-time"`
-		OutboundSecureChannel []struct {
-			Text                      string `xml:",chardata"`
-			Sci                       string `xml:"sci"`
-			OutgoingPacketNumber      string `xml:"outgoing-packet-number"`
-			OutboundSecureAssociation struct {
-				Text                    string `xml:",chardata"`
-				AssociationNumber       string `xml:"association-number"`
-				AssociationNumberStatus string `xml:"association-number-status"`
-				CreateTime              struct {
-					Text    string `xml:",chardata"`
-					Seconds string `xml:"seconds,attr"`
-				} `xml:"create-time"`
-			} `xml:"outbound-secure-association"`
-		} `xml:"outbound-secure-channel"`
-		InboundSecureChannel []struct {
-			Text                     string `xml:",chardata"`
-			Sci                      string `xml:"sci"`
-			InboundSecureAssociation struct {
-				Text                    string `xml:",chardata"`
-				AssociationNumber       string `xml:"association-number"`
-				AssociationNumberStatus string `xml:"association-number-status"`
-				CreateTime              struct {
-					Text    string `xml:",chardata"`
-					Seconds string `xml:"seconds,attr"`
-				} `xml:"create-time"`
-			} `xml:"inbound-secure-association"`
-		} `xml:"inbound-secure-channel"`
-	} `xml:"macsec-connection-information"`
-	Cli struct {
-		Text   string `xml:",chardata"`
-		Banner string `xml:"banner"`
-	} `xml:"cli"`
+type ShowSecMacsecConns struct {
+	InnerXML                    []byte                         `xml:",innerxml"`
+	MacsecConnectionInformation []*MacsecConnectionInformation `xml:"macsec-connection-information"`
 }
 
-// Main response structure for MACSEC connections
-// OutboundSecureChannelInfo contains outbound secure channel data
-/*
-type OutboundSecureChannelInfo struct {
-	Text                      string                `xml:",chardata"`
-	Sci                       string                `xml:"sci"`
-	OutgoingPacketNumber      string                `xml:"outgoing-packet-number"`
-	OutboundSecureAssociation SecureAssociationInfo `xml:"outbound-secure-association"`
+type MacsecConnectionInformation struct {
+	MacsecInterfaceCommonInformation *MacsecInterfaceCommonInformation `xml:"macsec-interface-common-information"`
+	OutboundSecureChannel            *OutboundSecureChannel            `xml:"outbound-secure-channel"`
+	InboundSecureChannel             *InboundSecureChannel             `xml:"inbound-secure-channel"`
 }
-*/
+
+type MacsecInterfaceCommonInformation struct {
+	InterfaceName               string `xml:"interface-name"`
+	ConnectivityAssociationName string `xml:"connectivity-association-name"`
+	CipherSuite                 string `xml:"cipher-suite"`
+	Encryption                  string `xml:"encryption"`
+	Offset                      int    `xml:"offset"`
+	IncludeSci                  string `xml:"include-sci"`
+	ReplayProtect               string `xml:"replay-protect"`
+	ReplayProtectWindow         int    `xml:"replay-protect-window"`
+}
+
+type OutboundSecureChannel struct {
+	Sci                       string                     `xml:"sci"`
+	OutgoingPacketNumber      int                        `xml:"outgoing-packet-number"`
+	OutboundSecureAssociation *OutboundSecureAssociation `xml:"outbound-secure-association"`
+}
+
+type OutboundSecureAssociation struct {
+	AssociationNumber       int         `xml:"association-number"`
+	AssociationNumberStatus string      `xml:"association-number-status"`
+	CreateTime              *CreateTime `xml:"create-time"`
+}
+
+type CreateTime struct {
+	Seconds int `xml:"seconds,attr"`
+}
+
+type InboundSecureChannel struct {
+	Sci                      string                    `xml:"sci"`
+	InboundSecureAssociation *InboundSecureAssociation `xml:"inbound-secure-association"`
+}
+
+type InboundSecureAssociation struct {
+	AssociationNumber       int         `xml:"association-number"`
+	AssociationNumberStatus string      `xml:"association-number-status"`
+	CreateTime              *CreateTime `xml:"create-time"`
+}
 
 // structure for the statistics reply
 type resultStats struct {

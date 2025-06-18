@@ -95,12 +95,26 @@ func (*macsecCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *macsecCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var i ShowSecMacsecConns
-	err := client.RunCommandAndParse("show security macsec connections", &i)
+	//var i ShowSecMacsecConns
+	//err := client.RunCommandAndParse("show security macsec connections", &i)
+	//if err != nil {
+	//	return errors.Wrap(err, "failed to run command 'show security macsec connections'")
+	//}
+	var macsecData []byte
+	err := client.RunCommandAndParseWithParser("show security macsec connections", func(data []byte) error {
+		macsecData = data
+		return nil
+	})
 	if err != nil {
 		return errors.Wrap(err, "failed to run command 'show security macsec connections'")
 	}
-	c.collectForInterfaces(i, ch, labelValues)
+
+	i, err := ParseShowSecurityMacsecConnections(macsecData)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse 'show security macsec connections' output")
+	}
+
+	c.collectForInterfaces(*i, ch, labelValues)
 	var s resultStats
 	err = client.RunCommandAndParse("show security macsec statistics", &s)
 	if err != nil {

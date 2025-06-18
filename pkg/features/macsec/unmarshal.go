@@ -11,6 +11,7 @@ func ParseShowSecurityMacsecConnections(input []byte) (*ShowSecMacsecConns, erro
 	res := &ShowSecMacsecConns{}
 
 	err := xml.Unmarshal(input, res)
+	fmt.Println(input)
 	if err != nil {
 		return nil, fmt.Errorf("xml.unmarshal failed: %v", err)
 	}

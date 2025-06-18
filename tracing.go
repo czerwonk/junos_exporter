@@ -135,39 +135,6 @@ func (cta *clientTracingAdapter) RunCommandAndParseWithParser(cmd string, parser
 	return err
 }
 
-// RunCommandAndParseCustom implements RunCommandAndParseCustom of the collector.Client interface
-func (cta *clientTracingAdapter) RunCommandAndParseCustom(cmd string, obj interface{}) error {
-	_, span := tracer.Start(cta.ctx, "RunCommandAndParseCustom", trace.WithAttributes(
-		attribute.String("command", cmd),
-	))
-	defer span.End()
-
-	err := cta.cl.RunCommandAndParseCustom(cmd, obj) // <-- CORRECT: calls the custom method
-	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
-	}
-
-	return err
-
-}
-
-// RunCommandAndParseWithParserCustom implements RunCommandAndParseWithParserCustom of the collector.Client interface
-func (cta *clientTracingAdapter) RunCommandAndParseWithParserCustom(cmd string, parser rpc.Parser) error {
-	_, span := tracer.Start(cta.ctx, "RunCommandAndParseWithParserCustom", trace.WithAttributes(
-		attribute.String("command", cmd),
-	))
-	defer span.End()
-
-	err := cta.cl.RunCommandAndParseWithParserCustom(cmd, parser)
-	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
-	}
-
-	return err
-}
-
 // IsSatelliteEnabled implements IsSatelliteEnabled of the collector.Client interface
 func (cta *clientTracingAdapter) IsSatelliteEnabled() bool {
 	return cta.cl.IsSatelliteEnabled()

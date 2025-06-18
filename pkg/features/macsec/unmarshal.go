@@ -11,7 +11,6 @@ func ParseShowSecurityMacsecConnections(input []byte) (*ShowSecMacsecConns, erro
 	res := &ShowSecMacsecConns{}
 
 	err := xml.Unmarshal(input, res)
-	fmt.Println(input)
 	if err != nil {
 		return nil, fmt.Errorf("xml.unmarshal failed: %v", err)
 	}
@@ -24,7 +23,6 @@ func ParseShowSecurityMacsecConnections(input []byte) (*ShowSecMacsecConns, erro
 		if err == io.EOF {
 			break
 		}
-
 		if err != nil {
 			return nil, fmt.Errorf("failed to read token: %v", err)
 		}
@@ -70,9 +68,7 @@ func ParseShowSecurityMacsecConnections(input []byte) (*ShowSecMacsecConns, erro
 				res.MacsecConnectionInformation[n-1].InboundSecureChannel = isc
 			}
 		}
-
 	}
-
 	return res, nil
 }
 

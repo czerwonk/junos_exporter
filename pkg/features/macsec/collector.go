@@ -95,11 +95,6 @@ func (*macsecCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *macsecCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	//var i ShowSecMacsecConns
-	//err := client.RunCommandAndParse("show security macsec connections", &i)
-	//if err != nil {
-	//	return errors.Wrap(err, "failed to run command 'show security macsec connections'")
-	//}
 	var macsecData []byte
 	err := client.RunCommandAndParseWithParser("show security macsec connections", func(data []byte) error {
 		macsecData = data
@@ -131,29 +126,19 @@ func (c *macsecCollector) collectForInterfaces(sessions ShowSecMacsecConns, ch c
 			mici.MacsecInterfaceCommonInformation.InterfaceName,
 			mici.MacsecInterfaceCommonInformation.ConnectivityAssociationName)
 		if mici.OutboundSecureChannel != nil {
-			//pn, err := strconv.Atoi(mici.OutboundSecureChannel.OutgoingPacketNumber)
-			//if err != nil {
-			//	log.Errorf("unable to convert outgoing packets number: %q", mici.OutboundSecureChannel.OutgoingPacketNumber)
-			//}
 			ch <- prometheus.MustNewConstMetric(macsecTXPacketCountDesc, prometheus.CounterValue, float64(mici.OutboundSecureChannel.OutgoingPacketNumber), labels...)
+			status := stateToFloat(mici.OutboundSecureChannel.OutboundSecureAssociation.AssociationNumberStatus)
+			ch <- prometheus.MustNewConstMetric(macsecTXChannelStatusDesc, prometheus.GaugeValue, status, labels...)
 		}
 
 		sci := convertYesNoToInt(strings.TrimRight(mici.MacsecInterfaceCommonInformation.IncludeSci, "\n"))
 		rp := convertOnOffToInt(strings.TrimRight(mici.MacsecInterfaceCommonInformation.ReplayProtect, "\n"))
-		//kso, err := strconv.Atoi(mici.MacsecInterfaceCommonInformation.Offset)
-		//if err != nil {
-		//	log.Errorf("unable to convert offset: %q", mici.Offset)
-		//}
 		enc := convertOnOffToInt(strings.TrimRight(mici.MacsecInterfaceCommonInformation.Encryption, "\n"))
 
 		ch <- prometheus.MustNewConstMetric(macsecIncludeSCIDesc, prometheus.GaugeValue, float64(sci), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecReplayProtectDesc, prometheus.GaugeValue, float64(rp), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecKeyServerOffsetDesc, prometheus.GaugeValue, float64(mici.MacsecInterfaceCommonInformation.Offset), labels...)
 		ch <- prometheus.MustNewConstMetric(macsecEncryptionDesc, prometheus.GaugeValue, float64(enc), labels...)
-		if mici.OutboundSecureChannel != nil {
-			status := stateToFloat(mici.OutboundSecureChannel.OutboundSecureAssociation.AssociationNumberStatus)
-			ch <- prometheus.MustNewConstMetric(macsecTXChannelStatusDesc, prometheus.GaugeValue, status, labels...)
-		}
 	}
 }
 

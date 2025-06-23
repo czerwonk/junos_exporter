@@ -2,256 +2,319 @@ package macsec
 
 import (
 	"encoding/xml"
+	"fmt"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseMacsec_DataDriven(t *testing.T) {
-	connectionsData, err := os.ReadFile("testdata/show_security_macsec_connections.xml")
-	if err != nil {
-		t.Fatalf("Failed to read connections test file: %v", err)
+func TestParseShowSecurityMacsecConnections(t *testing.T) {
+	tests := []struct {
+		name      string
+		inputFile string
+		expected  *ShowSecMacsecConns
+	}{
+		{
+			name:      "Test #1",
+			inputFile: "show_security_macsec_connections.xml",
+			expected: &ShowSecMacsecConns{
+				MacsecConnectionInformation: []*MacsecConnectionInformation{
+					{
+						MacsecInterfaceCommonInformation: &MacsecInterfaceCommonInformation{
+							InterfaceName:               "et-0/0/0",
+							ConnectivityAssociationName: "cc12.evc12-es12.lfg12",
+							CipherSuite:                 "XXX-YYY-ZZZ-65000",
+							Encryption:                  "on",
+							Offset:                      0,
+							IncludeSci:                  "no",
+							ReplayProtect:               "off",
+							ReplayProtectWindow:         0,
+						},
+						OutboundSecureChannel: &OutboundSecureChannel{
+							Sci:                  "AA:AA:AA:AA:AA:AA/1",
+							OutgoingPacketNumber: 29462517698,
+							OutboundSecureAssociation: &OutboundSecureAssociation{
+								AssociationNumber:       0,
+								AssociationNumberStatus: "inuse",
+								CreateTime: &CreateTime{
+									Seconds: 1300258,
+								},
+							},
+						},
+						InboundSecureChannel: &InboundSecureChannel{
+							Sci: "AA:AA:AA:AA:AA:AB/1",
+							InboundSecureAssociation: &InboundSecureAssociation{
+								AssociationNumber:       0,
+								AssociationNumberStatus: "inuse",
+								CreateTime: &CreateTime{
+									Seconds: 1300258,
+								},
+							},
+						},
+					},
+					{
+						MacsecInterfaceCommonInformation: &MacsecInterfaceCommonInformation{
+							InterfaceName:               "et-0/0/1",
+							ConnectivityAssociationName: "cc12.bnt12-cc12.evc12",
+							CipherSuite:                 "XXX-YYY-ZZZ-65000",
+							Encryption:                  "off",
+							Offset:                      0,
+							IncludeSci:                  "yes",
+							ReplayProtect:               "on",
+							ReplayProtectWindow:         0,
+						},
+					},
+					{
+						MacsecInterfaceCommonInformation: &MacsecInterfaceCommonInformation{
+							InterfaceName:               "et-0/0/6",
+							ConnectivityAssociationName: "cc12.evc12-cc12.mis12",
+							CipherSuite:                 "XXX-YYY-ZZZ-65000",
+							Encryption:                  "on",
+							Offset:                      0,
+							IncludeSci:                  "no",
+							ReplayProtect:               "off",
+							ReplayProtectWindow:         0,
+						},
+						OutboundSecureChannel: &OutboundSecureChannel{
+							Sci:                  "AA:AA:AA:AA:AA:AC/1",
+							OutgoingPacketNumber: 4543932225,
+							OutboundSecureAssociation: &OutboundSecureAssociation{
+								AssociationNumber:       0,
+								AssociationNumberStatus: "inuse",
+								CreateTime: &CreateTime{
+									Seconds: 309851,
+								},
+							},
+						},
+						InboundSecureChannel: &InboundSecureChannel{
+							Sci: "AA:AA:AA:AA:AA:AD/1",
+							InboundSecureAssociation: &InboundSecureAssociation{
+								AssociationNumber:       0,
+								AssociationNumberStatus: "inuse",
+								CreateTime: &CreateTime{
+									Seconds: 309851,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
-	statisticsData, err := os.ReadFile("testdata/show_security_macsec_statistics.xml")
-	if err != nil {
-		t.Fatalf("Failed to read statistics test file: %v", err)
+	for _, test := range tests {
+		fc, err := os.ReadFile("testdata/" + test.inputFile)
+		if err != nil {
+			panic(err)
+		}
+
+		res, err := ParseShowSecurityMacsecConnections(fc)
+		if err != nil {
+			panic(err)
+		}
+
+		res.InnerXML = nil
+		assert.Equal(t, test.expected, res, test.name)
+	}
+}
+
+func TestParseShowSecurityMacsecStatistics(t *testing.T) {
+	type xmlStruct struct {
+		XMLName          xml.Name `xml:"rpc-reply"`
+		MacsecStatistics struct {
+			InterfaceName     []string `xml:"interface-name"`
+			SecureChannelSent []struct {
+				EncryptedPackets string `xml:"encrypted-packets"`
+				EncryptedBytes   string `xml:"encrypted-bytes"`
+				ProtectedPackets string `xml:"protected-packets"`
+				ProtectedBytes   string `xml:"protected-bytes"`
+			} `xml:"secure-channel-sent"`
+			SecureAssociationSent []struct {
+				EncryptedPackets string `xml:"encrypted-packets"`
+				ProtectedPackets string `xml:"protected-packets"`
+			} `xml:"secure-association-sent"`
+			SecureChannelReceived []struct {
+				OkPackets      string `xml:"ok-packets"`
+				ValidatedBytes string `xml:"validated-bytes"`
+				DecryptedBytes string `xml:"decrypted-bytes"`
+			} `xml:"secure-channel-received"`
+			SecureAssociationReceived []struct {
+				OkPackets      string `xml:"ok-packets"`
+				ValidatedBytes string `xml:"validated-bytes"`
+				DecryptedBytes string `xml:"decrypted-bytes"`
+			} `xml:"secure-association-received"`
+		} `xml:"macsec-statistics"`
 	}
 
 	tests := []struct {
-		name       string
-		xmlData    []byte
-		resultType string
-		validate   func(t *testing.T, data interface{})
+		name      string
+		inputFile string
+		expected  *ShowSecMacsecStats
 	}{
 		{
-			name:       "Parse MACsec Connections",
-			xmlData:    connectionsData,
-			resultType: "connections",
-			validate: func(t *testing.T, data interface{}) {
-				result := data.(*ShowSecMacsecConns)
-
-				//define expected values for each interface
-				expectedConnections := map[string]struct {
-					caName             string
-					encryption         string
-					includeSci         string
-					replayProtect      string
-					offset             int
-					hasOutboundChannel bool
-					sci                string
-					packetNumber       int
-				}{
-					"et-0/0/0": {
-						caName:             "bb01.dub01-dr01.kef01",
-						encryption:         "on",
-						includeSci:         "no",
-						replayProtect:      "off",
-						offset:             0,
-						hasOutboundChannel: true,
-						sci:                "B4:F9:5D:8C:A7:91/1",
-						packetNumber:       29462517698,
+			name:      "Test #1",
+			inputFile: "show_security_macsec_statistics.xml",
+			expected: &ShowSecMacsecStats{
+				XMLName: xml.Name{Space: "", Local: "rpc-reply"},
+				MacsecStatistics: MacsecStatistics{
+					Interfaces: []string{"et-0/0/0", "et-0/0/1", "et-0/0/6"},
+					SecureChannelSent: []SecureChannelSentStats{
+						{
+							EncryptedPackets: 1,
+							EncryptedBytes:   2,
+							ProtectedPackets: 3,
+							ProtectedBytes:   4,
+						},
+						{
+							EncryptedPackets: 2000,
+							EncryptedBytes:   3000,
+							ProtectedPackets: 0,
+							ProtectedBytes:   0,
+						},
+						{
+							EncryptedPackets: 8000,
+							EncryptedBytes:   9000,
+							ProtectedPackets: 0,
+							ProtectedBytes:   0,
+						},
 					},
-					"et-0/0/1": {
-						caName:             "bb01.ams01-bb01.dub01",
-						encryption:         "off",
-						includeSci:         "yes",
-						replayProtect:      "on",
-						offset:             0,
-						hasOutboundChannel: false,
+					SecureAssociationSent: []SecureAssociationSentStats{
+						{
+							EncryptedPackets: 5,
+							ProtectedPackets: 6,
+						},
+						{
+							EncryptedPackets: 4000,
+							ProtectedPackets: 0,
+						},
+						{
+							EncryptedPackets: 10000,
+							ProtectedPackets: 0,
+						},
 					},
-					"et-0/0/6": {
-						caName:             "bb01.dub01-bb01.lhr01",
-						encryption:         "on",
-						includeSci:         "no",
-						replayProtect:      "off",
-						offset:             0,
-						hasOutboundChannel: true,
-						sci:                "B4:F9:5D:8C:A7:AC/1",
-						packetNumber:       4543932225,
+					SecureChannelReceived: []SecureChannelReceivedStats{
+						{
+							OkPackets:      9,
+							ValidatedBytes: 1000,
+							DecryptedBytes: 2000,
+						},
+						{
+							OkPackets:      5000,
+							ValidatedBytes: 0,
+							DecryptedBytes: 6000,
+						},
+						{
+							OkPackets:      11000,
+							ValidatedBytes: 0,
+							DecryptedBytes: 12000,
+						},
 					},
-				}
-
-				for _, conn := range result.MacsecConnectionInformation {
-					interfaceName := conn.MacsecInterfaceCommonInformation.InterfaceName
-					// Skip interfaces not in our test set
-					expected, ok := expectedConnections[interfaceName]
-					if !ok {
-						continue
-					}
-
-					//test common interface information
-					assert.Equal(t, expected.caName,
-						conn.MacsecInterfaceCommonInformation.ConnectivityAssociationName,
-						"CA name mismatch for interface %s", interfaceName)
-
-					assert.Equal(t, expected.encryption,
-						conn.MacsecInterfaceCommonInformation.Encryption,
-						"Encryption mismatch for interface %s", interfaceName)
-
-					assert.Equal(t, expected.includeSci,
-						conn.MacsecInterfaceCommonInformation.IncludeSci,
-						"Include-SCI mismatch for interface %s", interfaceName)
-
-					assert.Equal(t, expected.replayProtect,
-						conn.MacsecInterfaceCommonInformation.ReplayProtect,
-						"Replay-protect mismatch for interface %s", interfaceName)
-
-					assert.Equal(t, expected.offset,
-						conn.MacsecInterfaceCommonInformation.Offset,
-						"Offset mismatch for interface %s", interfaceName)
-
-					// Test outbound secure channel
-					if expected.hasOutboundChannel {
-						assert.NotNil(t, conn.OutboundSecureChannel,
-							"Interface %s should have outbound secure channel", interfaceName)
-
-						assert.Equal(t, expected.sci,
-							conn.OutboundSecureChannel.Sci,
-							"SCI mismatch for interface %s", interfaceName)
-
-						assert.Equal(t, expected.packetNumber,
-							conn.OutboundSecureChannel.OutgoingPacketNumber,
-							"Outgoing packet number mismatch for interface %s", interfaceName)
-
-						assert.Equal(t, "inuse",
-							conn.OutboundSecureChannel.OutboundSecureAssociation.AssociationNumberStatus,
-							"Association number status mismatch for interface %s", interfaceName)
-					} else if interfaceName == "et-0/0/1" {
-						//et-0/0/1 should not have outbound secure channel
-						assert.Nil(t, conn.OutboundSecureChannel,
-							"Interface %s should not have outbound secure channel", interfaceName)
-					}
-				}
-			},
-		},
-		{
-			name:       "Parse MACsec Statistics",
-			xmlData:    statisticsData,
-			resultType: "statistics",
-			validate: func(t *testing.T, data interface{}) {
-				result := data.(*resultStats)
-				stats := result.MacsecStatistics
-
-				//define expected values for each interface
-				expectedStats := map[string]struct {
-					encryptedPackets uint64
-					encryptedBytes   uint64
-					protectedPackets uint64
-					protectedBytes   uint64
-					okPackets        uint64
-					validatedBytes   uint64
-					decryptedBytes   uint64
-				}{
-					"et-0/0/0": {
-						encryptedPackets: 29470457654,
-						encryptedBytes:   15371387814258,
-						protectedPackets: 0,
-						protectedBytes:   0,
-						okPackets:        52215340924,
-						validatedBytes:   0,
-						decryptedBytes:   17104313476786,
+					SecureAssociationReceived: []SecureAssociationReceivedStats{
+						{
+							OkPackets:      3000,
+							ValidatedBytes: 0,
+							DecryptedBytes: 0,
+						},
+						{
+							OkPackets:      7000,
+							ValidatedBytes: 0,
+							DecryptedBytes: 0,
+						},
+						{
+							OkPackets:      13000,
+							ValidatedBytes: 0,
+							DecryptedBytes: 0,
+						},
 					},
-					"et-0/0/1": {
-						encryptedPackets: 185933514,
-						encryptedBytes:   52358181842,
-						protectedPackets: 0,
-						protectedBytes:   0,
-						okPackets:        1404697306,
-						validatedBytes:   0,
-						decryptedBytes:   625824199534,
-					},
-					"et-0/0/6": {
-						encryptedPackets: 4609309585,
-						encryptedBytes:   1578896710717,
-						protectedPackets: 0,
-						protectedBytes:   0,
-						okPackets:        98753547,
-						validatedBytes:   0,
-						decryptedBytes:   81188722443,
-					},
-				}
-
-				// Find and validate statistics for each interface
-				for i, interfaceName := range stats.Interfaces {
-					// Skip interfaces not in our test set
-					expected, ok := expectedStats[interfaceName]
-					if !ok {
-						continue
-					}
-
-					// Verify secure channel sent metrics
-					assert.Equal(t, expected.encryptedPackets,
-						stats.SecureChannelSent[i].EncryptedPackets,
-						"Encrypted packet count mismatch for interface %s", interfaceName)
-
-					assert.Equal(t, expected.encryptedBytes,
-						stats.SecureChannelSent[i].EncryptedBytes,
-						"Encrypted bytes mismatch for interface %s", interfaceName)
-
-					assert.Equal(t, expected.protectedPackets,
-						stats.SecureChannelSent[i].ProtectedPackets,
-						"Protected packets mismatch for interface %s", interfaceName)
-
-					assert.Equal(t, expected.protectedBytes,
-						stats.SecureChannelSent[i].ProtectedBytes,
-						"Protected bytes mismatch for interface %s", interfaceName)
-
-					// Verify secure association sent metrics
-					assert.Equal(t, expected.encryptedPackets,
-						stats.SecureAssociationSent[i].EncryptedPackets,
-						"Secure association encrypted packets mismatch for interface %s", interfaceName)
-
-					assert.Equal(t, expected.protectedPackets,
-						stats.SecureAssociationSent[i].ProtectedPackets,
-						"Secure association protected packets mismatch for interface %s", interfaceName)
-
-					// Verify secure channel received metrics
-					assert.Equal(t, expected.okPackets,
-						stats.SecureChannelReceived[i].OkPackets,
-						"Received packet count mismatch for interface %s", interfaceName)
-
-					assert.Equal(t, expected.validatedBytes,
-						stats.SecureChannelReceived[i].ValidatedBytes,
-						"Validated bytes mismatch for interface %s", interfaceName)
-
-					assert.Equal(t, expected.decryptedBytes,
-						stats.SecureChannelReceived[i].DecryptedBytes,
-						"Decrypted bytes mismatch for interface %s", interfaceName)
-
-					// Verify secure association received metrics
-					assert.Equal(t, expected.okPackets,
-						stats.SecureAssociationReceived[i].OkPackets,
-						"Secure association received packet count mismatch for interface %s", interfaceName)
-
-					assert.Equal(t, expected.validatedBytes,
-						stats.SecureAssociationReceived[i].ValidatedBytes,
-						"Secure association validated bytes mismatch for interface %s", interfaceName)
-
-					assert.Equal(t, uint64(0),
-						stats.SecureAssociationReceived[i].DecryptedBytes,
-						"Secure association decrypted bytes mismatch for interface %s", interfaceName)
-				}
+				},
 			},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var err error
+	for _, test := range tests {
+		fmt.Println(test.name)
+		fc, err := os.ReadFile("testdata/" + test.inputFile)
+		if err != nil {
+			t.Fatalf("Failed to read test file: %v", err)
+		}
 
-			switch tt.resultType {
-			case "connections":
-				result, err := ParseShowSecurityMacsecConnections(tt.xmlData)
-				assert.NoError(t, err, "Should parse connections XML without error")
-				tt.validate(t, result)
-			case "statistics":
-				var result resultStats
-				err = xml.Unmarshal(tt.xmlData, &result)
-				assert.NoError(t, err, "Should parse statistics XML without error")
-				tt.validate(t, &result)
-			}
-		})
+		//unmarshal to the intermediate struct
+		var temp xmlStruct
+		err = xml.Unmarshal(fc, &temp)
+		if err != nil {
+			t.Fatalf("Failed to parse data into temporary struct: %v", err)
+		}
+
+		//create final struct and convert the data
+		result := &ShowSecMacsecStats{
+			XMLName: temp.XMLName,
+			MacsecStatistics: MacsecStatistics{
+				Interfaces: temp.MacsecStatistics.InterfaceName,
+			},
+		}
+
+		//convert and add data
+		for _, raw := range temp.MacsecStatistics.SecureChannelSent {
+			encPackets, _ := strconv.ParseUint(raw.EncryptedPackets, 10, 64)
+			encBytes, _ := strconv.ParseUint(raw.EncryptedBytes, 10, 64)
+			protPackets, _ := strconv.ParseUint(raw.ProtectedPackets, 10, 64)
+			protBytes, _ := strconv.ParseUint(raw.ProtectedBytes, 10, 64)
+
+			result.MacsecStatistics.SecureChannelSent = append(
+				result.MacsecStatistics.SecureChannelSent,
+				SecureChannelSentStats{
+					EncryptedPackets: encPackets,
+					EncryptedBytes:   encBytes,
+					ProtectedPackets: protPackets,
+					ProtectedBytes:   protBytes,
+				},
+			)
+		}
+
+		for _, raw := range temp.MacsecStatistics.SecureAssociationSent {
+			encPackets, _ := strconv.ParseUint(raw.EncryptedPackets, 10, 64)
+			protPackets, _ := strconv.ParseUint(raw.ProtectedPackets, 10, 64)
+
+			result.MacsecStatistics.SecureAssociationSent = append(
+				result.MacsecStatistics.SecureAssociationSent,
+				SecureAssociationSentStats{
+					EncryptedPackets: encPackets,
+					ProtectedPackets: protPackets,
+				},
+			)
+		}
+
+		for _, raw := range temp.MacsecStatistics.SecureChannelReceived {
+			okPackets, _ := strconv.ParseUint(raw.OkPackets, 10, 64)
+			valBytes, _ := strconv.ParseUint(raw.ValidatedBytes, 10, 64)
+			decBytes, _ := strconv.ParseUint(raw.DecryptedBytes, 10, 64)
+
+			result.MacsecStatistics.SecureChannelReceived = append(
+				result.MacsecStatistics.SecureChannelReceived,
+				SecureChannelReceivedStats{
+					OkPackets:      okPackets,
+					ValidatedBytes: valBytes,
+					DecryptedBytes: decBytes,
+				},
+			)
+		}
+
+		for _, raw := range temp.MacsecStatistics.SecureAssociationReceived {
+			okPackets, _ := strconv.ParseUint(raw.OkPackets, 10, 64)
+			valBytes, _ := strconv.ParseUint(raw.ValidatedBytes, 10, 64)
+			decBytes, _ := strconv.ParseUint(raw.DecryptedBytes, 10, 64)
+
+			result.MacsecStatistics.SecureAssociationReceived = append(
+				result.MacsecStatistics.SecureAssociationReceived,
+				SecureAssociationReceivedStats{
+					OkPackets:      okPackets,
+					ValidatedBytes: valBytes,
+					DecryptedBytes: decBytes,
+				},
+			)
+		}
+		assert.Equal(t, test.expected, result, test.name)
 	}
 }

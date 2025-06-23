@@ -110,7 +110,7 @@ func (c *macsecCollector) Collect(client collector.Client, ch chan<- prometheus.
 	}
 
 	c.collectForInterfaces(*i, ch, labelValues)
-	var s resultStats
+	var s ShowSecMacsecStats
 	err = client.RunCommandAndParse("show security macsec statistics", &s)
 	if err != nil {
 		return errors.Wrap(err, "failed to run command 'show security macsec statistics'")
@@ -142,7 +142,7 @@ func (c *macsecCollector) collectForInterfaces(sessions ShowSecMacsecConns, ch c
 	}
 }
 
-func (c *macsecCollector) collectForStats(sessions resultStats, ch chan<- prometheus.Metric, labelValues []string) {
+func (c *macsecCollector) collectForStats(sessions ShowSecMacsecStats, ch chan<- prometheus.Metric, labelValues []string) {
 	for interfaceCounter := 0; interfaceCounter < (len(sessions.MacsecStatistics.Interfaces)); interfaceCounter++ {
 		labels := append(labelValues,
 			sessions.MacsecStatistics.Interfaces[interfaceCounter])

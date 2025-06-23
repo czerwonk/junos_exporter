@@ -54,7 +54,7 @@ type InboundSecureAssociation struct {
 }
 
 // structure for the statistics reply
-type resultStats struct {
+type ShowSecMacsecStats struct {
 	XMLName          xml.Name         `xml:"rpc-reply"`
 	MacsecStatistics MacsecStatistics `xml:"macsec-statistics"`
 }

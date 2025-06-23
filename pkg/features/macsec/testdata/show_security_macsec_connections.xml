@@ -2,8 +2,8 @@
     <macsec-connection-information>
         <macsec-interface-common-information>
             <interface-name>et-0/0/0</interface-name>
-            <connectivity-association-name>bb01.dub01-dr01.kef01</connectivity-association-name>
-            <cipher-suite>GCM-AES-XPN-128</cipher-suite>
+            <connectivity-association-name>cc12.evc12-es12.lfg12</connectivity-association-name>
+            <cipher-suite>XXX-YYY-ZZZ-65000</cipher-suite>
             <encryption>on</encryption>
             <offset>0</offset>
             <include-sci>no</include-sci>
@@ -12,7 +12,7 @@
         </macsec-interface-common-information>
         <create-time junos:seconds="1300258">2w1d 01:10:58</create-time>
         <outbound-secure-channel>
-            <sci>B4:F9:5D:8C:A7:91/1</sci>
+            <sci>AA:AA:AA:AA:AA:AA/1</sci>
             <outgoing-packet-number>29462517698</outgoing-packet-number>
             <outbound-secure-association>
                 <association-number>0</association-number>
@@ -21,7 +21,7 @@
             </outbound-secure-association>
         </outbound-secure-channel>
         <inbound-secure-channel>
-            <sci>B4:F9:5D:0D:24:71/1</sci>
+            <sci>AA:AA:AA:AA:AA:AB/1</sci>
             <inbound-secure-association>
                 <association-number>0</association-number>
                 <association-number-status>inuse</association-number-status>
@@ -30,8 +30,8 @@
         </inbound-secure-channel>
         <macsec-interface-common-information>
             <interface-name>et-0/0/1</interface-name>
-            <connectivity-association-name>bb01.ams01-bb01.dub01</connectivity-association-name>
-            <cipher-suite>GCM-AES-XPN-128</cipher-suite>
+            <connectivity-association-name>cc12.bnt12-cc12.evc12</connectivity-association-name>
+            <cipher-suite>XXX-YYY-ZZZ-65000</cipher-suite>
             <encryption>off</encryption>
             <offset>0</offset>
             <include-sci>yes</include-sci>
@@ -41,8 +41,8 @@
         <create-time junos:seconds="784806">1w2d 02:00:06</create-time>
         <macsec-interface-common-information>
             <interface-name>et-0/0/6</interface-name>
-            <connectivity-association-name>bb01.dub01-bb01.lhr01</connectivity-association-name>
-            <cipher-suite>GCM-AES-XPN-128</cipher-suite>
+            <connectivity-association-name>cc12.evc12-cc12.mis12</connectivity-association-name>
+            <cipher-suite>XXX-YYY-ZZZ-65000</cipher-suite>
             <encryption>on</encryption>
             <offset>0</offset>
             <include-sci>no</include-sci>
@@ -51,7 +51,7 @@
         </macsec-interface-common-information>
         <create-time junos:seconds="309851">3d 14:04:11</create-time>
         <outbound-secure-channel>
-            <sci>B4:F9:5D:8C:A7:AC/1</sci>
+            <sci>AA:AA:AA:AA:AA:AC/1</sci>
             <outgoing-packet-number>4543932225</outgoing-packet-number>
             <outbound-secure-association>
                 <association-number>0</association-number>
@@ -60,7 +60,7 @@
             </outbound-secure-association>
         </outbound-secure-channel>
         <inbound-secure-channel>
-            <sci>20:93:39:36:89:3C/1</sci>
+            <sci>AA:AA:AA:AA:AA:AD/1</sci>
             <inbound-secure-association>
                 <association-number>0</association-number>
                 <association-number-status>inuse</association-number-status>

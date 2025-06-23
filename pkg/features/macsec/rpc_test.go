@@ -4,7 +4,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -121,33 +120,6 @@ func TestParseShowSecurityMacsecConnections(t *testing.T) {
 }
 
 func TestParseShowSecurityMacsecStatistics(t *testing.T) {
-	type xmlStruct struct {
-		XMLName          xml.Name `xml:"rpc-reply"`
-		MacsecStatistics struct {
-			InterfaceName     []string `xml:"interface-name"`
-			SecureChannelSent []struct {
-				EncryptedPackets string `xml:"encrypted-packets"`
-				EncryptedBytes   string `xml:"encrypted-bytes"`
-				ProtectedPackets string `xml:"protected-packets"`
-				ProtectedBytes   string `xml:"protected-bytes"`
-			} `xml:"secure-channel-sent"`
-			SecureAssociationSent []struct {
-				EncryptedPackets string `xml:"encrypted-packets"`
-				ProtectedPackets string `xml:"protected-packets"`
-			} `xml:"secure-association-sent"`
-			SecureChannelReceived []struct {
-				OkPackets      string `xml:"ok-packets"`
-				ValidatedBytes string `xml:"validated-bytes"`
-				DecryptedBytes string `xml:"decrypted-bytes"`
-			} `xml:"secure-channel-received"`
-			SecureAssociationReceived []struct {
-				OkPackets      string `xml:"ok-packets"`
-				ValidatedBytes string `xml:"validated-bytes"`
-				DecryptedBytes string `xml:"decrypted-bytes"`
-			} `xml:"secure-association-received"`
-		} `xml:"macsec-statistics"`
-	}
-
 	tests := []struct {
 		name      string
 		inputFile string
@@ -241,80 +213,12 @@ func TestParseShowSecurityMacsecStatistics(t *testing.T) {
 		}
 
 		//unmarshal to the intermediate struct
-		var temp xmlStruct
+		var temp *ShowSecMacsecStats
 		err = xml.Unmarshal(fc, &temp)
 		if err != nil {
 			t.Fatalf("Failed to parse data into temporary struct: %v", err)
 		}
 
-		//create final struct and convert the data
-		result := &ShowSecMacsecStats{
-			XMLName: temp.XMLName,
-			MacsecStatistics: MacsecStatistics{
-				Interfaces: temp.MacsecStatistics.InterfaceName,
-			},
-		}
-
-		//convert and add data
-		for _, raw := range temp.MacsecStatistics.SecureChannelSent {
-			encPackets, _ := strconv.ParseUint(raw.EncryptedPackets, 10, 64)
-			encBytes, _ := strconv.ParseUint(raw.EncryptedBytes, 10, 64)
-			protPackets, _ := strconv.ParseUint(raw.ProtectedPackets, 10, 64)
-			protBytes, _ := strconv.ParseUint(raw.ProtectedBytes, 10, 64)
-
-			result.MacsecStatistics.SecureChannelSent = append(
-				result.MacsecStatistics.SecureChannelSent,
-				SecureChannelSentStats{
-					EncryptedPackets: encPackets,
-					EncryptedBytes:   encBytes,
-					ProtectedPackets: protPackets,
-					ProtectedBytes:   protBytes,
-				},
-			)
-		}
-
-		for _, raw := range temp.MacsecStatistics.SecureAssociationSent {
-			encPackets, _ := strconv.ParseUint(raw.EncryptedPackets, 10, 64)
-			protPackets, _ := strconv.ParseUint(raw.ProtectedPackets, 10, 64)
-
-			result.MacsecStatistics.SecureAssociationSent = append(
-				result.MacsecStatistics.SecureAssociationSent,
-				SecureAssociationSentStats{
-					EncryptedPackets: encPackets,
-					ProtectedPackets: protPackets,
-				},
-			)
-		}
-
-		for _, raw := range temp.MacsecStatistics.SecureChannelReceived {
-			okPackets, _ := strconv.ParseUint(raw.OkPackets, 10, 64)
-			valBytes, _ := strconv.ParseUint(raw.ValidatedBytes, 10, 64)
-			decBytes, _ := strconv.ParseUint(raw.DecryptedBytes, 10, 64)
-
-			result.MacsecStatistics.SecureChannelReceived = append(
-				result.MacsecStatistics.SecureChannelReceived,
-				SecureChannelReceivedStats{
-					OkPackets:      okPackets,
-					ValidatedBytes: valBytes,
-					DecryptedBytes: decBytes,
-				},
-			)
-		}
-
-		for _, raw := range temp.MacsecStatistics.SecureAssociationReceived {
-			okPackets, _ := strconv.ParseUint(raw.OkPackets, 10, 64)
-			valBytes, _ := strconv.ParseUint(raw.ValidatedBytes, 10, 64)
-			decBytes, _ := strconv.ParseUint(raw.DecryptedBytes, 10, 64)
-
-			result.MacsecStatistics.SecureAssociationReceived = append(
-				result.MacsecStatistics.SecureAssociationReceived,
-				SecureAssociationReceivedStats{
-					OkPackets:      okPackets,
-					ValidatedBytes: valBytes,
-					DecryptedBytes: decBytes,
-				},
-			)
-		}
-		assert.Equal(t, test.expected, result, test.name)
+		assert.Equal(t, test.expected, temp, test.name)
 	}
 }

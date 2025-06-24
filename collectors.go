@@ -29,6 +29,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/l2vpn"
 	"github.com/czerwonk/junos_exporter/pkg/features/lacp"
 	"github.com/czerwonk/junos_exporter/pkg/features/ldp"
+	"github.com/czerwonk/junos_exporter/pkg/features/lldp"
 	"github.com/czerwonk/junos_exporter/pkg/features/mac"
 	"github.com/czerwonk/junos_exporter/pkg/features/macsec"
 	"github.com/czerwonk/junos_exporter/pkg/features/mplslsp"

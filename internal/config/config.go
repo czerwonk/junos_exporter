@@ -73,6 +73,7 @@ type FeatureConfig struct {
 	L2Vpn               bool `yaml:"l2vpn,omitempty"`
 	LACP                bool `yaml:"lacp,omitempty"`
 	LDP                 bool `yaml:"ldp,omitempty"`
+  LLDP                bool `yaml:"lldp,omitempty"`
 	Routes              bool `yaml:"routes,omitempty"`
 	RoutingEngine       bool `yaml:"routing_engine,omitempty"`
 	Firewall            bool `yaml:"firewall,omitempty"`
@@ -160,6 +161,7 @@ func setDefaultValues(c *Config) {
 	f.OSPF = true
 	f.ISIS = true
 	f.LDP = true
+	f.LLDP = true
 	f.Routes = true
 	f.Firewall = true
 	f.RoutingEngine = true

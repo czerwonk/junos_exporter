@@ -34,6 +34,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/mplslsp"
 	"github.com/czerwonk/junos_exporter/pkg/features/nat"
 	"github.com/czerwonk/junos_exporter/pkg/features/nat2"
+	"github.com/czerwonk/junos_exporter/pkg/features/ntp"
 	"github.com/czerwonk/junos_exporter/pkg/features/ospf"
 	"github.com/czerwonk/junos_exporter/pkg/features/power"
 	"github.com/czerwonk/junos_exporter/pkg/features/route"
@@ -82,6 +83,9 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "accounting", f.Accounting, accounting.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "alarm", f.Alarm, func() collector.RPCCollector {
 		return alarm.NewCollector(*alarmFilter)
+	})
+	c.addCollectorIfEnabledForDevice(device, "ntp", f.NTP, func() collector.RPCCollector {
+		return ntp.NewCollector()
 	})
 	c.addCollectorIfEnabledForDevice(device, "bfd", f.BFD, bfd.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "bgp", f.BGP, func() collector.RPCCollector {

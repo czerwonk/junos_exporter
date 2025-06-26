@@ -18,12 +18,8 @@ type neighbor struct {
 
 type localResult struct {
 	Information struct {
-		LocalInfo []localInfo `xml:"lldp-local-info"`
+		LocalInterfaces []localInterface `xml:"lldp-local-interface-info"`
 	} `xml:"lldp-local-info"`
-}
-
-type localInfo struct {
-	LocalInterfaces []localInterface `xml:"lldp-local-interface-info"`
 }
 
 type localInterface struct {
@@ -32,4 +28,20 @@ type localInterface struct {
 	InterfaceID          string `xml:"lldp-local-interface-id"`
 	InterfaceDescription string `xml:"lldp-local-interface-description"`
 	InterfaceStatus      string `xml:"lldp-local-interface-status"`
-} 
+}
+
+type routingInstanceResult struct {
+	Information []routingInstanceInfo `xml:"interface-information"`
+}
+
+type routingInstanceInfo struct {
+	PhysicalInterfaces []routingInstancePhysicalInterface `xml:"physical-interface"`
+}
+
+type routingInstancePhysicalInterface struct {
+	LogicalInterfaces []routingInstanceLogicalInterface `xml:"logical-interface"`
+}
+
+type routingInstanceLogicalInterface struct {
+	Name string `xml:"name"`
+}

@@ -29,19 +29,3 @@ type localInterface struct {
 	InterfaceDescription string `xml:"lldp-local-interface-description"`
 	InterfaceStatus      string `xml:"lldp-local-interface-status"`
 }
-
-type routingInstanceResult struct {
-	Information []routingInstanceInfo `xml:"interface-information"`
-}
-
-type routingInstanceInfo struct {
-	PhysicalInterfaces []routingInstancePhysicalInterface `xml:"physical-interface"`
-}
-
-type routingInstancePhysicalInterface struct {
-	LogicalInterfaces []routingInstanceLogicalInterface `xml:"logical-interface"`
-}
-
-type routingInstanceLogicalInterface struct {
-	Name string `xml:"name"`
-}

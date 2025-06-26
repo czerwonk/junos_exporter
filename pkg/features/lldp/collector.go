@@ -3,8 +3,6 @@
 package lldp
 
 import (
-	"strings"
-
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -54,51 +52,24 @@ func (c *lldpCollector) Collect(client collector.Client, ch chan<- prometheus.Me
 		return err
 	}
 
-	// Get interfaces in mgmt_junos routing instance to filter them out
-	var mgmtResult = routingInstanceResult{}
-	err = client.RunCommandAndParse("show interfaces routing-instance mgmt_junos", &mgmtResult)
-	if err != nil {
-		// If the command fails (e.g., mgmt_junos doesn't exist), continue without filtering
-		// This is not a critical error
-	}
-
 	// Create a map of interfaces with active neighbors
 	activeInterfaces := make(map[string]bool)
 	for _, neighbor := range neighborResult.Information.Neighbors {
 		activeInterfaces[neighbor.LocalPortID] = true
 	}
 
-	// Create a map of interfaces in mgmt_junos routing instance
+	// Create a map of common management interfaces to filter out
 	mgmtInterfaces := make(map[string]bool)
-	for _, info := range mgmtResult.Information {
-		for _, phy := range info.PhysicalInterfaces {
-			for _, logical := range phy.LogicalInterfaces {
-				// Extract physical interface name from logical interface name (e.g., fxp0.0 -> fxp0)
-				if logical.Name != "" {
-					// Split on dot and take the first part
-					parts := strings.Split(logical.Name, ".")
-					if len(parts) > 0 {
-						physicalName := parts[0]
-						mgmtInterfaces[physicalName] = true
-					}
-				}
-			}
-		}
+	commonMgmtInterfaces := []string{"fxp0", "fxp1", "fxp2", "em0", "em1", "em2", "me0", "me1", "me2", "mgmt0", "mgmt1"}
+	for _, iface := range commonMgmtInterfaces {
+		mgmtInterfaces[iface] = true
 	}
 
-	// Fallback: Add common management interfaces if the routing instance command didn't work
-	if len(mgmtInterfaces) == 0 {
-		commonMgmtInterfaces := []string{"fxp0", "fxp1", "fxp2", "em0", "em1", "em2", "me0", "me1", "me2"}
-		for _, iface := range commonMgmtInterfaces {
-			mgmtInterfaces[iface] = true
-		}
-	}
-
-	// Report all UP interfaces that are not in mgmt_junos
+	// Report all UP interfaces that are not management interfaces
 	for _, iface := range localResult.Information.LocalInterfaces {
 		// Only report interfaces that are UP in the local information
 		if iface.InterfaceStatus == "Up" {
-			// Skip interfaces that are in the mgmt_junos routing instance
+			// Skip interfaces that are common management interfaces
 			if mgmtInterfaces[iface.InterfaceName] || mgmtInterfaces[iface.ParentInterfaceName] {
 				continue
 			}

@@ -62,9 +62,9 @@ type physicalInterface struct {
 
 type trafficStat struct {
 	InputBytes    uint64   `xml:"input-bytes"`
-	InputPackets  uint64   `xml:"input-packets"`
+	InputPackets  string   `xml:"input-packets"`
 	OutputBytes   uint64   `xml:"output-bytes"`
-	OutputPackets uint64   `xml:"output-packets"`
+	OutputPackets string   `xml:"output-packets"`
 	IPv6Traffic   ipv6Stat `xml:"ipv6-transit-statistics"`
 }
 type ipv6Stat struct {

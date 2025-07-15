@@ -111,7 +111,7 @@ func NewCollector() collector.RPCCollector {
 }
 
 func (c *systemstatisticsIPv4Collector) Name() string {
-	return "systemstatistics"
+	return "systemstatisticsIPv4"
 }
 
 func (c *systemstatisticsIPv4Collector) Describe(ch chan<- *prometheus.Desc) {

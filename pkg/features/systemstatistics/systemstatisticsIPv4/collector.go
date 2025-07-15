@@ -10,63 +10,63 @@ const prefix string = "junos_systemstatistics_ipv4_"
 
 // Metrics to collect for the feature
 var (
-	packetsReceivedDesc                             *prometheus.Desc
-	badHeaderChecksumsDesc                          *prometheus.Desc
-	packetsWithSizeSmallerThanMinimumDesc           *prometheus.Desc
-	packetsWithDataSizeLessThanDatalengthDesc       *prometheus.Desc
-	packetsWithHeaderLengthLessThanHeaderlengthDesc *prometheus.Desc
-	packetsWithIncorrectVersionNumberDesc           *prometheus.Desc
-	packetsDestinedToDeadNextHopDesc                *prometheus.Desc
-	fragmentsReceivedDesc                           *prometheus.Desc
-	fragmentsDroppedDueToOutspaceOfDUPDesc          *prometheus.Desc
-	fragmentsDroppedDueToQueueoverflowDesc          *prometheus.Desc
-	fragmentsDroppedAfterTimeoutDesc                *prometheus.Desc
-	packetsReassembledOKDesc                        *prometheus.Desc
-	packetsForThisHostDesc                          *prometheus.Desc
-	packetsForUnknownOrUnsupportedProtocolDesc      *prometheus.Desc
-	packetsForwardedDesc                            *prometheus.Desc
-	packetsNotForwardableDesc                       *prometheus.Desc
-	redirectsSentDesc                               *prometheus.Desc
-	packetsSentFromThisHostDesc                     *prometheus.Desc
-	packetsSentWithFabricatedIPHeaderDesc           *prometheus.Desc
-	outputPacketsDroppedDueToNoBufsDesc             *prometheus.Desc
-	outputPacketsDiscardedDueToNoRouteDesc          *prometheus.Desc
-	outputDatagramsFragmentedDesc                   *prometheus.Desc
-	fragmentsCreatedDesc                            *prometheus.Desc
-	datagramsThatCanNotBeFragmentedDesc             *prometheus.Desc
-	packetsWithBadOptionsDesc                       *prometheus.Desc
-	packetsWithOptionsHandledWithoutErrorDesc       *prometheus.Desc
-	strictSourceAndRecordRouteOptionsDesc           *prometheus.Desc
-	looseSourceAndRecordRouteOptionsDesc            *prometheus.Desc
-	recordRouteOptionsDesc                          *prometheus.Desc
-	timestampOptionsDesc                            *prometheus.Desc
-	timestampAndAddressOptionsDesc                  *prometheus.Desc
-	timestampAndPrespecifiedAddressOptionsDesc      *prometheus.Desc
-	optionPacketsDroppedDueToRateLimitDesc          *prometheus.Desc
-	routerAlertOptionDesc                           *prometheus.Desc
-	multicastPacketsDroppedDesc                     *prometheus.Desc
-	packetsDroppedDesc                              *prometheus.Desc
-	transitREPacketsDroppedonMGMTInterfaceDesc      *prometheus.Desc
-	packetsUsedFirstNexthopInECMPUnilistDesc        *prometheus.Desc
-	incomingTtpoipPacketsReceivedDesc               *prometheus.Desc
-	incomingTtpoipPacketsDroppedDesc                *prometheus.Desc
-	outgoingTtpoipPacketsSentDesc                   *prometheus.Desc
-	outgoingTtpoipPacketsDroppedDesc                *prometheus.Desc
-	incomingRawIPPacketsDroppedNoSocketBufferDesc   *prometheus.Desc
-	incomingVirtualNodePacketsDeliveredDesc         *prometheus.Desc
+	packetsReceivedDesc                           *prometheus.Desc
+	badHeaderChecksumsDesc                        *prometheus.Desc
+	packetsWithSizeSmallerThanMinimumDesc         *prometheus.Desc
+	packetsWithDataSizeLessThanDatalengthDesc     *prometheus.Desc
+	PacketsWithHeaderLengthLessThanDataSizeDesc   *prometheus.Desc
+	packetsWithIncorrectVersionNumberDesc         *prometheus.Desc
+	packetsDestinedToDeadNextHopDesc              *prometheus.Desc
+	fragmentsReceivedDesc                         *prometheus.Desc
+	fragmentsDroppedDueToOutspaceOrDUPDesc        *prometheus.Desc
+	fragmentsDroppedDueToQueueoverflowDesc        *prometheus.Desc
+	fragmentsDroppedAfterTimeoutDesc              *prometheus.Desc
+	packetsReassembledOKDesc                      *prometheus.Desc
+	packetsForThisHostDesc                        *prometheus.Desc
+	packetsForUnknownOrUnsupportedProtocolDesc    *prometheus.Desc
+	packetsForwardedDesc                          *prometheus.Desc
+	packetsNotForwardableDesc                     *prometheus.Desc
+	redirectsSentDesc                             *prometheus.Desc
+	packetsSentFromThisHostDesc                   *prometheus.Desc
+	packetsSentWithFabricatedIPHeaderDesc         *prometheus.Desc
+	outputPacketsDroppedDueToNoBufsDesc           *prometheus.Desc
+	outputPacketsDiscardedDueToNoRouteDesc        *prometheus.Desc
+	outputDatagramsFragmentedDesc                 *prometheus.Desc
+	fragmentsCreatedDesc                          *prometheus.Desc
+	datagramsThatCanNotBeFragmentedDesc           *prometheus.Desc
+	packetsWithBadOptionsDesc                     *prometheus.Desc
+	packetsWithOptionsHandledWithoutErrorDesc     *prometheus.Desc
+	strictSourceAndRecordRouteOptionsDesc         *prometheus.Desc
+	looseSourceAndRecordRouteOptionsDesc          *prometheus.Desc
+	recordRouteOptionsDesc                        *prometheus.Desc
+	timestampOptionsDesc                          *prometheus.Desc
+	timestampAndAddressOptionsDesc                *prometheus.Desc
+	timestampAndPrespecifiedAddressOptionsDesc    *prometheus.Desc
+	optionPacketsDroppedDueToRateLimitDesc        *prometheus.Desc
+	routerAlertOptionDesc                         *prometheus.Desc
+	multicastPacketsDroppedDesc                   *prometheus.Desc
+	packetsDroppedDesc                            *prometheus.Desc
+	transitREPacketsDroppedonMGMTInterfaceDesc    *prometheus.Desc
+	packetsUsedFirstNexthopInECMPUnilistDesc      *prometheus.Desc
+	incomingTtpoipPacketsReceivedDesc             *prometheus.Desc
+	incomingTtpoipPacketsDroppedDesc              *prometheus.Desc
+	outgoingTtpoipPacketsSentDesc                 *prometheus.Desc
+	outgoingTtpoipPacketsDroppedDesc              *prometheus.Desc
+	incomingRawIPPacketsDroppedNoSocketBufferDesc *prometheus.Desc
+	incomingVirtualNodePacketsDeliveredDesc       *prometheus.Desc
 )
 
 func init() {
-	l := []string{"target"}
+	l := []string{"target", "protocol"}
 	packetsReceivedDesc = prometheus.NewDesc(prefix+"packets_received", "Number of packets received", l, nil)
 	badHeaderChecksumsDesc = prometheus.NewDesc(prefix+"bad_header_checksums", "Number of packets received with bad header checksums", l, nil)
 	packetsWithSizeSmallerThanMinimumDesc = prometheus.NewDesc(prefix+"packets_with_size_smaller_than_minimum", "Number of packets received with size smaller than minimum", l, nil)
 	packetsWithDataSizeLessThanDatalengthDesc = prometheus.NewDesc(prefix+"packets_with_data_size_less_than_datalength", "Number of packets received with data size less than data length", l, nil)
-	packetsWithHeaderLengthLessThanHeaderlengthDesc = prometheus.NewDesc(prefix+"packets_with_header_length_less_than_headerlength", "Number of packets received with header length less than header length", l, nil)
+	PacketsWithHeaderLengthLessThanDataSizeDesc = prometheus.NewDesc(prefix+"packets_with_header_length_less_than_data_size", "Number of packets received with header length less than data size", l, nil)
 	packetsWithIncorrectVersionNumberDesc = prometheus.NewDesc(prefix+"packets_with_incorrect_version_number", "Number of packets received with incorrect version number", l, nil)
 	packetsDestinedToDeadNextHopDesc = prometheus.NewDesc(prefix+"packets_destined_to_dead_next_hop", "Number of packets received destined to dead next hop", l, nil)
 	fragmentsReceivedDesc = prometheus.NewDesc(prefix+"fragments_received", "Number of fragments received", l, nil)
-	fragmentsDroppedDueToOutspaceOfDUPDesc = prometheus.NewDesc(prefix+"fragments_dropped_due_to_outspace_of_dup", "Number of fragments dropped due to outspace of DUP", l, nil)
+	fragmentsDroppedDueToOutspaceOrDUPDesc = prometheus.NewDesc(prefix+"fragments_dropped_due_to_outspace_or_dup", "Number of fragments dropped due to outspace or DUP", l, nil)
 	fragmentsDroppedDueToQueueoverflowDesc = prometheus.NewDesc(prefix+"fragments_dropped_due_to_queueoverflow", "Number of fragments dropped due to queue overflow", l, nil)
 	fragmentsDroppedAfterTimeoutDesc = prometheus.NewDesc(prefix+"fragments_dropped_after_timeout", "Number of fragments dropped after timeout", l, nil)
 	packetsReassembledOKDesc = prometheus.NewDesc(prefix+"packets_reassembled_ok", "Number of packets reassembled OK", l, nil)
@@ -111,7 +111,7 @@ func NewCollector() collector.RPCCollector {
 }
 
 func (c *systemstatisticsIPv4Collector) Name() string {
-	return "systemstatisticsIPv4"
+	return "systemstatistics"
 }
 
 func (c *systemstatisticsIPv4Collector) Describe(ch chan<- *prometheus.Desc) {
@@ -119,11 +119,11 @@ func (c *systemstatisticsIPv4Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- badHeaderChecksumsDesc
 	ch <- packetsWithSizeSmallerThanMinimumDesc
 	ch <- packetsWithDataSizeLessThanDatalengthDesc
-	ch <- packetsWithHeaderLengthLessThanHeaderlengthDesc
+	ch <- PacketsWithHeaderLengthLessThanDataSizeDesc
 	ch <- packetsWithIncorrectVersionNumberDesc
 	ch <- packetsDestinedToDeadNextHopDesc
 	ch <- fragmentsReceivedDesc
-	ch <- fragmentsDroppedDueToOutspaceOfDUPDesc
+	ch <- fragmentsDroppedDueToOutspaceOrDUPDesc
 	ch <- fragmentsDroppedDueToQueueoverflowDesc
 	ch <- fragmentsDroppedAfterTimeoutDesc
 	ch <- packetsReassembledOKDesc
@@ -163,9 +163,58 @@ func (c *systemstatisticsIPv4Collector) Describe(ch chan<- *prometheus.Desc) {
 
 func (c *systemstatisticsIPv4Collector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var s StatisticsIPv4
-	err := client.RunCommandAndParse("show system statistics ipv", &s)
+	err := client.RunCommandAndParse("show system statistics ip", &s)
 	if err != nil {
 		return err
 	}
+	c.collectSystemStatisticsIPv4(ch, labelValues, s)
+	return nil
+}
 
+func (c *systemstatisticsIPv4Collector) collectSystemStatisticsIPv4(ch chan<- prometheus.Metric, labelValues []string, s StatisticsIPv4) {
+	labels := append(labelValues, "ipv4")
+	ch <- prometheus.MustNewConstMetric(packetsReceivedDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsReceived, labels...)
+	ch <- prometheus.MustNewConstMetric(badHeaderChecksumsDesc, prometheus.CounterValue, s.Statistics.Ip.BadHeaderChecksums, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsWithSizeSmallerThanMinimumDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsWithSizeSmallerThanMinimum, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsWithDataSizeLessThanDatalengthDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsWithDataSizeLessThanDatalength, labels...)
+	ch <- prometheus.MustNewConstMetric(PacketsWithHeaderLengthLessThanDataSizeDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsWithHeaderLengthLessThanDataSize, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsWithIncorrectVersionNumberDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsWithIncorrectVersionNumber, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsDestinedToDeadNextHopDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsDestinedToDeadNextHop, labels...)
+	ch <- prometheus.MustNewConstMetric(fragmentsReceivedDesc, prometheus.CounterValue, s.Statistics.Ip.FragmentsReceived, labels...)
+	ch <- prometheus.MustNewConstMetric(fragmentsDroppedDueToOutspaceOrDUPDesc, prometheus.CounterValue, s.Statistics.Ip.FragmentsDroppedDueToOutofspaceOrDup, labels...)
+	ch <- prometheus.MustNewConstMetric(fragmentsDroppedDueToQueueoverflowDesc, prometheus.CounterValue, s.Statistics.Ip.FragmentsDroppedDueToQueueoverflow, labels...)
+	ch <- prometheus.MustNewConstMetric(fragmentsDroppedAfterTimeoutDesc, prometheus.CounterValue, s.Statistics.Ip.FragmentsDroppedAfterTimeout, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsReassembledOKDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsReassembledOk, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsForThisHostDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsForThisHost, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsForUnknownOrUnsupportedProtocolDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsForUnknownOrUnsupportedProtocol, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsForwardedDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsForwarded, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsNotForwardableDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsNotForwardable, labels...)
+	ch <- prometheus.MustNewConstMetric(redirectsSentDesc, prometheus.CounterValue, s.Statistics.Ip.RedirectsSent, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsSentFromThisHostDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsSentFromThisHost, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsSentWithFabricatedIPHeaderDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsSentWithFabricatedIpHeader, labels...)
+	ch <- prometheus.MustNewConstMetric(outputPacketsDroppedDueToNoBufsDesc, prometheus.CounterValue, s.Statistics.Ip.OutputPacketsDroppedDueToNoBufs, labels...)
+	ch <- prometheus.MustNewConstMetric(outputPacketsDiscardedDueToNoRouteDesc, prometheus.CounterValue, s.Statistics.Ip.OutputPacketsDiscardedDueToNoRoute, labels...)
+	ch <- prometheus.MustNewConstMetric(outputDatagramsFragmentedDesc, prometheus.CounterValue, s.Statistics.Ip.OutputDatagramsFragmented, labels...)
+	ch <- prometheus.MustNewConstMetric(fragmentsCreatedDesc, prometheus.CounterValue, s.Statistics.Ip.FragmentsCreated, labels...)
+	ch <- prometheus.MustNewConstMetric(datagramsThatCanNotBeFragmentedDesc, prometheus.CounterValue, s.Statistics.Ip.DatagramsThatCanNotBeFragmented, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsWithBadOptionsDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsWithBadOptions, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsWithOptionsHandledWithoutErrorDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsWithOptionsHandledWithoutError, labels...)
+	ch <- prometheus.MustNewConstMetric(strictSourceAndRecordRouteOptionsDesc, prometheus.CounterValue, s.Statistics.Ip.StrictSourceAndRecordRouteOptions, labels...)
+	ch <- prometheus.MustNewConstMetric(looseSourceAndRecordRouteOptionsDesc, prometheus.CounterValue, s.Statistics.Ip.LooseSourceAndRecordRouteOptions, labels...)
+	ch <- prometheus.MustNewConstMetric(recordRouteOptionsDesc, prometheus.CounterValue, s.Statistics.Ip.RecordRouteOptions, labels...)
+	ch <- prometheus.MustNewConstMetric(timestampOptionsDesc, prometheus.CounterValue, s.Statistics.Ip.TimestampOptions, labels...)
+	ch <- prometheus.MustNewConstMetric(timestampAndAddressOptionsDesc, prometheus.CounterValue, s.Statistics.Ip.TimestampAndAddressOptions, labels...)
+	ch <- prometheus.MustNewConstMetric(timestampAndPrespecifiedAddressOptionsDesc, prometheus.CounterValue, s.Statistics.Ip.TimestampAndPrespecifiedAddressOptions, labels...)
+	ch <- prometheus.MustNewConstMetric(optionPacketsDroppedDueToRateLimitDesc, prometheus.CounterValue, s.Statistics.Ip.OptionPacketsDroppedDueToRateLimit, labels...)
+	ch <- prometheus.MustNewConstMetric(routerAlertOptionDesc, prometheus.CounterValue, s.Statistics.Ip.RouterAlertOptions, labels...)
+	ch <- prometheus.MustNewConstMetric(multicastPacketsDroppedDesc, prometheus.CounterValue, s.Statistics.Ip.MulticastPacketsDropped, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsDroppedDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsDropped, labels...)
+	ch <- prometheus.MustNewConstMetric(transitREPacketsDroppedonMGMTInterfaceDesc, prometheus.CounterValue, s.Statistics.Ip.TransitRePacketsDroppedOnMgmtInterface, labels...)
+	ch <- prometheus.MustNewConstMetric(packetsUsedFirstNexthopInECMPUnilistDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsUsedFirstNexthopInEcmpUnilist, labels...)
+	ch <- prometheus.MustNewConstMetric(incomingTtpoipPacketsReceivedDesc, prometheus.CounterValue, s.Statistics.Ip.IncomingTtpoipPacketsReceived, labels...)
+	ch <- prometheus.MustNewConstMetric(incomingTtpoipPacketsDroppedDesc, prometheus.CounterValue, s.Statistics.Ip.IncomingTtpoipPacketsDropped, labels...)
+	ch <- prometheus.MustNewConstMetric(outgoingTtpoipPacketsSentDesc, prometheus.CounterValue, s.Statistics.Ip.OutgoingTtpoipPacketsSent, labels...)
+	ch <- prometheus.MustNewConstMetric(outgoingTtpoipPacketsDroppedDesc, prometheus.CounterValue, s.Statistics.Ip.OutgoingTtpoipPacketsDropped, labels...)
+	ch <- prometheus.MustNewConstMetric(incomingRawIPPacketsDroppedNoSocketBufferDesc, prometheus.CounterValue, s.Statistics.Ip.IncomingRawipPacketsDroppedNoSocketBuffer, labels...)
+	ch <- prometheus.MustNewConstMetric(incomingVirtualNodePacketsDeliveredDesc, prometheus.CounterValue, s.Statistics.Ip.IncomingVirtualNodePacketsDelivered, labels...)
 }

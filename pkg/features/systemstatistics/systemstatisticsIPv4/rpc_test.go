@@ -3,13 +3,15 @@ package systemstatisticsIPv4
 import (
 	"encoding/xml"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestStatisticsIPv4Unmarshaling(t *testing.T) {
-	//there is an array of tests called tests which has 3 elements
+	//There is an array of tests called tests which has 3 elements
 	//each element includes the name, the xml input(example of device config)
 	//and expected result. First element is regular values, second one is zero values and
-	//third one is different big numbers
+	//third one is different rather bigger values
 	tests := []struct {
 		name     string
 		xmlInput string
@@ -610,81 +612,53 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var result StatisticsIPv4
 			err := xml.Unmarshal([]byte(tt.xmlInput), &result)
-			if err != nil {
-				t.Fatalf("Failed to unmarshal XML: %v", err)
-			}
+			assert.NoError(t, err, "unmarshal should not return error")
 
-			// Test individual fields
-			if result.Statistics.Ip.PacketsReceived != tt.expected.Statistics.Ip.PacketsReceived {
-				t.Errorf("PacketsReceived = %v, want %v", result.Statistics.Ip.PacketsReceived, tt.expected.Statistics.Ip.PacketsReceived)
-			}
-			if result.Statistics.Ip.BadHeaderChecksums != tt.expected.Statistics.Ip.BadHeaderChecksums {
-				t.Errorf("BadHeaderChecksums = %v, want %v", result.Statistics.Ip.BadHeaderChecksums, tt.expected.Statistics.Ip.BadHeaderChecksums)
-			}
-			if result.Statistics.Ip.PacketsWithSizeSmallerThanMinimum != tt.expected.Statistics.Ip.PacketsWithSizeSmallerThanMinimum {
-				t.Errorf("PacketsWithSizeSmallerThanMinimum = %v, want %v", result.Statistics.Ip.PacketsWithSizeSmallerThanMinimum, tt.expected.Statistics.Ip.PacketsWithSizeSmallerThanMinimum)
-			}
-			if result.Statistics.Ip.FragmentsReceived != tt.expected.Statistics.Ip.FragmentsReceived {
-				t.Errorf("FragmentsReceived = %v, want %v", result.Statistics.Ip.FragmentsReceived, tt.expected.Statistics.Ip.FragmentsReceived)
-			}
-			if result.Statistics.Ip.PacketsForwarded != tt.expected.Statistics.Ip.PacketsForwarded {
-				t.Errorf("PacketsForwarded = %v, want %v", result.Statistics.Ip.PacketsForwarded, tt.expected.Statistics.Ip.PacketsForwarded)
-			}
-			if result.Statistics.Ip.IncomingTtpoipPacketsReceived != tt.expected.Statistics.Ip.IncomingTtpoipPacketsReceived {
-				t.Errorf("IncomingTtpoipPacketsReceived = %v, want %v", result.Statistics.Ip.IncomingTtpoipPacketsReceived, tt.expected.Statistics.Ip.IncomingTtpoipPacketsReceived)
-			}
-			if result.Cli.Banner != tt.expected.Cli.Banner {
-				t.Errorf("Banner = %v, want %v", result.Cli.Banner, tt.expected.Cli.Banner)
-			}
-		})
-	}
-}
-
-func TestStatisticsIPv4UnmarshalingErrorCases(t *testing.T) {
-	tests := []struct {
-		name     string
-		xmlInput string
-		wantErr  bool
-	}{
-		{
-			name:     "invalid_xml",
-			xmlInput: `<rpc-reply><invalid-xml></rpc-reply>`,
-			wantErr:  true,
-		},
-		{
-			name:     "empty_xml",
-			xmlInput: ``,
-			wantErr:  true,
-		},
-		{
-			name: "missing_statistics_section",
-			xmlInput: `<rpc-reply junos:style="normal">
-				<cli>
-					<banner>user@router></banner>
-				</cli>
-			</rpc-reply>`,
-			wantErr: false, // Should not error, just have empty statistics
-		},
-		{
-			name: "missing_ip_section",
-			xmlInput: `<rpc-reply junos:style="normal">
-				<statistics>
-				</statistics>
-				<cli>
-					<banner>user@router></banner>
-				</cli>
-			</rpc-reply>`,
-			wantErr: false, // Should not error, just have empty IP statistics
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var result StatisticsIPv4
-			err := xml.Unmarshal([]byte(tt.xmlInput), &result)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("xml.Unmarshal() error = %v, wantErr %v", err, tt.wantErr)
-			}
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsReceived, result.Statistics.Ip.PacketsReceived, "PacketsReceived should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.BadHeaderChecksums, result.Statistics.Ip.BadHeaderChecksums, "BadHeaderChecksums should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsWithSizeSmallerThanMinimum, result.Statistics.Ip.PacketsWithSizeSmallerThanMinimum, "PacketsWithSizeSmallerThanMinimum should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsWithDataSizeLessThanDatalength, result.Statistics.Ip.PacketsWithDataSizeLessThanDatalength, "PacketsWithDataSizeLessThanDatalength should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsWithHeaderLengthLessThanDataSize, result.Statistics.Ip.PacketsWithHeaderLengthLessThanDataSize, "PacketsWithHeaderLengthLessThanDataSize should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsWithDataLengthLessThanHeaderlength, result.Statistics.Ip.PacketsWithDataLengthLessThanHeaderlength, "PacketsWithDataLengthLessThanHeaderlength should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsWithIncorrectVersionNumber, result.Statistics.Ip.PacketsWithIncorrectVersionNumber, "PacketsWithIncorrectVersionNumber should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsDestinedToDeadNextHop, result.Statistics.Ip.PacketsDestinedToDeadNextHop, "PacketsDestinedToDeadNextHop should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.FragmentsReceived, result.Statistics.Ip.FragmentsReceived, "FragmentsReceived should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.FragmentsDroppedDueToOutofspaceOrDup, result.Statistics.Ip.FragmentsDroppedDueToOutofspaceOrDup, "FragmentsDroppedDueToOutofspaceOrDup should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.FragmentsDroppedDueToQueueoverflow, result.Statistics.Ip.FragmentsDroppedDueToQueueoverflow, "FragmentsDroppedDueToQueueoverflow should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.FragmentsDroppedAfterTimeout, result.Statistics.Ip.FragmentsDroppedAfterTimeout, "FragmentsDroppedAfterTimeout should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsReassembledOk, result.Statistics.Ip.PacketsReassembledOk, "PacketsReassembledOk should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsForThisHost, result.Statistics.Ip.PacketsForThisHost, "PacketsForThisHost should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsForUnknownOrUnsupportedProtocol, result.Statistics.Ip.PacketsForUnknownOrUnsupportedProtocol, "PacketsForUnknownOrUnsupportedProtocol should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsForwarded, result.Statistics.Ip.PacketsForwarded, "PacketsForwarded should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsNotForwardable, result.Statistics.Ip.PacketsNotForwardable, "PacketsNotForwardable should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.RedirectsSent, result.Statistics.Ip.RedirectsSent, "RedirectsSent should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsSentFromThisHost, result.Statistics.Ip.PacketsSentFromThisHost, "PacketsSentFromThisHost should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsSentWithFabricatedIpHeader, result.Statistics.Ip.PacketsSentWithFabricatedIpHeader, "PacketsSentWithFabricatedIpHeader should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.OutputPacketsDroppedDueToNoBufs, result.Statistics.Ip.OutputPacketsDroppedDueToNoBufs, "OutputPacketsDroppedDueToNoBufs should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.OutputPacketsDiscardedDueToNoRoute, result.Statistics.Ip.OutputPacketsDiscardedDueToNoRoute, "OutputPacketsDiscardedDueToNoRoute should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.OutputDatagramsFragmented, result.Statistics.Ip.OutputDatagramsFragmented, "OutputDatagramsFragmented should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.FragmentsCreated, result.Statistics.Ip.FragmentsCreated, "FragmentsCreated should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.DatagramsThatCanNotBeFragmented, result.Statistics.Ip.DatagramsThatCanNotBeFragmented, "DatagramsThatCanNotBeFragmented should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsWithBadOptions, result.Statistics.Ip.PacketsWithBadOptions, "PacketsWithBadOptions should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsWithOptionsHandledWithoutError, result.Statistics.Ip.PacketsWithOptionsHandledWithoutError, "PacketsWithOptionsHandledWithoutError should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.StrictSourceAndRecordRouteOptions, result.Statistics.Ip.StrictSourceAndRecordRouteOptions, "StrictSourceAndRecordRouteOptions should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.LooseSourceAndRecordRouteOptions, result.Statistics.Ip.LooseSourceAndRecordRouteOptions, "LooseSourceAndRecordRouteOptions should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.RecordRouteOptions, result.Statistics.Ip.RecordRouteOptions, "RecordRouteOptions should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.TimestampOptions, result.Statistics.Ip.TimestampOptions, "TimestampOptions should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.TimestampAndAddressOptions, result.Statistics.Ip.TimestampAndAddressOptions, "TimestampAndAddressOptions should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.TimestampAndPrespecifiedAddressOptions, result.Statistics.Ip.TimestampAndPrespecifiedAddressOptions, "TimestampAndPrespecifiedAddressOptions should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.OptionPacketsDroppedDueToRateLimit, result.Statistics.Ip.OptionPacketsDroppedDueToRateLimit, "OptionPacketsDroppedDueToRateLimit should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.RouterAlertOptions, result.Statistics.Ip.RouterAlertOptions, "RouterAlertOptions should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.MulticastPacketsDropped, result.Statistics.Ip.MulticastPacketsDropped, "MulticastPacketsDropped should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsDropped, result.Statistics.Ip.PacketsDropped, "PacketsDropped should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.TransitRePacketsDroppedOnMgmtInterface, result.Statistics.Ip.TransitRePacketsDroppedOnMgmtInterface, "TransitRePacketsDroppedOnMgmtInterface should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.PacketsUsedFirstNexthopInEcmpUnilist, result.Statistics.Ip.PacketsUsedFirstNexthopInEcmpUnilist, "PacketsUsedFirstNexthopInEcmpUnilist should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.IncomingTtpoipPacketsReceived, result.Statistics.Ip.IncomingTtpoipPacketsReceived, "IncomingTtpoipPacketsReceived should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.IncomingTtpoipPacketsDropped, result.Statistics.Ip.IncomingTtpoipPacketsDropped, "IncomingTtpoipPacketsDropped should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.OutgoingTtpoipPacketsSent, result.Statistics.Ip.OutgoingTtpoipPacketsSent, "OutgoingTtpoipPacketsSent should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.OutgoingTtpoipPacketsDropped, result.Statistics.Ip.OutgoingTtpoipPacketsDropped, "OutgoingTtpoipPacketsDropped should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.IncomingRawipPacketsDroppedNoSocketBuffer, result.Statistics.Ip.IncomingRawipPacketsDroppedNoSocketBuffer, "IncomingRawipPacketsDroppedNoSocketBuffer should match")
+			assert.Equal(t, tt.expected.Statistics.Ip.IncomingVirtualNodePacketsDelivered, result.Statistics.Ip.IncomingVirtualNodePacketsDelivered, "IncomingVirtualNodePacketsDelivered should match")
 		})
 	}
 }

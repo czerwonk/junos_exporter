@@ -9,7 +9,7 @@ type StatisticsIPv6 struct {
 	Statistics struct {
 		Text string `xml:",chardata"`
 		Ip6  struct {
-			Text                                  string `xml:",chardata"`
+			Text                                  string  `xml:",chardata"`
 			TotalPacketsReceived                  float64 `xml:"total-packets-received"`
 			Ip6PacketsWithSizeSmallerThanMinimum  float64 `xml:"ip6-packets-with-size-smaller-than-minimum"`
 			PacketsWithDatasizeLessThanDataLength float64 `xml:"packets-with-datasize-less-than-data-length"`
@@ -33,7 +33,7 @@ type StatisticsIPv6 struct {
 			Ip6DatagramsThatCanNotBeFragmented    float64 `xml:"ip6-datagrams-that-can-not-be-fragmented"`
 			PacketsThatViolatedScopeRules         float64 `xml:"packets-that-violated-scope-rules"`
 			MulticastPacketsWhichWeDoNotJoin      float64 `xml:"multicast-packets-which-we-do-not-join"`
-			Histogram                             string `xml:"histogram"`
+			Histogram                             string  `xml:"histogram"`
 			Ip6nhTcp                              float64 `xml:"ip6nh-tcp"`
 			Ip6nhUdp                              float64 `xml:"ip6nh-udp"`
 			Ip6nhIcmp6                            float64 `xml:"ip6nh-icmp6"`
@@ -42,12 +42,12 @@ type StatisticsIPv6 struct {
 			PacketsDiscardedDueToTooMayHeaders    float64 `xml:"packets-discarded-due-to-too-may-headers"`
 			FailuresOfSourceAddressSelection      float64 `xml:"failures-of-source-address-selection"`
 			HeaderType                            []struct {
-				Text                            string `xml:",chardata"`
-				HeaderForSourceAddressSelection string `xml:"header-for-source-address-selection"`
+				Text                            string  `xml:",chardata"`
+				HeaderForSourceAddressSelection string  `xml:"header-for-source-address-selection"`
 				LinkLocals                      float64 `xml:"link-locals"`
 				Globals                         float64 `xml:"globals"`
-				AddressScope                    string `xml:"address-scope"`
-				HexValue                        string `xml:"hex-value"`
+				AddressScope                    string  `xml:"address-scope"`
+				HexValue                        string  `xml:"hex-value"`
 			} `xml:"header-type"`
 			ForwardCacheHit                       float64 `xml:"forward-cache-hit"`
 			ForwardCacheMiss                      float64 `xml:"forward-cache-miss"`
@@ -64,4 +64,3 @@ type StatisticsIPv6 struct {
 		Banner string `xml:"banner"`
 	} `xml:"cli"`
 }
-

@@ -7,8 +7,6 @@ import (
 
 	"github.com/czerwonk/junos_exporter/pkg/features/ddosprotection"
 	"github.com/czerwonk/junos_exporter/pkg/features/poe"
-	"github.com/czerwonk/junos_exporter/pkg/features/systemstatistics/systemstatisticsIPv4"
-	"github.com/czerwonk/junos_exporter/pkg/features/systemstatistics/systemstatisticsIPv6"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
 	"github.com/czerwonk/junos_exporter/pkg/collector"
@@ -48,6 +46,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/storage"
 	"github.com/czerwonk/junos_exporter/pkg/features/subscriber"
 	"github.com/czerwonk/junos_exporter/pkg/features/system"
+	"github.com/czerwonk/junos_exporter/pkg/features/systemstatistics"
 	"github.com/czerwonk/junos_exporter/pkg/features/twamp"
 	"github.com/czerwonk/junos_exporter/pkg/features/vpws"
 	"github.com/czerwonk/junos_exporter/pkg/features/vrrp"
@@ -132,8 +131,8 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "ddosprotection", f.DDOSProtection, ddosprotection.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "krt", f.KRT, krt.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "twamp", f.TWAMP, twamp.NewCollector)
-	c.addCollectorIfEnabledForDevice(device, "system_statistics_ipv4", f.SystemStatisticsIPv4, systemstatisticsIPv4.NewCollector)
-	c.addCollectorIfEnabledForDevice(device, "system_statistics_ipv6", f.SystemStatisticsIPv6, systemstatisticsIPv6.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "system_statistics", f.SystemStatistics, systemstatistics.NewCollector)
+
 }
 
 func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, key string, enabled bool, newCollector func() collector.RPCCollector) {

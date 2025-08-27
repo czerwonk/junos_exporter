@@ -103,8 +103,8 @@ type FeatureConfig struct {
 	DDOSProtection      bool `yaml:"ddos_protection,omitempty"`
 	KRT                 bool `yaml:"krt,omitempty"`
 	TWAMP               bool `yaml:"twamp,omitempty"`
-	SystemStatisticsIPv4 bool `yaml:"system_statistics_ipv4,omitempty"`
-	SystemStatisticsIPv6 bool `yaml:"system_statistics_ipv6,omitempty"`
+	SystemStatistics    bool `yaml:"system_statistics,omitempty"`
+
 }
 
 // New creates a new config
@@ -184,8 +184,7 @@ func setDefaultValues(c *Config) {
 	f.License = false
 	f.MACSec = true
 	f.Poe = false
-	f.SystemStatisticsIPv4 = true
-	f.SystemStatisticsIPv6 = true
+	f.SystemStatistics = true
 }
 
 // FeaturesForDevice gets the feature set configured for a device

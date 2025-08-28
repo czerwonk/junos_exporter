@@ -94,6 +94,17 @@ var (
 	ipv6PacketsDroppedDueToBadProtocolDesc        *prometheus.Desc
 	ipv6TransitRePacketDroppedOnMgmtInterfaceDesc *prometheus.Desc
 	ipv6PacketUsedFirstNexthopInEcmpUnilistDesc   *prometheus.Desc
+
+	udpDatagramsReceivedDesc                                 *prometheus.Desc
+	udpDatagramsWithIncompleteHeaderDesc                     *prometheus.Desc
+	udpDatagramsWithBadDatalengthFieldDesc                   *prometheus.Desc
+	udpDatagramsWithBadChecksumDesc                          *prometheus.Desc
+	udpDatagramsDroppedDueToNoSocketDesc                     *prometheus.Desc
+	udpBroadcastOrMulticastDatagramsDroppedDueToNoSocketDesc *prometheus.Desc
+	udpDatagramsDroppedDueToFullSocketBuffersDesc            *prometheus.Desc
+	udpDatagramsNotForHashedPcbDesc                          *prometheus.Desc
+	udpDatagramsDeliveredDesc                                *prometheus.Desc
+	udpDatagramsOutputDesc                                   *prometheus.Desc
 )
 
 func init() {
@@ -186,6 +197,17 @@ func init() {
 	ipv6TransitRePacketDroppedOnMgmtInterfaceDesc = prometheus.NewDesc(prefix+"ipv6_transit_re_packet_dropped_on_mgmt_interface", "Number of transit re packet dropped on mgmt interface", labelsIPV6, nil)
 	ipv6PacketUsedFirstNexthopInEcmpUnilistDesc = prometheus.NewDesc(prefix+"ipv6_packet_used_first_nexthop_in_ecmp_unilist", "Number of packet used first nexthop in ecmp unilist", labelsIPV6, nil)
 
+	labelsUDP := []string{"target", "protocol"}
+	udpDatagramsReceivedDesc = prometheus.NewDesc(prefix+"udp_datagrams_received", "Number of UDP datagrams received", labelsUDP, nil)
+	udpDatagramsWithIncompleteHeaderDesc = prometheus.NewDesc(prefix+"udp_datagrams_with_incomplete_header", "Number of UDP datagrams with incomplete header", labelsUDP, nil)
+	udpDatagramsWithBadDatalengthFieldDesc = prometheus.NewDesc(prefix+"udp_datagrams_with_bad_datalength_field", "Number of UDP datagrams with bad datalength field", labelsUDP, nil)
+	udpDatagramsWithBadChecksumDesc = prometheus.NewDesc(prefix+"udp_datagrams_with_bad_checksum", "Number of UDP datagrams with bad checksum", labelsUDP, nil)
+	udpDatagramsDroppedDueToNoSocketDesc = prometheus.NewDesc(prefix+"udp_datagrams_dropped_due_to_no_socket", "Number of UDP datagrams dropped due to no socket", labelsUDP, nil)
+	udpBroadcastOrMulticastDatagramsDroppedDueToNoSocketDesc = prometheus.NewDesc(prefix+"udp_broadcast_or_multicast_datagrams_dropped_due_to_no_socket", "Number of UDP broadcast or multicast datagrams dropped due to no socket", labelsUDP, nil)
+	udpDatagramsDroppedDueToFullSocketBuffersDesc = prometheus.NewDesc(prefix+"udp_datagrams_dropped_due_to_full_socket_buffers", "Number of UDP datagrams dropped due to full socket buffers", labelsUDP, nil)
+	udpDatagramsNotForHashedPcbDesc = prometheus.NewDesc(prefix+"udp_datagrams_not_for_hashed_pcb", "Number of UDP datagrams not for hashed pcb", labelsUDP, nil)
+	udpDatagramsDeliveredDesc = prometheus.NewDesc(prefix+"udp_datagrams_delivered", "Number of UDP datagrams delivered", labelsUDP, nil)
+	udpDatagramsOutputDesc = prometheus.NewDesc(prefix+"udp_datagrams_output", "Number of UDP datagrams output", labelsUDP, nil)
 }
 
 type systemstatisticsCollector struct{}
@@ -284,6 +306,17 @@ func (c *systemstatisticsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- ipv6PacketsDroppedDueToBadProtocolDesc
 	ch <- ipv6TransitRePacketDroppedOnMgmtInterfaceDesc
 	ch <- ipv6PacketUsedFirstNexthopInEcmpUnilistDesc
+
+	ch <- udpDatagramsReceivedDesc
+	ch <- udpDatagramsWithIncompleteHeaderDesc
+	ch <- udpDatagramsWithBadDatalengthFieldDesc
+	ch <- udpDatagramsWithBadChecksumDesc
+	ch <- udpDatagramsDroppedDueToNoSocketDesc
+	ch <- udpBroadcastOrMulticastDatagramsDroppedDueToNoSocketDesc
+	ch <- udpDatagramsDroppedDueToFullSocketBuffersDesc
+	ch <- udpDatagramsNotForHashedPcbDesc
+	ch <- udpDatagramsDeliveredDesc
+	ch <- udpDatagramsOutputDesc
 }
 
 func (c *systemstatisticsCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
@@ -294,6 +327,7 @@ func (c *systemstatisticsCollector) Collect(client collector.Client, ch chan<- p
 	}
 	c.collectSystemStatisticsIPV4(ch, labelValues, s)
 	c.collectSystemStatisticsIPV6(ch, labelValues, s)
+	c.collectSystemStatisticsUDP(ch, labelValues, s)
 	return nil
 }
 
@@ -391,4 +425,18 @@ func (c *systemstatisticsCollector) collectSystemStatisticsIPV6(ch chan<- promet
 	ch <- prometheus.MustNewConstMetric(ipv6TransitRePacketDroppedOnMgmtInterfaceDesc, prometheus.CounterValue, s.Statistics.Ip6.TransitRePacketDroppedOnMgmtInterface, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv6PacketUsedFirstNexthopInEcmpUnilistDesc, prometheus.CounterValue, s.Statistics.Ip6.PacketUsedFirstNexthopInEcmpUnilist, labels...)
 
+}
+
+func (c *systemstatisticsCollector) collectSystemStatisticsUDP(ch chan<- prometheus.Metric, labelValues []string, s SystemStatistics) {
+	l := append(labelValues, "udp")
+	ch <- prometheus.MustNewConstMetric(udpDatagramsReceivedDesc, prometheus.CounterValue, s.Statistics.Udp.DatagramsReceived, l...)
+	ch <- prometheus.MustNewConstMetric(udpDatagramsWithIncompleteHeaderDesc, prometheus.CounterValue, s.Statistics.Udp.DatagramsWithIncompleteHeader, l...)
+	ch <- prometheus.MustNewConstMetric(udpDatagramsWithBadDatalengthFieldDesc, prometheus.CounterValue, s.Statistics.Udp.DatagramsWithBadDatalengthField, l...)
+	ch <- prometheus.MustNewConstMetric(udpDatagramsWithBadChecksumDesc, prometheus.CounterValue, s.Statistics.Udp.DatagramsWithBadChecksum, l...)
+	ch <- prometheus.MustNewConstMetric(udpDatagramsDroppedDueToNoSocketDesc, prometheus.CounterValue, s.Statistics.Udp.DatagramsDroppedDueToNoSocket, l...)
+	ch <- prometheus.MustNewConstMetric(udpBroadcastOrMulticastDatagramsDroppedDueToNoSocketDesc, prometheus.CounterValue, s.Statistics.Udp.BroadcastOrMulticastDatagramsDroppedDueToNoSocket, l...)
+	ch <- prometheus.MustNewConstMetric(udpDatagramsDroppedDueToFullSocketBuffersDesc, prometheus.CounterValue, s.Statistics.Udp.DatagramsDroppedDueToFullSocketBuffers, l...)
+	ch <- prometheus.MustNewConstMetric(udpDatagramsNotForHashedPcbDesc, prometheus.CounterValue, s.Statistics.Udp.DatagramsNotForHashedPcb, l...)
+	ch <- prometheus.MustNewConstMetric(udpDatagramsDeliveredDesc, prometheus.CounterValue, s.Statistics.Udp.DatagramsDelivered, l...)
+	ch <- prometheus.MustNewConstMetric(udpDatagramsOutputDesc, prometheus.CounterValue, s.Statistics.Udp.DatagramsOutput, l...)
 }

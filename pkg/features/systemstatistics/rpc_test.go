@@ -2,6 +2,7 @@ package systemstatistics
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -10,1146 +11,287 @@ import (
 )
 
 func TestStatisticsIPv4Unmarshaling(t *testing.T) {
-
 	IPv4XMLDataCase1, _ := os.Open("testsFiles/IPV4/ipv4TestDataCase1.xml")
 	IPv4DataCase1, _ := ioutil.ReadAll(IPv4XMLDataCase1)
 	IPv4XMLDataCase2, _ := os.Open("testsFiles/IPV4/ipv4TestDataCase2.xml")
 	IPv4DataCase2, _ := ioutil.ReadAll(IPv4XMLDataCase2)
 	IPv4XMLDataCase3, _ := os.Open("testsFiles/IPV4/ipv4TestDataCase3.xml")
 	IPv4DataCase3, _ := ioutil.ReadAll(IPv4XMLDataCase3)
-	testsIPV4 := []struct {
+
+	type testCase struct {
 		name     string
 		xmlInput string
-		expected SystemStatistics
-	}{
+		expect   func(t *testing.T, got SystemStatistics)
+	}
+
+	testsIPV4 := []testCase{
 		{
 			name:     "complete_ipv4_statistics",
 			xmlInput: string(IPv4DataCase1),
-			expected: SystemStatistics{
-				Statistics: struct {
-					Text string `xml:",chardata"`
-					Tcp  struct {
-						Text                                             string  `xml:",chardata"`
-						PacketsSent                                      float64 `xml:"packets-sent"`
-						SentDataPackets                                  float64 `xml:"sent-data-packets"`
-						DataPacketsBytes                                 float64 `xml:"data-packets-bytes"`
-						SentDataPacketsRetransmitted                     float64 `xml:"sent-data-packets-retransmitted"`
-						RetransmittedBytes                               float64 `xml:"retransmitted-bytes"`
-						SentDataUnnecessaryRetransmitted                 float64 `xml:"sent-data-unnecessary-retransmitted"`
-						SentResendsByMtuDiscovery                        float64 `xml:"sent-resends-by-mtu-discovery"`
-						SentAckOnlyPackets                               float64 `xml:"sent-ack-only-packets"`
-						SentPacketsDelayed                               float64 `xml:"sent-packets-delayed"`
-						SentUrgOnlyPackets                               float64 `xml:"sent-urg-only-packets"`
-						SentWindowProbePackets                           float64 `xml:"sent-window-probe-packets"`
-						SentWindowUpdatePackets                          float64 `xml:"sent-window-update-packets"`
-						SentControlPackets                               float64 `xml:"sent-control-packets"`
-						PacketsReceived                                  float64 `xml:"packets-received"`
-						ReceivedAcks                                     float64 `xml:"received-acks"`
-						AcksBytes                                        float64 `xml:"acks-bytes"`
-						ReceivedDuplicateAcks                            float64 `xml:"received-duplicate-acks"`
-						ReceivedAcksForUnsentData                        float64 `xml:"received-acks-for-unsent-data"`
-						PacketsReceivedInSequence                        float64 `xml:"packets-received-in-sequence"`
-						InSequenceBytes                                  float64 `xml:"in-sequence-bytes"`
-						ReceivedCompletelyDuplicatePacket                float64 `xml:"received-completely-duplicate-packet"`
-						DuplicateInBytes                                 float64 `xml:"duplicate-in-bytes"`
-						ReceivedOldDuplicatePackets                      float64 `xml:"received-old-duplicate-packets"`
-						ReceivedPacketsWithSomeDupliacteData             float64 `xml:"received-packets-with-some-dupliacte-data"`
-						SomeDuplicateInBytes                             float64 `xml:"some-duplicate-in-bytes"`
-						ReceivedOutOfOrderPackets                        float64 `xml:"received-out-of-order-packets"`
-						OutOfOrderInBytes                                float64 `xml:"out-of-order-in-bytes"`
-						ReceivedPacketsOfDataAfterWindow                 float64 `xml:"received-packets-of-data-after-window"`
-						Bytes                                            float64 `xml:"bytes"`
-						ReceivedWindowProbes                             float64 `xml:"received-window-probes"`
-						ReceivedWindowUpdatePackets                      float64 `xml:"received-window-update-packets"`
-						PacketsReceivedAfterClose                        float64 `xml:"packets-received-after-close"`
-						ReceivedDiscardedForBadChecksum                  float64 `xml:"received-discarded-for-bad-checksum"`
-						ReceivedDiscardedForBadHeaderOffset              float64 `xml:"received-discarded-for-bad-header-offset"`
-						ReceivedDiscardedBecausePacketTooShort           float64 `xml:"received-discarded-because-packet-too-short"`
-						ConnectionRequests                               float64 `xml:"connection-requests"`
-						ConnectionAccepts                                float64 `xml:"connection-accepts"`
-						BadConnectionAttempts                            float64 `xml:"bad-connection-attempts"`
-						ListenQueueOverflows                             float64 `xml:"listen-queue-overflows"`
-						BadRstWindow                                     float64 `xml:"bad-rst-window"`
-						ConnectionsEstablished                           float64 `xml:"connections-established"`
-						ConnectionsClosed                                float64 `xml:"connections-closed"`
-						Drops                                            float64 `xml:"drops"`
-						ConnectionsUpdatedRttOnClose                     float64 `xml:"connections-updated-rtt-on-close"`
-						ConnectionsUpdatedVarianceOnClose                float64 `xml:"connections-updated-variance-on-close"`
-						ConnectionsUpdatedSsthreshOnClose                float64 `xml:"connections-updated-ssthresh-on-close"`
-						EmbryonicConnectionsDropped                      float64 `xml:"embryonic-connections-dropped"`
-						SegmentsUpdatedRtt                               float64 `xml:"segments-updated-rtt"`
-						Attempts                                         float64 `xml:"attempts"`
-						RetransmitTimeouts                               float64 `xml:"retransmit-timeouts"`
-						ConnectionsDroppedByRetransmitTimeout            float64 `xml:"connections-dropped-by-retransmit-timeout"`
-						PersistTimeouts                                  float64 `xml:"persist-timeouts"`
-						ConnectionsDroppedByPersistTimeout               float64 `xml:"connections-dropped-by-persist-timeout"`
-						KeepaliveTimeouts                                float64 `xml:"keepalive-timeouts"`
-						KeepaliveProbesSent                              float64 `xml:"keepalive-probes-sent"`
-						KeepaliveConnectionsDropped                      float64 `xml:"keepalive-connections-dropped"`
-						AckHeaderPredictions                             float64 `xml:"ack-header-predictions"`
-						DataPacketHeaderPredictions                      float64 `xml:"data-packet-header-predictions"`
-						SyncacheEntriesAdded                             float64 `xml:"syncache-entries-added"`
-						Retransmitted                                    float64 `xml:"retransmitted"`
-						Dupsyn                                           float64 `xml:"dupsyn"`
-						Dropped                                          float64 `xml:"dropped"`
-						Completed                                        float64 `xml:"completed"`
-						BucketOverflow                                   float64 `xml:"bucket-overflow"`
-						CacheOverflow                                    float64 `xml:"cache-overflow"`
-						Reset                                            float64 `xml:"reset"`
-						Stale                                            float64 `xml:"stale"`
-						Aborted                                          float64 `xml:"aborted"`
-						Badack                                           float64 `xml:"badack"`
-						Unreach                                          float64 `xml:"unreach"`
-						ZoneFailures                                     float64 `xml:"zone-failures"`
-						CookiesSent                                      float64 `xml:"cookies-sent"`
-						CookiesReceived                                  float64 `xml:"cookies-received"`
-						SackRecoveryEpisodes                             float64 `xml:"sack-recovery-episodes"`
-						SegmentRetransmits                               float64 `xml:"segment-retransmits"`
-						ByteRetransmits                                  float64 `xml:"byte-retransmits"`
-						SackOptionsReceived                              float64 `xml:"sack-options-received"`
-						SackOpitionsSent                                 float64 `xml:"sack-opitions-sent"`
-						SackScoreboardOverflow                           float64 `xml:"sack-scoreboard-overflow"`
-						AcksSentInResponseButNotExactRsts                float64 `xml:"acks-sent-in-response-but-not-exact-rsts"`
-						AcksSentInResponseToSynsOnEstablishedConnections float64 `xml:"acks-sent-in-response-to-syns-on-established-connections"`
-						RcvPacketsDroppedDueToBadAddress                 float64 `xml:"rcv-packets-dropped-due-to-bad-address"`
-						OutOfSequenceSegmentDrops                        float64 `xml:"out-of-sequence-segment-drops"`
-						RstPackets                                       float64 `xml:"rst-packets"`
-						IcmpPacketsIgnored                               float64 `xml:"icmp-packets-ignored"`
-						SendPacketsDropped                               float64 `xml:"send-packets-dropped"`
-						RcvPacketsDropped                                float64 `xml:"rcv-packets-dropped"`
-						OutgoingSegmentsDropped                          float64 `xml:"outgoing-segments-dropped"`
-						ReceivedSynfinDropped                            float64 `xml:"received-synfin-dropped"`
-						ReceivedIpsecDropped                             float64 `xml:"received-ipsec-dropped"`
-						ReceivedMacDropped                               float64 `xml:"received-mac-dropped"`
-						ReceivedMinttlExceeded                           float64 `xml:"received-minttl-exceeded"`
-						ListenstateBadflagsDropped                       float64 `xml:"listenstate-badflags-dropped"`
-						FinwaitstateBadflagsDropped                      float64 `xml:"finwaitstate-badflags-dropped"`
-						ReceivedDosAttack                                float64 `xml:"received-dos-attack"`
-						ReceivedBadSynack                                float64 `xml:"received-bad-synack"`
-						SyncacheZoneFull                                 float64 `xml:"syncache-zone-full"`
-						ReceivedRstFirewallfilter                        float64 `xml:"received-rst-firewallfilter"`
-						ReceivedNoackTimewait                            float64 `xml:"received-noack-timewait"`
-						ReceivedNoTimewaitState                          float64 `xml:"received-no-timewait-state"`
-						ReceivedRstTimewaitState                         float64 `xml:"received-rst-timewait-state"`
-						ReceivedTimewaitDrops                            float64 `xml:"received-timewait-drops"`
-						ReceivedBadaddrTimewaitState                     float64 `xml:"received-badaddr-timewait-state"`
-						ReceivedAckoffInSynSentrcvd                      float64 `xml:"received-ackoff-in-syn-sentrcvd"`
-						ReceivedBadaddrFirewall                          float64 `xml:"received-badaddr-firewall"`
-						ReceivedNosynSynSent                             float64 `xml:"received-nosyn-syn-sent"`
-						ReceivedBadrstSynSent                            float64 `xml:"received-badrst-syn-sent"`
-						ReceivedBadrstListenState                        float64 `xml:"received-badrst-listen-state"`
-						OptionMaxsegmentLength                           float64 `xml:"option-maxsegment-length"`
-						OptionWindowLength                               float64 `xml:"option-window-length"`
-						OptionTimestampLength                            float64 `xml:"option-timestamp-length"`
-						OptionMd5Length                                  float64 `xml:"option-md5-length"`
-						OptionAuthLength                                 float64 `xml:"option-auth-length"`
-						OptionSackpermittedLength                        float64 `xml:"option-sackpermitted-length"`
-						OptionSackLength                                 float64 `xml:"option-sack-length"`
-						OptionAuthoptionLength                           float64 `xml:"option-authoption-length"`
-					} `xml:"tcp"`
-					Udp struct {
-						Text                                              string  `xml:",chardata"`
-						DatagramsReceived                                 float64 `xml:"datagrams-received"`
-						DatagramsWithIncompleteHeader                     float64 `xml:"datagrams-with-incomplete-header"`
-						DatagramsWithBadDatalengthField                   float64 `xml:"datagrams-with-bad-datalength-field"`
-						DatagramsWithBadChecksum                          float64 `xml:"datagrams-with-bad-checksum"`
-						DatagramsDroppedDueToNoSocket                     float64 `xml:"datagrams-dropped-due-to-no-socket"`
-						BroadcastOrMulticastDatagramsDroppedDueToNoSocket float64 `xml:"broadcast-or-multicast-datagrams-dropped-due-to-no-socket"`
-						DatagramsDroppedDueToFullSocketBuffers            float64 `xml:"datagrams-dropped-due-to-full-socket-buffers"`
-						DatagramsNotForHashedPcb                          float64 `xml:"datagrams-not-for-hashed-pcb"`
-						DatagramsDelivered                                float64 `xml:"datagrams-delivered"`
-						DatagramsOutput                                   float64 `xml:"datagrams-output"`
-					} `xml:"udp"`
-					Ip struct {
-						Text                                      string  `xml:",chardata"`
-						PacketsReceived                           float64 `xml:"packets-received"`
-						BadHeaderChecksums                        float64 `xml:"bad-header-checksums"`
-						PacketsWithSizeSmallerThanMinimum         float64 `xml:"packets-with-size-smaller-than-minimum"`
-						PacketsWithDataSizeLessThanDatalength     float64 `xml:"packets-with-data-size-less-than-datalength"`
-						PacketsWithHeaderLengthLessThanDataSize   float64 `xml:"packets-with-header-length-less-than-data-size"`
-						PacketsWithDataLengthLessThanHeaderlength float64 `xml:"packets-with-data-length-less-than-headerlength"`
-						PacketsWithIncorrectVersionNumber         float64 `xml:"packets-with-incorrect-version-number"`
-						PacketsDestinedToDeadNextHop              float64 `xml:"packets-destined-to-dead-next-hop"`
-						FragmentsReceived                         float64 `xml:"fragments-received"`
-						FragmentsDroppedDueToOutofspaceOrDup      float64 `xml:"fragments-dropped-due-to-outofspace-or-dup"`
-						FragmentsDroppedDueToQueueoverflow        float64 `xml:"fragments-dropped-due-to-queueoverflow"`
-						FragmentsDroppedAfterTimeout              float64 `xml:"fragments-dropped-after-timeout"`
-						PacketsReassembledOk                      float64 `xml:"packets-reassembled-ok"`
-						PacketsForThisHost                        float64 `xml:"packets-for-this-host"`
-						PacketsForUnknownOrUnsupportedProtocol    float64 `xml:"packets-for-unknown-or-unsupported-protocol"`
-						PacketsForwarded                          float64 `xml:"packets-forwarded"`
-						PacketsNotForwardable                     float64 `xml:"packets-not-forwardable"`
-						RedirectsSent                             float64 `xml:"redirects-sent"`
-						PacketsSentFromThisHost                   float64 `xml:"packets-sent-from-this-host"`
-						PacketsSentWithFabricatedIpHeader         float64 `xml:"packets-sent-with-fabricated-ip-header"`
-						OutputPacketsDroppedDueToNoBufs           float64 `xml:"output-packets-dropped-due-to-no-bufs"`
-						OutputPacketsDiscardedDueToNoRoute        float64 `xml:"output-packets-discarded-due-to-no-route"`
-						OutputDatagramsFragmented                 float64 `xml:"output-datagrams-fragmented"`
-						FragmentsCreated                          float64 `xml:"fragments-created"`
-						DatagramsThatCanNotBeFragmented           float64 `xml:"datagrams-that-can-not-be-fragmented"`
-						PacketsWithBadOptions                     float64 `xml:"packets-with-bad-options"`
-						PacketsWithOptionsHandledWithoutError     float64 `xml:"packets-with-options-handled-without-error"`
-						StrictSourceAndRecordRouteOptions         float64 `xml:"strict-source-and-record-route-options"`
-						LooseSourceAndRecordRouteOptions          float64 `xml:"loose-source-and-record-route-options"`
-						RecordRouteOptions                        float64 `xml:"record-route-options"`
-						TimestampOptions                          float64 `xml:"timestamp-options"`
-						TimestampAndAddressOptions                float64 `xml:"timestamp-and-address-options"`
-						TimestampAndPrespecifiedAddressOptions    float64 `xml:"timestamp-and-prespecified-address-options"`
-						OptionPacketsDroppedDueToRateLimit        float64 `xml:"option-packets-dropped-due-to-rate-limit"`
-						RouterAlertOptions                        float64 `xml:"router-alert-options"`
-						MulticastPacketsDropped                   float64 `xml:"multicast-packets-dropped"`
-						PacketsDropped                            float64 `xml:"packets-dropped"`
-						TransitRePacketsDroppedOnMgmtInterface    float64 `xml:"transit-re-packets-dropped-on-mgmt-interface"`
-						PacketsUsedFirstNexthopInEcmpUnilist      float64 `xml:"packets-used-first-nexthop-in-ecmp-unilist"`
-						IncomingTtpoipPacketsReceived             float64 `xml:"incoming-ttpoip-packets-received"`
-						IncomingTtpoipPacketsDropped              float64 `xml:"incoming-ttpoip-packets-dropped"`
-						OutgoingTtpoipPacketsSent                 float64 `xml:"outgoing-ttpoip-packets-sent"`
-						OutgoingTtpoipPacketsDropped              float64 `xml:"outgoing-ttpoip-packets-dropped"`
-						IncomingRawipPacketsDroppedNoSocketBuffer float64 `xml:"incoming-rawip-packets-dropped-no-socket-buffer"`
-						IncomingVirtualNodePacketsDelivered       float64 `xml:"incoming-virtual-node-packets-delivered"`
-					} `xml:"ip"`
-					Icmp struct {
-						Text                                       string `xml:",chardata"`
-						DropsDueToRateLimit                        string `xml:"drops-due-to-rate-limit"`
-						CallsToIcmpError                           string `xml:"calls-to-icmp-error"`
-						ErrorsNotGeneratedBecauseOldMessageWasIcmp string `xml:"errors-not-generated-because-old-message-was-icmp"`
-						Histogram                                  []struct {
-							Text                             string `xml:",chardata"`
-							TypeOfHistogram                  string `xml:"type-of-histogram"`
-							IcmpEchoReply                    string `xml:"icmp-echo-reply"`
-							DestinationUnreachable           string `xml:"destination-unreachable"`
-							IcmpEcho                         string `xml:"icmp-echo"`
-							TimeStampReply                   string `xml:"time-stamp-reply"`
-							TimeExceeded                     string `xml:"time-exceeded"`
-							TimeStamp                        string `xml:"time-stamp"`
-							AddressMaskRequest               string `xml:"address-mask-request"`
-							AnEndpointChangedItsCookiesecret string `xml:"an-endpoint-changed-its-cookiesecret"`
-						} `xml:"histogram"`
-						MessagesWithBadCodeFields                                string `xml:"messages-with-bad-code-fields"`
-						MessagesLessThanTheMinimumLength                         string `xml:"messages-less-than-the-minimum-length"`
-						MessagesWithBadChecksum                                  string `xml:"messages-with-bad-checksum"`
-						MessagesWithBadSourceAddress                             string `xml:"messages-with-bad-source-address"`
-						MessagesWithBadLength                                    string `xml:"messages-with-bad-length"`
-						EchoDropsWithBroadcastOrMulticastDestinatonAddress       string `xml:"echo-drops-with-broadcast-or-multicast-destinaton-address"`
-						TimestampDropsWithBroadcastOrMulticastDestinationAddress string `xml:"timestamp-drops-with-broadcast-or-multicast-destination-address"`
-						MessageResponsesGenerated                                string `xml:"message-responses-generated"`
-					} `xml:"icmp"`
-					Arp struct {
-						Text                                                     string `xml:",chardata"`
-						DatagramsReceived                                        string `xml:"datagrams-received"`
-						ArpRequestsReceived                                      string `xml:"arp-requests-received"`
-						ArpRepliesReceived                                       string `xml:"arp-replies-received"`
-						ResolutionRequestReceived                                string `xml:"resolution-request-received"`
-						ResolutionRequestDropped                                 string `xml:"resolution-request-dropped"`
-						UnrestrictedProxyRequests                                string `xml:"unrestricted-proxy-requests"`
-						RestrictedProxyRequests                                  string `xml:"restricted-proxy-requests"`
-						ReceivedProxyRequests                                    string `xml:"received-proxy-requests"`
-						ProxyRequestsNotProxied                                  string `xml:"proxy-requests-not-proxied"`
-						RestrictedProxyRequestsNotProxied                        string `xml:"restricted-proxy-requests-not-proxied"`
-						DatagramsWithBogusInterface                              string `xml:"datagrams-with-bogus-interface"`
-						DatagramsWithIncorrectLength                             string `xml:"datagrams-with-incorrect-length"`
-						DatagramsForNonIpProtocol                                string `xml:"datagrams-for-non-ip-protocol"`
-						DatagramsWithUnsupportedOpcode                           string `xml:"datagrams-with-unsupported-opcode"`
-						DatagramsWithBadProtocolAddressLength                    string `xml:"datagrams-with-bad-protocol-address-length"`
-						DatagramsWithBadHardwareAddressLength                    string `xml:"datagrams-with-bad-hardware-address-length"`
-						DatagramsWithMulticastSourceAddress                      string `xml:"datagrams-with-multicast-source-address"`
-						DatagramsWithMulticastTargetAddress                      string `xml:"datagrams-with-multicast-target-address"`
-						DatagramsWithMyOwnHardwareAddress                        string `xml:"datagrams-with-my-own-hardware-address"`
-						DatagramsForAnAddressNotOnTheInterface                   string `xml:"datagrams-for-an-address-not-on-the-interface"`
-						DatagramsWithABroadcastSourceAddress                     string `xml:"datagrams-with-a-broadcast-source-address"`
-						DatagramsWithSourceAddressDuplicateToMine                string `xml:"datagrams-with-source-address-duplicate-to-mine"`
-						DatagramsWhichWereNotForMe                               string `xml:"datagrams-which-were-not-for-me"`
-						PacketsDiscardedWaitingForResolution                     string `xml:"packets-discarded-waiting-for-resolution"`
-						PacketsSentAfterWaitingForResolution                     string `xml:"packets-sent-after-waiting-for-resolution"`
-						ArpRequestsSent                                          string `xml:"arp-requests-sent"`
-						ArpRepliesSent                                           string `xml:"arp-replies-sent"`
-						RequestsForMemoryDenied                                  string `xml:"requests-for-memory-denied"`
-						RequestsDroppedOnEntry                                   string `xml:"requests-dropped-on-entry"`
-						RequestsDroppedDuringRetry                               string `xml:"requests-dropped-during-retry"`
-						RequestsDroppedDueToInterfaceDeletion                    string `xml:"requests-dropped-due-to-interface-deletion"`
-						RequestsOnUnnumberedInterfaces                           string `xml:"requests-on-unnumbered-interfaces"`
-						NewRequestsOnUnnumberedInterfaces                        string `xml:"new-requests-on-unnumbered-interfaces"`
-						RepliesFromUnnumberedInterfaces                          string `xml:"replies-from-unnumbered-interfaces"`
-						RequestsOnUnnumberedInterfaceWithNonSubnettedDonor       string `xml:"requests-on-unnumbered-interface-with-non-subnetted-donor"`
-						RepliesFromUnnumberedInterfaceWithNonSubnettedDonor      string `xml:"replies-from-unnumbered-interface-with-non-subnetted-donor"`
-						ArpPacketsRejectedAsFamilyIsConfiguredWithDenyArp        string `xml:"arp-packets-rejected-as-family-is-configured-with-deny-arp"`
-						ArpResponsePacketsAreRejectedOnMcAeIclInterface          string `xml:"arp-response-packets-are-rejected-on-mc-ae-icl-interface"`
-						ArpRepliesAreRejectedAsSourceAndDestinationIsSame        string `xml:"arp-replies-are-rejected-as-source-and-destination-is-same"`
-						ArpProbeForProxyAddressReachableFromTheIncomingInterface string `xml:"arp-probe-for-proxy-address-reachable-from-the-incoming-interface"`
-						ArpRequestDiscardedForVrrpSourceAddress                  string `xml:"arp-request-discarded-for-vrrp-source-address"`
-						SelfArpRequestPacketReceivedOnIrbInterface               string `xml:"self-arp-request-packet-received-on-irb-interface"`
-						ProxyArpRequestDiscardedAsSourceIpIsAProxyTarget         string `xml:"proxy-arp-request-discarded-as-source-ip-is-a-proxy-target"`
-						ArpPacketsAreDroppedAsNexthopAllocationFailed            string `xml:"arp-packets-are-dropped-as-nexthop-allocation-failed"`
-						ArpPacketsReceivedFromPeerVrrpRouterAndDiscarded         string `xml:"arp-packets-received-from-peer-vrrp-router-and-discarded"`
-						ArpPacketsAreRejectedAsTargetIpArpResolveIsInProgress    string `xml:"arp-packets-are-rejected-as-target-ip-arp-resolve-is-in-progress"`
-						GratArpPacketsAreIgnoredAsMacAddressIsNotChanged         string `xml:"grat-arp-packets-are-ignored-as-mac-address-is-not-changed"`
-						ArpPacketsAreDroppedFromPeerVrrp                         string `xml:"arp-packets-are-dropped-from-peer-vrrp"`
-						ArpPacketsAreDroppedAsDriverCallFailed                   string `xml:"arp-packets-are-dropped-as-driver-call-failed"`
-						ArpPacketsAreDroppedAsSourceIsNotValidated               string `xml:"arp-packets-are-dropped-as-source-is-not-validated"`
-						ArpSystemMax                                             string `xml:"arp-system-max"`
-						ArpPublicMax                                             string `xml:"arp-public-max"`
-						ArpIriMax                                                string `xml:"arp-iri-max"`
-						ArpMgtMax                                                string `xml:"arp-mgt-max"`
-						ArpPublicCnt                                             string `xml:"arp-public-cnt"`
-						ArpIriCnt                                                string `xml:"arp-iri-cnt"`
-						ArpMgtCnt                                                string `xml:"arp-mgt-cnt"`
-						ArpSystemDrop                                            string `xml:"arp-system-drop"`
-						ArpPublicDrop                                            string `xml:"arp-public-drop"`
-						ArpIriDrop                                               string `xml:"arp-iri-drop"`
-						ArpMgtDrop                                               string `xml:"arp-mgt-drop"`
-					} `xml:"arp"`
-					Ip6 struct {
-						Text                                  string  `xml:",chardata"`
-						TotalPacketsReceived                  float64 `xml:"total-packets-received"`
-						Ip6PacketsWithSizeSmallerThanMinimum  float64 `xml:"ip6-packets-with-size-smaller-than-minimum"`
-						PacketsWithDatasizeLessThanDataLength float64 `xml:"packets-with-datasize-less-than-data-length"`
-						Ip6PacketsWithBadOptions              float64 `xml:"ip6-packets-with-bad-options"`
-						Ip6PacketsWithIncorrectVersionNumber  float64 `xml:"ip6-packets-with-incorrect-version-number"`
-						Ip6FragmentsReceived                  float64 `xml:"ip6-fragments-received"`
-						DuplicateOrOutOfSpaceFragmentsDropped float64 `xml:"duplicate-or-out-of-space-fragments-dropped"`
-						Ip6FragmentsDroppedAfterTimeout       float64 `xml:"ip6-fragments-dropped-after-timeout"`
-						FragmentsThatExceededLimit            float64 `xml:"fragments-that-exceeded-limit"`
-						Ip6PacketsReassembledOk               float64 `xml:"ip6-packets-reassembled-ok"`
-						Ip6PacketsForThisHost                 float64 `xml:"ip6-packets-for-this-host"`
-						Ip6PacketsForwarded                   float64 `xml:"ip6-packets-forwarded"`
-						Ip6PacketsNotForwardable              float64 `xml:"ip6-packets-not-forwardable"`
-						Ip6RedirectsSent                      float64 `xml:"ip6-redirects-sent"`
-						Ip6PacketsSentFromThisHost            float64 `xml:"ip6-packets-sent-from-this-host"`
-						Ip6PacketsSentWithFabricatedIpHeader  float64 `xml:"ip6-packets-sent-with-fabricated-ip-header"`
-						Ip6OutputPacketsDroppedDueToNoBufs    float64 `xml:"ip6-output-packets-dropped-due-to-no-bufs"`
-						Ip6OutputPacketsDiscardedDueToNoRoute float64 `xml:"ip6-output-packets-discarded-due-to-no-route"`
-						Ip6OutputDatagramsFragmented          float64 `xml:"ip6-output-datagrams-fragmented"`
-						Ip6FragmentsCreated                   float64 `xml:"ip6-fragments-created"`
-						Ip6DatagramsThatCanNotBeFragmented    float64 `xml:"ip6-datagrams-that-can-not-be-fragmented"`
-						PacketsThatViolatedScopeRules         float64 `xml:"packets-that-violated-scope-rules"`
-						MulticastPacketsWhichWeDoNotJoin      float64 `xml:"multicast-packets-which-we-do-not-join"`
-						Histogram                             float64 `xml:"histogram"`
-						Ip6nhTcp                              float64 `xml:"ip6nh-tcp"`
-						Ip6nhUdp                              float64 `xml:"ip6nh-udp"`
-						Ip6nhIcmp6                            float64 `xml:"ip6nh-icmp6"`
-						PacketsWhoseHeadersAreNotContinuous   float64 `xml:"packets-whose-headers-are-not-continuous"`
-						TunnelingPacketsThatCanNotFindGif     float64 `xml:"tunneling-packets-that-can-not-find-gif"`
-						PacketsDiscardedDueToTooMayHeaders    float64 `xml:"packets-discarded-due-to-too-may-headers"`
-						FailuresOfSourceAddressSelection      float64 `xml:"failures-of-source-address-selection"`
-						HeaderType                            []struct {
-							Text                            string  `xml:",chardata"`
-							HeaderForSourceAddressSelection string  `xml:"header-for-source-address-selection"`
-							LinkLocals                      float64 `xml:"link-locals"`
-							Globals                         float64 `xml:"globals"`
-							AddressScope                    float64 `xml:"address-scope"`
-							HexValue                        float64 `xml:"hex-value"`
-						} `xml:"header-type"`
-						ForwardCacheHit                       float64 `xml:"forward-cache-hit"`
-						ForwardCacheMiss                      float64 `xml:"forward-cache-miss"`
-						Ip6PacketsDestinedToDeadNextHop       float64 `xml:"ip6-packets-destined-to-dead-next-hop"`
-						Ip6OptionPacketsDroppedDueToRateLimit float64 `xml:"ip6-option-packets-dropped-due-to-rate-limit"`
-						Ip6PacketsDropped                     float64 `xml:"ip6-packets-dropped"`
-						PacketsDroppedDueToBadProtocol        float64 `xml:"packets-dropped-due-to-bad-protocol"`
-						TransitRePacketDroppedOnMgmtInterface float64 `xml:"transit-re-packet-dropped-on-mgmt-interface"`
-						PacketUsedFirstNexthopInEcmpUnilist   float64 `xml:"packet-used-first-nexthop-in-ecmp-unilist"`
-					} `xml:"ip6"`
-					Icmp6 struct {
-						Text                                            string `xml:",chardata"`
-						ProtocolName                                    string `xml:"protocol-name"`
-						CallsToIcmp6Error                               string `xml:"calls-to-icmp6-error"`
-						ErrorsNotGeneratedBecauseOldMessageWasIcmpError string `xml:"errors-not-generated-because-old-message-was-icmp-error"`
-						ErrorsNotGeneratedBecauseRateLimitation         string `xml:"errors-not-generated-because-rate-limitation"`
-						OutputHistogram                                 struct {
-							Text                    string `xml:",chardata"`
-							Style                   string `xml:"style,attr"`
-							HistogramType           string `xml:"histogram-type"`
-							UnreachableIcmp6Packets string `xml:"unreachable-icmp6-packets"`
-							Icmp6Echo               string `xml:"icmp6-echo"`
-							Icmp6EchoReply          string `xml:"icmp6-echo-reply"`
-							NeighborSolicitation    string `xml:"neighbor-solicitation"`
-							NeighborAdvertisement   string `xml:"neighbor-advertisement"`
-						} `xml:"output-histogram"`
-						Icmp6MessagesWithBadCodeFields string `xml:"icmp6-messages-with-bad-code-fields"`
-						MessagesLessThanMinimumLength  string `xml:"messages-less-than-minimum-length"`
-						BadChecksums                   string `xml:"bad-checksums"`
-						Icmp6MessagesWithBadLength     string `xml:"icmp6-messages-with-bad-length"`
-						InputHistogram                 struct {
-							Text                           string `xml:",chardata"`
-							Style                          string `xml:"style,attr"`
-							HistogramType                  string `xml:"histogram-type"`
-							UnreachableIcmp6Packets        string `xml:"unreachable-icmp6-packets"`
-							PacketTooBig                   string `xml:"packet-too-big"`
-							TimeExceededIcmp6Packets       string `xml:"time-exceeded-icmp6-packets"`
-							Icmp6Echo                      string `xml:"icmp6-echo"`
-							Icmp6EchoReply                 string `xml:"icmp6-echo-reply"`
-							RouterSolicitationIcmp6Packets string `xml:"router-solicitation-icmp6-packets"`
-							NeighborSolicitation           string `xml:"neighbor-solicitation"`
-							NeighborAdvertisement          string `xml:"neighbor-advertisement"`
-						} `xml:"input-histogram"`
-						HistogramOfErrorMessagesToBeGenerated string `xml:"histogram-of-error-messages-to-be-generated"`
-						NoRoute                               string `xml:"no-route"`
-						AdministrativelyProhibited            string `xml:"administratively-prohibited"`
-						BeyondScope                           string `xml:"beyond-scope"`
-						AddressUnreachable                    string `xml:"address-unreachable"`
-						PortUnreachable                       string `xml:"port-unreachable"`
-						PacketTooBig                          string `xml:"packet-too-big"`
-						TimeExceedTransit                     string `xml:"time-exceed-transit"`
-						TimeExceedReassembly                  string `xml:"time-exceed-reassembly"`
-						ErroneousHeaderField                  string `xml:"erroneous-header-field"`
-						UnrecognizedNextHeader                string `xml:"unrecognized-next-header"`
-						UnrecognizedOption                    string `xml:"unrecognized-option"`
-						Redirect                              string `xml:"redirect"`
-						Unknown                               string `xml:"unknown"`
-						Icmp6MessageResponsesGenerated        string `xml:"icmp6-message-responses-generated"`
-						MessagesWithTooManyNdOptions          string `xml:"messages-with-too-many-nd-options"`
-						NdSystemMax                           string `xml:"nd-system-max"`
-						NdPublicMax                           string `xml:"nd-public-max"`
-						NdIriMax                              string `xml:"nd-iri-max"`
-						NdMgtMax                              string `xml:"nd-mgt-max"`
-						NdPublicCnt                           string `xml:"nd-public-cnt"`
-						NdIriCnt                              string `xml:"nd-iri-cnt"`
-						NdMgtCnt                              string `xml:"nd-mgt-cnt"`
-						NdSystemDrop                          string `xml:"nd-system-drop"`
-						NdPublicDrop                          string `xml:"nd-public-drop"`
-						NdIriDrop                             string `xml:"nd-iri-drop"`
-						NdMgtDrop                             string `xml:"nd-mgt-drop"`
-						Nd6NdpProxyRequests                   string `xml:"nd6-ndp-proxy-requests"`
-						Nd6DadProxyRequests                   string `xml:"nd6-dad-proxy-requests"`
-						Nd6NdpProxyResponses                  string `xml:"nd6-ndp-proxy-responses"`
-						Nd6DadProxyConflicts                  string `xml:"nd6-dad-proxy-conflicts"`
-						Nd6DupProxyResponses                  string `xml:"nd6-dup-proxy-responses"`
-						Nd6NdpProxyResolveCnt                 string `xml:"nd6-ndp-proxy-resolve-cnt"`
-						Nd6DadProxyResolveCnt                 string `xml:"nd6-dad-proxy-resolve-cnt"`
-						Nd6DadProxyEqmacDrop                  string `xml:"nd6-dad-proxy-eqmac-drop"`
-						Nd6DadProxyNomacDrop                  string `xml:"nd6-dad-proxy-nomac-drop"`
-						Nd6NdpProxyUnrRequests                string `xml:"nd6-ndp-proxy-unr-requests"`
-						Nd6DadProxyUnrRequests                string `xml:"nd6-dad-proxy-unr-requests"`
-						Nd6NdpProxyUnrResponses               string `xml:"nd6-ndp-proxy-unr-responses"`
-						Nd6DadProxyUnrConflicts               string `xml:"nd6-dad-proxy-unr-conflicts"`
-						Nd6DadProxyUnrResponses               string `xml:"nd6-dad-proxy-unr-responses"`
-						Nd6NdpProxyUnrResolveCnt              string `xml:"nd6-ndp-proxy-unr-resolve-cnt"`
-						Nd6DadProxyUnrResolveCnt              string `xml:"nd6-dad-proxy-unr-resolve-cnt"`
-						Nd6DadProxyUnrEqportDrop              string `xml:"nd6-dad-proxy-unr-eqport-drop"`
-						Nd6DadProxyUnrNomacDrop               string `xml:"nd6-dad-proxy-unr-nomac-drop"`
-						Nd6RequestsDroppedOnEntry             string `xml:"nd6-requests-dropped-on-entry"`
-						Nd6RequestsDroppedDuringRetry         string `xml:"nd6-requests-dropped-during-retry"`
-					} `xml:"icmp6"`
-					Mpls struct {
-						Text                                      string `xml:",chardata"`
-						TotalMplsPacketsReceived                  string `xml:"total-mpls-packets-received"`
-						PacketsForwarded                          string `xml:"packets-forwarded"`
-						PacketsDropped                            string `xml:"packets-dropped"`
-						PacketsWithHeaderTooSmall                 string `xml:"packets-with-header-too-small"`
-						AfterTaggingPacketsCanNotFitLinkMtu       string `xml:"after-tagging-packets-can-not-fit-link-mtu"`
-						PacketsWithIpv4ExplicitNullTag            string `xml:"packets-with-ipv4-explicit-null-tag"`
-						PacketsWithIpv4ExplicitNullChecksumErrors string `xml:"packets-with-ipv4-explicit-null-checksum-errors"`
-						PacketsWithRouterAlertTag                 string `xml:"packets-with-router-alert-tag"`
-						LspPingPackets                            string `xml:"lsp-ping-packets"`
-						PacketsWithTtlExpired                     string `xml:"packets-with-ttl-expired"`
-						PacketsWithTagEncodingError               string `xml:"packets-with-tag-encoding-error"`
-						PacketsDiscardedDueToNoRoute              string `xml:"packets-discarded-due-to-no-route"`
-						PacketsUsedFirstNexthopInEcmpUnilist      string `xml:"packets-used-first-nexthop-in-ecmp-unilist"`
-						PacketsDroppedDueToIflDown                string `xml:"packets-dropped-due-to-ifl-down"`
-						PacketsDroppedAtMplsSocketSend            string `xml:"packets-dropped-at-mpls-socket-send"`
-						PacketsForwardedAtMplsSocketSend          string `xml:"packets-forwarded-at-mpls-socket-send"`
-						PacketsDroppedAtP2mpCnhOutput             string `xml:"packets-dropped-at-p2mp-cnh-output"`
-					} `xml:"mpls"`
-				}{
-					Ip: struct {
-						Text                                      string  `xml:",chardata"`
-						PacketsReceived                           float64 `xml:"packets-received"`
-						BadHeaderChecksums                        float64 `xml:"bad-header-checksums"`
-						PacketsWithSizeSmallerThanMinimum         float64 `xml:"packets-with-size-smaller-than-minimum"`
-						PacketsWithDataSizeLessThanDatalength     float64 `xml:"packets-with-data-size-less-than-datalength"`
-						PacketsWithHeaderLengthLessThanDataSize   float64 `xml:"packets-with-header-length-less-than-data-size"`
-						PacketsWithDataLengthLessThanHeaderlength float64 `xml:"packets-with-data-length-less-than-headerlength"`
-						PacketsWithIncorrectVersionNumber         float64 `xml:"packets-with-incorrect-version-number"`
-						PacketsDestinedToDeadNextHop              float64 `xml:"packets-destined-to-dead-next-hop"`
-						FragmentsReceived                         float64 `xml:"fragments-received"`
-						FragmentsDroppedDueToOutofspaceOrDup      float64 `xml:"fragments-dropped-due-to-outofspace-or-dup"`
-						FragmentsDroppedDueToQueueoverflow        float64 `xml:"fragments-dropped-due-to-queueoverflow"`
-						FragmentsDroppedAfterTimeout              float64 `xml:"fragments-dropped-after-timeout"`
-						PacketsReassembledOk                      float64 `xml:"packets-reassembled-ok"`
-						PacketsForThisHost                        float64 `xml:"packets-for-this-host"`
-						PacketsForUnknownOrUnsupportedProtocol    float64 `xml:"packets-for-unknown-or-unsupported-protocol"`
-						PacketsForwarded                          float64 `xml:"packets-forwarded"`
-						PacketsNotForwardable                     float64 `xml:"packets-not-forwardable"`
-						RedirectsSent                             float64 `xml:"redirects-sent"`
-						PacketsSentFromThisHost                   float64 `xml:"packets-sent-from-this-host"`
-						PacketsSentWithFabricatedIpHeader         float64 `xml:"packets-sent-with-fabricated-ip-header"`
-						OutputPacketsDroppedDueToNoBufs           float64 `xml:"output-packets-dropped-due-to-no-bufs"`
-						OutputPacketsDiscardedDueToNoRoute        float64 `xml:"output-packets-discarded-due-to-no-route"`
-						OutputDatagramsFragmented                 float64 `xml:"output-datagrams-fragmented"`
-						FragmentsCreated                          float64 `xml:"fragments-created"`
-						DatagramsThatCanNotBeFragmented           float64 `xml:"datagrams-that-can-not-be-fragmented"`
-						PacketsWithBadOptions                     float64 `xml:"packets-with-bad-options"`
-						PacketsWithOptionsHandledWithoutError     float64 `xml:"packets-with-options-handled-without-error"`
-						StrictSourceAndRecordRouteOptions         float64 `xml:"strict-source-and-record-route-options"`
-						LooseSourceAndRecordRouteOptions          float64 `xml:"loose-source-and-record-route-options"`
-						RecordRouteOptions                        float64 `xml:"record-route-options"`
-						TimestampOptions                          float64 `xml:"timestamp-options"`
-						TimestampAndAddressOptions                float64 `xml:"timestamp-and-address-options"`
-						TimestampAndPrespecifiedAddressOptions    float64 `xml:"timestamp-and-prespecified-address-options"`
-						OptionPacketsDroppedDueToRateLimit        float64 `xml:"option-packets-dropped-due-to-rate-limit"`
-						RouterAlertOptions                        float64 `xml:"router-alert-options"`
-						MulticastPacketsDropped                   float64 `xml:"multicast-packets-dropped"`
-						PacketsDropped                            float64 `xml:"packets-dropped"`
-						TransitRePacketsDroppedOnMgmtInterface    float64 `xml:"transit-re-packets-dropped-on-mgmt-interface"`
-						PacketsUsedFirstNexthopInEcmpUnilist      float64 `xml:"packets-used-first-nexthop-in-ecmp-unilist"`
-						IncomingTtpoipPacketsReceived             float64 `xml:"incoming-ttpoip-packets-received"`
-						IncomingTtpoipPacketsDropped              float64 `xml:"incoming-ttpoip-packets-dropped"`
-						OutgoingTtpoipPacketsSent                 float64 `xml:"outgoing-ttpoip-packets-sent"`
-						OutgoingTtpoipPacketsDropped              float64 `xml:"outgoing-ttpoip-packets-dropped"`
-						IncomingRawipPacketsDroppedNoSocketBuffer float64 `xml:"incoming-rawip-packets-dropped-no-socket-buffer"`
-						IncomingVirtualNodePacketsDelivered       float64 `xml:"incoming-virtual-node-packets-delivered"`
-					}{
-						PacketsReceived:                           1000,
-						BadHeaderChecksums:                        5,
-						PacketsWithSizeSmallerThanMinimum:         10,
-						PacketsWithDataSizeLessThanDatalength:     2,
-						PacketsWithHeaderLengthLessThanDataSize:   3,
-						PacketsWithDataLengthLessThanHeaderlength: 1,
-						PacketsWithIncorrectVersionNumber:         0,
-						PacketsDestinedToDeadNextHop:              0,
-						FragmentsReceived:                         50,
-						FragmentsDroppedDueToOutofspaceOrDup:      2,
-						FragmentsDroppedDueToQueueoverflow:        1,
-						FragmentsDroppedAfterTimeout:              0,
-						PacketsReassembledOk:                      48,
-						PacketsForThisHost:                        500,
-						PacketsForUnknownOrUnsupportedProtocol:    5,
-						PacketsForwarded:                          400,
-						PacketsNotForwardable:                     10,
-						RedirectsSent:                             2,
-						PacketsSentFromThisHost:                   800,
-						PacketsSentWithFabricatedIpHeader:         0,
-						OutputPacketsDroppedDueToNoBufs:           3,
-						OutputPacketsDiscardedDueToNoRoute:        1,
-						OutputDatagramsFragmented:                 20,
-						FragmentsCreated:                          40,
-						DatagramsThatCanNotBeFragmented:           2,
-						PacketsWithBadOptions:                     1,
-						PacketsWithOptionsHandledWithoutError:     15,
-						StrictSourceAndRecordRouteOptions:         0,
-						LooseSourceAndRecordRouteOptions:          2,
-						RecordRouteOptions:                        5,
-						TimestampOptions:                          3,
-						TimestampAndAddressOptions:                1,
-						TimestampAndPrespecifiedAddressOptions:    0,
-						OptionPacketsDroppedDueToRateLimit:        0,
-						RouterAlertOptions:                        4,
-						MulticastPacketsDropped:                   8,
-						PacketsDropped:                            12,
-						TransitRePacketsDroppedOnMgmtInterface:    0,
-						PacketsUsedFirstNexthopInEcmpUnilist:      25,
-						IncomingTtpoipPacketsReceived:             100,
-						IncomingTtpoipPacketsDropped:              2,
-						OutgoingTtpoipPacketsSent:                 95,
-						OutgoingTtpoipPacketsDropped:              1,
-						IncomingRawipPacketsDroppedNoSocketBuffer: 3,
-						IncomingVirtualNodePacketsDelivered:       200,
-					},
-				},
-				Cli: struct {
-					Text   string `xml:",chardata"`
-					Banner string `xml:"banner"`
-				}{
-					Banner: "user@router>",
-				},
+			expect: func(t *testing.T, got SystemStatistics) {
+				ip := got.Statistics.Ip
+				assert.Equal(t, float64(1000), ip.PacketsReceived)
+				assert.Equal(t, float64(5), ip.BadHeaderChecksums)
+				assert.Equal(t, float64(10), ip.PacketsWithSizeSmallerThanMinimum)
+				assert.Equal(t, float64(2), ip.PacketsWithDataSizeLessThanDatalength)
+				assert.Equal(t, float64(3), ip.PacketsWithHeaderLengthLessThanDataSize)
+				assert.Equal(t, float64(1), ip.PacketsWithDataLengthLessThanHeaderlength)
+				assert.Equal(t, float64(0), ip.PacketsWithIncorrectVersionNumber)
+				assert.Equal(t, float64(0), ip.PacketsDestinedToDeadNextHop)
+				assert.Equal(t, float64(50), ip.FragmentsReceived)
+				assert.Equal(t, float64(2), ip.FragmentsDroppedDueToOutofspaceOrDup)
+				assert.Equal(t, float64(1), ip.FragmentsDroppedDueToQueueoverflow)
+				assert.Equal(t, float64(0), ip.FragmentsDroppedAfterTimeout)
+				assert.Equal(t, float64(48), ip.PacketsReassembledOk)
+				assert.Equal(t, float64(500), ip.PacketsForThisHost)
+				assert.Equal(t, float64(5), ip.PacketsForUnknownOrUnsupportedProtocol)
+				assert.Equal(t, float64(400), ip.PacketsForwarded)
+				assert.Equal(t, float64(10), ip.PacketsNotForwardable)
+				assert.Equal(t, float64(2), ip.RedirectsSent)
+				assert.Equal(t, float64(800), ip.PacketsSentFromThisHost)
+				assert.Equal(t, float64(0), ip.PacketsSentWithFabricatedIpHeader)
+				assert.Equal(t, float64(3), ip.OutputPacketsDroppedDueToNoBufs)
+				assert.Equal(t, float64(1), ip.OutputPacketsDiscardedDueToNoRoute)
+				assert.Equal(t, float64(20), ip.OutputDatagramsFragmented)
+				assert.Equal(t, float64(40), ip.FragmentsCreated)
+				assert.Equal(t, float64(2), ip.DatagramsThatCanNotBeFragmented)
+				assert.Equal(t, float64(1), ip.PacketsWithBadOptions)
+				assert.Equal(t, float64(15), ip.PacketsWithOptionsHandledWithoutError)
+				assert.Equal(t, float64(0), ip.StrictSourceAndRecordRouteOptions)
+				assert.Equal(t, float64(2), ip.LooseSourceAndRecordRouteOptions)
+				assert.Equal(t, float64(5), ip.RecordRouteOptions)
+				assert.Equal(t, float64(3), ip.TimestampOptions)
+				assert.Equal(t, float64(1), ip.TimestampAndAddressOptions)
+				assert.Equal(t, float64(0), ip.TimestampAndPrespecifiedAddressOptions)
+				assert.Equal(t, float64(0), ip.OptionPacketsDroppedDueToRateLimit)
+				assert.Equal(t, float64(4), ip.RouterAlertOptions)
+				assert.Equal(t, float64(8), ip.MulticastPacketsDropped)
+				assert.Equal(t, float64(12), ip.PacketsDropped)
+				assert.Equal(t, float64(0), ip.TransitRePacketsDroppedOnMgmtInterface)
+				assert.Equal(t, float64(25), ip.PacketsUsedFirstNexthopInEcmpUnilist)
+				assert.Equal(t, float64(100), ip.IncomingTtpoipPacketsReceived)
+				assert.Equal(t, float64(2), ip.IncomingTtpoipPacketsDropped)
+				assert.Equal(t, float64(95), ip.OutgoingTtpoipPacketsSent)
+				assert.Equal(t, float64(1), ip.OutgoingTtpoipPacketsDropped)
+				assert.Equal(t, float64(3), ip.IncomingRawipPacketsDroppedNoSocketBuffer)
+				assert.Equal(t, float64(200), ip.IncomingVirtualNodePacketsDelivered)
+				assert.Equal(t, "user@router>", got.Cli.Banner)
 			},
 		},
 		{
 			name:     "empty_ipv4_statistics",
 			xmlInput: string(IPv4DataCase2),
-			expected: SystemStatistics{
-				Cli: struct {
-					Text   string `xml:",chardata"`
-					Banner string `xml:"banner"`
-				}{
-					Banner: "user@router>",
-				},
+			expect: func(t *testing.T, got SystemStatistics) {
+				assert.Equal(t, "user@router>", got.Cli.Banner)
 			},
 		},
 		{
 			name:     "high_values_ipv4_statistics",
 			xmlInput: string(IPv4DataCase3),
-			expected: SystemStatistics{
-				Statistics: struct {
-					Text string `xml:",chardata"`
-					Tcp  struct {
-						Text                                             string  `xml:",chardata"`
-						PacketsSent                                      float64 `xml:"packets-sent"`
-						SentDataPackets                                  float64 `xml:"sent-data-packets"`
-						DataPacketsBytes                                 float64 `xml:"data-packets-bytes"`
-						SentDataPacketsRetransmitted                     float64 `xml:"sent-data-packets-retransmitted"`
-						RetransmittedBytes                               float64 `xml:"retransmitted-bytes"`
-						SentDataUnnecessaryRetransmitted                 float64 `xml:"sent-data-unnecessary-retransmitted"`
-						SentResendsByMtuDiscovery                        float64 `xml:"sent-resends-by-mtu-discovery"`
-						SentAckOnlyPackets                               float64 `xml:"sent-ack-only-packets"`
-						SentPacketsDelayed                               float64 `xml:"sent-packets-delayed"`
-						SentUrgOnlyPackets                               float64 `xml:"sent-urg-only-packets"`
-						SentWindowProbePackets                           float64 `xml:"sent-window-probe-packets"`
-						SentWindowUpdatePackets                          float64 `xml:"sent-window-update-packets"`
-						SentControlPackets                               float64 `xml:"sent-control-packets"`
-						PacketsReceived                                  float64 `xml:"packets-received"`
-						ReceivedAcks                                     float64 `xml:"received-acks"`
-						AcksBytes                                        float64 `xml:"acks-bytes"`
-						ReceivedDuplicateAcks                            float64 `xml:"received-duplicate-acks"`
-						ReceivedAcksForUnsentData                        float64 `xml:"received-acks-for-unsent-data"`
-						PacketsReceivedInSequence                        float64 `xml:"packets-received-in-sequence"`
-						InSequenceBytes                                  float64 `xml:"in-sequence-bytes"`
-						ReceivedCompletelyDuplicatePacket                float64 `xml:"received-completely-duplicate-packet"`
-						DuplicateInBytes                                 float64 `xml:"duplicate-in-bytes"`
-						ReceivedOldDuplicatePackets                      float64 `xml:"received-old-duplicate-packets"`
-						ReceivedPacketsWithSomeDupliacteData             float64 `xml:"received-packets-with-some-dupliacte-data"`
-						SomeDuplicateInBytes                             float64 `xml:"some-duplicate-in-bytes"`
-						ReceivedOutOfOrderPackets                        float64 `xml:"received-out-of-order-packets"`
-						OutOfOrderInBytes                                float64 `xml:"out-of-order-in-bytes"`
-						ReceivedPacketsOfDataAfterWindow                 float64 `xml:"received-packets-of-data-after-window"`
-						Bytes                                            float64 `xml:"bytes"`
-						ReceivedWindowProbes                             float64 `xml:"received-window-probes"`
-						ReceivedWindowUpdatePackets                      float64 `xml:"received-window-update-packets"`
-						PacketsReceivedAfterClose                        float64 `xml:"packets-received-after-close"`
-						ReceivedDiscardedForBadChecksum                  float64 `xml:"received-discarded-for-bad-checksum"`
-						ReceivedDiscardedForBadHeaderOffset              float64 `xml:"received-discarded-for-bad-header-offset"`
-						ReceivedDiscardedBecausePacketTooShort           float64 `xml:"received-discarded-because-packet-too-short"`
-						ConnectionRequests                               float64 `xml:"connection-requests"`
-						ConnectionAccepts                                float64 `xml:"connection-accepts"`
-						BadConnectionAttempts                            float64 `xml:"bad-connection-attempts"`
-						ListenQueueOverflows                             float64 `xml:"listen-queue-overflows"`
-						BadRstWindow                                     float64 `xml:"bad-rst-window"`
-						ConnectionsEstablished                           float64 `xml:"connections-established"`
-						ConnectionsClosed                                float64 `xml:"connections-closed"`
-						Drops                                            float64 `xml:"drops"`
-						ConnectionsUpdatedRttOnClose                     float64 `xml:"connections-updated-rtt-on-close"`
-						ConnectionsUpdatedVarianceOnClose                float64 `xml:"connections-updated-variance-on-close"`
-						ConnectionsUpdatedSsthreshOnClose                float64 `xml:"connections-updated-ssthresh-on-close"`
-						EmbryonicConnectionsDropped                      float64 `xml:"embryonic-connections-dropped"`
-						SegmentsUpdatedRtt                               float64 `xml:"segments-updated-rtt"`
-						Attempts                                         float64 `xml:"attempts"`
-						RetransmitTimeouts                               float64 `xml:"retransmit-timeouts"`
-						ConnectionsDroppedByRetransmitTimeout            float64 `xml:"connections-dropped-by-retransmit-timeout"`
-						PersistTimeouts                                  float64 `xml:"persist-timeouts"`
-						ConnectionsDroppedByPersistTimeout               float64 `xml:"connections-dropped-by-persist-timeout"`
-						KeepaliveTimeouts                                float64 `xml:"keepalive-timeouts"`
-						KeepaliveProbesSent                              float64 `xml:"keepalive-probes-sent"`
-						KeepaliveConnectionsDropped                      float64 `xml:"keepalive-connections-dropped"`
-						AckHeaderPredictions                             float64 `xml:"ack-header-predictions"`
-						DataPacketHeaderPredictions                      float64 `xml:"data-packet-header-predictions"`
-						SyncacheEntriesAdded                             float64 `xml:"syncache-entries-added"`
-						Retransmitted                                    float64 `xml:"retransmitted"`
-						Dupsyn                                           float64 `xml:"dupsyn"`
-						Dropped                                          float64 `xml:"dropped"`
-						Completed                                        float64 `xml:"completed"`
-						BucketOverflow                                   float64 `xml:"bucket-overflow"`
-						CacheOverflow                                    float64 `xml:"cache-overflow"`
-						Reset                                            float64 `xml:"reset"`
-						Stale                                            float64 `xml:"stale"`
-						Aborted                                          float64 `xml:"aborted"`
-						Badack                                           float64 `xml:"badack"`
-						Unreach                                          float64 `xml:"unreach"`
-						ZoneFailures                                     float64 `xml:"zone-failures"`
-						CookiesSent                                      float64 `xml:"cookies-sent"`
-						CookiesReceived                                  float64 `xml:"cookies-received"`
-						SackRecoveryEpisodes                             float64 `xml:"sack-recovery-episodes"`
-						SegmentRetransmits                               float64 `xml:"segment-retransmits"`
-						ByteRetransmits                                  float64 `xml:"byte-retransmits"`
-						SackOptionsReceived                              float64 `xml:"sack-options-received"`
-						SackOpitionsSent                                 float64 `xml:"sack-opitions-sent"`
-						SackScoreboardOverflow                           float64 `xml:"sack-scoreboard-overflow"`
-						AcksSentInResponseButNotExactRsts                float64 `xml:"acks-sent-in-response-but-not-exact-rsts"`
-						AcksSentInResponseToSynsOnEstablishedConnections float64 `xml:"acks-sent-in-response-to-syns-on-established-connections"`
-						RcvPacketsDroppedDueToBadAddress                 float64 `xml:"rcv-packets-dropped-due-to-bad-address"`
-						OutOfSequenceSegmentDrops                        float64 `xml:"out-of-sequence-segment-drops"`
-						RstPackets                                       float64 `xml:"rst-packets"`
-						IcmpPacketsIgnored                               float64 `xml:"icmp-packets-ignored"`
-						SendPacketsDropped                               float64 `xml:"send-packets-dropped"`
-						RcvPacketsDropped                                float64 `xml:"rcv-packets-dropped"`
-						OutgoingSegmentsDropped                          float64 `xml:"outgoing-segments-dropped"`
-						ReceivedSynfinDropped                            float64 `xml:"received-synfin-dropped"`
-						ReceivedIpsecDropped                             float64 `xml:"received-ipsec-dropped"`
-						ReceivedMacDropped                               float64 `xml:"received-mac-dropped"`
-						ReceivedMinttlExceeded                           float64 `xml:"received-minttl-exceeded"`
-						ListenstateBadflagsDropped                       float64 `xml:"listenstate-badflags-dropped"`
-						FinwaitstateBadflagsDropped                      float64 `xml:"finwaitstate-badflags-dropped"`
-						ReceivedDosAttack                                float64 `xml:"received-dos-attack"`
-						ReceivedBadSynack                                float64 `xml:"received-bad-synack"`
-						SyncacheZoneFull                                 float64 `xml:"syncache-zone-full"`
-						ReceivedRstFirewallfilter                        float64 `xml:"received-rst-firewallfilter"`
-						ReceivedNoackTimewait                            float64 `xml:"received-noack-timewait"`
-						ReceivedNoTimewaitState                          float64 `xml:"received-no-timewait-state"`
-						ReceivedRstTimewaitState                         float64 `xml:"received-rst-timewait-state"`
-						ReceivedTimewaitDrops                            float64 `xml:"received-timewait-drops"`
-						ReceivedBadaddrTimewaitState                     float64 `xml:"received-badaddr-timewait-state"`
-						ReceivedAckoffInSynSentrcvd                      float64 `xml:"received-ackoff-in-syn-sentrcvd"`
-						ReceivedBadaddrFirewall                          float64 `xml:"received-badaddr-firewall"`
-						ReceivedNosynSynSent                             float64 `xml:"received-nosyn-syn-sent"`
-						ReceivedBadrstSynSent                            float64 `xml:"received-badrst-syn-sent"`
-						ReceivedBadrstListenState                        float64 `xml:"received-badrst-listen-state"`
-						OptionMaxsegmentLength                           float64 `xml:"option-maxsegment-length"`
-						OptionWindowLength                               float64 `xml:"option-window-length"`
-						OptionTimestampLength                            float64 `xml:"option-timestamp-length"`
-						OptionMd5Length                                  float64 `xml:"option-md5-length"`
-						OptionAuthLength                                 float64 `xml:"option-auth-length"`
-						OptionSackpermittedLength                        float64 `xml:"option-sackpermitted-length"`
-						OptionSackLength                                 float64 `xml:"option-sack-length"`
-						OptionAuthoptionLength                           float64 `xml:"option-authoption-length"`
-					} `xml:"tcp"`
-					Udp struct {
-						Text                                              string  `xml:",chardata"`
-						DatagramsReceived                                 float64 `xml:"datagrams-received"`
-						DatagramsWithIncompleteHeader                     float64 `xml:"datagrams-with-incomplete-header"`
-						DatagramsWithBadDatalengthField                   float64 `xml:"datagrams-with-bad-datalength-field"`
-						DatagramsWithBadChecksum                          float64 `xml:"datagrams-with-bad-checksum"`
-						DatagramsDroppedDueToNoSocket                     float64 `xml:"datagrams-dropped-due-to-no-socket"`
-						BroadcastOrMulticastDatagramsDroppedDueToNoSocket float64 `xml:"broadcast-or-multicast-datagrams-dropped-due-to-no-socket"`
-						DatagramsDroppedDueToFullSocketBuffers            float64 `xml:"datagrams-dropped-due-to-full-socket-buffers"`
-						DatagramsNotForHashedPcb                          float64 `xml:"datagrams-not-for-hashed-pcb"`
-						DatagramsDelivered                                float64 `xml:"datagrams-delivered"`
-						DatagramsOutput                                   float64 `xml:"datagrams-output"`
-					} `xml:"udp"`
-					Ip struct {
-						Text                                      string  `xml:",chardata"`
-						PacketsReceived                           float64 `xml:"packets-received"`
-						BadHeaderChecksums                        float64 `xml:"bad-header-checksums"`
-						PacketsWithSizeSmallerThanMinimum         float64 `xml:"packets-with-size-smaller-than-minimum"`
-						PacketsWithDataSizeLessThanDatalength     float64 `xml:"packets-with-data-size-less-than-datalength"`
-						PacketsWithHeaderLengthLessThanDataSize   float64 `xml:"packets-with-header-length-less-than-data-size"`
-						PacketsWithDataLengthLessThanHeaderlength float64 `xml:"packets-with-data-length-less-than-headerlength"`
-						PacketsWithIncorrectVersionNumber         float64 `xml:"packets-with-incorrect-version-number"`
-						PacketsDestinedToDeadNextHop              float64 `xml:"packets-destined-to-dead-next-hop"`
-						FragmentsReceived                         float64 `xml:"fragments-received"`
-						FragmentsDroppedDueToOutofspaceOrDup      float64 `xml:"fragments-dropped-due-to-outofspace-or-dup"`
-						FragmentsDroppedDueToQueueoverflow        float64 `xml:"fragments-dropped-due-to-queueoverflow"`
-						FragmentsDroppedAfterTimeout              float64 `xml:"fragments-dropped-after-timeout"`
-						PacketsReassembledOk                      float64 `xml:"packets-reassembled-ok"`
-						PacketsForThisHost                        float64 `xml:"packets-for-this-host"`
-						PacketsForUnknownOrUnsupportedProtocol    float64 `xml:"packets-for-unknown-or-unsupported-protocol"`
-						PacketsForwarded                          float64 `xml:"packets-forwarded"`
-						PacketsNotForwardable                     float64 `xml:"packets-not-forwardable"`
-						RedirectsSent                             float64 `xml:"redirects-sent"`
-						PacketsSentFromThisHost                   float64 `xml:"packets-sent-from-this-host"`
-						PacketsSentWithFabricatedIpHeader         float64 `xml:"packets-sent-with-fabricated-ip-header"`
-						OutputPacketsDroppedDueToNoBufs           float64 `xml:"output-packets-dropped-due-to-no-bufs"`
-						OutputPacketsDiscardedDueToNoRoute        float64 `xml:"output-packets-discarded-due-to-no-route"`
-						OutputDatagramsFragmented                 float64 `xml:"output-datagrams-fragmented"`
-						FragmentsCreated                          float64 `xml:"fragments-created"`
-						DatagramsThatCanNotBeFragmented           float64 `xml:"datagrams-that-can-not-be-fragmented"`
-						PacketsWithBadOptions                     float64 `xml:"packets-with-bad-options"`
-						PacketsWithOptionsHandledWithoutError     float64 `xml:"packets-with-options-handled-without-error"`
-						StrictSourceAndRecordRouteOptions         float64 `xml:"strict-source-and-record-route-options"`
-						LooseSourceAndRecordRouteOptions          float64 `xml:"loose-source-and-record-route-options"`
-						RecordRouteOptions                        float64 `xml:"record-route-options"`
-						TimestampOptions                          float64 `xml:"timestamp-options"`
-						TimestampAndAddressOptions                float64 `xml:"timestamp-and-address-options"`
-						TimestampAndPrespecifiedAddressOptions    float64 `xml:"timestamp-and-prespecified-address-options"`
-						OptionPacketsDroppedDueToRateLimit        float64 `xml:"option-packets-dropped-due-to-rate-limit"`
-						RouterAlertOptions                        float64 `xml:"router-alert-options"`
-						MulticastPacketsDropped                   float64 `xml:"multicast-packets-dropped"`
-						PacketsDropped                            float64 `xml:"packets-dropped"`
-						TransitRePacketsDroppedOnMgmtInterface    float64 `xml:"transit-re-packets-dropped-on-mgmt-interface"`
-						PacketsUsedFirstNexthopInEcmpUnilist      float64 `xml:"packets-used-first-nexthop-in-ecmp-unilist"`
-						IncomingTtpoipPacketsReceived             float64 `xml:"incoming-ttpoip-packets-received"`
-						IncomingTtpoipPacketsDropped              float64 `xml:"incoming-ttpoip-packets-dropped"`
-						OutgoingTtpoipPacketsSent                 float64 `xml:"outgoing-ttpoip-packets-sent"`
-						OutgoingTtpoipPacketsDropped              float64 `xml:"outgoing-ttpoip-packets-dropped"`
-						IncomingRawipPacketsDroppedNoSocketBuffer float64 `xml:"incoming-rawip-packets-dropped-no-socket-buffer"`
-						IncomingVirtualNodePacketsDelivered       float64 `xml:"incoming-virtual-node-packets-delivered"`
-					} `xml:"ip"`
-					Icmp struct {
-						Text                                       string `xml:",chardata"`
-						DropsDueToRateLimit                        string `xml:"drops-due-to-rate-limit"`
-						CallsToIcmpError                           string `xml:"calls-to-icmp-error"`
-						ErrorsNotGeneratedBecauseOldMessageWasIcmp string `xml:"errors-not-generated-because-old-message-was-icmp"`
-						Histogram                                  []struct {
-							Text                             string `xml:",chardata"`
-							TypeOfHistogram                  string `xml:"type-of-histogram"`
-							IcmpEchoReply                    string `xml:"icmp-echo-reply"`
-							DestinationUnreachable           string `xml:"destination-unreachable"`
-							IcmpEcho                         string `xml:"icmp-echo"`
-							TimeStampReply                   string `xml:"time-stamp-reply"`
-							TimeExceeded                     string `xml:"time-exceeded"`
-							TimeStamp                        string `xml:"time-stamp"`
-							AddressMaskRequest               string `xml:"address-mask-request"`
-							AnEndpointChangedItsCookiesecret string `xml:"an-endpoint-changed-its-cookiesecret"`
-						} `xml:"histogram"`
-						MessagesWithBadCodeFields                                string `xml:"messages-with-bad-code-fields"`
-						MessagesLessThanTheMinimumLength                         string `xml:"messages-less-than-the-minimum-length"`
-						MessagesWithBadChecksum                                  string `xml:"messages-with-bad-checksum"`
-						MessagesWithBadSourceAddress                             string `xml:"messages-with-bad-source-address"`
-						MessagesWithBadLength                                    string `xml:"messages-with-bad-length"`
-						EchoDropsWithBroadcastOrMulticastDestinatonAddress       string `xml:"echo-drops-with-broadcast-or-multicast-destinaton-address"`
-						TimestampDropsWithBroadcastOrMulticastDestinationAddress string `xml:"timestamp-drops-with-broadcast-or-multicast-destination-address"`
-						MessageResponsesGenerated                                string `xml:"message-responses-generated"`
-					} `xml:"icmp"`
-					Arp struct {
-						Text                                                     string `xml:",chardata"`
-						DatagramsReceived                                        string `xml:"datagrams-received"`
-						ArpRequestsReceived                                      string `xml:"arp-requests-received"`
-						ArpRepliesReceived                                       string `xml:"arp-replies-received"`
-						ResolutionRequestReceived                                string `xml:"resolution-request-received"`
-						ResolutionRequestDropped                                 string `xml:"resolution-request-dropped"`
-						UnrestrictedProxyRequests                                string `xml:"unrestricted-proxy-requests"`
-						RestrictedProxyRequests                                  string `xml:"restricted-proxy-requests"`
-						ReceivedProxyRequests                                    string `xml:"received-proxy-requests"`
-						ProxyRequestsNotProxied                                  string `xml:"proxy-requests-not-proxied"`
-						RestrictedProxyRequestsNotProxied                        string `xml:"restricted-proxy-requests-not-proxied"`
-						DatagramsWithBogusInterface                              string `xml:"datagrams-with-bogus-interface"`
-						DatagramsWithIncorrectLength                             string `xml:"datagrams-with-incorrect-length"`
-						DatagramsForNonIpProtocol                                string `xml:"datagrams-for-non-ip-protocol"`
-						DatagramsWithUnsupportedOpcode                           string `xml:"datagrams-with-unsupported-opcode"`
-						DatagramsWithBadProtocolAddressLength                    string `xml:"datagrams-with-bad-protocol-address-length"`
-						DatagramsWithBadHardwareAddressLength                    string `xml:"datagrams-with-bad-hardware-address-length"`
-						DatagramsWithMulticastSourceAddress                      string `xml:"datagrams-with-multicast-source-address"`
-						DatagramsWithMulticastTargetAddress                      string `xml:"datagrams-with-multicast-target-address"`
-						DatagramsWithMyOwnHardwareAddress                        string `xml:"datagrams-with-my-own-hardware-address"`
-						DatagramsForAnAddressNotOnTheInterface                   string `xml:"datagrams-for-an-address-not-on-the-interface"`
-						DatagramsWithABroadcastSourceAddress                     string `xml:"datagrams-with-a-broadcast-source-address"`
-						DatagramsWithSourceAddressDuplicateToMine                string `xml:"datagrams-with-source-address-duplicate-to-mine"`
-						DatagramsWhichWereNotForMe                               string `xml:"datagrams-which-were-not-for-me"`
-						PacketsDiscardedWaitingForResolution                     string `xml:"packets-discarded-waiting-for-resolution"`
-						PacketsSentAfterWaitingForResolution                     string `xml:"packets-sent-after-waiting-for-resolution"`
-						ArpRequestsSent                                          string `xml:"arp-requests-sent"`
-						ArpRepliesSent                                           string `xml:"arp-replies-sent"`
-						RequestsForMemoryDenied                                  string `xml:"requests-for-memory-denied"`
-						RequestsDroppedOnEntry                                   string `xml:"requests-dropped-on-entry"`
-						RequestsDroppedDuringRetry                               string `xml:"requests-dropped-during-retry"`
-						RequestsDroppedDueToInterfaceDeletion                    string `xml:"requests-dropped-due-to-interface-deletion"`
-						RequestsOnUnnumberedInterfaces                           string `xml:"requests-on-unnumbered-interfaces"`
-						NewRequestsOnUnnumberedInterfaces                        string `xml:"new-requests-on-unnumbered-interfaces"`
-						RepliesFromUnnumberedInterfaces                          string `xml:"replies-from-unnumbered-interfaces"`
-						RequestsOnUnnumberedInterfaceWithNonSubnettedDonor       string `xml:"requests-on-unnumbered-interface-with-non-subnetted-donor"`
-						RepliesFromUnnumberedInterfaceWithNonSubnettedDonor      string `xml:"replies-from-unnumbered-interface-with-non-subnetted-donor"`
-						ArpPacketsRejectedAsFamilyIsConfiguredWithDenyArp        string `xml:"arp-packets-rejected-as-family-is-configured-with-deny-arp"`
-						ArpResponsePacketsAreRejectedOnMcAeIclInterface          string `xml:"arp-response-packets-are-rejected-on-mc-ae-icl-interface"`
-						ArpRepliesAreRejectedAsSourceAndDestinationIsSame        string `xml:"arp-replies-are-rejected-as-source-and-destination-is-same"`
-						ArpProbeForProxyAddressReachableFromTheIncomingInterface string `xml:"arp-probe-for-proxy-address-reachable-from-the-incoming-interface"`
-						ArpRequestDiscardedForVrrpSourceAddress                  string `xml:"arp-request-discarded-for-vrrp-source-address"`
-						SelfArpRequestPacketReceivedOnIrbInterface               string `xml:"self-arp-request-packet-received-on-irb-interface"`
-						ProxyArpRequestDiscardedAsSourceIpIsAProxyTarget         string `xml:"proxy-arp-request-discarded-as-source-ip-is-a-proxy-target"`
-						ArpPacketsAreDroppedAsNexthopAllocationFailed            string `xml:"arp-packets-are-dropped-as-nexthop-allocation-failed"`
-						ArpPacketsReceivedFromPeerVrrpRouterAndDiscarded         string `xml:"arp-packets-received-from-peer-vrrp-router-and-discarded"`
-						ArpPacketsAreRejectedAsTargetIpArpResolveIsInProgress    string `xml:"arp-packets-are-rejected-as-target-ip-arp-resolve-is-in-progress"`
-						GratArpPacketsAreIgnoredAsMacAddressIsNotChanged         string `xml:"grat-arp-packets-are-ignored-as-mac-address-is-not-changed"`
-						ArpPacketsAreDroppedFromPeerVrrp                         string `xml:"arp-packets-are-dropped-from-peer-vrrp"`
-						ArpPacketsAreDroppedAsDriverCallFailed                   string `xml:"arp-packets-are-dropped-as-driver-call-failed"`
-						ArpPacketsAreDroppedAsSourceIsNotValidated               string `xml:"arp-packets-are-dropped-as-source-is-not-validated"`
-						ArpSystemMax                                             string `xml:"arp-system-max"`
-						ArpPublicMax                                             string `xml:"arp-public-max"`
-						ArpIriMax                                                string `xml:"arp-iri-max"`
-						ArpMgtMax                                                string `xml:"arp-mgt-max"`
-						ArpPublicCnt                                             string `xml:"arp-public-cnt"`
-						ArpIriCnt                                                string `xml:"arp-iri-cnt"`
-						ArpMgtCnt                                                string `xml:"arp-mgt-cnt"`
-						ArpSystemDrop                                            string `xml:"arp-system-drop"`
-						ArpPublicDrop                                            string `xml:"arp-public-drop"`
-						ArpIriDrop                                               string `xml:"arp-iri-drop"`
-						ArpMgtDrop                                               string `xml:"arp-mgt-drop"`
-					} `xml:"arp"`
-					Ip6 struct {
-						Text                                  string  `xml:",chardata"`
-						TotalPacketsReceived                  float64 `xml:"total-packets-received"`
-						Ip6PacketsWithSizeSmallerThanMinimum  float64 `xml:"ip6-packets-with-size-smaller-than-minimum"`
-						PacketsWithDatasizeLessThanDataLength float64 `xml:"packets-with-datasize-less-than-data-length"`
-						Ip6PacketsWithBadOptions              float64 `xml:"ip6-packets-with-bad-options"`
-						Ip6PacketsWithIncorrectVersionNumber  float64 `xml:"ip6-packets-with-incorrect-version-number"`
-						Ip6FragmentsReceived                  float64 `xml:"ip6-fragments-received"`
-						DuplicateOrOutOfSpaceFragmentsDropped float64 `xml:"duplicate-or-out-of-space-fragments-dropped"`
-						Ip6FragmentsDroppedAfterTimeout       float64 `xml:"ip6-fragments-dropped-after-timeout"`
-						FragmentsThatExceededLimit            float64 `xml:"fragments-that-exceeded-limit"`
-						Ip6PacketsReassembledOk               float64 `xml:"ip6-packets-reassembled-ok"`
-						Ip6PacketsForThisHost                 float64 `xml:"ip6-packets-for-this-host"`
-						Ip6PacketsForwarded                   float64 `xml:"ip6-packets-forwarded"`
-						Ip6PacketsNotForwardable              float64 `xml:"ip6-packets-not-forwardable"`
-						Ip6RedirectsSent                      float64 `xml:"ip6-redirects-sent"`
-						Ip6PacketsSentFromThisHost            float64 `xml:"ip6-packets-sent-from-this-host"`
-						Ip6PacketsSentWithFabricatedIpHeader  float64 `xml:"ip6-packets-sent-with-fabricated-ip-header"`
-						Ip6OutputPacketsDroppedDueToNoBufs    float64 `xml:"ip6-output-packets-dropped-due-to-no-bufs"`
-						Ip6OutputPacketsDiscardedDueToNoRoute float64 `xml:"ip6-output-packets-discarded-due-to-no-route"`
-						Ip6OutputDatagramsFragmented          float64 `xml:"ip6-output-datagrams-fragmented"`
-						Ip6FragmentsCreated                   float64 `xml:"ip6-fragments-created"`
-						Ip6DatagramsThatCanNotBeFragmented    float64 `xml:"ip6-datagrams-that-can-not-be-fragmented"`
-						PacketsThatViolatedScopeRules         float64 `xml:"packets-that-violated-scope-rules"`
-						MulticastPacketsWhichWeDoNotJoin      float64 `xml:"multicast-packets-which-we-do-not-join"`
-						Histogram                             float64 `xml:"histogram"`
-						Ip6nhTcp                              float64 `xml:"ip6nh-tcp"`
-						Ip6nhUdp                              float64 `xml:"ip6nh-udp"`
-						Ip6nhIcmp6                            float64 `xml:"ip6nh-icmp6"`
-						PacketsWhoseHeadersAreNotContinuous   float64 `xml:"packets-whose-headers-are-not-continuous"`
-						TunnelingPacketsThatCanNotFindGif     float64 `xml:"tunneling-packets-that-can-not-find-gif"`
-						PacketsDiscardedDueToTooMayHeaders    float64 `xml:"packets-discarded-due-to-too-may-headers"`
-						FailuresOfSourceAddressSelection      float64 `xml:"failures-of-source-address-selection"`
-						HeaderType                            []struct {
-							Text                            string  `xml:",chardata"`
-							HeaderForSourceAddressSelection string  `xml:"header-for-source-address-selection"`
-							LinkLocals                      float64 `xml:"link-locals"`
-							Globals                         float64 `xml:"globals"`
-							AddressScope                    float64 `xml:"address-scope"`
-							HexValue                        float64 `xml:"hex-value"`
-						} `xml:"header-type"`
-						ForwardCacheHit                       float64 `xml:"forward-cache-hit"`
-						ForwardCacheMiss                      float64 `xml:"forward-cache-miss"`
-						Ip6PacketsDestinedToDeadNextHop       float64 `xml:"ip6-packets-destined-to-dead-next-hop"`
-						Ip6OptionPacketsDroppedDueToRateLimit float64 `xml:"ip6-option-packets-dropped-due-to-rate-limit"`
-						Ip6PacketsDropped                     float64 `xml:"ip6-packets-dropped"`
-						PacketsDroppedDueToBadProtocol        float64 `xml:"packets-dropped-due-to-bad-protocol"`
-						TransitRePacketDroppedOnMgmtInterface float64 `xml:"transit-re-packet-dropped-on-mgmt-interface"`
-						PacketUsedFirstNexthopInEcmpUnilist   float64 `xml:"packet-used-first-nexthop-in-ecmp-unilist"`
-					} `xml:"ip6"`
-					Icmp6 struct {
-						Text                                            string `xml:",chardata"`
-						ProtocolName                                    string `xml:"protocol-name"`
-						CallsToIcmp6Error                               string `xml:"calls-to-icmp6-error"`
-						ErrorsNotGeneratedBecauseOldMessageWasIcmpError string `xml:"errors-not-generated-because-old-message-was-icmp-error"`
-						ErrorsNotGeneratedBecauseRateLimitation         string `xml:"errors-not-generated-because-rate-limitation"`
-						OutputHistogram                                 struct {
-							Text                    string `xml:",chardata"`
-							Style                   string `xml:"style,attr"`
-							HistogramType           string `xml:"histogram-type"`
-							UnreachableIcmp6Packets string `xml:"unreachable-icmp6-packets"`
-							Icmp6Echo               string `xml:"icmp6-echo"`
-							Icmp6EchoReply          string `xml:"icmp6-echo-reply"`
-							NeighborSolicitation    string `xml:"neighbor-solicitation"`
-							NeighborAdvertisement   string `xml:"neighbor-advertisement"`
-						} `xml:"output-histogram"`
-						Icmp6MessagesWithBadCodeFields string `xml:"icmp6-messages-with-bad-code-fields"`
-						MessagesLessThanMinimumLength  string `xml:"messages-less-than-minimum-length"`
-						BadChecksums                   string `xml:"bad-checksums"`
-						Icmp6MessagesWithBadLength     string `xml:"icmp6-messages-with-bad-length"`
-						InputHistogram                 struct {
-							Text                           string `xml:",chardata"`
-							Style                          string `xml:"style,attr"`
-							HistogramType                  string `xml:"histogram-type"`
-							UnreachableIcmp6Packets        string `xml:"unreachable-icmp6-packets"`
-							PacketTooBig                   string `xml:"packet-too-big"`
-							TimeExceededIcmp6Packets       string `xml:"time-exceeded-icmp6-packets"`
-							Icmp6Echo                      string `xml:"icmp6-echo"`
-							Icmp6EchoReply                 string `xml:"icmp6-echo-reply"`
-							RouterSolicitationIcmp6Packets string `xml:"router-solicitation-icmp6-packets"`
-							NeighborSolicitation           string `xml:"neighbor-solicitation"`
-							NeighborAdvertisement          string `xml:"neighbor-advertisement"`
-						} `xml:"input-histogram"`
-						HistogramOfErrorMessagesToBeGenerated string `xml:"histogram-of-error-messages-to-be-generated"`
-						NoRoute                               string `xml:"no-route"`
-						AdministrativelyProhibited            string `xml:"administratively-prohibited"`
-						BeyondScope                           string `xml:"beyond-scope"`
-						AddressUnreachable                    string `xml:"address-unreachable"`
-						PortUnreachable                       string `xml:"port-unreachable"`
-						PacketTooBig                          string `xml:"packet-too-big"`
-						TimeExceedTransit                     string `xml:"time-exceed-transit"`
-						TimeExceedReassembly                  string `xml:"time-exceed-reassembly"`
-						ErroneousHeaderField                  string `xml:"erroneous-header-field"`
-						UnrecognizedNextHeader                string `xml:"unrecognized-next-header"`
-						UnrecognizedOption                    string `xml:"unrecognized-option"`
-						Redirect                              string `xml:"redirect"`
-						Unknown                               string `xml:"unknown"`
-						Icmp6MessageResponsesGenerated        string `xml:"icmp6-message-responses-generated"`
-						MessagesWithTooManyNdOptions          string `xml:"messages-with-too-many-nd-options"`
-						NdSystemMax                           string `xml:"nd-system-max"`
-						NdPublicMax                           string `xml:"nd-public-max"`
-						NdIriMax                              string `xml:"nd-iri-max"`
-						NdMgtMax                              string `xml:"nd-mgt-max"`
-						NdPublicCnt                           string `xml:"nd-public-cnt"`
-						NdIriCnt                              string `xml:"nd-iri-cnt"`
-						NdMgtCnt                              string `xml:"nd-mgt-cnt"`
-						NdSystemDrop                          string `xml:"nd-system-drop"`
-						NdPublicDrop                          string `xml:"nd-public-drop"`
-						NdIriDrop                             string `xml:"nd-iri-drop"`
-						NdMgtDrop                             string `xml:"nd-mgt-drop"`
-						Nd6NdpProxyRequests                   string `xml:"nd6-ndp-proxy-requests"`
-						Nd6DadProxyRequests                   string `xml:"nd6-dad-proxy-requests"`
-						Nd6NdpProxyResponses                  string `xml:"nd6-ndp-proxy-responses"`
-						Nd6DadProxyConflicts                  string `xml:"nd6-dad-proxy-conflicts"`
-						Nd6DupProxyResponses                  string `xml:"nd6-dup-proxy-responses"`
-						Nd6NdpProxyResolveCnt                 string `xml:"nd6-ndp-proxy-resolve-cnt"`
-						Nd6DadProxyResolveCnt                 string `xml:"nd6-dad-proxy-resolve-cnt"`
-						Nd6DadProxyEqmacDrop                  string `xml:"nd6-dad-proxy-eqmac-drop"`
-						Nd6DadProxyNomacDrop                  string `xml:"nd6-dad-proxy-nomac-drop"`
-						Nd6NdpProxyUnrRequests                string `xml:"nd6-ndp-proxy-unr-requests"`
-						Nd6DadProxyUnrRequests                string `xml:"nd6-dad-proxy-unr-requests"`
-						Nd6NdpProxyUnrResponses               string `xml:"nd6-ndp-proxy-unr-responses"`
-						Nd6DadProxyUnrConflicts               string `xml:"nd6-dad-proxy-unr-conflicts"`
-						Nd6DadProxyUnrResponses               string `xml:"nd6-dad-proxy-unr-responses"`
-						Nd6NdpProxyUnrResolveCnt              string `xml:"nd6-ndp-proxy-unr-resolve-cnt"`
-						Nd6DadProxyUnrResolveCnt              string `xml:"nd6-dad-proxy-unr-resolve-cnt"`
-						Nd6DadProxyUnrEqportDrop              string `xml:"nd6-dad-proxy-unr-eqport-drop"`
-						Nd6DadProxyUnrNomacDrop               string `xml:"nd6-dad-proxy-unr-nomac-drop"`
-						Nd6RequestsDroppedOnEntry             string `xml:"nd6-requests-dropped-on-entry"`
-						Nd6RequestsDroppedDuringRetry         string `xml:"nd6-requests-dropped-during-retry"`
-					} `xml:"icmp6"`
-					Mpls struct {
-						Text                                      string `xml:",chardata"`
-						TotalMplsPacketsReceived                  string `xml:"total-mpls-packets-received"`
-						PacketsForwarded                          string `xml:"packets-forwarded"`
-						PacketsDropped                            string `xml:"packets-dropped"`
-						PacketsWithHeaderTooSmall                 string `xml:"packets-with-header-too-small"`
-						AfterTaggingPacketsCanNotFitLinkMtu       string `xml:"after-tagging-packets-can-not-fit-link-mtu"`
-						PacketsWithIpv4ExplicitNullTag            string `xml:"packets-with-ipv4-explicit-null-tag"`
-						PacketsWithIpv4ExplicitNullChecksumErrors string `xml:"packets-with-ipv4-explicit-null-checksum-errors"`
-						PacketsWithRouterAlertTag                 string `xml:"packets-with-router-alert-tag"`
-						LspPingPackets                            string `xml:"lsp-ping-packets"`
-						PacketsWithTtlExpired                     string `xml:"packets-with-ttl-expired"`
-						PacketsWithTagEncodingError               string `xml:"packets-with-tag-encoding-error"`
-						PacketsDiscardedDueToNoRoute              string `xml:"packets-discarded-due-to-no-route"`
-						PacketsUsedFirstNexthopInEcmpUnilist      string `xml:"packets-used-first-nexthop-in-ecmp-unilist"`
-						PacketsDroppedDueToIflDown                string `xml:"packets-dropped-due-to-ifl-down"`
-						PacketsDroppedAtMplsSocketSend            string `xml:"packets-dropped-at-mpls-socket-send"`
-						PacketsForwardedAtMplsSocketSend          string `xml:"packets-forwarded-at-mpls-socket-send"`
-						PacketsDroppedAtP2mpCnhOutput             string `xml:"packets-dropped-at-p2mp-cnh-output"`
-					} `xml:"mpls"`
-				}{
-					Ip: struct {
-						Text                                      string  `xml:",chardata"`
-						PacketsReceived                           float64 `xml:"packets-received"`
-						BadHeaderChecksums                        float64 `xml:"bad-header-checksums"`
-						PacketsWithSizeSmallerThanMinimum         float64 `xml:"packets-with-size-smaller-than-minimum"`
-						PacketsWithDataSizeLessThanDatalength     float64 `xml:"packets-with-data-size-less-than-datalength"`
-						PacketsWithHeaderLengthLessThanDataSize   float64 `xml:"packets-with-header-length-less-than-data-size"`
-						PacketsWithDataLengthLessThanHeaderlength float64 `xml:"packets-with-data-length-less-than-headerlength"`
-						PacketsWithIncorrectVersionNumber         float64 `xml:"packets-with-incorrect-version-number"`
-						PacketsDestinedToDeadNextHop              float64 `xml:"packets-destined-to-dead-next-hop"`
-						FragmentsReceived                         float64 `xml:"fragments-received"`
-						FragmentsDroppedDueToOutofspaceOrDup      float64 `xml:"fragments-dropped-due-to-outofspace-or-dup"`
-						FragmentsDroppedDueToQueueoverflow        float64 `xml:"fragments-dropped-due-to-queueoverflow"`
-						FragmentsDroppedAfterTimeout              float64 `xml:"fragments-dropped-after-timeout"`
-						PacketsReassembledOk                      float64 `xml:"packets-reassembled-ok"`
-						PacketsForThisHost                        float64 `xml:"packets-for-this-host"`
-						PacketsForUnknownOrUnsupportedProtocol    float64 `xml:"packets-for-unknown-or-unsupported-protocol"`
-						PacketsForwarded                          float64 `xml:"packets-forwarded"`
-						PacketsNotForwardable                     float64 `xml:"packets-not-forwardable"`
-						RedirectsSent                             float64 `xml:"redirects-sent"`
-						PacketsSentFromThisHost                   float64 `xml:"packets-sent-from-this-host"`
-						PacketsSentWithFabricatedIpHeader         float64 `xml:"packets-sent-with-fabricated-ip-header"`
-						OutputPacketsDroppedDueToNoBufs           float64 `xml:"output-packets-dropped-due-to-no-bufs"`
-						OutputPacketsDiscardedDueToNoRoute        float64 `xml:"output-packets-discarded-due-to-no-route"`
-						OutputDatagramsFragmented                 float64 `xml:"output-datagrams-fragmented"`
-						FragmentsCreated                          float64 `xml:"fragments-created"`
-						DatagramsThatCanNotBeFragmented           float64 `xml:"datagrams-that-can-not-be-fragmented"`
-						PacketsWithBadOptions                     float64 `xml:"packets-with-bad-options"`
-						PacketsWithOptionsHandledWithoutError     float64 `xml:"packets-with-options-handled-without-error"`
-						StrictSourceAndRecordRouteOptions         float64 `xml:"strict-source-and-record-route-options"`
-						LooseSourceAndRecordRouteOptions          float64 `xml:"loose-source-and-record-route-options"`
-						RecordRouteOptions                        float64 `xml:"record-route-options"`
-						TimestampOptions                          float64 `xml:"timestamp-options"`
-						TimestampAndAddressOptions                float64 `xml:"timestamp-and-address-options"`
-						TimestampAndPrespecifiedAddressOptions    float64 `xml:"timestamp-and-prespecified-address-options"`
-						OptionPacketsDroppedDueToRateLimit        float64 `xml:"option-packets-dropped-due-to-rate-limit"`
-						RouterAlertOptions                        float64 `xml:"router-alert-options"`
-						MulticastPacketsDropped                   float64 `xml:"multicast-packets-dropped"`
-						PacketsDropped                            float64 `xml:"packets-dropped"`
-						TransitRePacketsDroppedOnMgmtInterface    float64 `xml:"transit-re-packets-dropped-on-mgmt-interface"`
-						PacketsUsedFirstNexthopInEcmpUnilist      float64 `xml:"packets-used-first-nexthop-in-ecmp-unilist"`
-						IncomingTtpoipPacketsReceived             float64 `xml:"incoming-ttpoip-packets-received"`
-						IncomingTtpoipPacketsDropped              float64 `xml:"incoming-ttpoip-packets-dropped"`
-						OutgoingTtpoipPacketsSent                 float64 `xml:"outgoing-ttpoip-packets-sent"`
-						OutgoingTtpoipPacketsDropped              float64 `xml:"outgoing-ttpoip-packets-dropped"`
-						IncomingRawipPacketsDroppedNoSocketBuffer float64 `xml:"incoming-rawip-packets-dropped-no-socket-buffer"`
-						IncomingVirtualNodePacketsDelivered       float64 `xml:"incoming-virtual-node-packets-delivered"`
-					}{
-						PacketsReceived:                           999999999,
-						BadHeaderChecksums:                        12345,
-						PacketsWithSizeSmallerThanMinimum:         54321,
-						PacketsWithDataSizeLessThanDatalength:     1111,
-						PacketsWithHeaderLengthLessThanDataSize:   2222,
-						PacketsWithDataLengthLessThanHeaderlength: 3333,
-						PacketsWithIncorrectVersionNumber:         4444,
-						PacketsDestinedToDeadNextHop:              5555,
-						FragmentsReceived:                         888888,
-						FragmentsDroppedDueToOutofspaceOrDup:      6666,
-						FragmentsDroppedDueToQueueoverflow:        7777,
-						FragmentsDroppedAfterTimeout:              8888,
-						PacketsReassembledOk:                      777777,
-						PacketsForThisHost:                        555555,
-						PacketsForUnknownOrUnsupportedProtocol:    9999,
-						PacketsForwarded:                          444444,
-						PacketsNotForwardable:                     11111,
-						RedirectsSent:                             12121,
-						PacketsSentFromThisHost:                   666666,
-						PacketsSentWithFabricatedIpHeader:         13131,
-						OutputPacketsDroppedDueToNoBufs:           14141,
-						OutputPacketsDiscardedDueToNoRoute:        15151,
-						OutputDatagramsFragmented:                 16161,
-						FragmentsCreated:                          17171,
-						DatagramsThatCanNotBeFragmented:           18181,
-						PacketsWithBadOptions:                     19191,
-						PacketsWithOptionsHandledWithoutError:     20202,
-						StrictSourceAndRecordRouteOptions:         21212,
-						LooseSourceAndRecordRouteOptions:          22222,
-						RecordRouteOptions:                        23232,
-						TimestampOptions:                          24242,
-						TimestampAndAddressOptions:                25252,
-						TimestampAndPrespecifiedAddressOptions:    26262,
-						OptionPacketsDroppedDueToRateLimit:        27272,
-						RouterAlertOptions:                        28282,
-						MulticastPacketsDropped:                   29292,
-						PacketsDropped:                            30303,
-						TransitRePacketsDroppedOnMgmtInterface:    31313,
-						PacketsUsedFirstNexthopInEcmpUnilist:      32323,
-						IncomingTtpoipPacketsReceived:             33333,
-						IncomingTtpoipPacketsDropped:              34343,
-						OutgoingTtpoipPacketsSent:                 35353,
-						OutgoingTtpoipPacketsDropped:              36363,
-						IncomingRawipPacketsDroppedNoSocketBuffer: 37373,
-						IncomingVirtualNodePacketsDelivered:       38383,
-					},
-				},
-				Cli: struct {
-					Text   string `xml:",chardata"`
-					Banner string `xml:"banner"`
-				}{
-					Banner: "admin@high-traffic-router>",
-				},
+			expect: func(t *testing.T, got SystemStatistics) {
+				ip := got.Statistics.Ip
+				assert.Equal(t, float64(999999999), ip.PacketsReceived)
+				assert.Equal(t, float64(12345), ip.BadHeaderChecksums)
+				assert.Equal(t, float64(54321), ip.PacketsWithSizeSmallerThanMinimum)
+				assert.Equal(t, float64(1111), ip.PacketsWithDataSizeLessThanDatalength)
+				assert.Equal(t, float64(2222), ip.PacketsWithHeaderLengthLessThanDataSize)
+				assert.Equal(t, float64(3333), ip.PacketsWithDataLengthLessThanHeaderlength)
+				assert.Equal(t, float64(4444), ip.PacketsWithIncorrectVersionNumber)
+				assert.Equal(t, float64(5555), ip.PacketsDestinedToDeadNextHop)
+				assert.Equal(t, float64(888888), ip.FragmentsReceived)
+				assert.Equal(t, float64(6666), ip.FragmentsDroppedDueToOutofspaceOrDup)
+				assert.Equal(t, float64(7777), ip.FragmentsDroppedDueToQueueoverflow)
+				assert.Equal(t, float64(8888), ip.FragmentsDroppedAfterTimeout)
+				assert.Equal(t, float64(777777), ip.PacketsReassembledOk)
+				assert.Equal(t, float64(555555), ip.PacketsForThisHost)
+				assert.Equal(t, float64(9999), ip.PacketsForUnknownOrUnsupportedProtocol)
+				assert.Equal(t, float64(444444), ip.PacketsForwarded)
+				assert.Equal(t, float64(11111), ip.PacketsNotForwardable)
+				assert.Equal(t, float64(12121), ip.RedirectsSent)
+				assert.Equal(t, float64(666666), ip.PacketsSentFromThisHost)
+				assert.Equal(t, float64(13131), ip.PacketsSentWithFabricatedIpHeader)
+				assert.Equal(t, float64(14141), ip.OutputPacketsDroppedDueToNoBufs)
+				assert.Equal(t, float64(15151), ip.OutputPacketsDiscardedDueToNoRoute)
+				assert.Equal(t, float64(16161), ip.OutputDatagramsFragmented)
+				assert.Equal(t, float64(17171), ip.FragmentsCreated)
+				assert.Equal(t, float64(18181), ip.DatagramsThatCanNotBeFragmented)
+				assert.Equal(t, float64(19191), ip.PacketsWithBadOptions)
+				assert.Equal(t, float64(20202), ip.PacketsWithOptionsHandledWithoutError)
+				assert.Equal(t, float64(21212), ip.StrictSourceAndRecordRouteOptions)
+				assert.Equal(t, float64(22222), ip.LooseSourceAndRecordRouteOptions)
+				assert.Equal(t, float64(23232), ip.RecordRouteOptions)
+				assert.Equal(t, float64(24242), ip.TimestampOptions)
+				assert.Equal(t, float64(25252), ip.TimestampAndAddressOptions)
+				assert.Equal(t, float64(26262), ip.TimestampAndPrespecifiedAddressOptions)
+				assert.Equal(t, float64(27272), ip.OptionPacketsDroppedDueToRateLimit)
+				assert.Equal(t, float64(28282), ip.RouterAlertOptions)
+				assert.Equal(t, float64(29292), ip.MulticastPacketsDropped)
+				assert.Equal(t, float64(30303), ip.PacketsDropped)
+				assert.Equal(t, float64(31313), ip.TransitRePacketsDroppedOnMgmtInterface)
+				assert.Equal(t, float64(32323), ip.PacketsUsedFirstNexthopInEcmpUnilist)
+				assert.Equal(t, float64(33333), ip.IncomingTtpoipPacketsReceived)
+				assert.Equal(t, float64(34343), ip.IncomingTtpoipPacketsDropped)
+				assert.Equal(t, float64(35353), ip.OutgoingTtpoipPacketsSent)
+				assert.Equal(t, float64(36363), ip.OutgoingTtpoipPacketsDropped)
+				assert.Equal(t, float64(37373), ip.IncomingRawipPacketsDroppedNoSocketBuffer)
+				assert.Equal(t, float64(38383), ip.IncomingVirtualNodePacketsDelivered)
+				assert.Equal(t, "admin@high-traffic-router>", got.Cli.Banner)
 			},
 		},
 	}
 
-	for _, tt := range testsIPV4 {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, tc := range testsIPV4 {
+		t.Run(tc.name, func(t *testing.T) {
 			var result SystemStatistics
-			err := xml.Unmarshal([]byte(tt.xmlInput), &result)
+			err := xml.Unmarshal([]byte(tc.xmlInput), &result)
 			assert.NoError(t, err, "unmarshal should not return error")
+			tc.expect(t, result)
+		})
+	}
+}
 
-			// Test all IP struct fields
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsReceived, result.Statistics.Ip.PacketsReceived, "PacketsReceived should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.BadHeaderChecksums, result.Statistics.Ip.BadHeaderChecksums, "BadHeaderChecksums should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsWithSizeSmallerThanMinimum, result.Statistics.Ip.PacketsWithSizeSmallerThanMinimum, "PacketsWithSizeSmallerThanMinimum should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsWithDataSizeLessThanDatalength, result.Statistics.Ip.PacketsWithDataSizeLessThanDatalength, "PacketsWithDataSizeLessThanDatalength should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsWithHeaderLengthLessThanDataSize, result.Statistics.Ip.PacketsWithHeaderLengthLessThanDataSize, "PacketsWithHeaderLengthLessThanDataSize should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsWithDataLengthLessThanHeaderlength, result.Statistics.Ip.PacketsWithDataLengthLessThanHeaderlength, "PacketsWithDataLengthLessThanHeaderlength should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsWithIncorrectVersionNumber, result.Statistics.Ip.PacketsWithIncorrectVersionNumber, "PacketsWithIncorrectVersionNumber should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsDestinedToDeadNextHop, result.Statistics.Ip.PacketsDestinedToDeadNextHop, "PacketsDestinedToDeadNextHop should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.FragmentsReceived, result.Statistics.Ip.FragmentsReceived, "FragmentsReceived should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.FragmentsDroppedDueToOutofspaceOrDup, result.Statistics.Ip.FragmentsDroppedDueToOutofspaceOrDup, "FragmentsDroppedDueToOutofspaceOrDup should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.FragmentsDroppedDueToQueueoverflow, result.Statistics.Ip.FragmentsDroppedDueToQueueoverflow, "FragmentsDroppedDueToQueueoverflow should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.FragmentsDroppedAfterTimeout, result.Statistics.Ip.FragmentsDroppedAfterTimeout, "FragmentsDroppedAfterTimeout should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsReassembledOk, result.Statistics.Ip.PacketsReassembledOk, "PacketsReassembledOk should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsForThisHost, result.Statistics.Ip.PacketsForThisHost, "PacketsForThisHost should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsForUnknownOrUnsupportedProtocol, result.Statistics.Ip.PacketsForUnknownOrUnsupportedProtocol, "PacketsForUnknownOrUnsupportedProtocol should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsForwarded, result.Statistics.Ip.PacketsForwarded, "PacketsForwarded should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsNotForwardable, result.Statistics.Ip.PacketsNotForwardable, "PacketsNotForwardable should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.RedirectsSent, result.Statistics.Ip.RedirectsSent, "RedirectsSent should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsSentFromThisHost, result.Statistics.Ip.PacketsSentFromThisHost, "PacketsSentFromThisHost should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsSentWithFabricatedIpHeader, result.Statistics.Ip.PacketsSentWithFabricatedIpHeader, "PacketsSentWithFabricatedIpHeader should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.OutputPacketsDroppedDueToNoBufs, result.Statistics.Ip.OutputPacketsDroppedDueToNoBufs, "OutputPacketsDroppedDueToNoBufs should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.OutputPacketsDiscardedDueToNoRoute, result.Statistics.Ip.OutputPacketsDiscardedDueToNoRoute, "OutputPacketsDiscardedDueToNoRoute should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.OutputDatagramsFragmented, result.Statistics.Ip.OutputDatagramsFragmented, "OutputDatagramsFragmented should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.FragmentsCreated, result.Statistics.Ip.FragmentsCreated, "FragmentsCreated should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.DatagramsThatCanNotBeFragmented, result.Statistics.Ip.DatagramsThatCanNotBeFragmented, "DatagramsThatCanNotBeFragmented should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsWithBadOptions, result.Statistics.Ip.PacketsWithBadOptions, "PacketsWithBadOptions should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsWithOptionsHandledWithoutError, result.Statistics.Ip.PacketsWithOptionsHandledWithoutError, "PacketsWithOptionsHandledWithoutError should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.StrictSourceAndRecordRouteOptions, result.Statistics.Ip.StrictSourceAndRecordRouteOptions, "StrictSourceAndRecordRouteOptions should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.LooseSourceAndRecordRouteOptions, result.Statistics.Ip.LooseSourceAndRecordRouteOptions, "LooseSourceAndRecordRouteOptions should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.RecordRouteOptions, result.Statistics.Ip.RecordRouteOptions, "RecordRouteOptions should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.TimestampOptions, result.Statistics.Ip.TimestampOptions, "TimestampOptions should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.TimestampAndAddressOptions, result.Statistics.Ip.TimestampAndAddressOptions, "TimestampAndAddressOptions should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.TimestampAndPrespecifiedAddressOptions, result.Statistics.Ip.TimestampAndPrespecifiedAddressOptions, "TimestampAndPrespecifiedAddressOptions should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.OptionPacketsDroppedDueToRateLimit, result.Statistics.Ip.OptionPacketsDroppedDueToRateLimit, "OptionPacketsDroppedDueToRateLimit should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.RouterAlertOptions, result.Statistics.Ip.RouterAlertOptions, "RouterAlertOptions should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.MulticastPacketsDropped, result.Statistics.Ip.MulticastPacketsDropped, "MulticastPacketsDropped should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsDropped, result.Statistics.Ip.PacketsDropped, "PacketsDropped should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.TransitRePacketsDroppedOnMgmtInterface, result.Statistics.Ip.TransitRePacketsDroppedOnMgmtInterface, "TransitRePacketsDroppedOnMgmtInterface should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.PacketsUsedFirstNexthopInEcmpUnilist, result.Statistics.Ip.PacketsUsedFirstNexthopInEcmpUnilist, "PacketsUsedFirstNexthopInEcmpUnilist should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.IncomingTtpoipPacketsReceived, result.Statistics.Ip.IncomingTtpoipPacketsReceived, "IncomingTtpoipPacketsReceived should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.IncomingTtpoipPacketsDropped, result.Statistics.Ip.IncomingTtpoipPacketsDropped, "IncomingTtpoipPacketsDropped should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.OutgoingTtpoipPacketsSent, result.Statistics.Ip.OutgoingTtpoipPacketsSent, "OutgoingTtpoipPacketsSent should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.OutgoingTtpoipPacketsDropped, result.Statistics.Ip.OutgoingTtpoipPacketsDropped, "OutgoingTtpoipPacketsDropped should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.IncomingRawipPacketsDroppedNoSocketBuffer, result.Statistics.Ip.IncomingRawipPacketsDroppedNoSocketBuffer, "IncomingRawipPacketsDroppedNoSocketBuffer should match")
-			assert.Equal(t, tt.expected.Statistics.Ip.IncomingVirtualNodePacketsDelivered, result.Statistics.Ip.IncomingVirtualNodePacketsDelivered, "IncomingVirtualNodePacketsDelivered should match")
+// Tests for the IPv6 sub-structure (Ip6) of SystemStatistics. We use inline XML to focus on Ip6.
+func TestStatisticsIPv6Unmarshaling(t *testing.T) {
+	IPv6XMLDataCase1, _ := os.Open("testsFiles/IPV6/ipv6TestDataCase1.xml")
+	IPv6DataCase1, _ := ioutil.ReadAll(IPv6XMLDataCase1)
+	fmt.Printf("%v", string(IPv6DataCase1))
+	type testCase struct {
+		name     string
+		xmlInput string
+		expect   func(t *testing.T, got SystemStatistics)
+	}
+
+	completeIPv6 := `
+<rpc-reply>
+  <statistics>
+    <ip6>
+      <total-packets-received>100</total-packets-received>
+      <ip6-packets-with-size-smaller-than-minimum>1</ip6-packets-with-size-smaller-than-minimum>
+      <packets-with-datasize-less-than-data-length>2</packets-with-datasize-less-than-data-length>
+      <ip6-packets-with-bad-options>3</ip6-packets-with-bad-options>
+      <ip6-packets-with-incorrect-version-number>4</ip6-packets-with-incorrect-version-number>
+      <ip6-fragments-received>5</ip6-fragments-received>
+      <duplicate-or-out-of-space-fragments-dropped>6</duplicate-or-out-of-space-fragments-dropped>
+      <ip6-fragments-dropped-after-timeout>7</ip6-fragments-dropped-after-timeout>
+      <fragments-that-exceeded-limit>8</fragments-that-exceeded-limit>
+      <ip6-packets-reassembled-ok>9</ip6-packets-reassembled-ok>
+      <ip6-packets-for-this-host>10</ip6-packets-for-this-host>
+      <ip6-packets-forwarded>11</ip6-packets-forwarded>
+      <ip6-packets-not-forwardable>12</ip6-packets-not-forwardable>
+      <ip6-redirects-sent>13</ip6-redirects-sent>
+      <ip6-packets-sent-from-this-host>14</ip6-packets-sent-from-this-host>
+      <ip6-packets-sent-with-fabricated-ip-header>15</ip6-packets-sent-with-fabricated-ip-header>
+      <ip6-output-packets-dropped-due-to-no-bufs>16</ip6-output-packets-dropped-due-to-no-bufs>
+      <ip6-output-packets-discarded-due-to-no-route>17</ip6-output-packets-discarded-due-to-no-route>
+      <ip6-output-datagrams-fragmented>18</ip6-output-datagrams-fragmented>
+      <ip6-fragments-created>19</ip6-fragments-created>
+      <ip6-datagrams-that-can-not-be-fragmented>20</ip6-datagrams-that-can-not-be-fragmented>
+      <packets-that-violated-scope-rules>21</packets-that-violated-scope-rules>
+      <multicast-packets-which-we-do-not-join>22</multicast-packets-which-we-do-not-join>
+      <ip6nh-tcp>23</ip6nh-tcp>
+      <ip6nh-udp>24</ip6nh-udp>
+      <ip6nh-icmp6>25</ip6nh-icmp6>
+      <packets-whose-headers-are-not-continuous>26</packets-whose-headers-are-not-continuous>
+      <tunneling-packets-that-can-not-find-gif>27</tunneling-packets-that-can-not-find-gif>
+      <packets-discarded-due-to-too-may-headers>28</packets-discarded-due-to-too-may-headers>
+      <failures-of-source-address-selection>29</failures-of-source-address-selection>
+      <header-type>
+        <header-for-source-address-selection>default</header-for-source-address-selection>
+        <link-locals>30</link-locals>
+        <globals>31</globals>
+        <address-scope>0</address-scope>
+        <hex-value>0</hex-value>
+      </header-type>
+      <header-type>
+        <header-for-source-address-selection>policy</header-for-source-address-selection>
+        <link-locals>32</link-locals>
+        <globals>33</globals>
+        <address-scope>0</address-scope>
+        <hex-value>0</hex-value>
+      </header-type>
+      <forward-cache-hit>34</forward-cache-hit>
+      <forward-cache-miss>35</forward-cache-miss>
+      <ip6-packets-destined-to-dead-next-hop>36</ip6-packets-destined-to-dead-next-hop>
+      <ip6-option-packets-dropped-due-to-rate-limit>37</ip6-option-packets-dropped-due-to-rate-limit>
+      <ip6-packets-dropped>38</ip6-packets-dropped>
+      <packets-dropped-due-to-bad-protocol>39</packets-dropped-due-to-bad-protocol>
+      <transit-re-packet-dropped-on-mgmt-interface>40</transit-re-packet-dropped-on-mgmt-interface>
+      <packet-used-first-nexthop-in-ecmp-unilist>41</packet-used-first-nexthop-in-ecmp-unilist>
+    </ip6>
+  </statistics>
+  <cli><banner>user@router></banner></cli>
+</rpc-reply>`
+
+	tests := []testCase{
+		{
+			name:     "complete_ipv6_statistics",
+			xmlInput: completeIPv6,
+			expect: func(t *testing.T, got SystemStatistics) {
+				ip6 := got.Statistics.Ip6
+				assert.Equal(t, float64(100), ip6.TotalPacketsReceived)
+				assert.Equal(t, float64(1), ip6.Ip6PacketsWithSizeSmallerThanMinimum)
+				assert.Equal(t, float64(2), ip6.PacketsWithDatasizeLessThanDataLength)
+				assert.Equal(t, float64(3), ip6.Ip6PacketsWithBadOptions)
+				assert.Equal(t, float64(4), ip6.Ip6PacketsWithIncorrectVersionNumber)
+				assert.Equal(t, float64(5), ip6.Ip6FragmentsReceived)
+				assert.Equal(t, float64(6), ip6.DuplicateOrOutOfSpaceFragmentsDropped)
+				assert.Equal(t, float64(7), ip6.Ip6FragmentsDroppedAfterTimeout)
+				assert.Equal(t, float64(8), ip6.FragmentsThatExceededLimit)
+				assert.Equal(t, float64(9), ip6.Ip6PacketsReassembledOk)
+				assert.Equal(t, float64(10), ip6.Ip6PacketsForThisHost)
+				assert.Equal(t, float64(11), ip6.Ip6PacketsForwarded)
+				assert.Equal(t, float64(12), ip6.Ip6PacketsNotForwardable)
+				assert.Equal(t, float64(13), ip6.Ip6RedirectsSent)
+				assert.Equal(t, float64(14), ip6.Ip6PacketsSentFromThisHost)
+				assert.Equal(t, float64(15), ip6.Ip6PacketsSentWithFabricatedIpHeader)
+				assert.Equal(t, float64(16), ip6.Ip6OutputPacketsDroppedDueToNoBufs)
+				assert.Equal(t, float64(17), ip6.Ip6OutputPacketsDiscardedDueToNoRoute)
+				assert.Equal(t, float64(18), ip6.Ip6OutputDatagramsFragmented)
+				assert.Equal(t, float64(19), ip6.Ip6FragmentsCreated)
+				assert.Equal(t, float64(20), ip6.Ip6DatagramsThatCanNotBeFragmented)
+				assert.Equal(t, float64(21), ip6.PacketsThatViolatedScopeRules)
+				assert.Equal(t, float64(22), ip6.MulticastPacketsWhichWeDoNotJoin)
+				assert.Equal(t, float64(23), ip6.Ip6nhTcp)
+				assert.Equal(t, float64(24), ip6.Ip6nhUdp)
+				assert.Equal(t, float64(25), ip6.Ip6nhIcmp6)
+				assert.Equal(t, float64(26), ip6.PacketsWhoseHeadersAreNotContinuous)
+				assert.Equal(t, float64(27), ip6.TunnelingPacketsThatCanNotFindGif)
+				assert.Equal(t, float64(28), ip6.PacketsDiscardedDueToTooMayHeaders)
+				assert.Equal(t, float64(29), ip6.FailuresOfSourceAddressSelection)
+				assert.Equal(t, 2, len(ip6.HeaderType))
+				var defLink, defGlob, polLink, polGlob float64
+				for _, h := range ip6.HeaderType {
+					switch h.HeaderForSourceAddressSelection {
+					case "default":
+						defLink = h.LinkLocals
+						defGlob = h.Globals
+					case "policy":
+						polLink = h.LinkLocals
+						polGlob = h.Globals
+					}
+				}
+				assert.Equal(t, float64(30), defLink)
+				assert.Equal(t, float64(31), defGlob)
+				assert.Equal(t, float64(32), polLink)
+				assert.Equal(t, float64(33), polGlob)
+				assert.Equal(t, float64(34), ip6.ForwardCacheHit)
+				assert.Equal(t, float64(35), ip6.ForwardCacheMiss)
+				assert.Equal(t, float64(36), ip6.Ip6PacketsDestinedToDeadNextHop)
+				assert.Equal(t, float64(37), ip6.Ip6OptionPacketsDroppedDueToRateLimit)
+				assert.Equal(t, float64(38), ip6.Ip6PacketsDropped)
+				assert.Equal(t, float64(39), ip6.PacketsDroppedDueToBadProtocol)
+				assert.Equal(t, float64(40), ip6.TransitRePacketDroppedOnMgmtInterface)
+				assert.Equal(t, float64(41), ip6.PacketUsedFirstNexthopInEcmpUnilist)
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var got SystemStatistics
+			err := xml.Unmarshal([]byte(tc.xmlInput), &got)
+			assert.NoError(t, err, "unmarshal should not return error")
+			tc.expect(t, got)
 		})
 	}
 }

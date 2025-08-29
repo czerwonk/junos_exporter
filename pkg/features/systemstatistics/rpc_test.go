@@ -2,73 +2,29 @@ package systemstatistics
 
 import (
 	"encoding/xml"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestStatisticsIPv4Unmarshaling(t *testing.T) {
+
+	IPv4XMLDataCase1, _ := os.Open("testsFiles/IPV4/ipv4TestDataCase1.xml")
+	IPv4DataCase1, _ := ioutil.ReadAll(IPv4XMLDataCase1)
+	IPv4XMLDataCase2, _ := os.Open("testsFiles/IPV4/ipv4TestDataCase2.xml")
+	IPv4DataCase2, _ := ioutil.ReadAll(IPv4XMLDataCase2)
+	IPv4XMLDataCase3, _ := os.Open("testsFiles/IPV4/ipv4TestDataCase3.xml")
+	IPv4DataCase3, _ := ioutil.ReadAll(IPv4XMLDataCase3)
 	tests := []struct {
 		name     string
 		xmlInput string
 		expected SystemStatistics
 	}{
 		{
-			name: "complete_ipv4_statistics",
-			xmlInput: `<rpc-reply junos:style="normal">
-				<statistics>
-					<ip>
-						<packets-received>1000</packets-received>
-						<bad-header-checksums>5</bad-header-checksums>
-						<packets-with-size-smaller-than-minimum>10</packets-with-size-smaller-than-minimum>
-						<packets-with-data-size-less-than-datalength>2</packets-with-data-size-less-than-datalength>
-						<packets-with-header-length-less-than-data-size>3</packets-with-header-length-less-than-data-size>
-						<packets-with-data-length-less-than-headerlength>1</packets-with-data-length-less-than-headerlength>
-						<packets-with-incorrect-version-number>0</packets-with-incorrect-version-number>
-						<packets-destined-to-dead-next-hop>0</packets-destined-to-dead-next-hop>
-						<fragments-received>50</fragments-received>
-						<fragments-dropped-due-to-outofspace-or-dup>2</fragments-dropped-due-to-outofspace-or-dup>
-						<fragments-dropped-due-to-queueoverflow>1</fragments-dropped-due-to-queueoverflow>
-						<fragments-dropped-after-timeout>0</fragments-dropped-after-timeout>
-						<packets-reassembled-ok>48</packets-reassembled-ok>
-						<packets-for-this-host>500</packets-for-this-host>
-						<packets-for-unknown-or-unsupported-protocol>5</packets-for-unknown-or-unsupported-protocol>
-						<packets-forwarded>400</packets-forwarded>
-						<packets-not-forwardable>10</packets-not-forwardable>
-						<redirects-sent>2</redirects-sent>
-						<packets-sent-from-this-host>800</packets-sent-from-this-host>
-						<packets-sent-with-fabricated-ip-header>0</packets-sent-with-fabricated-ip-header>
-						<output-packets-dropped-due-to-no-bufs>3</output-packets-dropped-due-to-no-bufs>
-						<output-packets-discarded-due-to-no-route>1</output-packets-discarded-due-to-no-route>
-						<output-datagrams-fragmented>20</output-datagrams-fragmented>
-						<fragments-created>40</fragments-created>
-						<datagrams-that-can-not-be-fragmented>2</datagrams-that-can-not-be-fragmented>
-						<packets-with-bad-options>1</packets-with-bad-options>
-						<packets-with-options-handled-without-error>15</packets-with-options-handled-without-error>
-						<strict-source-and-record-route-options>0</strict-source-and-record-route-options>
-						<loose-source-and-record-route-options>2</loose-source-and-record-route-options>
-						<record-route-options>5</record-route-options>
-						<timestamp-options>3</timestamp-options>
-						<timestamp-and-address-options>1</timestamp-and-address-options>
-						<timestamp-and-prespecified-address-options>0</timestamp-and-prespecified-address-options>
-						<option-packets-dropped-due-to-rate-limit>0</option-packets-dropped-due-to-rate-limit>
-						<router-alert-options>4</router-alert-options>
-						<multicast-packets-dropped>8</multicast-packets-dropped>
-						<packets-dropped>12</packets-dropped>
-						<transit-re-packets-dropped-on-mgmt-interface>0</transit-re-packets-dropped-on-mgmt-interface>
-						<packets-used-first-nexthop-in-ecmp-unilist>25</packets-used-first-nexthop-in-ecmp-unilist>
-						<incoming-ttpoip-packets-received>100</incoming-ttpoip-packets-received>
-						<incoming-ttpoip-packets-dropped>2</incoming-ttpoip-packets-dropped>
-						<outgoing-ttpoip-packets-sent>95</outgoing-ttpoip-packets-sent>
-						<outgoing-ttpoip-packets-dropped>1</outgoing-ttpoip-packets-dropped>
-						<incoming-rawip-packets-dropped-no-socket-buffer>3</incoming-rawip-packets-dropped-no-socket-buffer>
-						<incoming-virtual-node-packets-delivered>200</incoming-virtual-node-packets-delivered>
-					</ip>
-				</statistics>
-				<cli>
-					<banner>user@router></banner>
-				</cli>
-			</rpc-reply>`,
+			name:     "complete_ipv4_statistics",
+			xmlInput: string(IPv4DataCase1),
 			expected: SystemStatistics{
 				Statistics: struct {
 					Text string `xml:",chardata"`
@@ -343,7 +299,7 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 						ArpMgtDrop                                               string `xml:"arp-mgt-drop"`
 					} `xml:"arp"`
 					Ip6 struct {
-						Text                                  string `xml:",chardata"`
+						Text                                  string  `xml:",chardata"`
 						TotalPacketsReceived                  float64 `xml:"total-packets-received"`
 						Ip6PacketsWithSizeSmallerThanMinimum  float64 `xml:"ip6-packets-with-size-smaller-than-minimum"`
 						PacketsWithDatasizeLessThanDataLength float64 `xml:"packets-with-datasize-less-than-data-length"`
@@ -377,7 +333,7 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 						FailuresOfSourceAddressSelection      float64 `xml:"failures-of-source-address-selection"`
 						HeaderType                            []struct {
 							Text                            string  `xml:",chardata"`
-							HeaderForSourceAddressSelection string `xml:"header-for-source-address-selection"`
+							HeaderForSourceAddressSelection string  `xml:"header-for-source-address-selection"`
 							LinkLocals                      float64 `xml:"link-locals"`
 							Globals                         float64 `xml:"globals"`
 							AddressScope                    float64 `xml:"address-scope"`
@@ -598,61 +554,8 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 			},
 		},
 		{
-			name: "empty_ipv4_statistics",
-			xmlInput: `<rpc-reply junos:style="normal">
-				<statistics>
-					<ip>
-						<packets-received>0</packets-received>
-						<bad-header-checksums>0</bad-header-checksums>
-						<packets-with-size-smaller-than-minimum>0</packets-with-size-smaller-than-minimum>
-						<packets-with-data-size-less-than-datalength>0</packets-with-data-size-less-than-datalength>
-						<packets-with-header-length-less-than-data-size>0</packets-with-header-length-less-than-data-size>
-						<packets-with-data-length-less-than-headerlength>0</packets-with-data-length-less-than-headerlength>
-						<packets-with-incorrect-version-number>0</packets-with-incorrect-version-number>
-						<packets-destined-to-dead-next-hop>0</packets-destined-to-dead-next-hop>
-						<fragments-received>0</fragments-received>
-						<fragments-dropped-due-to-outofspace-or-dup>0</fragments-dropped-due-to-outofspace-or-dup>
-						<fragments-dropped-due-to-queueoverflow>0</fragments-dropped-due-to-queueoverflow>
-						<fragments-dropped-after-timeout>0</fragments-dropped-after-timeout>
-						<packets-reassembled-ok>0</packets-reassembled-ok>
-						<packets-for-this-host>0</packets-for-this-host>
-						<packets-for-unknown-or-unsupported-protocol>0</packets-for-unknown-or-unsupported-protocol>
-						<packets-forwarded>0</packets-forwarded>
-						<packets-not-forwardable>0</packets-not-forwardable>
-						<redirects-sent>0</redirects-sent>
-						<packets-sent-from-this-host>0</packets-sent-from-this-host>
-						<packets-sent-with-fabricated-ip-header>0</packets-sent-with-fabricated-ip-header>
-						<output-packets-dropped-due-to-no-bufs>0</output-packets-dropped-due-to-no-bufs>
-						<output-packets-discarded-due-to-no-route>0</output-packets-discarded-due-to-no-route>
-						<output-datagrams-fragmented>0</output-datagrams-fragmented>
-						<fragments-created>0</fragments-created>
-						<datagrams-that-can-not-be-fragmented>0</datagrams-that-can-not-be-fragmented>
-						<packets-with-bad-options>0</packets-with-bad-options>
-						<packets-with-options-handled-without-error>0</packets-with-options-handled-without-error>
-						<strict-source-and-record-route-options>0</strict-source-and-record-route-options>
-						<loose-source-and-record-route-options>0</loose-source-and-record-route-options>
-						<record-route-options>0</record-route-options>
-						<timestamp-options>0</timestamp-options>
-						<timestamp-and-address-options>0</timestamp-and-address-options>
-						<timestamp-and-prespecified-address-options>0</timestamp-and-prespecified-address-options>
-						<option-packets-dropped-due-to-rate-limit>0</option-packets-dropped-due-to-rate-limit>
-						<router-alert-options>0</router-alert-options>
-						<multicast-packets-dropped>0</multicast-packets-dropped>
-						<packets-dropped>0</packets-dropped>
-						<transit-re-packets-dropped-on-mgmt-interface>0</transit-re-packets-dropped-on-mgmt-interface>
-						<packets-used-first-nexthop-in-ecmp-unilist>0</packets-used-first-nexthop-in-ecmp-unilist>
-						<incoming-ttpoip-packets-received>0</incoming-ttpoip-packets-received>
-						<incoming-ttpoip-packets-dropped>0</incoming-ttpoip-packets-dropped>
-						<outgoing-ttpoip-packets-sent>0</outgoing-ttpoip-packets-sent>
-						<outgoing-ttpoip-packets-dropped>0</outgoing-ttpoip-packets-dropped>
-						<incoming-rawip-packets-dropped-no-socket-buffer>0</incoming-rawip-packets-dropped-no-socket-buffer>
-						<incoming-virtual-node-packets-delivered>0</incoming-virtual-node-packets-delivered>
-					</ip>
-				</statistics>
-				<cli>
-					<banner>user@router></banner>
-				</cli>
-			</rpc-reply>`,
+			name:     "empty_ipv4_statistics",
+			xmlInput: string(IPv4DataCase2),
 			expected: SystemStatistics{
 				Cli: struct {
 					Text   string `xml:",chardata"`
@@ -663,61 +566,8 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 			},
 		},
 		{
-			name: "high_values_ipv4_statistics",
-			xmlInput: `<rpc-reply junos:style="normal">
-				<statistics>
-					<ip>
-						<packets-received>999999999</packets-received>
-						<bad-header-checksums>12345</bad-header-checksums>
-						<packets-with-size-smaller-than-minimum>54321</packets-with-size-smaller-than-minimum>
-						<packets-with-data-size-less-than-datalength>1111</packets-with-data-size-less-than-datalength>
-						<packets-with-header-length-less-than-data-size>2222</packets-with-header-length-less-than-data-size>
-						<packets-with-data-length-less-than-headerlength>3333</packets-with-data-length-less-than-headerlength>
-						<packets-with-incorrect-version-number>4444</packets-with-incorrect-version-number>
-						<packets-destined-to-dead-next-hop>5555</packets-destined-to-dead-next-hop>
-						<fragments-received>888888</fragments-received>
-						<fragments-dropped-due-to-outofspace-or-dup>6666</fragments-dropped-due-to-outofspace-or-dup>
-						<fragments-dropped-due-to-queueoverflow>7777</fragments-dropped-due-to-queueoverflow>
-						<fragments-dropped-after-timeout>8888</fragments-dropped-after-timeout>
-						<packets-reassembled-ok>777777</packets-reassembled-ok>
-						<packets-for-this-host>555555</packets-for-this-host>
-						<packets-for-unknown-or-unsupported-protocol>9999</packets-for-unknown-or-unsupported-protocol>
-						<packets-forwarded>444444</packets-forwarded>
-						<packets-not-forwardable>11111</packets-not-forwardable>
-						<redirects-sent>12121</redirects-sent>
-						<packets-sent-from-this-host>666666</packets-sent-from-this-host>
-						<packets-sent-with-fabricated-ip-header>13131</packets-sent-with-fabricated-ip-header>
-						<output-packets-dropped-due-to-no-bufs>14141</output-packets-dropped-due-to-no-bufs>
-						<output-packets-discarded-due-to-no-route>15151</output-packets-discarded-due-to-no-route>
-						<output-datagrams-fragmented>16161</output-datagrams-fragmented>
-						<fragments-created>17171</fragments-created>
-						<datagrams-that-can-not-be-fragmented>18181</datagrams-that-can-not-be-fragmented>
-						<packets-with-bad-options>19191</packets-with-bad-options>
-						<packets-with-options-handled-without-error>20202</packets-with-options-handled-without-error>
-						<strict-source-and-record-route-options>21212</strict-source-and-record-route-options>
-						<loose-source-and-record-route-options>22222</loose-source-and-record-route-options>
-						<record-route-options>23232</record-route-options>
-						<timestamp-options>24242</timestamp-options>
-						<timestamp-and-address-options>25252</timestamp-and-address-options>
-						<timestamp-and-prespecified-address-options>26262</timestamp-and-prespecified-address-options>
-						<option-packets-dropped-due-to-rate-limit>27272</option-packets-dropped-due-to-rate-limit>
-						<router-alert-options>28282</router-alert-options>
-						<multicast-packets-dropped>29292</multicast-packets-dropped>
-						<packets-dropped>30303</packets-dropped>
-						<transit-re-packets-dropped-on-mgmt-interface>31313</transit-re-packets-dropped-on-mgmt-interface>
-						<packets-used-first-nexthop-in-ecmp-unilist>32323</packets-used-first-nexthop-in-ecmp-unilist>
-						<incoming-ttpoip-packets-received>33333</incoming-ttpoip-packets-received>
-						<incoming-ttpoip-packets-dropped>34343</incoming-ttpoip-packets-dropped>
-						<outgoing-ttpoip-packets-sent>35353</outgoing-ttpoip-packets-sent>
-						<outgoing-ttpoip-packets-dropped>36363</outgoing-ttpoip-packets-dropped>
-						<incoming-rawip-packets-dropped-no-socket-buffer>37373</incoming-rawip-packets-dropped-no-socket-buffer>
-						<incoming-virtual-node-packets-delivered>38383</incoming-virtual-node-packets-delivered>
-					</ip>
-				</statistics>
-				<cli>
-					<banner>admin@high-traffic-router></banner>
-				</cli>
-			</rpc-reply>`,
+			name:     "high_values_ipv4_statistics",
+			xmlInput: string(IPv4DataCase3),
 			expected: SystemStatistics{
 				Statistics: struct {
 					Text string `xml:",chardata"`
@@ -992,7 +842,7 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 						ArpMgtDrop                                               string `xml:"arp-mgt-drop"`
 					} `xml:"arp"`
 					Ip6 struct {
-						Text                                  string `xml:",chardata"`
+						Text                                  string  `xml:",chardata"`
 						TotalPacketsReceived                  float64 `xml:"total-packets-received"`
 						Ip6PacketsWithSizeSmallerThanMinimum  float64 `xml:"ip6-packets-with-size-smaller-than-minimum"`
 						PacketsWithDatasizeLessThanDataLength float64 `xml:"packets-with-datasize-less-than-data-length"`
@@ -1026,7 +876,7 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 						FailuresOfSourceAddressSelection      float64 `xml:"failures-of-source-address-selection"`
 						HeaderType                            []struct {
 							Text                            string  `xml:",chardata"`
-							HeaderForSourceAddressSelection string `xml:"header-for-source-address-selection"`
+							HeaderForSourceAddressSelection string  `xml:"header-for-source-address-selection"`
 							LinkLocals                      float64 `xml:"link-locals"`
 							Globals                         float64 `xml:"globals"`
 							AddressScope                    float64 `xml:"address-scope"`

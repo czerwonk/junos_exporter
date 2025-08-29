@@ -17,7 +17,7 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 	IPv4DataCase2, _ := ioutil.ReadAll(IPv4XMLDataCase2)
 	IPv4XMLDataCase3, _ := os.Open("testsFiles/IPV4/ipv4TestDataCase3.xml")
 	IPv4DataCase3, _ := ioutil.ReadAll(IPv4XMLDataCase3)
-	tests := []struct {
+	testsIPV4 := []struct {
 		name     string
 		xmlInput string
 		expected SystemStatistics
@@ -1098,7 +1098,7 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for _, tt := range testsIPV4 {
 		t.Run(tt.name, func(t *testing.T) {
 			var result SystemStatistics
 			err := xml.Unmarshal([]byte(tt.xmlInput), &result)

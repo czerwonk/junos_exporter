@@ -273,3 +273,64 @@ func TestStatisticsUDPUnmarshaling(t *testing.T) {
 	}
 }
 
+func TestStatisticsTCPUnmarshaling(t *testing.T) {
+	TCPXMLDataCase1, _ := os.Open("testsFiles/TCP/TCPTestDataCase1.xml")
+	TCPDataCase1, _ := ioutil.ReadAll(TCPXMLDataCase1)
+	type testCase struct {
+		name     string
+		xmlInput string
+		expect   func(t *testing.T, got SystemStatistics)
+	}
+
+	tests := []testCase{
+		{
+			name: "complete_tcp_statistics",
+			xmlInput: string(TCPDataCase1),
+			expect: func(t *testing.T, got SystemStatistics) {
+				tcp := got.Statistics.Tcp
+				assert.Equal(t, float64(1000), tcp.PacketsSent)
+				assert.Equal(t, float64(900), tcp.SentDataPackets)
+				assert.Equal(t, float64(123456), tcp.DataPacketsBytes)
+				assert.Equal(t, float64(10), tcp.SentDataPacketsRetransmitted)
+				assert.Equal(t, float64(2048), tcp.RetransmittedBytes)
+				assert.Equal(t, float64(50), tcp.SentAckOnlyPackets)
+				assert.Equal(t, float64(1100), tcp.PacketsReceived)
+				assert.Equal(t, float64(980), tcp.ReceivedAcks)
+				assert.Equal(t, float64(654321), tcp.AcksBytes)
+				assert.Equal(t, float64(1005), tcp.PacketsReceivedInSequence)
+				assert.Equal(t, float64(222333), tcp.Bytes)
+				assert.Equal(t, float64(40), tcp.ConnectionRequests)
+				assert.Equal(t, float64(39), tcp.ConnectionAccepts)
+				assert.Equal(t, float64(2), tcp.BadConnectionAttempts)
+				assert.Equal(t, float64(1), tcp.ListenQueueOverflows)
+				assert.Equal(t, float64(38), tcp.ConnectionsEstablished)
+				assert.Equal(t, float64(30), tcp.ConnectionsClosed)
+				assert.Equal(t, float64(3), tcp.Drops)
+				assert.Equal(t, float64(44), tcp.Attempts)
+				assert.Equal(t, float64(6), tcp.RetransmitTimeouts)
+				assert.Equal(t, float64(5), tcp.KeepaliveTimeouts)
+				assert.Equal(t, float64(15), tcp.KeepaliveProbesSent)
+				assert.Equal(t, float64(2), tcp.KeepaliveConnectionsDropped)
+				assert.Equal(t, float64(12), tcp.RstPackets)
+				assert.Equal(t, float64(7), tcp.SendPacketsDropped)
+				assert.Equal(t, float64(6), tcp.RcvPacketsDropped)
+				assert.Equal(t, float64(5), tcp.OutgoingSegmentsDropped)
+				assert.Equal(t, float64(20), tcp.OptionMaxsegmentLength)
+				assert.Equal(t, float64(10), tcp.OptionWindowLength)
+				assert.Equal(t, float64(12), tcp.OptionTimestampLength)
+				assert.Equal(t, "user@router>", got.Cli.Banner)
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var got SystemStatistics
+			err := xml.Unmarshal([]byte(tc.xmlInput), &got)
+			assert.NoError(t, err, "unmarshal should not return error")
+			tc.expect(t, got)
+		})
+	}
+}
+
+

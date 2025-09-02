@@ -2,7 +2,6 @@ package systemstatistics
 
 import (
 	"encoding/xml"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -152,80 +151,17 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 
 // Tests for the IPv6 sub-structure (Ip6) of SystemStatistics. We use inline XML to focus on Ip6.
 func TestStatisticsIPv6Unmarshaling(t *testing.T) {
-	IPv6XMLDataCase1, _ := os.Open("testsFiles/IPV6/ipv6TestDataCase1.xml")
+	IPv6XMLDataCase1, _ := os.Open("testsFiles/IPv6/ipv6TestDataCase1.xml")
 	IPv6DataCase1, _ := ioutil.ReadAll(IPv6XMLDataCase1)
-	fmt.Printf("%v", string(IPv6DataCase1))
 	type testCase struct {
 		name     string
 		xmlInput string
 		expect   func(t *testing.T, got SystemStatistics)
 	}
-
-	completeIPv6 := `
-<rpc-reply>
-  <statistics>
-    <ip6>
-      <total-packets-received>100</total-packets-received>
-      <ip6-packets-with-size-smaller-than-minimum>1</ip6-packets-with-size-smaller-than-minimum>
-      <packets-with-datasize-less-than-data-length>2</packets-with-datasize-less-than-data-length>
-      <ip6-packets-with-bad-options>3</ip6-packets-with-bad-options>
-      <ip6-packets-with-incorrect-version-number>4</ip6-packets-with-incorrect-version-number>
-      <ip6-fragments-received>5</ip6-fragments-received>
-      <duplicate-or-out-of-space-fragments-dropped>6</duplicate-or-out-of-space-fragments-dropped>
-      <ip6-fragments-dropped-after-timeout>7</ip6-fragments-dropped-after-timeout>
-      <fragments-that-exceeded-limit>8</fragments-that-exceeded-limit>
-      <ip6-packets-reassembled-ok>9</ip6-packets-reassembled-ok>
-      <ip6-packets-for-this-host>10</ip6-packets-for-this-host>
-      <ip6-packets-forwarded>11</ip6-packets-forwarded>
-      <ip6-packets-not-forwardable>12</ip6-packets-not-forwardable>
-      <ip6-redirects-sent>13</ip6-redirects-sent>
-      <ip6-packets-sent-from-this-host>14</ip6-packets-sent-from-this-host>
-      <ip6-packets-sent-with-fabricated-ip-header>15</ip6-packets-sent-with-fabricated-ip-header>
-      <ip6-output-packets-dropped-due-to-no-bufs>16</ip6-output-packets-dropped-due-to-no-bufs>
-      <ip6-output-packets-discarded-due-to-no-route>17</ip6-output-packets-discarded-due-to-no-route>
-      <ip6-output-datagrams-fragmented>18</ip6-output-datagrams-fragmented>
-      <ip6-fragments-created>19</ip6-fragments-created>
-      <ip6-datagrams-that-can-not-be-fragmented>20</ip6-datagrams-that-can-not-be-fragmented>
-      <packets-that-violated-scope-rules>21</packets-that-violated-scope-rules>
-      <multicast-packets-which-we-do-not-join>22</multicast-packets-which-we-do-not-join>
-      <ip6nh-tcp>23</ip6nh-tcp>
-      <ip6nh-udp>24</ip6nh-udp>
-      <ip6nh-icmp6>25</ip6nh-icmp6>
-      <packets-whose-headers-are-not-continuous>26</packets-whose-headers-are-not-continuous>
-      <tunneling-packets-that-can-not-find-gif>27</tunneling-packets-that-can-not-find-gif>
-      <packets-discarded-due-to-too-may-headers>28</packets-discarded-due-to-too-may-headers>
-      <failures-of-source-address-selection>29</failures-of-source-address-selection>
-      <header-type>
-        <header-for-source-address-selection>default</header-for-source-address-selection>
-        <link-locals>30</link-locals>
-        <globals>31</globals>
-        <address-scope>0</address-scope>
-        <hex-value>0</hex-value>
-      </header-type>
-      <header-type>
-        <header-for-source-address-selection>policy</header-for-source-address-selection>
-        <link-locals>32</link-locals>
-        <globals>33</globals>
-        <address-scope>0</address-scope>
-        <hex-value>0</hex-value>
-      </header-type>
-      <forward-cache-hit>34</forward-cache-hit>
-      <forward-cache-miss>35</forward-cache-miss>
-      <ip6-packets-destined-to-dead-next-hop>36</ip6-packets-destined-to-dead-next-hop>
-      <ip6-option-packets-dropped-due-to-rate-limit>37</ip6-option-packets-dropped-due-to-rate-limit>
-      <ip6-packets-dropped>38</ip6-packets-dropped>
-      <packets-dropped-due-to-bad-protocol>39</packets-dropped-due-to-bad-protocol>
-      <transit-re-packet-dropped-on-mgmt-interface>40</transit-re-packet-dropped-on-mgmt-interface>
-      <packet-used-first-nexthop-in-ecmp-unilist>41</packet-used-first-nexthop-in-ecmp-unilist>
-    </ip6>
-  </statistics>
-  <cli><banner>user@router></banner></cli>
-</rpc-reply>`
-
 	tests := []testCase{
 		{
-			name:     "complete_ipv6_statistics",
-			xmlInput: completeIPv6,
+			name: "complete_ipv6_statistics",
+			xmlInput: string(IPv6DataCase1),
 			expect: func(t *testing.T, got SystemStatistics) {
 				ip6 := got.Statistics.Ip6
 				assert.Equal(t, float64(100), ip6.TotalPacketsReceived)

@@ -2,6 +2,7 @@ package systemstatistics
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -19,7 +20,7 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 	testsIPV4 := []testCase{
 		{
 			name:    "complete_ipv4_statistics",
-			xmlFile: "testsFiles/IPV4/ipv4TestDataCase1.xml",
+			xmlFile: "testsFiles/IPv4/ipv4TestDataCase1.xml",
 			expect: SystemStatistics{
 				Statistics: Statistics{
 					Ip: IP{
@@ -100,10 +101,10 @@ func TestStatisticsIPv6Unmarshaling(t *testing.T) {
 		expect  SystemStatistics
 	}
 
-	testsIPV4 := []testCase{
+	testsIPV6 := []testCase{
 		{
 			name:    "complete_ipv6_statistics",
-			xmlFile: "testsFiles/IPV6/ipv6TestDataCase1.xml",
+			xmlFile: "testsFiles/IPv6/ipv6TestDataCase1.xml",
 			expect: SystemStatistics{
 				Statistics: Statistics{
 					Ip6: IP6{
@@ -161,7 +162,7 @@ func TestStatisticsIPv6Unmarshaling(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testsIPV4 {
+	for _, tc := range testsIPV6 {
 		t.Run(tc.name, func(t *testing.T) {
 			fc, err := os.ReadFile(tc.xmlFile)
 			if err != nil {
@@ -172,8 +173,13 @@ func TestStatisticsIPv6Unmarshaling(t *testing.T) {
 			if err != nil {
 
 			}
+			fmt.Printf("total packets received is %v", result.Statistics.Ip6.TotalPacketsReceived)
 
+			result.Statistics.Text = ""
 			result.Statistics.Ip6.Text = ""
+			tc.expect.Statistics.Text = ""
+			tc.expect.Statistics.Ip6.Text = ""
+
 			assert.Equal(t, tc.expect.Statistics.Ip6.TotalPacketsReceived, result.Statistics.Ip6.TotalPacketsReceived, tc.name)
 			assert.NoError(t, err, "unmarshal should not return error")
 		})

@@ -3,17 +3,16 @@ package systemstatistics
 import "encoding/xml"
 
 type SystemStatistics struct {
-	//XMLName    xml.Name   `xml:"rpc-reply"`
+	XMLName    xml.Name   `xml:"rpc-reply"`
 	//Text       string     `xml:",chardata"`
 	//Junos      string     `xml:"junos,attr"`
 	rpcReply    rpcReply  `xml:"rpc-reply"`
 	Statistics   Statistics `xml:"statistics"`
-	/*
 		Cli        struct {
 			Text   string `xml:",chardata"`
 			Banner string `xml:"banner"`
 		} `xml:"cli"`
-	*/
+
 }
 
 type rpcReply struct {

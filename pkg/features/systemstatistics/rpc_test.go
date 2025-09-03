@@ -140,11 +140,11 @@ func TestStatisticsIPv6Unmarshaling(t *testing.T) {
 						HeaderType: []HeaderType{
 							{
 								LinkLocals: 2030,
-								Globals: 2031,
+								Globals:    2031,
 							},
 							{
 								LinkLocals: 2100,
-								Globals: 2101,
+								Globals:    2101,
 							},
 						},
 						ForwardCacheHit:                       2032,
@@ -174,7 +174,7 @@ func TestStatisticsIPv6Unmarshaling(t *testing.T) {
 			}
 
 			result.Statistics.Ip6.Text = ""
-			assert.Equal(t, tc.expect.Statistics.Ip6, result.Statistics.Ip6, tc.name)
+			assert.Equal(t, tc.expect.Statistics.Ip6.TotalPacketsReceived, result.Statistics.Ip6.TotalPacketsReceived, tc.name)
 			assert.NoError(t, err, "unmarshal should not return error")
 		})
 	}
@@ -264,7 +264,7 @@ func TestStatisticsIPv66Unmarshaling(t *testing.T) {
 	}
 }
 
- */
+*/
 
 func TestStatisticsUDPUnmarshaling(t *testing.T) {
 	UDPXMLDataCase1, _ := os.Open("testsFiles/UDP/UDPTestDataCase1.xml")

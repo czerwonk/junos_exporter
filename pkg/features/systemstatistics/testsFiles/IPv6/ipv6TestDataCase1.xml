@@ -1,4 +1,4 @@
-<rpc-reply>
+<rpc-reply junos:style="normal">
     <statistics>
         <ip6>
             <total-packets-received>2000</total-packets-received>
@@ -49,5 +49,7 @@
             <packet-used-first-nexthop-in-ecmp-unilist>2039</packet-used-first-nexthop-in-ecmp-unilist>
         </ip6>
     </statistics>
-    <cli><banner>user@router></banner></cli>
+    <cli>
+        <banner>user@router></banner>
+    </cli>
 </rpc-reply>

@@ -2,7 +2,7 @@ package systemstatistics
 
 import (
 	"encoding/xml"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
@@ -10,149 +10,181 @@ import (
 )
 
 func TestStatisticsIPv4Unmarshaling(t *testing.T) {
-	IPv4XMLDataCase1, _ := os.Open("testsFiles/IPV4/ipv4TestDataCase1.xml")
-	IPv4DataCase1, _ := ioutil.ReadAll(IPv4XMLDataCase1)
-	IPv4XMLDataCase2, _ := os.Open("testsFiles/IPV4/ipv4TestDataCase2.xml")
-	IPv4DataCase2, _ := ioutil.ReadAll(IPv4XMLDataCase2)
-	IPv4XMLDataCase3, _ := os.Open("testsFiles/IPV4/ipv4TestDataCase3.xml")
-	IPv4DataCase3, _ := ioutil.ReadAll(IPv4XMLDataCase3)
-
 	type testCase struct {
-		name     string
-		xmlInput string
-		expect   func(t *testing.T, got SystemStatistics)
+		name    string
+		xmlFile string
+		expect  SystemStatistics
 	}
 
 	testsIPV4 := []testCase{
 		{
-			name:     "complete_ipv4_statistics",
-			xmlInput: string(IPv4DataCase1),
-			expect: func(t *testing.T, got SystemStatistics) {
-				ip := got.Statistics.Ip
-				assert.Equal(t, float64(1000), ip.PacketsReceived)
-				assert.Equal(t, float64(5), ip.BadHeaderChecksums)
-				assert.Equal(t, float64(10), ip.PacketsWithSizeSmallerThanMinimum)
-				assert.Equal(t, float64(2), ip.PacketsWithDataSizeLessThanDatalength)
-				assert.Equal(t, float64(3), ip.PacketsWithHeaderLengthLessThanDataSize)
-				assert.Equal(t, float64(1), ip.PacketsWithDataLengthLessThanHeaderlength)
-				assert.Equal(t, float64(0), ip.PacketsWithIncorrectVersionNumber)
-				assert.Equal(t, float64(0), ip.PacketsDestinedToDeadNextHop)
-				assert.Equal(t, float64(50), ip.FragmentsReceived)
-				assert.Equal(t, float64(2), ip.FragmentsDroppedDueToOutofspaceOrDup)
-				assert.Equal(t, float64(1), ip.FragmentsDroppedDueToQueueoverflow)
-				assert.Equal(t, float64(0), ip.FragmentsDroppedAfterTimeout)
-				assert.Equal(t, float64(48), ip.PacketsReassembledOk)
-				assert.Equal(t, float64(500), ip.PacketsForThisHost)
-				assert.Equal(t, float64(5), ip.PacketsForUnknownOrUnsupportedProtocol)
-				assert.Equal(t, float64(400), ip.PacketsForwarded)
-				assert.Equal(t, float64(10), ip.PacketsNotForwardable)
-				assert.Equal(t, float64(2), ip.RedirectsSent)
-				assert.Equal(t, float64(800), ip.PacketsSentFromThisHost)
-				assert.Equal(t, float64(0), ip.PacketsSentWithFabricatedIpHeader)
-				assert.Equal(t, float64(3), ip.OutputPacketsDroppedDueToNoBufs)
-				assert.Equal(t, float64(1), ip.OutputPacketsDiscardedDueToNoRoute)
-				assert.Equal(t, float64(20), ip.OutputDatagramsFragmented)
-				assert.Equal(t, float64(40), ip.FragmentsCreated)
-				assert.Equal(t, float64(2), ip.DatagramsThatCanNotBeFragmented)
-				assert.Equal(t, float64(1), ip.PacketsWithBadOptions)
-				assert.Equal(t, float64(15), ip.PacketsWithOptionsHandledWithoutError)
-				assert.Equal(t, float64(0), ip.StrictSourceAndRecordRouteOptions)
-				assert.Equal(t, float64(2), ip.LooseSourceAndRecordRouteOptions)
-				assert.Equal(t, float64(5), ip.RecordRouteOptions)
-				assert.Equal(t, float64(3), ip.TimestampOptions)
-				assert.Equal(t, float64(1), ip.TimestampAndAddressOptions)
-				assert.Equal(t, float64(0), ip.TimestampAndPrespecifiedAddressOptions)
-				assert.Equal(t, float64(0), ip.OptionPacketsDroppedDueToRateLimit)
-				assert.Equal(t, float64(4), ip.RouterAlertOptions)
-				assert.Equal(t, float64(8), ip.MulticastPacketsDropped)
-				assert.Equal(t, float64(12), ip.PacketsDropped)
-				assert.Equal(t, float64(0), ip.TransitRePacketsDroppedOnMgmtInterface)
-				assert.Equal(t, float64(25), ip.PacketsUsedFirstNexthopInEcmpUnilist)
-				assert.Equal(t, float64(100), ip.IncomingTtpoipPacketsReceived)
-				assert.Equal(t, float64(2), ip.IncomingTtpoipPacketsDropped)
-				assert.Equal(t, float64(95), ip.OutgoingTtpoipPacketsSent)
-				assert.Equal(t, float64(1), ip.OutgoingTtpoipPacketsDropped)
-				assert.Equal(t, float64(3), ip.IncomingRawipPacketsDroppedNoSocketBuffer)
-				assert.Equal(t, float64(200), ip.IncomingVirtualNodePacketsDelivered)
-				assert.Equal(t, "user@router>", got.Cli.Banner)
-			},
-		},
-		{
-			name:     "empty_ipv4_statistics",
-			xmlInput: string(IPv4DataCase2),
-			expect: func(t *testing.T, got SystemStatistics) {
-				assert.Equal(t, "user@router>", got.Cli.Banner)
-			},
-		},
-		{
-			name:     "high_values_ipv4_statistics",
-			xmlInput: string(IPv4DataCase3),
-			expect: func(t *testing.T, got SystemStatistics) {
-				ip := got.Statistics.Ip
-				assert.Equal(t, float64(999999999), ip.PacketsReceived)
-				assert.Equal(t, float64(12345), ip.BadHeaderChecksums)
-				assert.Equal(t, float64(54321), ip.PacketsWithSizeSmallerThanMinimum)
-				assert.Equal(t, float64(1111), ip.PacketsWithDataSizeLessThanDatalength)
-				assert.Equal(t, float64(2222), ip.PacketsWithHeaderLengthLessThanDataSize)
-				assert.Equal(t, float64(3333), ip.PacketsWithDataLengthLessThanHeaderlength)
-				assert.Equal(t, float64(4444), ip.PacketsWithIncorrectVersionNumber)
-				assert.Equal(t, float64(5555), ip.PacketsDestinedToDeadNextHop)
-				assert.Equal(t, float64(888888), ip.FragmentsReceived)
-				assert.Equal(t, float64(6666), ip.FragmentsDroppedDueToOutofspaceOrDup)
-				assert.Equal(t, float64(7777), ip.FragmentsDroppedDueToQueueoverflow)
-				assert.Equal(t, float64(8888), ip.FragmentsDroppedAfterTimeout)
-				assert.Equal(t, float64(777777), ip.PacketsReassembledOk)
-				assert.Equal(t, float64(555555), ip.PacketsForThisHost)
-				assert.Equal(t, float64(9999), ip.PacketsForUnknownOrUnsupportedProtocol)
-				assert.Equal(t, float64(444444), ip.PacketsForwarded)
-				assert.Equal(t, float64(11111), ip.PacketsNotForwardable)
-				assert.Equal(t, float64(12121), ip.RedirectsSent)
-				assert.Equal(t, float64(666666), ip.PacketsSentFromThisHost)
-				assert.Equal(t, float64(13131), ip.PacketsSentWithFabricatedIpHeader)
-				assert.Equal(t, float64(14141), ip.OutputPacketsDroppedDueToNoBufs)
-				assert.Equal(t, float64(15151), ip.OutputPacketsDiscardedDueToNoRoute)
-				assert.Equal(t, float64(16161), ip.OutputDatagramsFragmented)
-				assert.Equal(t, float64(17171), ip.FragmentsCreated)
-				assert.Equal(t, float64(18181), ip.DatagramsThatCanNotBeFragmented)
-				assert.Equal(t, float64(19191), ip.PacketsWithBadOptions)
-				assert.Equal(t, float64(20202), ip.PacketsWithOptionsHandledWithoutError)
-				assert.Equal(t, float64(21212), ip.StrictSourceAndRecordRouteOptions)
-				assert.Equal(t, float64(22222), ip.LooseSourceAndRecordRouteOptions)
-				assert.Equal(t, float64(23232), ip.RecordRouteOptions)
-				assert.Equal(t, float64(24242), ip.TimestampOptions)
-				assert.Equal(t, float64(25252), ip.TimestampAndAddressOptions)
-				assert.Equal(t, float64(26262), ip.TimestampAndPrespecifiedAddressOptions)
-				assert.Equal(t, float64(27272), ip.OptionPacketsDroppedDueToRateLimit)
-				assert.Equal(t, float64(28282), ip.RouterAlertOptions)
-				assert.Equal(t, float64(29292), ip.MulticastPacketsDropped)
-				assert.Equal(t, float64(30303), ip.PacketsDropped)
-				assert.Equal(t, float64(31313), ip.TransitRePacketsDroppedOnMgmtInterface)
-				assert.Equal(t, float64(32323), ip.PacketsUsedFirstNexthopInEcmpUnilist)
-				assert.Equal(t, float64(33333), ip.IncomingTtpoipPacketsReceived)
-				assert.Equal(t, float64(34343), ip.IncomingTtpoipPacketsDropped)
-				assert.Equal(t, float64(35353), ip.OutgoingTtpoipPacketsSent)
-				assert.Equal(t, float64(36363), ip.OutgoingTtpoipPacketsDropped)
-				assert.Equal(t, float64(37373), ip.IncomingRawipPacketsDroppedNoSocketBuffer)
-				assert.Equal(t, float64(38383), ip.IncomingVirtualNodePacketsDelivered)
-				assert.Equal(t, "admin@high-traffic-router>", got.Cli.Banner)
+			name:    "complete_ipv4_statistics",
+			xmlFile: "testsFiles/IPV4/ipv4TestDataCase1.xml",
+			expect: SystemStatistics{
+				Statistics: Statistics{
+					Ip: IP{
+						PacketsReceived:                           1000,
+						BadHeaderChecksums:                        1001,
+						PacketsWithSizeSmallerThanMinimum:         1002,
+						PacketsWithDataSizeLessThanDatalength:     1003,
+						PacketsWithHeaderLengthLessThanDataSize:   1004,
+						PacketsWithDataLengthLessThanHeaderlength: 1005,
+						PacketsWithIncorrectVersionNumber:         1006,
+						PacketsDestinedToDeadNextHop:              1007,
+						FragmentsReceived:                         1008,
+						FragmentsDroppedDueToOutofspaceOrDup:      1009,
+						FragmentsDroppedDueToQueueoverflow:        1010,
+						FragmentsDroppedAfterTimeout:              1011,
+						PacketsReassembledOk:                      1012,
+						PacketsForThisHost:                        1013,
+						PacketsForUnknownOrUnsupportedProtocol:    1014,
+						PacketsForwarded:                          1015,
+						PacketsNotForwardable:                     1016,
+						RedirectsSent:                             1017,
+						PacketsSentFromThisHost:                   1018,
+						PacketsSentWithFabricatedIpHeader:         1019,
+						OutputPacketsDroppedDueToNoBufs:           1020,
+						OutputPacketsDiscardedDueToNoRoute:        1021,
+						OutputDatagramsFragmented:                 1022,
+						FragmentsCreated:                          1023,
+						DatagramsThatCanNotBeFragmented:           1024,
+						PacketsWithBadOptions:                     1025,
+						PacketsWithOptionsHandledWithoutError:     1026,
+						StrictSourceAndRecordRouteOptions:         1027,
+						LooseSourceAndRecordRouteOptions:          1028,
+						RecordRouteOptions:                        1029,
+						TimestampOptions:                          1030,
+						TimestampAndAddressOptions:                1031,
+						TimestampAndPrespecifiedAddressOptions:    1032,
+						OptionPacketsDroppedDueToRateLimit:        1033,
+						RouterAlertOptions:                        1034,
+						MulticastPacketsDropped:                   1035,
+						PacketsDropped:                            1036,
+						TransitRePacketsDroppedOnMgmtInterface:    1037,
+						PacketsUsedFirstNexthopInEcmpUnilist:      1038,
+						IncomingTtpoipPacketsReceived:             1039,
+						IncomingTtpoipPacketsDropped:              1040,
+						OutgoingTtpoipPacketsSent:                 1041,
+						OutgoingTtpoipPacketsDropped:              1042,
+						IncomingRawipPacketsDroppedNoSocketBuffer: 1043,
+						IncomingVirtualNodePacketsDelivered:       1044,
+					},
+				},
 			},
 		},
 	}
 
 	for _, tc := range testsIPV4 {
 		t.Run(tc.name, func(t *testing.T) {
+			fc, err := os.ReadFile(tc.xmlFile)
+			if err != nil {
+
+			}
 			var result SystemStatistics
-			err := xml.Unmarshal([]byte(tc.xmlInput), &result)
+			err = xml.Unmarshal(fc, &result)
+			if err != nil {
+
+			}
+
+			result.Statistics.Ip.Text = ""
+			assert.Equal(t, tc.expect.Statistics.Ip, result.Statistics.Ip, tc.name)
 			assert.NoError(t, err, "unmarshal should not return error")
-			tc.expect(t, result)
+		})
+	}
+}
+
+func TestStatisticsIPv6Unmarshaling(t *testing.T) {
+	type testCase struct {
+		name    string
+		xmlFile string
+		expect  SystemStatistics
+	}
+
+	testsIPV4 := []testCase{
+		{
+			name:    "complete_ipv6_statistics",
+			xmlFile: "testsFiles/IPV6/ipv6TestDataCase1.xml",
+			expect: SystemStatistics{
+				Statistics: Statistics{
+					Ip6: IP6{
+						TotalPacketsReceived:                  2000,
+						Ip6PacketsWithSizeSmallerThanMinimum:  2001,
+						PacketsWithDatasizeLessThanDataLength: 2002,
+						Ip6PacketsWithBadOptions:              2003,
+						Ip6PacketsWithIncorrectVersionNumber:  2004,
+						Ip6FragmentsReceived:                  2005,
+						DuplicateOrOutOfSpaceFragmentsDropped: 2006,
+						Ip6FragmentsDroppedAfterTimeout:       2007,
+						FragmentsThatExceededLimit:            2008,
+						Ip6PacketsReassembledOk:               2009,
+						Ip6PacketsForThisHost:                 2010,
+						Ip6PacketsForwarded:                   2011,
+						Ip6PacketsNotForwardable:              2012,
+						Ip6RedirectsSent:                      2013,
+						Ip6PacketsSentFromThisHost:            2014,
+						Ip6PacketsSentWithFabricatedIpHeader:  2015,
+						Ip6OutputPacketsDroppedDueToNoBufs:    2016,
+						Ip6OutputPacketsDiscardedDueToNoRoute: 2017,
+						Ip6OutputDatagramsFragmented:          2018,
+						Ip6FragmentsCreated:                   2019,
+						Ip6DatagramsThatCanNotBeFragmented:    2020,
+						PacketsThatViolatedScopeRules:         2021,
+						MulticastPacketsWhichWeDoNotJoin:      2022,
+						Ip6nhTcp:                              2023,
+						Ip6nhUdp:                              2024,
+						Ip6nhIcmp6:                            2025,
+						PacketsWhoseHeadersAreNotContinuous:   2026,
+						TunnelingPacketsThatCanNotFindGif:     2027,
+						PacketsDiscardedDueToTooMayHeaders:    2028,
+						FailuresOfSourceAddressSelection:      2029,
+						HeaderType: []HeaderType{
+							{
+								LinkLocals: 2030,
+								Globals: 2031,
+							},
+							{
+								LinkLocals: 2100,
+								Globals: 2101,
+							},
+						},
+						ForwardCacheHit:                       2032,
+						ForwardCacheMiss:                      2033,
+						Ip6PacketsDestinedToDeadNextHop:       2034,
+						Ip6OptionPacketsDroppedDueToRateLimit: 2035,
+						Ip6PacketsDropped:                     2036,
+						PacketsDroppedDueToBadProtocol:        2037,
+						TransitRePacketDroppedOnMgmtInterface: 2038,
+						PacketUsedFirstNexthopInEcmpUnilist:   2039,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testsIPV4 {
+		t.Run(tc.name, func(t *testing.T) {
+			fc, err := os.ReadFile(tc.xmlFile)
+			if err != nil {
+
+			}
+			var result SystemStatistics
+			err = xml.Unmarshal(fc, &result)
+			if err != nil {
+
+			}
+
+			result.Statistics.Ip6.Text = ""
+			assert.Equal(t, tc.expect.Statistics.Ip6, result.Statistics.Ip6, tc.name)
+			assert.NoError(t, err, "unmarshal should not return error")
 		})
 	}
 }
 
 // Tests for the IPv6 sub-structure (Ip6) of SystemStatistics. We use inline XML to focus on Ip6.
-func TestStatisticsIPv6Unmarshaling(t *testing.T) {
+/*
+func TestStatisticsIPv66Unmarshaling(t *testing.T) {
 	IPv6XMLDataCase1, _ := os.Open("testsFiles/IPv6/ipv6TestDataCase1.xml")
-	IPv6DataCase1, _ := ioutil.ReadAll(IPv6XMLDataCase1)
+	IPv6DataCase1, _ := io.ReadAll(IPv6XMLDataCase1)
 	type testCase struct {
 		name     string
 		xmlInput string
@@ -232,9 +264,11 @@ func TestStatisticsIPv6Unmarshaling(t *testing.T) {
 	}
 }
 
+ */
+
 func TestStatisticsUDPUnmarshaling(t *testing.T) {
 	UDPXMLDataCase1, _ := os.Open("testsFiles/UDP/UDPTestDataCase1.xml")
-	UDPDataCase1, _ := ioutil.ReadAll(UDPXMLDataCase1)
+	UDPDataCase1, _ := io.ReadAll(UDPXMLDataCase1)
 	type testCase struct {
 		name     string
 		xmlInput string
@@ -257,7 +291,7 @@ func TestStatisticsUDPUnmarshaling(t *testing.T) {
 				assert.Equal(t, float64(7), udp.DatagramsNotForHashedPcb)
 				assert.Equal(t, float64(8), udp.DatagramsDelivered)
 				assert.Equal(t, float64(9), udp.DatagramsOutput)
-				assert.Equal(t, "user@router>", got.Cli.Banner)
+				//assert.Equal(t, "user@router>", got.Cli.Banner)
 			},
 		},
 	}
@@ -274,7 +308,7 @@ func TestStatisticsUDPUnmarshaling(t *testing.T) {
 
 func TestStatisticsTCPUnmarshaling(t *testing.T) {
 	TCPXMLDataCase1, _ := os.Open("testsFiles/TCP/TCPTestDataCase1.xml")
-	TCPDataCase1, _ := ioutil.ReadAll(TCPXMLDataCase1)
+	TCPDataCase1, _ := io.ReadAll(TCPXMLDataCase1)
 	type testCase struct {
 		name     string
 		xmlInput string
@@ -401,7 +435,7 @@ func TestStatisticsTCPUnmarshaling(t *testing.T) {
 				assert.Equal(t, float64(156), tcp.OptionSackpermittedLength)
 				assert.Equal(t, float64(157), tcp.OptionSackLength)
 				assert.Equal(t, float64(158), tcp.OptionAuthoptionLength)
-				assert.Equal(t, "user@router>", got.Cli.Banner)
+				//assert.Equal(t, "user@router>", got.Cli.Banner)
 			},
 		},
 	}

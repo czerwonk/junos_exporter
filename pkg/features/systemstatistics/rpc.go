@@ -303,7 +303,7 @@ type SystemStatistics struct {
 			Ip6DatagramsThatCanNotBeFragmented    float64 `xml:"ip6-datagrams-that-can-not-be-fragmented"`
 			PacketsThatViolatedScopeRules         float64 `xml:"packets-that-violated-scope-rules"`
 			MulticastPacketsWhichWeDoNotJoin      float64 `xml:"multicast-packets-which-we-do-not-join"`
-			Histogram                             float64 `xml:"histogram"`
+			Histogram                             string `xml:"histogram"`
 			Ip6nhTcp                              float64 `xml:"ip6nh-tcp"`
 			Ip6nhUdp                              float64 `xml:"ip6nh-udp"`
 			Ip6nhIcmp6                            float64 `xml:"ip6nh-icmp6"`

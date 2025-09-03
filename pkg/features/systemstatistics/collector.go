@@ -680,8 +680,20 @@ func (c *systemstatisticsCollector) Collect(client collector.Client, ch chan<- p
 		return err
 	}
 	c.collectSystemStatisticsIPV4(ch, labelValues, s)
+	err = client.RunCommandAndParse("show system statistics ip6", &s)
+	if err != nil {
+		return err
+	}
 	c.collectSystemStatisticsIPV6(ch, labelValues, s)
+	err = client.RunCommandAndParse("show system statistics udp", &s)
+	if err != nil {
+		return err
+	}
 	c.collectSystemStatisticsUDP(ch, labelValues, s)
+	err = client.RunCommandAndParse("show system statistics tcp", &s)
+	if err != nil {
+		return err
+	}
 	c.collectSystemStatisticsTCP(ch, labelValues, s)
 	return nil
 }

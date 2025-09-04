@@ -2,7 +2,6 @@ package systemstatistics
 
 import (
 	"encoding/xml"
-	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -173,104 +172,16 @@ func TestStatisticsIPv6Unmarshaling(t *testing.T) {
 			if err != nil {
 
 			}
-			fmt.Printf("total packets received is %v", result.Statistics.Ip6.TotalPacketsReceived)
-
-			result.Statistics.Text = ""
 			result.Statistics.Ip6.Text = ""
-			tc.expect.Statistics.Text = ""
-			tc.expect.Statistics.Ip6.Text = ""
-
-			assert.Equal(t, tc.expect.Statistics.Ip6.TotalPacketsReceived, result.Statistics.Ip6.TotalPacketsReceived, tc.name)
+			for i, _ := range result.Statistics.Ip6.HeaderType {
+				result.Statistics.Ip6.HeaderType[i].Text = ""
+				tc.expect.Statistics.Ip6.HeaderType[i].HeaderForSourceAddressSelection = ""
+			}
+			assert.Equal(t, tc.expect.Statistics.Ip6, result.Statistics.Ip6, tc.name)
 			assert.NoError(t, err, "unmarshal should not return error")
 		})
 	}
 }
-
-// Tests for the IPv6 sub-structure (Ip6) of SystemStatistics. We use inline XML to focus on Ip6.
-/*
-func TestStatisticsIPv66Unmarshaling(t *testing.T) {
-	IPv6XMLDataCase1, _ := os.Open("testsFiles/IPv6/ipv6TestDataCase1.xml")
-	IPv6DataCase1, _ := io.ReadAll(IPv6XMLDataCase1)
-	type testCase struct {
-		name     string
-		xmlInput string
-		expect   func(t *testing.T, got SystemStatistics)
-	}
-	tests := []testCase{
-		{
-			name:     "complete_ipv6_statistics",
-			xmlInput: string(IPv6DataCase1),
-			expect: func(t *testing.T, got SystemStatistics) {
-				ip6 := got.Statistics.Ip6
-				assert.Equal(t, float64(100), ip6.TotalPacketsReceived)
-				assert.Equal(t, float64(1), ip6.Ip6PacketsWithSizeSmallerThanMinimum)
-				assert.Equal(t, float64(2), ip6.PacketsWithDatasizeLessThanDataLength)
-				assert.Equal(t, float64(3), ip6.Ip6PacketsWithBadOptions)
-				assert.Equal(t, float64(4), ip6.Ip6PacketsWithIncorrectVersionNumber)
-				assert.Equal(t, float64(5), ip6.Ip6FragmentsReceived)
-				assert.Equal(t, float64(6), ip6.DuplicateOrOutOfSpaceFragmentsDropped)
-				assert.Equal(t, float64(7), ip6.Ip6FragmentsDroppedAfterTimeout)
-				assert.Equal(t, float64(8), ip6.FragmentsThatExceededLimit)
-				assert.Equal(t, float64(9), ip6.Ip6PacketsReassembledOk)
-				assert.Equal(t, float64(10), ip6.Ip6PacketsForThisHost)
-				assert.Equal(t, float64(11), ip6.Ip6PacketsForwarded)
-				assert.Equal(t, float64(12), ip6.Ip6PacketsNotForwardable)
-				assert.Equal(t, float64(13), ip6.Ip6RedirectsSent)
-				assert.Equal(t, float64(14), ip6.Ip6PacketsSentFromThisHost)
-				assert.Equal(t, float64(15), ip6.Ip6PacketsSentWithFabricatedIpHeader)
-				assert.Equal(t, float64(16), ip6.Ip6OutputPacketsDroppedDueToNoBufs)
-				assert.Equal(t, float64(17), ip6.Ip6OutputPacketsDiscardedDueToNoRoute)
-				assert.Equal(t, float64(18), ip6.Ip6OutputDatagramsFragmented)
-				assert.Equal(t, float64(19), ip6.Ip6FragmentsCreated)
-				assert.Equal(t, float64(20), ip6.Ip6DatagramsThatCanNotBeFragmented)
-				assert.Equal(t, float64(21), ip6.PacketsThatViolatedScopeRules)
-				assert.Equal(t, float64(22), ip6.MulticastPacketsWhichWeDoNotJoin)
-				assert.Equal(t, float64(23), ip6.Ip6nhTcp)
-				assert.Equal(t, float64(24), ip6.Ip6nhUdp)
-				assert.Equal(t, float64(25), ip6.Ip6nhIcmp6)
-				assert.Equal(t, float64(26), ip6.PacketsWhoseHeadersAreNotContinuous)
-				assert.Equal(t, float64(27), ip6.TunnelingPacketsThatCanNotFindGif)
-				assert.Equal(t, float64(28), ip6.PacketsDiscardedDueToTooMayHeaders)
-				assert.Equal(t, float64(29), ip6.FailuresOfSourceAddressSelection)
-				assert.Equal(t, 2, len(ip6.HeaderType))
-				var defLink, defGlob, polLink, polGlob float64
-				for _, h := range ip6.HeaderType {
-					switch h.HeaderForSourceAddressSelection {
-					case "default":
-						defLink = h.LinkLocals
-						defGlob = h.Globals
-					case "policy":
-						polLink = h.LinkLocals
-						polGlob = h.Globals
-					}
-				}
-				assert.Equal(t, float64(30), defLink)
-				assert.Equal(t, float64(31), defGlob)
-				assert.Equal(t, float64(32), polLink)
-				assert.Equal(t, float64(33), polGlob)
-				assert.Equal(t, float64(34), ip6.ForwardCacheHit)
-				assert.Equal(t, float64(35), ip6.ForwardCacheMiss)
-				assert.Equal(t, float64(36), ip6.Ip6PacketsDestinedToDeadNextHop)
-				assert.Equal(t, float64(37), ip6.Ip6OptionPacketsDroppedDueToRateLimit)
-				assert.Equal(t, float64(38), ip6.Ip6PacketsDropped)
-				assert.Equal(t, float64(39), ip6.PacketsDroppedDueToBadProtocol)
-				assert.Equal(t, float64(40), ip6.TransitRePacketDroppedOnMgmtInterface)
-				assert.Equal(t, float64(41), ip6.PacketUsedFirstNexthopInEcmpUnilist)
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			var got SystemStatistics
-			err := xml.Unmarshal([]byte(tc.xmlInput), &got)
-			assert.NoError(t, err, "unmarshal should not return error")
-			tc.expect(t, got)
-		})
-	}
-}
-
-*/
 
 func TestStatisticsUDPUnmarshaling(t *testing.T) {
 	UDPXMLDataCase1, _ := os.Open("testsFiles/UDP/UDPTestDataCase1.xml")

@@ -78,12 +78,12 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fc, err := os.ReadFile(tc.xmlFile)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("failed to read xml file in IPv4 testing due to: ", err)
 			}
 			var result SystemStatistics
 			err = xml.Unmarshal(fc, &result)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("failed to unmarshal xml file in IPv4 testing due to: ", err)
 			}
 
 			result.Statistics.Ip.Text = ""
@@ -165,12 +165,12 @@ func TestStatisticsIPv6Unmarshaling(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fc, err := os.ReadFile(tc.xmlFile)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("failed to read xml file in IPv6 testing due to: ", err)
 			}
 			var result SystemStatistics
 			err = xml.Unmarshal(fc, &result)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("failed to unmarshal xml file in IPv6 testing due to: ", err)
 			}
 			result.Statistics.Ip6.Text = ""
 			for i, _ := range result.Statistics.Ip6.HeaderType {
@@ -217,12 +217,12 @@ func TestStatisticsUDPUnmarshaling(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fc, err := os.ReadFile(tc.xmlFile)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("failed to read xml file in UDP testing due to: ", err)
 			}
 			var result SystemStatistics
 			err = xml.Unmarshal(fc, &result)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("failed to unmarshal xml file in UDP testing due to: ", err)
 			}
 
 			result.Statistics.Udp.Text = ""
@@ -372,12 +372,12 @@ func TestStatisticsTCPUnmarshaling(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fc, err := os.ReadFile(tc.xmlFile)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("failed to read xml file in TCP testing due to; ", err)
 			}
 			var result SystemStatistics
 			err = xml.Unmarshal(fc, &result)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("failed to unmarshal xml file in TCP testing due to: ", err)
 			}
 			result.Statistics.Tcp.Text = ""
 			assert.Equal(t, tc.expect.Statistics.Tcp, result.Statistics.Tcp, tc.name)

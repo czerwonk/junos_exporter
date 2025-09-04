@@ -2,6 +2,7 @@ package systemstatistics
 
 import (
 	"encoding/xml"
+	"log"
 	"os"
 	"testing"
 
@@ -77,12 +78,12 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fc, err := os.ReadFile(tc.xmlFile)
 			if err != nil {
-
+				log.Fatal(err)
 			}
 			var result SystemStatistics
 			err = xml.Unmarshal(fc, &result)
 			if err != nil {
-
+				log.Fatal(err)
 			}
 
 			result.Statistics.Ip.Text = ""
@@ -164,12 +165,12 @@ func TestStatisticsIPv6Unmarshaling(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fc, err := os.ReadFile(tc.xmlFile)
 			if err != nil {
-
+				log.Fatal(err)
 			}
 			var result SystemStatistics
 			err = xml.Unmarshal(fc, &result)
 			if err != nil {
-
+				log.Fatal(err)
 			}
 			result.Statistics.Ip6.Text = ""
 			for i, _ := range result.Statistics.Ip6.HeaderType {
@@ -216,12 +217,12 @@ func TestStatisticsUDPUnmarshaling(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fc, err := os.ReadFile(tc.xmlFile)
 			if err != nil {
-
+				log.Fatal(err)
 			}
 			var result SystemStatistics
 			err = xml.Unmarshal(fc, &result)
 			if err != nil {
-
+				log.Fatal(err)
 			}
 
 			result.Statistics.Udp.Text = ""
@@ -371,12 +372,12 @@ func TestStatisticsTCPUnmarshaling(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fc, err := os.ReadFile(tc.xmlFile)
 			if err != nil {
-
+				log.Fatal(err)
 			}
 			var result SystemStatistics
 			err = xml.Unmarshal(fc, &result)
 			if err != nil {
-
+				log.Fatal(err)
 			}
 			result.Statistics.Tcp.Text = ""
 			assert.Equal(t, tc.expect.Statistics.Tcp, result.Statistics.Tcp, tc.name)

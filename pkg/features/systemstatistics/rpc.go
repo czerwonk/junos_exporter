@@ -139,19 +139,7 @@ type Statistics struct {
 		OptionSackLength                                 float64 `xml:"option-sack-length"`
 		OptionAuthoptionLength                           float64 `xml:"option-authoption-length"`
 	} `xml:"tcp"`
-	Udp struct {
-		Text                                              string  `xml:",chardata"`
-		DatagramsReceived                                 float64 `xml:"datagrams-received"`
-		DatagramsWithIncompleteHeader                     float64 `xml:"datagrams-with-incomplete-header"`
-		DatagramsWithBadDatalengthField                   float64 `xml:"datagrams-with-bad-datalength-field"`
-		DatagramsWithBadChecksum                          float64 `xml:"datagrams-with-bad-checksum"`
-		DatagramsDroppedDueToNoSocket                     float64 `xml:"datagrams-dropped-due-to-no-socket"`
-		BroadcastOrMulticastDatagramsDroppedDueToNoSocket float64 `xml:"broadcast-or-multicast-datagrams-dropped-due-to-no-socket"`
-		DatagramsDroppedDueToFullSocketBuffers            float64 `xml:"datagrams-dropped-due-to-full-socket-buffers"`
-		DatagramsNotForHashedPcb                          float64 `xml:"datagrams-not-for-hashed-pcb"`
-		DatagramsDelivered                                float64 `xml:"datagrams-delivered"`
-		DatagramsOutput                                   float64 `xml:"datagrams-output"`
-	} `xml:"udp"`
+	Udp UDP `xml:"udp"`
 	Ip  IP `xml:"ip"`
 	Icmp struct {
 		Text                                       string `xml:",chardata"`
@@ -446,4 +434,18 @@ type HeaderType struct {
 	Globals                         float64 `xml:"globals"`
 	AddressScope                    float64 `xml:"address-scope"`
 	HexValue                        float64 `xml:"hex-value"`
+}
+
+type UDP struct {
+	Text                                              string  `xml:",chardata"`
+	DatagramsReceived                                 float64 `xml:"datagrams-received"`
+	DatagramsWithIncompleteHeader                     float64 `xml:"datagrams-with-incomplete-header"`
+	DatagramsWithBadDatalengthField                   float64 `xml:"datagrams-with-bad-datalength-field"`
+	DatagramsWithBadChecksum                          float64 `xml:"datagrams-with-bad-checksum"`
+	DatagramsDroppedDueToNoSocket                     float64 `xml:"datagrams-dropped-due-to-no-socket"`
+	BroadcastOrMulticastDatagramsDroppedDueToNoSocket float64 `xml:"broadcast-or-multicast-datagrams-dropped-due-to-no-socket"`
+	DatagramsDroppedDueToFullSocketBuffers            float64 `xml:"datagrams-dropped-due-to-full-socket-buffers"`
+	DatagramsNotForHashedPcb                          float64 `xml:"datagrams-not-for-hashed-pcb"`
+	DatagramsDelivered                                float64 `xml:"datagrams-delivered"`
+	DatagramsOutput                                   float64 `xml:"datagrams-output"`
 }

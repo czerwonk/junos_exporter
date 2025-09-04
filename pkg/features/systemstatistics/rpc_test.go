@@ -184,6 +184,56 @@ func TestStatisticsIPv6Unmarshaling(t *testing.T) {
 }
 
 func TestStatisticsUDPUnmarshaling(t *testing.T) {
+	type testCase struct {
+		name    string
+		xmlFile string
+		expect  SystemStatistics
+	}
+
+	testsUDP := []testCase{
+		{
+			name:    "complete_udp_statistics",
+			xmlFile: "testsFiles/UDP/UDPTestDataCase1.xml",
+			expect: SystemStatistics{
+				Statistics: Statistics{
+					Udp: UDP{
+						DatagramsReceived: 3000,
+						DatagramsWithIncompleteHeader: 3001,
+						DatagramsWithBadDatalengthField: 3002,
+						DatagramsWithBadChecksum: 3003,
+						DatagramsDroppedDueToNoSocket: 3004,
+						BroadcastOrMulticastDatagramsDroppedDueToNoSocket: 3005,
+						DatagramsDroppedDueToFullSocketBuffers: 3006,
+						DatagramsNotForHashedPcb: 3007,
+						DatagramsDelivered: 3008,
+						DatagramsOutput: 3009,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testsUDP {
+		t.Run(tc.name, func(t *testing.T) {
+			fc, err := os.ReadFile(tc.xmlFile)
+			if err != nil {
+
+			}
+			var result SystemStatistics
+			err = xml.Unmarshal(fc, &result)
+			if err != nil {
+
+			}
+
+			result.Statistics.Udp.Text = ""
+			assert.Equal(t, tc.expect.Statistics.Udp, result.Statistics.Udp, tc.name)
+			assert.NoError(t, err, "unmarshal should not return error")
+		})
+	}
+}
+
+/*
+func TestStatisticsUDPUnmarshaling(t *testing.T) {
 	UDPXMLDataCase1, _ := os.Open("testsFiles/UDP/UDPTestDataCase1.xml")
 	UDPDataCase1, _ := io.ReadAll(UDPXMLDataCase1)
 	type testCase struct {
@@ -222,6 +272,8 @@ func TestStatisticsUDPUnmarshaling(t *testing.T) {
 		})
 	}
 }
+*/
+
 
 func TestStatisticsTCPUnmarshaling(t *testing.T) {
 	TCPXMLDataCase1, _ := os.Open("testsFiles/TCP/TCPTestDataCase1.xml")

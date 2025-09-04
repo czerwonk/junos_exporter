@@ -197,16 +197,16 @@ func TestStatisticsUDPUnmarshaling(t *testing.T) {
 			expect: SystemStatistics{
 				Statistics: Statistics{
 					Udp: UDP{
-						DatagramsReceived: 3000,
-						DatagramsWithIncompleteHeader: 3001,
-						DatagramsWithBadDatalengthField: 3002,
-						DatagramsWithBadChecksum: 3003,
-						DatagramsDroppedDueToNoSocket: 3004,
+						DatagramsReceived:                                 3000,
+						DatagramsWithIncompleteHeader:                     3001,
+						DatagramsWithBadDatalengthField:                   3002,
+						DatagramsWithBadChecksum:                          3003,
+						DatagramsDroppedDueToNoSocket:                     3004,
 						BroadcastOrMulticastDatagramsDroppedDueToNoSocket: 3005,
-						DatagramsDroppedDueToFullSocketBuffers: 3006,
-						DatagramsNotForHashedPcb: 3007,
-						DatagramsDelivered: 3008,
-						DatagramsOutput: 3009,
+						DatagramsDroppedDueToFullSocketBuffers:            3006,
+						DatagramsNotForHashedPcb:                          3007,
+						DatagramsDelivered:                                3008,
+						DatagramsOutput:                                   3009,
 					},
 				},
 			},
@@ -231,49 +231,6 @@ func TestStatisticsUDPUnmarshaling(t *testing.T) {
 		})
 	}
 }
-
-/*
-func TestStatisticsUDPUnmarshaling(t *testing.T) {
-	UDPXMLDataCase1, _ := os.Open("testsFiles/UDP/UDPTestDataCase1.xml")
-	UDPDataCase1, _ := io.ReadAll(UDPXMLDataCase1)
-	type testCase struct {
-		name     string
-		xmlInput string
-		expect   func(t *testing.T, got SystemStatistics)
-	}
-
-	tests := []testCase{
-		{
-			name:     "complete_udp_statistics",
-			xmlInput: string(UDPDataCase1),
-			expect: func(t *testing.T, got SystemStatistics) {
-				udp := got.Statistics.Udp
-				assert.Equal(t, float64(100), udp.DatagramsReceived)
-				assert.Equal(t, float64(1), udp.DatagramsWithIncompleteHeader)
-				assert.Equal(t, float64(2), udp.DatagramsWithBadDatalengthField)
-				assert.Equal(t, float64(3), udp.DatagramsWithBadChecksum)
-				assert.Equal(t, float64(4), udp.DatagramsDroppedDueToNoSocket)
-				assert.Equal(t, float64(5), udp.BroadcastOrMulticastDatagramsDroppedDueToNoSocket)
-				assert.Equal(t, float64(6), udp.DatagramsDroppedDueToFullSocketBuffers)
-				assert.Equal(t, float64(7), udp.DatagramsNotForHashedPcb)
-				assert.Equal(t, float64(8), udp.DatagramsDelivered)
-				assert.Equal(t, float64(9), udp.DatagramsOutput)
-				//assert.Equal(t, "user@router>", got.Cli.Banner)
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			var got SystemStatistics
-			err := xml.Unmarshal([]byte(tc.xmlInput), &got)
-			assert.NoError(t, err, "unmarshal should not return error")
-			tc.expect(t, got)
-		})
-	}
-}
-*/
-
 
 func TestStatisticsTCPUnmarshaling(t *testing.T) {
 	TCPXMLDataCase1, _ := os.Open("testsFiles/TCP/TCPTestDataCase1.xml")

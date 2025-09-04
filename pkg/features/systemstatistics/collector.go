@@ -222,6 +222,68 @@ var (
 	tcpOptionSackpermittedLength                        *prometheus.Desc
 	tcpOptionSackLength                                 *prometheus.Desc
 	tcpOptionAuthoptionLength                           *prometheus.Desc
+
+	arpDatagramsReceivedDesc                                     *prometheus.Desc
+	arpRequestsReceivedDesc                                      *prometheus.Desc
+	arpRepliesReceivedDesc                                       *prometheus.Desc
+	arpResolutionRequestReceivedDesc                             *prometheus.Desc
+	arpResolutionRequestDroppedDesc                              *prometheus.Desc
+	arpUnrestrictedProxyRequestsDesc                             *prometheus.Desc
+	arpRestrictedProxyRequestsDesc                               *prometheus.Desc
+	arpReceivedProxyRequestsDesc                                 *prometheus.Desc
+	arpProxyRequestsNotProxiedDesc                               *prometheus.Desc
+	arpRestrictedProxyRequestsNotProxiedDesc                     *prometheus.Desc
+	arpDatagramsWithBogusInterfaceDesc                           *prometheus.Desc
+	arpDatagramsWithIncorrectLengthDesc                          *prometheus.Desc
+	arpDatagramsForNonIpProtocolDesc                             *prometheus.Desc
+	arpDatagramsWithUnsupportedOpcodeDesc                        *prometheus.Desc
+	arpDatagramsWithBadProtocolAddressLengthDesc                 *prometheus.Desc
+	arpDatagramsWithBadHardwareAddressLengthDesc                 *prometheus.Desc
+	arpDatagramsWithMulticastSourceAddressDesc                   *prometheus.Desc
+	arpDatagramsWithMulticastTargetAddressDesc                   *prometheus.Desc
+	arpDatagramsWithMyOwnHardwareAddressDesc                     *prometheus.Desc
+	arpDatagramsForAnAddressNotOnTheInterfaceDesc                *prometheus.Desc
+	arpDatagramsWithABroadcastSourceAddressDesc                  *prometheus.Desc
+	arpDatagramsWithSourceAddressDuplicateToMineDesc             *prometheus.Desc
+	arpDatagramsWhichWereNotForMeDesc                            *prometheus.Desc
+	arpPacketsDiscardedWaitingForResolutionDesc                  *prometheus.Desc
+	arpPacketsSentAfterWaitingForResolutionDesc                  *prometheus.Desc
+	arpRequestsSentDesc                                          *prometheus.Desc
+	arpRepliesSentDesc                                           *prometheus.Desc
+	arpRequestsForMemoryDeniedDesc                               *prometheus.Desc
+	arpRequestsDroppedOnEntryDesc                                *prometheus.Desc
+	arpRequestsDroppedDuringRetryDesc                            *prometheus.Desc
+	arpRequestsDroppedDueToInterfaceDeletionDesc                 *prometheus.Desc
+	arpRequestsOnUnnumberedInterfacesDesc                        *prometheus.Desc
+	arpNewRequestsOnUnnumberedInterfacesDesc                     *prometheus.Desc
+	arpRepliesFromUnnumberedInterfacesDesc                       *prometheus.Desc
+	arpRequestsOnUnnumberedInterfaceWithNonSubnettedDonorDesc    *prometheus.Desc
+	arpRepliesFromUnnumberedInterfaceWithNonSubnettedDonorDesc   *prometheus.Desc
+	arpPacketsRejectedAsFamilyIsConfiguredWithDenyArpDesc        *prometheus.Desc
+	arpResponsePacketsAreRejectedOnMcAeIclInterfaceDesc          *prometheus.Desc
+	arpRepliesAreRejectedAsSourceAndDestinationIsSameDesc        *prometheus.Desc
+	arpProbeForProxyAddressReachableFromTheIncomingInterfaceDesc *prometheus.Desc
+	arpRequestDiscardedForVrrpSourceAddressDesc                  *prometheus.Desc
+	arpSelfArpRequestPacketReceivedOnIrbInterfaceDesc            *prometheus.Desc
+	arpProxyArpRequestDiscardedAsSourceIpIsAProxyTargetDesc      *prometheus.Desc
+	arpPacketsAreDroppedAsNexthopAllocationFailedDesc            *prometheus.Desc
+	arpPacketsReceivedFromPeerVrrpRouterAndDiscardedDesc         *prometheus.Desc
+	arpPacketsAreRejectedAsTargetIpArpResolveIsInProgressDesc    *prometheus.Desc
+	arpGratArpPacketsAreIgnoredAsMacAddressIsNotChangedDesc      *prometheus.Desc
+	arpPacketsAreDroppedFromPeerVrrpDesc                         *prometheus.Desc
+	arpPacketsAreDroppedAsDriverCallFailedDesc                   *prometheus.Desc
+	arpPacketsAreDroppedAsSourceIsNotValidatedDesc               *prometheus.Desc
+	arpSystemMaxDesc                                             *prometheus.Desc
+	arpPublicMaxDesc                                             *prometheus.Desc
+	arpIriMaxDesc                                                *prometheus.Desc
+	arpMgtMaxDesc                                                *prometheus.Desc
+	arpPublicCntDesc                                             *prometheus.Desc
+	arpIriCntDesc                                                *prometheus.Desc
+	arpMgtCntDesc                                                *prometheus.Desc
+	arpSystemDropDesc                                            *prometheus.Desc
+	arpPublicDropDesc                                            *prometheus.Desc
+	arpIriDropDesc                                               *prometheus.Desc
+	arpMgtDropDesc                                               *prometheus.Desc
 )
 
 func init() {
@@ -444,6 +506,68 @@ func init() {
 	tcpOptionSackLength = prometheus.NewDesc(prefix+"tcp_option_sack_length", "Number of TCP option sack length", labelsTCP, nil)
 	tcpOptionAuthoptionLength = prometheus.NewDesc(prefix+"tcp_option_authoption_length", "Number of TCP option authoption length", labelsTCP, nil)
 
+	labelsARP := []string{"target", "protocol"}
+	arpDatagramsReceivedDesc = prometheus.NewDesc(prefix+"arp_datagrams_received", "Number of ARP datagrams received", labelsARP, nil)
+	arpRequestsReceivedDesc = prometheus.NewDesc(prefix+"arp_requests_received", "Number of ARP requests received", labelsARP, nil)
+	arpRepliesReceivedDesc = prometheus.NewDesc(prefix+"arp_replies_received", "Number of ARP replies received", labelsARP, nil)
+	arpResolutionRequestReceivedDesc = prometheus.NewDesc(prefix+"arp_resolution_request_received", "Number of ARP resolution request received", labelsARP, nil)
+	arpResolutionRequestDroppedDesc = prometheus.NewDesc(prefix+"arp_resolution_request_dropped", "Number of ARP resolution request dropped", labelsARP, nil)
+	arpUnrestrictedProxyRequestsDesc = prometheus.NewDesc(prefix+"arp_unrestricted_proxy_requests", "Number of ARP unrestricted proxy requests", labelsARP, nil)
+	arpRestrictedProxyRequestsDesc = prometheus.NewDesc(prefix+"arp_restricted_proxy_requests", "Number of ARP restricted proxy requests", labelsARP, nil)
+	arpReceivedProxyRequestsDesc = prometheus.NewDesc(prefix+"arp_received_proxy_requests", "Number of ARP received proxy requests", labelsARP, nil)
+	arpProxyRequestsNotProxiedDesc = prometheus.NewDesc(prefix+"arp_proxy_requests_not_proxied", "Number of ARP proxy requests not proxied", labelsARP, nil)
+	arpRestrictedProxyRequestsNotProxiedDesc = prometheus.NewDesc(prefix+"arp_restricted_proxy_requests_not_proxied", "Number of ARP restricted proxy requests not proxied", labelsARP, nil)
+	arpDatagramsWithBogusInterfaceDesc = prometheus.NewDesc(prefix+"arp_datagrams_with_bogus_interface", "Number of ARP datagrams with bogus interface", labelsARP, nil)
+	arpDatagramsWithIncorrectLengthDesc = prometheus.NewDesc(prefix+"arp_datagrams_with_incorrect_length", "Number of ARP datagrams with incorrect length", labelsARP, nil)
+	arpDatagramsForNonIpProtocolDesc = prometheus.NewDesc(prefix+"arp_datagrams_for_non_ip_protocol", "Number of ARP datagrams for non ip protocol", labelsARP, nil)
+	arpDatagramsWithUnsupportedOpcodeDesc = prometheus.NewDesc(prefix+"arp_datagrams_with_unsupported_opcode", "Number of ARP datagrams with unsupported opcode", labelsARP, nil)
+	arpDatagramsWithBadProtocolAddressLengthDesc = prometheus.NewDesc(prefix+"arp_datagrams_with_bad_protocol_address_length", "Number of ARP datagrams with bad protocol address length", labelsARP, nil)
+	arpDatagramsWithBadHardwareAddressLengthDesc = prometheus.NewDesc(prefix+"arp_datagrams_with_bad_hardware_address_length", "Number of ARP datagrams with bad hardware address length", labelsARP, nil)
+	arpDatagramsWithMulticastSourceAddressDesc = prometheus.NewDesc(prefix+"arp_datagrams_with_multicast_source_address", "Number of ARP datagrams with multicast source address", labelsARP, nil)
+	arpDatagramsWithMulticastTargetAddressDesc = prometheus.NewDesc(prefix+"arp_datagrams_with_multicast_target_address", "Number of ARP datagrams with multicast target address", labelsARP, nil)
+	arpDatagramsWithMyOwnHardwareAddressDesc = prometheus.NewDesc(prefix+"arp_datagrams_with_my_own_hardware_address", "Number of ARP datagrams with my own hardware address", labelsARP, nil)
+	arpDatagramsForAnAddressNotOnTheInterfaceDesc = prometheus.NewDesc(prefix+"arp_datagrams_for_an_address_not_on_interface", "Number of ARP datagrams for an address not on the interface", labelsARP, nil)
+	arpDatagramsWithABroadcastSourceAddressDesc = prometheus.NewDesc(prefix+"arp_datagrams_with_a_broadcast_source_address", "Number of ARP datagrams with a broadcast source address", labelsARP, nil)
+	arpDatagramsWithSourceAddressDuplicateToMineDesc = prometheus.NewDesc(prefix+"arp_datagrams_with_source_address_duplicate_to_mine", "Number of ARP datagrams with source address duplicate to mine", labelsARP, nil)
+	arpDatagramsWhichWereNotForMeDesc = prometheus.NewDesc(prefix+"arp_datagrams_which_were_not_for_me", "Number of ARP datagrams which were not for me", labelsARP, nil)
+	arpPacketsDiscardedWaitingForResolutionDesc = prometheus.NewDesc(prefix+"arp_packets_discarded_waiting_for_resolution", "Number of ARP packets discarded waiting for resolution", labelsARP, nil)
+	arpPacketsSentAfterWaitingForResolutionDesc = prometheus.NewDesc(prefix+"arp_packets_sent_after_waiting_for_resolution", "Number of ARP packets sent after waiting for resolution", labelsARP, nil)
+	arpRequestsSentDesc = prometheus.NewDesc(prefix+"arp_requests_sent", "Number of ARP requests sent", labelsARP, nil)
+	arpRepliesSentDesc = prometheus.NewDesc(prefix+"arp_replies_sent", "Number of ARP replies sent", labelsARP, nil)
+	arpRequestsForMemoryDeniedDesc = prometheus.NewDesc(prefix+"arp_requests_for_memory_denied", "Number of ARP requests for memory denied", labelsARP, nil)
+	arpRequestsDroppedOnEntryDesc = prometheus.NewDesc(prefix+"arp_requests_dropped_on_entry", "Number of ARP requests dropped on entry", labelsARP, nil)
+	arpRequestsDroppedDuringRetryDesc = prometheus.NewDesc(prefix+"arp_requests_dropped_during_retry", "Number of ARP requests dropped during retry", labelsARP, nil)
+	arpRequestsDroppedDueToInterfaceDeletionDesc = prometheus.NewDesc(prefix+"arp_requests_dropped_due_to_interface_deletion", "Number of ARP requests dropped due to interface deletion", labelsARP, nil)
+	arpRequestsOnUnnumberedInterfacesDesc = prometheus.NewDesc(prefix+"arp_requests_on_unnumbered_interfaces", "Number of ARP requests on unnumbered interfaces", labelsARP, nil)
+	arpNewRequestsOnUnnumberedInterfacesDesc = prometheus.NewDesc(prefix+"arp_new_requests_on_unnumbered_interfaces", "Number of ARP requests on unnumbered interfaces", labelsARP, nil)
+	arpRepliesFromUnnumberedInterfacesDesc = prometheus.NewDesc(prefix+"arp_replies_from_unnumbered_interfaces", "Number of ARP replies from unnumbered interfaces", labelsARP, nil)
+	arpRequestsOnUnnumberedInterfaceWithNonSubnettedDonorDesc = prometheus.NewDesc(prefix+"arp_requests_on_unnumbered_interface_with_non_subnetted_donor", "Number of ARP requests on unnumbered interface with non subnetted donor", labelsARP, nil)
+	arpRepliesFromUnnumberedInterfaceWithNonSubnettedDonorDesc = prometheus.NewDesc(prefix+"arp_replies_from_unnumbered_interface_with_non_subnet_donor", "Number of ARP replies from unnumbered interface with non subnetted donor", labelsARP, nil)
+	arpPacketsRejectedAsFamilyIsConfiguredWithDenyArpDesc = prometheus.NewDesc(prefix+"arp_packets_rejected_as_family_is_configured_with_deny", "Number of ARP packets rejected as family is configured with deny", labelsARP, nil)
+	arpResponsePacketsAreRejectedOnMcAeIclInterfaceDesc = prometheus.NewDesc(prefix+"arp_response_packets_are_rejected_on_McAeIcl_interface", "Number of ARP response packets are rejected on McAeIcl interface", labelsARP, nil)
+	arpRepliesAreRejectedAsSourceAndDestinationIsSameDesc = prometheus.NewDesc(prefix+"arp_replies_are_rejected_as_source_and_destination_is_same", "Number of ARP replies tha tare rejected due to source and destination being same ", labelsARP, nil)
+	arpProbeForProxyAddressReachableFromTheIncomingInterfaceDesc = prometheus.NewDesc(prefix+"arp_probe_for_proxy_address_reachable_from_the_incoming_interface", "Number of ARP probes for proxy address reachable from the incoming interface", labelsARP, nil)
+	arpRequestDiscardedForVrrpSourceAddressDesc = prometheus.NewDesc(prefix+"arp_request_discarded_for_vrrp_source_address", "Number of ARP request discarded for vrrp source address", labelsARP, nil)
+	arpSelfArpRequestPacketReceivedOnIrbInterfaceDesc = prometheus.NewDesc(prefix+"arp_self_arp_request_packet_received_on_irb_interface", "Number of ARP self arp request packet received on irb interface", labelsARP, nil)
+	arpProxyArpRequestDiscardedAsSourceIpIsAProxyTargetDesc = prometheus.NewDesc(prefix+"arp_proxy_arp_request_discarded_as_source_ip_is_a_proxy_target", "Number of ARP proxy arp request discarded as source ip is a proxy target", labelsARP, nil)
+	arpPacketsAreDroppedAsNexthopAllocationFailedDesc = prometheus.NewDesc(prefix+"arp_packets_are_dropped_as_nexthop_allocation_failed", "Number of ARP packets are dropped as nexthop allocation failed", labelsARP, nil)
+	arpPacketsReceivedFromPeerVrrpRouterAndDiscardedDesc = prometheus.NewDesc(prefix+"apr_packets_received_from_peer_vrrp_router_and_discarded", "NUmber of ARP packets received from peer vrrp router and discarded", labelsARP, nil)
+	arpPacketsAreRejectedAsTargetIpArpResolveIsInProgressDesc = prometheus.NewDesc(prefix+"arp_packets_are_rejected_as_target_ip_arp_resolve_is_in_progress", "Number of ARP packets are rejected as target ip arp resolve is in progress", labelsARP, nil)
+	arpGratArpPacketsAreIgnoredAsMacAddressIsNotChangedDesc = prometheus.NewDesc(prefix+"arp_grat_arp_packets_are_ignored_as_mac_address_is_not_changed", "Number of ARP grat arp packets are ignored as mac address is not changed", labelsARP, nil)
+	arpPacketsAreDroppedFromPeerVrrpDesc = prometheus.NewDesc(prefix+"apr_packets_are_dropped_from_peer_vrrp", "NUmber of ARP packets are dropped from peer vrrp", labelsARP, nil)
+	arpPacketsAreDroppedAsDriverCallFailedDesc = prometheus.NewDesc(prefix+"arp_packets_are_dropped_as_driver_call_failed", "Number of ARP packets are dropped as driver call failed", labelsARP, nil)
+	arpPacketsAreDroppedAsSourceIsNotValidatedDesc = prometheus.NewDesc(prefix+"arp_packets_are_dropped_as_source_is_not_validated", "Number of ARP packets are dropped as source is not validated", labelsARP, nil)
+	arpSystemMaxDesc = prometheus.NewDesc(prefix+"arp_system_max", "Number of ARP system max", labelsARP, nil)
+	arpPublicMaxDesc = prometheus.NewDesc(prefix+"arp_public_max", "Number of ARP public max", labelsARP, nil)
+	arpIriMaxDesc = prometheus.NewDesc(prefix+"arp_iri_max", "Number of ARP iri max", labelsARP, nil)
+	arpMgtMaxDesc = prometheus.NewDesc(prefix+"arp_mgnt_max", "Number of ARP mgnt max", labelsARP, nil)
+	arpPublicCntDesc = prometheus.NewDesc(prefix+"arp_public_cnt", "Number of ARP public cnt", labelsARP, nil)
+	arpIriCntDesc = prometheus.NewDesc(prefix+"arp_iri_cnt", "Number of ARP iri cnt", labelsARP, nil)
+	arpMgtCntDesc = prometheus.NewDesc(prefix+"arp_mgnt_cnt", "Number of ARP mgnt cnt", labelsARP, nil)
+	arpSystemDropDesc = prometheus.NewDesc(prefix+"arp_system_drop", "Number of ARP system drop", labelsARP, nil)
+	arpPublicDropDesc = prometheus.NewDesc(prefix+"arp_public_drop", "Number of ARP public drop", labelsARP, nil)
+	arpIriDropDesc = prometheus.NewDesc(prefix+"arp_iri_drop", "Number of ARP iri drop", labelsARP, nil)
+	arpMgtDropDesc = prometheus.NewDesc(prefix+"arp_mgnt_drop", "Number of ARP mgnt drop", labelsARP, nil)
 }
 
 type systemstatisticsCollector struct{}
@@ -671,6 +795,66 @@ func (c *systemstatisticsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- tcpOptionSackLength
 	ch <- tcpOptionAuthoptionLength
 
+	ch <- arpDatagramsReceivedDesc
+	ch <- arpRequestsReceivedDesc
+	ch <- arpRepliesReceivedDesc
+	ch <- arpResolutionRequestReceivedDesc
+	ch <- arpResolutionRequestDroppedDesc
+	ch <- arpUnrestrictedProxyRequestsDesc
+	ch <- arpRestrictedProxyRequestsDesc
+	ch <- arpReceivedProxyRequestsDesc
+	ch <- arpProxyRequestsNotProxiedDesc
+	ch <- arpDatagramsWithBogusInterfaceDesc
+	ch <- arpDatagramsWithIncorrectLengthDesc
+	ch <- arpDatagramsForNonIpProtocolDesc
+	ch <- arpDatagramsWithUnsupportedOpcodeDesc
+	ch <- arpDatagramsWithBadProtocolAddressLengthDesc
+	ch <- arpDatagramsWithBadHardwareAddressLengthDesc
+	ch <- arpDatagramsWithMulticastSourceAddressDesc
+	ch <- arpDatagramsWithMulticastTargetAddressDesc
+	ch <- arpDatagramsWithMyOwnHardwareAddressDesc
+	ch <- arpDatagramsForAnAddressNotOnTheInterfaceDesc
+	ch <- arpDatagramsWithABroadcastSourceAddressDesc
+	ch <- arpDatagramsWithSourceAddressDuplicateToMineDesc
+	ch <- arpDatagramsWhichWereNotForMeDesc
+	ch <- arpPacketsDiscardedWaitingForResolutionDesc
+	ch <- arpPacketsSentAfterWaitingForResolutionDesc
+	ch <- arpRequestsSentDesc
+	ch <- arpRepliesSentDesc
+	ch <- arpRequestsForMemoryDeniedDesc
+	ch <- arpRequestsDroppedOnEntryDesc
+	ch <- arpRequestsDroppedDuringRetryDesc
+	ch <- arpRequestsDroppedDueToInterfaceDeletionDesc
+	ch <- arpRequestsOnUnnumberedInterfacesDesc
+	ch <- arpNewRequestsOnUnnumberedInterfacesDesc
+	ch <- arpRepliesFromUnnumberedInterfacesDesc
+	ch <- arpRequestsOnUnnumberedInterfaceWithNonSubnettedDonorDesc
+	ch <- arpRepliesFromUnnumberedInterfaceWithNonSubnettedDonorDesc
+	ch <- arpPacketsRejectedAsFamilyIsConfiguredWithDenyArpDesc
+	ch <- arpResponsePacketsAreRejectedOnMcAeIclInterfaceDesc
+	ch <- arpRepliesAreRejectedAsSourceAndDestinationIsSameDesc
+	ch <- arpProbeForProxyAddressReachableFromTheIncomingInterfaceDesc
+	ch <- arpRequestDiscardedForVrrpSourceAddressDesc
+	ch <- arpSelfArpRequestPacketReceivedOnIrbInterfaceDesc
+	ch <- arpProxyArpRequestDiscardedAsSourceIpIsAProxyTargetDesc
+	ch <- arpPacketsAreDroppedAsNexthopAllocationFailedDesc
+	ch <- arpPacketsReceivedFromPeerVrrpRouterAndDiscardedDesc
+	ch <- arpPacketsAreRejectedAsTargetIpArpResolveIsInProgressDesc
+	ch <- arpGratArpPacketsAreIgnoredAsMacAddressIsNotChangedDesc
+	ch <- arpPacketsAreDroppedFromPeerVrrpDesc
+	ch <- arpPacketsAreDroppedAsDriverCallFailedDesc
+	ch <- arpPacketsAreDroppedAsSourceIsNotValidatedDesc
+	ch <- arpSystemMaxDesc
+	ch <- arpPublicMaxDesc
+	ch <- arpIriMaxDesc
+	ch <- arpMgtMaxDesc
+	ch <- arpPublicCntDesc
+	ch <- arpIriCntDesc
+	ch <- arpMgtCntDesc
+	ch <- arpSystemDropDesc
+	ch <- arpPublicDropDesc
+	ch <- arpIriDropDesc
+	ch <- arpMgtDropDesc
 }
 
 func (c *systemstatisticsCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
@@ -695,6 +879,11 @@ func (c *systemstatisticsCollector) Collect(client collector.Client, ch chan<- p
 		return err
 	}
 	c.collectSystemStatisticsTCP(ch, labelValues, s)
+	err = client.RunCommandAndParse("show system statistics arp", &s)
+	if err != nil {
+		return err
+	}
+	c.collectSystemStatisticsARP(ch, labelValues, s)
 	return nil
 }
 
@@ -924,4 +1113,69 @@ func (c *systemstatisticsCollector) collectSystemStatisticsTCP(ch chan<- prometh
 	ch <- prometheus.MustNewConstMetric(tcpOptionSackpermittedLength, prometheus.CounterValue, s.Statistics.Tcp.OptionSackpermittedLength, l...)
 	ch <- prometheus.MustNewConstMetric(tcpOptionSackLength, prometheus.CounterValue, s.Statistics.Tcp.OptionSackLength, l...)
 	ch <- prometheus.MustNewConstMetric(tcpOptionAuthoptionLength, prometheus.CounterValue, s.Statistics.Tcp.OptionAuthoptionLength, l...)
+}
+
+func (c *systemstatisticsCollector) collectSystemStatisticsARP(ch chan<- prometheus.Metric, labelValues []string, s SystemStatistics) {
+	labels := append(labelValues, "ARP")
+	ch <- prometheus.MustNewConstMetric(arpDatagramsReceivedDesc, prometheus.CounterValue, s.Statistics.Arp.DatagramsReceived, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRequestsReceivedDesc, prometheus.CounterValue, s.Statistics.Arp.ArpRequestsSent, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRepliesReceivedDesc, prometheus.CounterValue, s.Statistics.Arp.ArpRepliesReceived, labels...)
+	ch <- prometheus.MustNewConstMetric(arpResolutionRequestReceivedDesc, prometheus.CounterValue, s.Statistics.Arp.ResolutionRequestReceived, labels...)
+	ch <- prometheus.MustNewConstMetric(arpResolutionRequestDroppedDesc, prometheus.CounterValue, s.Statistics.Arp.ResolutionRequestDropped, labels...)
+	ch <- prometheus.MustNewConstMetric(arpUnrestrictedProxyRequestsDesc, prometheus.CounterValue, s.Statistics.Arp.UnrestrictedProxyRequests, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRestrictedProxyRequestsDesc, prometheus.CounterValue, s.Statistics.Arp.RestrictedProxyRequests, labels...)
+	ch <- prometheus.MustNewConstMetric(arpReceivedProxyRequestsDesc, prometheus.CounterValue, s.Statistics.Arp.ReceivedProxyRequests, labels...)
+	ch <- prometheus.MustNewConstMetric(arpProxyRequestsNotProxiedDesc, prometheus.CounterValue, s.Statistics.Arp.ProxyRequestsNotProxied, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRestrictedProxyRequestsNotProxiedDesc, prometheus.CounterValue, s.Statistics.Arp.RestrictedProxyRequestsNotProxied, labels...)
+	ch <- prometheus.MustNewConstMetric(arpDatagramsWithBogusInterfaceDesc, prometheus.CounterValue, s.Statistics.Arp.DatagramsWithBogusInterface, labels...)
+	ch <- prometheus.MustNewConstMetric(arpDatagramsWithIncorrectLengthDesc, prometheus.CounterValue, s.Statistics.Arp.DatagramsWithIncorrectLength, labels...)
+	ch <- prometheus.MustNewConstMetric(arpDatagramsForNonIpProtocolDesc, prometheus.CounterValue, s.Statistics.Arp.DatagramsForNonIpProtocol, labels...)
+	ch <- prometheus.MustNewConstMetric(arpDatagramsWithUnsupportedOpcodeDesc, prometheus.CounterValue, s.Statistics.Arp.DatagramsWithUnsupportedOpcode, labels...)
+	ch <- prometheus.MustNewConstMetric(arpDatagramsWithBadProtocolAddressLengthDesc, prometheus.CounterValue, s.Statistics.Arp.DatagramsWithBadProtocolAddressLength, labels...)
+	ch <- prometheus.MustNewConstMetric(arpDatagramsWithBadHardwareAddressLengthDesc, prometheus.CounterValue, s.Statistics.Arp.DatagramsWithBadHardwareAddressLength, labels...)
+	ch <- prometheus.MustNewConstMetric(arpDatagramsWithMulticastSourceAddressDesc, prometheus.CounterValue, s.Statistics.Arp.DatagramsWithMulticastSourceAddress, labels...)
+	ch <- prometheus.MustNewConstMetric(arpDatagramsWithMulticastTargetAddressDesc, prometheus.CounterValue, s.Statistics.Arp.DatagramsWithMulticastTargetAddress, labels...)
+	ch <- prometheus.MustNewConstMetric(arpDatagramsWithMyOwnHardwareAddressDesc, prometheus.CounterValue, s.Statistics.Arp.DatagramsWithMyOwnHardwareAddress, labels...)
+	ch <- prometheus.MustNewConstMetric(arpDatagramsForAnAddressNotOnTheInterfaceDesc, prometheus.CounterValue, s.Statistics.Arp.DatagramsForAnAddressNotOnTheInterface, labels...)
+	ch <- prometheus.MustNewConstMetric(arpDatagramsWithABroadcastSourceAddressDesc, prometheus.CounterValue, s.Statistics.Arp.DatagramsWithABroadcastSourceAddress, labels...)
+	ch <- prometheus.MustNewConstMetric(arpDatagramsWithSourceAddressDuplicateToMineDesc, prometheus.CounterValue, s.Statistics.Arp.DatagramsWithSourceAddressDuplicateToMine, labels...)
+	ch <- prometheus.MustNewConstMetric(arpDatagramsWhichWereNotForMeDesc, prometheus.CounterValue, s.Statistics.Arp.DatagramsWhichWereNotForMe, labels...)
+	ch <- prometheus.MustNewConstMetric(arpPacketsDiscardedWaitingForResolutionDesc, prometheus.CounterValue, s.Statistics.Arp.PacketsDiscardedWaitingForResolution, labels...)
+	ch <- prometheus.MustNewConstMetric(arpPacketsSentAfterWaitingForResolutionDesc, prometheus.CounterValue, s.Statistics.Arp.PacketsSentAfterWaitingForResolution, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRequestsSentDesc, prometheus.CounterValue, s.Statistics.Arp.ArpRequestsSent, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRepliesSentDesc, prometheus.CounterValue, s.Statistics.Arp.ArpRepliesSent, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRequestsForMemoryDeniedDesc, prometheus.CounterValue, s.Statistics.Arp.RequestsForMemoryDenied, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRequestsDroppedOnEntryDesc, prometheus.CounterValue, s.Statistics.Arp.RequestsDroppedOnEntry, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRequestsDroppedDuringRetryDesc, prometheus.CounterValue, s.Statistics.Arp.RequestsDroppedDuringRetry, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRequestsDroppedDueToInterfaceDeletionDesc, prometheus.CounterValue, s.Statistics.Arp.RequestsDroppedDueToInterfaceDeletion, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRequestsOnUnnumberedInterfacesDesc, prometheus.CounterValue, s.Statistics.Arp.RequestsOnUnnumberedInterfaces, labels...)
+	ch <- prometheus.MustNewConstMetric(arpNewRequestsOnUnnumberedInterfacesDesc, prometheus.CounterValue, s.Statistics.Arp.NewRequestsOnUnnumberedInterfaces, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRepliesFromUnnumberedInterfacesDesc, prometheus.CounterValue, s.Statistics.Arp.RepliesFromUnnumberedInterfaces, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRequestsOnUnnumberedInterfaceWithNonSubnettedDonorDesc, prometheus.CounterValue, s.Statistics.Arp.RequestsOnUnnumberedInterfaceWithNonSubnettedDonor, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRepliesFromUnnumberedInterfaceWithNonSubnettedDonorDesc, prometheus.CounterValue, s.Statistics.Arp.RepliesFromUnnumberedInterfaceWithNonSubnettedDonor, labels...)
+	ch <- prometheus.MustNewConstMetric(arpPacketsRejectedAsFamilyIsConfiguredWithDenyArpDesc, prometheus.CounterValue, s.Statistics.Arp.ArpPacketsRejectedAsFamilyIsConfiguredWithDenyArp, labels...)
+	ch <- prometheus.MustNewConstMetric(arpResponsePacketsAreRejectedOnMcAeIclInterfaceDesc, prometheus.CounterValue, s.Statistics.Arp.ArpResponsePacketsAreRejectedOnMcAeIclInterface, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRepliesAreRejectedAsSourceAndDestinationIsSameDesc, prometheus.CounterValue, s.Statistics.Arp.ArpRepliesAreRejectedAsSourceAndDestinationIsSame, labels...)
+	ch <- prometheus.MustNewConstMetric(arpProbeForProxyAddressReachableFromTheIncomingInterfaceDesc, prometheus.CounterValue, s.Statistics.Arp.ArpProbeForProxyAddressReachableFromTheIncomingInterface, labels...)
+	ch <- prometheus.MustNewConstMetric(arpRequestDiscardedForVrrpSourceAddressDesc, prometheus.CounterValue, s.Statistics.Arp.ArpRequestDiscardedForVrrpSourceAddress, labels...)
+	ch <- prometheus.MustNewConstMetric(arpSelfArpRequestPacketReceivedOnIrbInterfaceDesc, prometheus.CounterValue, s.Statistics.Arp.SelfArpRequestPacketReceivedOnIrbInterface, labels...)
+	ch <- prometheus.MustNewConstMetric(arpProxyArpRequestDiscardedAsSourceIpIsAProxyTargetDesc, prometheus.CounterValue, s.Statistics.Arp.ProxyArpRequestDiscardedAsSourceIpIsAProxyTarget, labels...)
+	ch <- prometheus.MustNewConstMetric(arpPacketsAreDroppedAsNexthopAllocationFailedDesc, prometheus.CounterValue, s.Statistics.Arp.ArpPacketsAreDroppedAsNexthopAllocationFailed, labels...)
+	ch <- prometheus.MustNewConstMetric(arpPacketsReceivedFromPeerVrrpRouterAndDiscardedDesc, prometheus.CounterValue, s.Statistics.Arp.ArpPacketsReceivedFromPeerVrrpRouterAndDiscarded, labels...)
+	ch <- prometheus.MustNewConstMetric(arpPacketsAreRejectedAsTargetIpArpResolveIsInProgressDesc, prometheus.CounterValue, s.Statistics.Arp.ArpPacketsAreRejectedAsTargetIpArpResolveIsInProgress, labels...)
+	ch <- prometheus.MustNewConstMetric(arpGratArpPacketsAreIgnoredAsMacAddressIsNotChangedDesc, prometheus.CounterValue, s.Statistics.Arp.GratArpPacketsAreIgnoredAsMacAddressIsNotChanged, labels...)
+	ch <- prometheus.MustNewConstMetric(arpPacketsAreDroppedFromPeerVrrpDesc, prometheus.CounterValue, s.Statistics.Arp.ArpPacketsAreDroppedFromPeerVrrp, labels...)
+	ch <- prometheus.MustNewConstMetric(arpPacketsAreDroppedAsDriverCallFailedDesc, prometheus.CounterValue, s.Statistics.Arp.ArpPacketsAreDroppedAsDriverCallFailed, labels...)
+	ch <- prometheus.MustNewConstMetric(arpPacketsAreDroppedAsSourceIsNotValidatedDesc, prometheus.CounterValue, s.Statistics.Arp.ArpPacketsAreDroppedAsSourceIsNotValidated, labels...)
+	ch <- prometheus.MustNewConstMetric(arpSystemMaxDesc, prometheus.CounterValue, s.Statistics.Arp.ArpSystemMax, labels...)
+	ch <- prometheus.MustNewConstMetric(arpPublicMaxDesc, prometheus.CounterValue, s.Statistics.Arp.ArpPublicMax, labels...)
+	ch <- prometheus.MustNewConstMetric(arpIriMaxDesc, prometheus.CounterValue, s.Statistics.Arp.ArpIriMax, labels...)
+	ch <- prometheus.MustNewConstMetric(arpMgtMaxDesc, prometheus.CounterValue, s.Statistics.Arp.ArpMgtMax, labels...)
+	ch <- prometheus.MustNewConstMetric(arpPublicCntDesc, prometheus.CounterValue, s.Statistics.Arp.ArpPublicCnt, labels...)
+	ch <- prometheus.MustNewConstMetric(arpIriCntDesc, prometheus.CounterValue, s.Statistics.Arp.ArpIriCnt, labels...)
+	ch <- prometheus.MustNewConstMetric(arpMgtCntDesc, prometheus.CounterValue, s.Statistics.Arp.ArpMgtCnt, labels...)
+	ch <- prometheus.MustNewConstMetric(arpSystemDropDesc, prometheus.CounterValue, s.Statistics.Arp.ArpSystemDrop, labels...)
+	ch <- prometheus.MustNewConstMetric(arpPublicDropDesc, prometheus.CounterValue, s.Statistics.Arp.ArpPublicDrop, labels...)
+	ch <- prometheus.MustNewConstMetric(arpIriDropDesc, prometheus.CounterValue, s.Statistics.Arp.ArpIriDrop, labels...)
+	ch <- prometheus.MustNewConstMetric(arpMgtDropDesc, prometheus.CounterValue, s.Statistics.Arp.ArpMgtDrop, labels...)
 }

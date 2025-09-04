@@ -49,70 +49,7 @@ type Statistics struct {
 		TimestampDropsWithBroadcastOrMulticastDestinationAddress string `xml:"timestamp-drops-with-broadcast-or-multicast-destination-address"`
 		MessageResponsesGenerated                                string `xml:"message-responses-generated"`
 	} `xml:"icmp"`
-	Arp struct {
-		Text                                                     string `xml:",chardata"`
-		DatagramsReceived                                        string `xml:"datagrams-received"`
-		ArpRequestsReceived                                      string `xml:"arp-requests-received"`
-		ArpRepliesReceived                                       string `xml:"arp-replies-received"`
-		ResolutionRequestReceived                                string `xml:"resolution-request-received"`
-		ResolutionRequestDropped                                 string `xml:"resolution-request-dropped"`
-		UnrestrictedProxyRequests                                string `xml:"unrestricted-proxy-requests"`
-		RestrictedProxyRequests                                  string `xml:"restricted-proxy-requests"`
-		ReceivedProxyRequests                                    string `xml:"received-proxy-requests"`
-		ProxyRequestsNotProxied                                  string `xml:"proxy-requests-not-proxied"`
-		RestrictedProxyRequestsNotProxied                        string `xml:"restricted-proxy-requests-not-proxied"`
-		DatagramsWithBogusInterface                              string `xml:"datagrams-with-bogus-interface"`
-		DatagramsWithIncorrectLength                             string `xml:"datagrams-with-incorrect-length"`
-		DatagramsForNonIpProtocol                                string `xml:"datagrams-for-non-ip-protocol"`
-		DatagramsWithUnsupportedOpcode                           string `xml:"datagrams-with-unsupported-opcode"`
-		DatagramsWithBadProtocolAddressLength                    string `xml:"datagrams-with-bad-protocol-address-length"`
-		DatagramsWithBadHardwareAddressLength                    string `xml:"datagrams-with-bad-hardware-address-length"`
-		DatagramsWithMulticastSourceAddress                      string `xml:"datagrams-with-multicast-source-address"`
-		DatagramsWithMulticastTargetAddress                      string `xml:"datagrams-with-multicast-target-address"`
-		DatagramsWithMyOwnHardwareAddress                        string `xml:"datagrams-with-my-own-hardware-address"`
-		DatagramsForAnAddressNotOnTheInterface                   string `xml:"datagrams-for-an-address-not-on-the-interface"`
-		DatagramsWithABroadcastSourceAddress                     string `xml:"datagrams-with-a-broadcast-source-address"`
-		DatagramsWithSourceAddressDuplicateToMine                string `xml:"datagrams-with-source-address-duplicate-to-mine"`
-		DatagramsWhichWereNotForMe                               string `xml:"datagrams-which-were-not-for-me"`
-		PacketsDiscardedWaitingForResolution                     string `xml:"packets-discarded-waiting-for-resolution"`
-		PacketsSentAfterWaitingForResolution                     string `xml:"packets-sent-after-waiting-for-resolution"`
-		ArpRequestsSent                                          string `xml:"arp-requests-sent"`
-		ArpRepliesSent                                           string `xml:"arp-replies-sent"`
-		RequestsForMemoryDenied                                  string `xml:"requests-for-memory-denied"`
-		RequestsDroppedOnEntry                                   string `xml:"requests-dropped-on-entry"`
-		RequestsDroppedDuringRetry                               string `xml:"requests-dropped-during-retry"`
-		RequestsDroppedDueToInterfaceDeletion                    string `xml:"requests-dropped-due-to-interface-deletion"`
-		RequestsOnUnnumberedInterfaces                           string `xml:"requests-on-unnumbered-interfaces"`
-		NewRequestsOnUnnumberedInterfaces                        string `xml:"new-requests-on-unnumbered-interfaces"`
-		RepliesFromUnnumberedInterfaces                          string `xml:"replies-from-unnumbered-interfaces"`
-		RequestsOnUnnumberedInterfaceWithNonSubnettedDonor       string `xml:"requests-on-unnumbered-interface-with-non-subnetted-donor"`
-		RepliesFromUnnumberedInterfaceWithNonSubnettedDonor      string `xml:"replies-from-unnumbered-interface-with-non-subnetted-donor"`
-		ArpPacketsRejectedAsFamilyIsConfiguredWithDenyArp        string `xml:"arp-packets-rejected-as-family-is-configured-with-deny-arp"`
-		ArpResponsePacketsAreRejectedOnMcAeIclInterface          string `xml:"arp-response-packets-are-rejected-on-mc-ae-icl-interface"`
-		ArpRepliesAreRejectedAsSourceAndDestinationIsSame        string `xml:"arp-replies-are-rejected-as-source-and-destination-is-same"`
-		ArpProbeForProxyAddressReachableFromTheIncomingInterface string `xml:"arp-probe-for-proxy-address-reachable-from-the-incoming-interface"`
-		ArpRequestDiscardedForVrrpSourceAddress                  string `xml:"arp-request-discarded-for-vrrp-source-address"`
-		SelfArpRequestPacketReceivedOnIrbInterface               string `xml:"self-arp-request-packet-received-on-irb-interface"`
-		ProxyArpRequestDiscardedAsSourceIpIsAProxyTarget         string `xml:"proxy-arp-request-discarded-as-source-ip-is-a-proxy-target"`
-		ArpPacketsAreDroppedAsNexthopAllocationFailed            string `xml:"arp-packets-are-dropped-as-nexthop-allocation-failed"`
-		ArpPacketsReceivedFromPeerVrrpRouterAndDiscarded         string `xml:"arp-packets-received-from-peer-vrrp-router-and-discarded"`
-		ArpPacketsAreRejectedAsTargetIpArpResolveIsInProgress    string `xml:"arp-packets-are-rejected-as-target-ip-arp-resolve-is-in-progress"`
-		GratArpPacketsAreIgnoredAsMacAddressIsNotChanged         string `xml:"grat-arp-packets-are-ignored-as-mac-address-is-not-changed"`
-		ArpPacketsAreDroppedFromPeerVrrp                         string `xml:"arp-packets-are-dropped-from-peer-vrrp"`
-		ArpPacketsAreDroppedAsDriverCallFailed                   string `xml:"arp-packets-are-dropped-as-driver-call-failed"`
-		ArpPacketsAreDroppedAsSourceIsNotValidated               string `xml:"arp-packets-are-dropped-as-source-is-not-validated"`
-		ArpSystemMax                                             string `xml:"arp-system-max"`
-		ArpPublicMax                                             string `xml:"arp-public-max"`
-		ArpIriMax                                                string `xml:"arp-iri-max"`
-		ArpMgtMax                                                string `xml:"arp-mgt-max"`
-		ArpPublicCnt                                             string `xml:"arp-public-cnt"`
-		ArpIriCnt                                                string `xml:"arp-iri-cnt"`
-		ArpMgtCnt                                                string `xml:"arp-mgt-cnt"`
-		ArpSystemDrop                                            string `xml:"arp-system-drop"`
-		ArpPublicDrop                                            string `xml:"arp-public-drop"`
-		ArpIriDrop                                               string `xml:"arp-iri-drop"`
-		ArpMgtDrop                                               string `xml:"arp-mgt-drop"`
-	} `xml:"arp"`
+	Arp  ARP `xml:"arp"`
 	Ip6  IP6 `xml:"ip6"`
 	Icmp6 struct {
 		Text                                            string `xml:",chardata"`
@@ -450,4 +387,69 @@ type TCP struct {
 	OptionSackpermittedLength                        float64 `xml:"option-sackpermitted-length"`
 	OptionSackLength                                 float64 `xml:"option-sack-length"`
 	OptionAuthoptionLength                           float64 `xml:"option-authoption-length"`
+}
+
+type ARP struct {
+	Text                                                     string `xml:",chardata"`
+	DatagramsReceived                                        float64 `xml:"datagrams-received"`
+	ArpRequestsReceived                                      float64 `xml:"arp-requests-received"`
+	ArpRepliesReceived                                       float64 `xml:"arp-replies-received"`
+	ResolutionRequestReceived                                float64 `xml:"resolution-request-received"`
+	ResolutionRequestDropped                                 float64 `xml:"resolution-request-dropped"`
+	UnrestrictedProxyRequests                                float64 `xml:"unrestricted-proxy-requests"`
+	RestrictedProxyRequests                                  float64 `xml:"restricted-proxy-requests"`
+	ReceivedProxyRequests                                    float64 `xml:"received-proxy-requests"`
+	ProxyRequestsNotProxied                                  float64 `xml:"proxy-requests-not-proxied"`
+	RestrictedProxyRequestsNotProxied                        float64 `xml:"restricted-proxy-requests-not-proxied"`
+	DatagramsWithBogusInterface                              float64 `xml:"datagrams-with-bogus-interface"`
+	DatagramsWithIncorrectLength                             float64 `xml:"datagrams-with-incorrect-length"`
+	DatagramsForNonIpProtocol                                float64 `xml:"datagrams-for-non-ip-protocol"`
+	DatagramsWithUnsupportedOpcode                           float64 `xml:"datagrams-with-unsupported-opcode"`
+	DatagramsWithBadProtocolAddressLength                    float64 `xml:"datagrams-with-bad-protocol-address-length"`
+	DatagramsWithBadHardwareAddressLength                    float64 `xml:"datagrams-with-bad-hardware-address-length"`
+	DatagramsWithMulticastSourceAddress                      float64 `xml:"datagrams-with-multicast-source-address"`
+	DatagramsWithMulticastTargetAddress                      float64 `xml:"datagrams-with-multicast-target-address"`
+	DatagramsWithMyOwnHardwareAddress                        float64 `xml:"datagrams-with-my-own-hardware-address"`
+	DatagramsForAnAddressNotOnTheInterface                   float64 `xml:"datagrams-for-an-address-not-on-the-interface"`
+	DatagramsWithABroadcastSourceAddress                     float64 `xml:"datagrams-with-a-broadcast-source-address"`
+	DatagramsWithSourceAddressDuplicateToMine                float64 `xml:"datagrams-with-source-address-duplicate-to-mine"`
+	DatagramsWhichWereNotForMe                               float64 `xml:"datagrams-which-were-not-for-me"`
+	PacketsDiscardedWaitingForResolution                     float64 `xml:"packets-discarded-waiting-for-resolution"`
+	PacketsSentAfterWaitingForResolution                     float64 `xml:"packets-sent-after-waiting-for-resolution"`
+	ArpRequestsSent                                          float64 `xml:"arp-requests-sent"`
+	ArpRepliesSent                                           float64 `xml:"arp-replies-sent"`
+	RequestsForMemoryDenied                                  float64 `xml:"requests-for-memory-denied"`
+	RequestsDroppedOnEntry                                   float64 `xml:"requests-dropped-on-entry"`
+	RequestsDroppedDuringRetry                               float64 `xml:"requests-dropped-during-retry"`
+	RequestsDroppedDueToInterfaceDeletion                    float64 `xml:"requests-dropped-due-to-interface-deletion"`
+	RequestsOnUnnumberedInterfaces                           float64 `xml:"requests-on-unnumbered-interfaces"`
+	NewRequestsOnUnnumberedInterfaces                        float64 `xml:"new-requests-on-unnumbered-interfaces"`
+	RepliesFromUnnumberedInterfaces                          float64 `xml:"replies-from-unnumbered-interfaces"`
+	RequestsOnUnnumberedInterfaceWithNonSubnettedDonor       float64 `xml:"requests-on-unnumbered-interface-with-non-subnetted-donor"`
+	RepliesFromUnnumberedInterfaceWithNonSubnettedDonor      float64 `xml:"replies-from-unnumbered-interface-with-non-subnetted-donor"`
+	ArpPacketsRejectedAsFamilyIsConfiguredWithDenyArp        float64 `xml:"arp-packets-rejected-as-family-is-configured-with-deny-arp"`
+	ArpResponsePacketsAreRejectedOnMcAeIclInterface          float64 `xml:"arp-response-packets-are-rejected-on-mc-ae-icl-interface"`
+	ArpRepliesAreRejectedAsSourceAndDestinationIsSame        float64 `xml:"arp-replies-are-rejected-as-source-and-destination-is-same"`
+	ArpProbeForProxyAddressReachableFromTheIncomingInterface float64 `xml:"arp-probe-for-proxy-address-reachable-from-the-incoming-interface"`
+	ArpRequestDiscardedForVrrpSourceAddress                  float64 `xml:"arp-request-discarded-for-vrrp-source-address"`
+	SelfArpRequestPacketReceivedOnIrbInterface               float64 `xml:"self-arp-request-packet-received-on-irb-interface"`
+	ProxyArpRequestDiscardedAsSourceIpIsAProxyTarget         float64 `xml:"proxy-arp-request-discarded-as-source-ip-is-a-proxy-target"`
+	ArpPacketsAreDroppedAsNexthopAllocationFailed            float64 `xml:"arp-packets-are-dropped-as-nexthop-allocation-failed"`
+	ArpPacketsReceivedFromPeerVrrpRouterAndDiscarded         float64 `xml:"arp-packets-received-from-peer-vrrp-router-and-discarded"`
+	ArpPacketsAreRejectedAsTargetIpArpResolveIsInProgress    float64 `xml:"arp-packets-are-rejected-as-target-ip-arp-resolve-is-in-progress"`
+	GratArpPacketsAreIgnoredAsMacAddressIsNotChanged         float64 `xml:"grat-arp-packets-are-ignored-as-mac-address-is-not-changed"`
+	ArpPacketsAreDroppedFromPeerVrrp                         float64 `xml:"arp-packets-are-dropped-from-peer-vrrp"`
+	ArpPacketsAreDroppedAsDriverCallFailed                   float64 `xml:"arp-packets-are-dropped-as-driver-call-failed"`
+	ArpPacketsAreDroppedAsSourceIsNotValidated               float64 `xml:"arp-packets-are-dropped-as-source-is-not-validated"`
+	ArpSystemMax                                             float64 `xml:"arp-system-max"`
+	ArpPublicMax                                             float64 `xml:"arp-public-max"`
+	ArpIriMax                                                float64 `xml:"arp-iri-max"`
+	ArpMgtMax                                                float64 `xml:"arp-mgt-max"`
+	ArpPublicCnt                                             float64 `xml:"arp-public-cnt"`
+	ArpIriCnt                                                float64 `xml:"arp-iri-cnt"`
+	ArpMgtCnt                                                float64 `xml:"arp-mgt-cnt"`
+	ArpSystemDrop                                            float64 `xml:"arp-system-drop"`
+	ArpPublicDrop                                            float64 `xml:"arp-public-drop"`
+	ArpIriDrop                                               float64 `xml:"arp-iri-drop"`
+	ArpMgtDrop                                               float64 `xml:"arp-mgt-drop"`
 }

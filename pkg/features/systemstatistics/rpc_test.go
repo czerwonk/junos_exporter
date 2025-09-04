@@ -16,7 +16,7 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 		expect  SystemStatistics
 	}
 
-	testsIPV4 := []testCase{
+	tests := []testCase{
 		{
 			name:    "complete_ipv4_statistics",
 			xmlFile: "testsFiles/IPv4/ipv4TestDataCase1.xml",
@@ -74,7 +74,7 @@ func TestStatisticsIPv4Unmarshaling(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testsIPV4 {
+	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			fc, err := os.ReadFile(tc.xmlFile)
 			if err != nil {
@@ -100,7 +100,7 @@ func TestStatisticsIPv6Unmarshaling(t *testing.T) {
 		expect  SystemStatistics
 	}
 
-	testsIPV6 := []testCase{
+	tests := []testCase{
 		{
 			name:    "complete_ipv6_statistics",
 			xmlFile: "testsFiles/IPv6/ipv6TestDataCase1.xml",
@@ -161,7 +161,7 @@ func TestStatisticsIPv6Unmarshaling(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testsIPV6 {
+	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			fc, err := os.ReadFile(tc.xmlFile)
 			if err != nil {
@@ -190,7 +190,7 @@ func TestStatisticsUDPUnmarshaling(t *testing.T) {
 		expect  SystemStatistics
 	}
 
-	testsUDP := []testCase{
+	tests := []testCase{
 		{
 			name:    "complete_udp_statistics",
 			xmlFile: "testsFiles/UDP/UDPTestDataCase1.xml",
@@ -213,7 +213,7 @@ func TestStatisticsUDPUnmarshaling(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testsUDP {
+	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			fc, err := os.ReadFile(tc.xmlFile)
 			if err != nil {
@@ -239,7 +239,7 @@ func TestStatisticsTCPUnmarshaling(t *testing.T) {
 		expect  SystemStatistics
 	}
 
-	testsTCP := []testCase{
+	tests := []testCase{
 		{
 			name:    "complete_tcp_statistics",
 			xmlFile: "testsFiles/TCP/TCPTestDataCase1.xml",
@@ -368,7 +368,7 @@ func TestStatisticsTCPUnmarshaling(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testsTCP {
+	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			fc, err := os.ReadFile(tc.xmlFile)
 			if err != nil {

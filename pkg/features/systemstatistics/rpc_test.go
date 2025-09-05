@@ -385,3 +385,103 @@ func TestStatisticsTCPUnmarshaling(t *testing.T) {
 		})
 	}
 }
+
+func TestStatisticsARPUnmarshaling(t *testing.T) {
+	type testCase struct {
+		name    string
+		xmlFile string
+		expect  SystemStatistics
+	}
+
+	tests := []testCase{
+		{
+			name:    "complete_arp_statistics",
+			xmlFile: "testsFiles/ARP/ARPTestDataCase1.xml",
+			expect: SystemStatistics{
+				Statistics: Statistics{
+					Arp: ARP{
+						DatagramsReceived:                                        5000,
+						ArpRequestsReceived:                                      5001,
+						ArpRepliesReceived:                                       5002,
+						ResolutionRequestReceived:                                5003,
+						ResolutionRequestDropped:                                 5004,
+						UnrestrictedProxyRequests:                                5005,
+						RestrictedProxyRequests:                                  5006,
+						ReceivedProxyRequests:                                    5007,
+						ProxyRequestsNotProxied:                                  5008,
+						RestrictedProxyRequestsNotProxied:                        5009,
+						DatagramsWithBogusInterface:                              5010,
+						DatagramsWithIncorrectLength:                             5011,
+						DatagramsForNonIpProtocol:                                5012,
+						DatagramsWithUnsupportedOpcode:                           5013,
+						DatagramsWithBadProtocolAddressLength:                    5014,
+						DatagramsWithBadHardwareAddressLength:                    5015,
+						DatagramsWithMulticastSourceAddress:                      5016,
+						DatagramsWithMulticastTargetAddress:                      5017,
+						DatagramsWithMyOwnHardwareAddress:                        5018,
+						DatagramsForAnAddressNotOnTheInterface:                   5019,
+						DatagramsWithABroadcastSourceAddress:                     5020,
+						DatagramsWithSourceAddressDuplicateToMine:                5021,
+						DatagramsWhichWereNotForMe:                               5022,
+						PacketsDiscardedWaitingForResolution:                     5023,
+						PacketsSentAfterWaitingForResolution:                     5024,
+						ArpRequestsSent:                                          5025,
+						ArpRepliesSent:                                           5026,
+						RequestsForMemoryDenied:                                  5027,
+						RequestsDroppedOnEntry:                                   5028,
+						RequestsDroppedDuringRetry:                               5029,
+						RequestsDroppedDueToInterfaceDeletion:                    5030,
+						RequestsOnUnnumberedInterfaces:                           5031,
+						NewRequestsOnUnnumberedInterfaces:                        5032,
+						RepliesFromUnnumberedInterfaces:                          5033,
+						RequestsOnUnnumberedInterfaceWithNonSubnettedDonor:       5034,
+						RepliesFromUnnumberedInterfaceWithNonSubnettedDonor:      5035,
+						ArpPacketsRejectedAsFamilyIsConfiguredWithDenyArp:        5036,
+						ArpResponsePacketsAreRejectedOnMcAeIclInterface:          5037,
+						ArpRepliesAreRejectedAsSourceAndDestinationIsSame:        5038,
+						ArpProbeForProxyAddressReachableFromTheIncomingInterface: 5039,
+						ArpRequestDiscardedForVrrpSourceAddress:                  5040,
+						SelfArpRequestPacketReceivedOnIrbInterface:               5041,
+						ProxyArpRequestDiscardedAsSourceIpIsAProxyTarget:         5042,
+						ArpPacketsAreDroppedAsNexthopAllocationFailed:            5043,
+						ArpPacketsReceivedFromPeerVrrpRouterAndDiscarded:         5044,
+						ArpPacketsAreRejectedAsTargetIpArpResolveIsInProgress:    5045,
+						GratArpPacketsAreIgnoredAsMacAddressIsNotChanged:         5046,
+						ArpPacketsAreDroppedFromPeerVrrp:                         5047,
+						ArpPacketsAreDroppedAsDriverCallFailed:                   5048,
+						ArpPacketsAreDroppedAsSourceIsNotValidated:               5049,
+						ArpSystemMax:  5050,
+						ArpPublicMax:  5051,
+						ArpIriMax:     5052,
+						ArpMgtMax:     5053,
+						ArpPublicCnt:  5054,
+						ArpIriCnt:     5055,
+						ArpMgtCnt:     5056,
+						ArpSystemDrop: 5057,
+						ArpPublicDrop: 5058,
+						ArpIriDrop:    5059,
+						ArpMgtDrop:    5060,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			fc, err := os.ReadFile(tc.xmlFile)
+			if err != nil {
+				log.Fatal("failed to read xml file in ARP testing due to: ", err)
+			}
+			var result SystemStatistics
+			err = xml.Unmarshal(fc, &result)
+			if err != nil {
+				log.Fatal("failed to unmarshal xml file in ARP testing due to: ", err)
+			}
+
+			result.Statistics.Arp.Text = ""
+			assert.Equal(t, tc.expect.Statistics.Arp, result.Statistics.Arp, tc.name)
+			assert.NoError(t, err, "unmarshal should not return error")
+		})
+	}
+}

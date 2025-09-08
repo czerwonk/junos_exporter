@@ -1,0 +1,42 @@
+<rpc-reply xmlns:junos="http://xml.juniper.net/junos/24.2R2-S1.6/junos">
+    <statistics>
+        <icmp>
+            <drops-due-to-rate-limit>6000</drops-due-to-rate-limit>
+            <calls-to-icmp-error>6001</calls-to-icmp-error>
+            <errors-not-generated-because-old-message-was-icmp>6002</errors-not-generated-because-old-message-was-icmp>
+            <histogram>
+                <type-of-histogram>Output Histogram</type-of-histogram>
+                <icmp-echo-reply>6003</icmp-echo-reply>
+                <destination-unreachable>6004</destination-unreachable>
+                <icmp-echo>6005</icmp-echo>
+                <time-stamp-reply>6006</time-stamp-reply>
+                <time-exceeded>6007</time-exceeded>
+                <time-stamp>6008</time-stamp>
+                <address-mask-request>6009</address-mask-request>
+                <an-endpoint-changed-its-cookiesecret>6010</an-endpoint-changed-its-cookiesecret>
+            </histogram>
+            <histogram>
+                <type-of-histogram>Output Histogram</type-of-histogram>
+                <icmp-echo-reply>6011</icmp-echo-reply>
+                <destination-unreachable>6012</destination-unreachable>
+                <icmp-echo>6013</icmp-echo>
+                <time-stamp-reply>6014</time-stamp-reply>
+                <time-exceeded>6015</time-exceeded>
+                <time-stamp>6016</time-stamp>
+                <address-mask-request>6017</address-mask-request>
+                <an-endpoint-changed-its-cookiesecret>6018</an-endpoint-changed-its-cookiesecret>
+            </histogram>
+            <messages-with-bad-code-fields>6019</messages-with-bad-code-fields>
+            <messages-less-than-the-minimum-length>6020</messages-less-than-the-minimum-length>
+            <messages-with-bad-checksum>6021</messages-with-bad-checksum>
+            <messages-with-bad-source-address>6022</messages-with-bad-source-address>
+            <messages-with-bad-length>6023</messages-with-bad-length>
+            <echo-drops-with-broadcast-or-multicast-destinaton-address>6024</echo-drops-with-broadcast-or-multicast-destinaton-address>
+            <timestamp-drops-with-broadcast-or-multicast-destination-address>6025</timestamp-drops-with-broadcast-or-multicast-destination-address>
+            <message-responses-generated>6026</message-responses-generated>
+        </icmp>
+    </statistics>
+    <cli>
+        <banner></banner>
+    </cli>
+</rpc-reply>

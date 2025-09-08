@@ -485,3 +485,79 @@ func TestStatisticsARPUnmarshaling(t *testing.T) {
 		})
 	}
 }
+
+func TestStatisticsICMPUnmarshaling(t *testing.T) {
+	type testCase struct {
+		name    string
+		xmlFile string
+		expect  SystemStatistics
+	}
+
+	tests := []testCase{
+		{
+			name:    "complete_icmp_statistics",
+			xmlFile: "testsFiles/ICMP/ICMPTestDataCase1.xml",
+			expect: SystemStatistics{
+				Statistics: Statistics{
+					Icmp: ICMP{
+						DropsDueToRateLimit:                        6000,
+						CallsToIcmpError:                           6001,
+						ErrorsNotGeneratedBecauseOldMessageWasIcmp: 6002,
+						Histogram: []ICMPInstogram{
+							{
+								IcmpEchoReply:                    6003,
+								DestinationUnreachable:           6004,
+								IcmpEcho:                         6005,
+								TimeStampReply:                   6006,
+								TimeExceeded:                     6007,
+								TimeStamp:                        6008,
+								AddressMaskRequest:               6009,
+								AnEndpointChangedItsCookieSecret: 6010,
+							},
+							{
+							IcmpEchoReply: 6011,
+							DestinationUnreachable: 6012,
+							IcmpEcho: 6013,
+							TimeStampReply: 6014,
+							TimeExceeded: 6015,
+							TimeStamp: 6016,
+							AddressMaskRequest: 6017,
+							AnEndpointChangedItsCookieSecret: 6018,
+						},
+					},
+						MessagesWithBadCodeFields: 6019,
+						MessagesLessThanTheMinimumLength: 6020,
+						MessagesWithBadChecksum:    6021,
+						MessagesWithBadSourceAddress: 6022,
+						MessagesWithBadLength: 6023,
+						EchoDropsWithBroadcastOrMulticastDestinatonAddress: 6024,
+						TimestampDropsWithBroadcastOrMulticastDestinationAddress: 6025,
+						MessageResponsesGenerated: 6026,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			fc, err := os.ReadFile(tc.xmlFile)
+			if err != nil {
+				log.Fatal("failed to read xml file in ICMP testing due to: ", err)
+			}
+			var result SystemStatistics
+			err = xml.Unmarshal(fc, &result)
+			if err != nil {
+				log.Fatal("failed to unmarshal xml file in ICMP testing due to: ", err)
+			}
+			for i, _ := range result.Statistics.Icmp.Histogram {
+				result.Statistics.Icmp.Histogram[i].Text = ""
+				result.Statistics.Icmp.Histogram[i].TypeOfHistogram = ""
+			}
+			result.Statistics.Icmp.Text = ""
+			assert.Equal(t, tc.expect.Statistics.Icmp, result.Statistics.Icmp, tc.name)
+			assert.NoError(t, err, "unmarshal should not return error")
+		})
+	}
+}
+

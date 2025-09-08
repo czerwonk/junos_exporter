@@ -492,7 +492,6 @@ func TestStatisticsICMPUnmarshaling(t *testing.T) {
 		xmlFile string
 		expect  SystemStatistics
 	}
-
 	tests := []testCase{
 		{
 			name:    "complete_icmp_statistics",
@@ -560,4 +559,3 @@ func TestStatisticsICMPUnmarshaling(t *testing.T) {
 		})
 	}
 }
-

@@ -23,32 +23,7 @@ type Statistics struct {
 	Tcp  TCP `xml:"tcp"`
 	Udp UDP `xml:"udp"`
 	Ip  IP `xml:"ip"`
-	Icmp struct {
-		Text                                       string `xml:",chardata"`
-		DropsDueToRateLimit                        string `xml:"drops-due-to-rate-limit"`
-		CallsToIcmpError                           string `xml:"calls-to-icmp-error"`
-		ErrorsNotGeneratedBecauseOldMessageWasIcmp string `xml:"errors-not-generated-because-old-message-was-icmp"`
-		Histogram                                  []struct {
-			Text                             string `xml:",chardata"`
-			TypeOfHistogram                  string `xml:"type-of-histogram"`
-			IcmpEchoReply                    string `xml:"icmp-echo-reply"`
-			DestinationUnreachable           string `xml:"destination-unreachable"`
-			IcmpEcho                         string `xml:"icmp-echo"`
-			TimeStampReply                   string `xml:"time-stamp-reply"`
-			TimeExceeded                     string `xml:"time-exceeded"`
-			TimeStamp                        string `xml:"time-stamp"`
-			AddressMaskRequest               string `xml:"address-mask-request"`
-			AnEndpointChangedItsCookiesecret string `xml:"an-endpoint-changed-its-cookiesecret"`
-		} `xml:"histogram"`
-		MessagesWithBadCodeFields                                string `xml:"messages-with-bad-code-fields"`
-		MessagesLessThanTheMinimumLength                         string `xml:"messages-less-than-the-minimum-length"`
-		MessagesWithBadChecksum                                  string `xml:"messages-with-bad-checksum"`
-		MessagesWithBadSourceAddress                             string `xml:"messages-with-bad-source-address"`
-		MessagesWithBadLength                                    string `xml:"messages-with-bad-length"`
-		EchoDropsWithBroadcastOrMulticastDestinatonAddress       string `xml:"echo-drops-with-broadcast-or-multicast-destinaton-address"`
-		TimestampDropsWithBroadcastOrMulticastDestinationAddress string `xml:"timestamp-drops-with-broadcast-or-multicast-destination-address"`
-		MessageResponsesGenerated                                string `xml:"message-responses-generated"`
-	} `xml:"icmp"`
+	Icmp ICMP `xml:"icmp"`
 	Arp  ARP `xml:"arp"`
 	Ip6  IP6 `xml:"ip6"`
 	Icmp6 struct {
@@ -452,4 +427,33 @@ type ARP struct {
 	ArpPublicDrop                                            float64 `xml:"arp-public-drop"`
 	ArpIriDrop                                               float64 `xml:"arp-iri-drop"`
 	ArpMgtDrop                                               float64 `xml:"arp-mgt-drop"`
+}
+
+type ICMP struct {
+	Text                                       string `xml:",chardata"`
+	DropsDueToRateLimit                        float64 `xml:"drops-due-to-rate-limit"`
+	CallsToIcmpError                           float64 `xml:"calls-to-icmp-error"`
+	ErrorsNotGeneratedBecauseOldMessageWasIcmp float64 `xml:"errors-not-generated-because-old-message-was-icmp"`
+	Histogram                                  []ICMPInstogram `xml:"histogram"`
+	MessagesWithBadCodeFields                                float64 `xml:"messages-with-bad-code-fields"`
+	MessagesLessThanTheMinimumLength                         float64 `xml:"messages-less-than-the-minimum-length"`
+	MessagesWithBadChecksum                                  float64 `xml:"messages-with-bad-checksum"`
+	MessagesWithBadSourceAddress                             float64 `xml:"messages-with-bad-source-address"`
+	MessagesWithBadLength                                    float64 `xml:"messages-with-bad-length"`
+	EchoDropsWithBroadcastOrMulticastDestinatonAddress       float64 `xml:"echo-drops-with-broadcast-or-multicast-destinaton-address"`
+	TimestampDropsWithBroadcastOrMulticastDestinationAddress float64 `xml:"timestamp-drops-with-broadcast-or-multicast-destination-address"`
+	MessageResponsesGenerated                                float64 `xml:"message-responses-generated"`
+}
+
+type ICMPInstogram struct {
+	Text                             string `xml:",chardata"`
+	TypeOfHistogram                  string `xml:"type-of-histogram"`
+	IcmpEchoReply                    float64 `xml:"icmp-echo-reply"`
+	DestinationUnreachable           float64 `xml:"destination-unreachable"`
+	IcmpEcho                         float64 `xml:"icmp-echo"`
+	TimeStampReply                   float64 `xml:"time-stamp-reply"`
+	TimeExceeded                     float64 `xml:"time-exceeded"`
+	TimeStamp                        float64 `xml:"time-stamp"`
+	AddressMaskRequest               float64 `xml:"address-mask-request"`
+	AnEndpointChangedItsCookieSecret float64 `xml:"an-endpoint-changed-its-cookiesecret"`
 }

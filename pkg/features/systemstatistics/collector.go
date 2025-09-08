@@ -284,6 +284,26 @@ var (
 	arpPublicDropDesc                                            *prometheus.Desc
 	arpIriDropDesc                                               *prometheus.Desc
 	arpMgtDropDesc                                               *prometheus.Desc
+
+	icmpDropsDueToRateLimitDesc                                      *prometheus.Desc
+	icmpCallsToIcmpErrorDesc                                         *prometheus.Desc
+	icmpErrorsNotGeneratedBecauseOldMessageWasIcmp                   *prometheus.Desc
+	icmpIcmpEchoReplyDesc                                            *prometheus.Desc
+	icmpDestinationUnreachableDesc                                   *prometheus.Desc
+	icmpIcmpEchoDesc                                                 *prometheus.Desc
+	icmpTimeStampReplyDesc                                           *prometheus.Desc
+	icmpTimeExceededDesc                                             *prometheus.Desc
+	icmpTimeStampDesc                                                *prometheus.Desc
+	icmpAddressMaskRequestDesc                                       *prometheus.Desc
+	icmpAnEndpointChangedItsCookieSecretDesc                         *prometheus.Desc
+	icmpMessagesWithBadCodeFieldsDesc                                *prometheus.Desc
+	icmpMessagesLessThanTheMinimumLengthDesc                         *prometheus.Desc
+	icmpMessagesWithBadChecksumDesc                                  *prometheus.Desc
+	icmpMessagesWithBadSourceAddressDesc                             *prometheus.Desc
+	icmpMessagesWithBadLengthDesc                                    *prometheus.Desc
+	icmpEchoDropsWithBroadcastOrMulticastDestinatonAddressDesc       *prometheus.Desc
+	icmpTimestampDropsWithBroadcastOrMulticastDestinationAddressDesc *prometheus.Desc
+	icmpMessageResponsesGeneratedDesc                                *prometheus.Desc
 )
 
 func init() {
@@ -568,6 +588,28 @@ func init() {
 	arpPublicDropDesc = prometheus.NewDesc(prefix+"arp_public_drop", "Number of ARP public drop", labelsARP, nil)
 	arpIriDropDesc = prometheus.NewDesc(prefix+"arp_iri_drop", "Number of ARP iri drop", labelsARP, nil)
 	arpMgtDropDesc = prometheus.NewDesc(prefix+"arp_mgnt_drop", "Number of ARP mgnt drop", labelsARP, nil)
+
+	labelsICMP := []string{"target", "protocol"}
+	labelsICMPHistogram := []string{"target", "protocol", "histogram_type"}
+	icmpDropsDueToRateLimitDesc = prometheus.NewDesc(prefix+"icmp_drops_due_to_rate_limit", "Number of ICMP drops due to rate limit", labelsICMP, nil)
+	icmpCallsToIcmpErrorDesc = prometheus.NewDesc(prefix+"icmp_calls_to_icmp_error", "Number of ICMP calls to icmp error", labelsICMP, nil)
+	icmpErrorsNotGeneratedBecauseOldMessageWasIcmp = prometheus.NewDesc(prefix+"icmp_errors_not_generated_because_old_message_was_icmp", "Number of ICMP errors not generated because old message was icmp", labelsICMP, nil)
+	icmpIcmpEchoReplyDesc = prometheus.NewDesc(prefix+"icmp_echo_reply", "Number of ICMP echo reply", labelsICMPHistogram, nil)
+	icmpDestinationUnreachableDesc = prometheus.NewDesc(prefix+"icmp_destination_unreachable", "Number of icmp destination unrechable", labelsICMPHistogram, nil)
+	icmpIcmpEchoDesc = prometheus.NewDesc(prefix+"icmp_echo", "Number of icmp echos", labelsICMPHistogram, nil)
+	icmpTimeStampReplyDesc = prometheus.NewDesc(prefix+"icmp_time_stamp_reply", "Number of icmp time stamp reply", labelsICMPHistogram, nil)
+	icmpTimeExceededDesc = prometheus.NewDesc(prefix+"icmp_time_exceeded", "Number of icmp time exceeded", labelsICMPHistogram, nil)
+	icmpTimeStampDesc = prometheus.NewDesc(prefix+"icmp_time_stamp", "Number of icmp time stamps", labelsICMPHistogram, nil)
+	icmpAddressMaskRequestDesc = prometheus.NewDesc(prefix+"icmp_address_mask_request", "Number of icmp address mask requests", labelsICMPHistogram, nil)
+	icmpAnEndpointChangedItsCookieSecretDesc = prometheus.NewDesc(prefix+"icmp_an_endpoint_changed_its_cookie_secret", "Number of icmp that changed its cookie secret an ednpoint", labelsICMPHistogram, nil)
+	icmpMessagesWithBadCodeFieldsDesc = prometheus.NewDesc(prefix+"icmp_messages_with_bad_code_fields", "Number of icmp messages with bad code fields", labelsICMP, nil)
+	icmpMessagesLessThanTheMinimumLengthDesc = prometheus.NewDesc(prefix+"icmp_messages_less_than_the_minimum_length", "Number of icmp messages less than the minimum length", labelsICMP, nil)
+	icmpMessagesWithBadChecksumDesc = prometheus.NewDesc(prefix+"icmp_messages_with_bad_checksum", "Number of icmp messages with bad checksum", labelsICMP, nil)
+	icmpMessagesWithBadSourceAddressDesc = prometheus.NewDesc(prefix+"icmp_messages_with_nad_source-address", "Number of icmp messages with bad source address", labelsICMP, nil)
+	icmpMessagesWithBadLengthDesc = prometheus.NewDesc(prefix+"icmp_messages_with_bad_length", "Number of icmp messages with bad length", labelsICMP, nil)
+	icmpEchoDropsWithBroadcastOrMulticastDestinatonAddressDesc = prometheus.NewDesc(prefix+"icmp_echo_drops_with_broadcast_or_multicast_destination_address", "Number of icmp echo drops with broadcast or multicast destination address", labelsICMP, nil)
+	icmpTimestampDropsWithBroadcastOrMulticastDestinationAddressDesc = prometheus.NewDesc(prefix+"icmp_timestamp_drops_with_broadcast_or_multicast_destination_address", "Number of icmp timestamp drops with broadcast or multicast destination address", labelsICMP, nil)
+	icmpMessageResponsesGeneratedDesc = prometheus.NewDesc(prefix+"icmp_message_responses_generated", "Number of icmp message responses generated", labelsICMP, nil)
 }
 
 type systemstatisticsCollector struct{}
@@ -855,6 +897,26 @@ func (c *systemstatisticsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- arpPublicDropDesc
 	ch <- arpIriDropDesc
 	ch <- arpMgtDropDesc
+
+	ch <- icmpDropsDueToRateLimitDesc
+	ch <- icmpCallsToIcmpErrorDesc
+	ch <- icmpErrorsNotGeneratedBecauseOldMessageWasIcmp
+	ch <- icmpIcmpEchoReplyDesc
+	ch <- icmpDestinationUnreachableDesc
+	ch <- icmpIcmpEchoDesc
+	ch <- icmpTimeStampReplyDesc
+	ch <- icmpTimeExceededDesc
+	ch <- icmpTimeStampDesc
+	ch <- icmpAddressMaskRequestDesc
+	ch <- icmpAnEndpointChangedItsCookieSecretDesc
+	ch <- icmpMessagesWithBadCodeFieldsDesc
+	ch <- icmpMessagesLessThanTheMinimumLengthDesc
+	ch <- icmpMessagesWithBadChecksumDesc
+	ch <- icmpMessagesWithBadSourceAddressDesc
+	ch <- icmpMessagesWithBadLengthDesc
+	ch <- icmpEchoDropsWithBroadcastOrMulticastDestinatonAddressDesc
+	ch <- icmpTimestampDropsWithBroadcastOrMulticastDestinationAddressDesc
+	ch <- icmpMessageResponsesGeneratedDesc
 }
 
 func (c *systemstatisticsCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
@@ -884,6 +946,11 @@ func (c *systemstatisticsCollector) Collect(client collector.Client, ch chan<- p
 		return err
 	}
 	c.collectSystemStatisticsARP(ch, labelValues, s)
+	err = client.RunCommandAndParse("show system statistics icmp", &s)
+	if err != nil {
+		return err
+	}
+	c.collectSystemStatisticsICMP(ch, labelValues, s)
 	return nil
 }
 
@@ -1178,4 +1245,30 @@ func (c *systemstatisticsCollector) collectSystemStatisticsARP(ch chan<- prometh
 	ch <- prometheus.MustNewConstMetric(arpPublicDropDesc, prometheus.CounterValue, s.Statistics.Arp.ArpPublicDrop, labels...)
 	ch <- prometheus.MustNewConstMetric(arpIriDropDesc, prometheus.CounterValue, s.Statistics.Arp.ArpIriDrop, labels...)
 	ch <- prometheus.MustNewConstMetric(arpMgtDropDesc, prometheus.CounterValue, s.Statistics.Arp.ArpMgtDrop, labels...)
+}
+
+func (c *systemstatisticsCollector) collectSystemStatisticsICMP(ch chan<- prometheus.Metric, labelValues []string, s SystemStatistics) {
+	labels := append(labelValues, "ICMP")
+	ch <- prometheus.MustNewConstMetric(icmpDropsDueToRateLimitDesc, prometheus.CounterValue, s.Statistics.Icmp.DropsDueToRateLimit, labels...)
+	ch <- prometheus.MustNewConstMetric(icmpCallsToIcmpErrorDesc, prometheus.CounterValue, s.Statistics.Icmp.CallsToIcmpError, labels...)
+	ch <- prometheus.MustNewConstMetric(icmpErrorsNotGeneratedBecauseOldMessageWasIcmp, prometheus.CounterValue, s.Statistics.Icmp.ErrorsNotGeneratedBecauseOldMessageWasIcmp, labels...)
+	for _, histogram := range s.Statistics.Icmp.Histogram {
+		labels := append(labelValues, "ICMP", histogram.TypeOfHistogram)
+		ch <- prometheus.MustNewConstMetric(icmpIcmpEchoReplyDesc, prometheus.CounterValue, histogram.IcmpEchoReply, labels...)
+		ch <- prometheus.MustNewConstMetric(icmpDestinationUnreachableDesc, prometheus.CounterValue, histogram.DestinationUnreachable, labels...)
+		ch <- prometheus.MustNewConstMetric(icmpIcmpEchoDesc, prometheus.CounterValue, histogram.IcmpEcho, labels...)
+		ch <- prometheus.MustNewConstMetric(icmpTimeStampReplyDesc, prometheus.CounterValue, histogram.TimeStampReply, labels...)
+		ch <- prometheus.MustNewConstMetric(icmpTimeExceededDesc, prometheus.CounterValue, histogram.TimeExceeded, labels...)
+		ch <- prometheus.MustNewConstMetric(icmpTimeStampDesc, prometheus.CounterValue, histogram.TimeStamp, labels...)
+		ch <- prometheus.MustNewConstMetric(icmpAddressMaskRequestDesc, prometheus.CounterValue, histogram.AddressMaskRequest, labels...)
+		ch <- prometheus.MustNewConstMetric(icmpAnEndpointChangedItsCookieSecretDesc, prometheus.CounterValue, histogram.AnEndpointChangedItsCookieSecret, labels...)
+	}
+	ch <- prometheus.MustNewConstMetric(icmpMessagesWithBadCodeFieldsDesc, prometheus.CounterValue, s.Statistics.Icmp.MessagesWithBadCodeFields, labels...)
+	ch <- prometheus.MustNewConstMetric(icmpMessagesLessThanTheMinimumLengthDesc, prometheus.CounterValue, s.Statistics.Icmp.MessagesLessThanTheMinimumLength, labels...)
+	ch <- prometheus.MustNewConstMetric(icmpMessagesWithBadChecksumDesc, prometheus.CounterValue, s.Statistics.Icmp.MessagesWithBadChecksum, labels...)
+	ch <- prometheus.MustNewConstMetric(icmpMessagesWithBadSourceAddressDesc, prometheus.CounterValue, s.Statistics.Icmp.MessagesWithBadSourceAddress, labels...)
+	ch <- prometheus.MustNewConstMetric(icmpMessagesWithBadLengthDesc, prometheus.CounterValue, s.Statistics.Icmp.MessagesWithBadLength, labels...)
+	ch <- prometheus.MustNewConstMetric(icmpEchoDropsWithBroadcastOrMulticastDestinatonAddressDesc, prometheus.CounterValue, s.Statistics.Icmp.EchoDropsWithBroadcastOrMulticastDestinatonAddress, labels...)
+	ch <- prometheus.MustNewConstMetric(icmpTimestampDropsWithBroadcastOrMulticastDestinationAddressDesc, prometheus.CounterValue, s.Statistics.Icmp.TimestampDropsWithBroadcastOrMulticastDestinationAddress, labels...)
+	ch <- prometheus.MustNewConstMetric(icmpMessageResponsesGeneratedDesc, prometheus.CounterValue, s.Statistics.Icmp.MessageResponsesGenerated, labels...)
 }

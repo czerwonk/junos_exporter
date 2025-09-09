@@ -502,7 +502,7 @@ func TestStatisticsICMPUnmarshaling(t *testing.T) {
 						DropsDueToRateLimit:                        6000,
 						CallsToIcmpError:                           6001,
 						ErrorsNotGeneratedBecauseOldMessageWasIcmp: 6002,
-						Histogram: []ICMPInstogram{
+						Histogram: []ICMPHistogram{
 							{
 								IcmpEchoReply:                    6003,
 								DestinationUnreachable:           6004,

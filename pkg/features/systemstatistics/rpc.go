@@ -390,7 +390,7 @@ type ICMP6 struct {
 	BadChecksums                   float64 `xml:"bad-checksums"`
 	Icmp6MessagesWithBadLength     float64 `xml:"icmp6-messages-with-bad-length"`
 	InputHistogram  ICMP6InputHistogram `xml:"input-histogram"`
-	HistogramOfErrorMessagesToBeGenerated float64 `xml:"histogram-of-error-messages-to-be-generated"`
+	HistogramOfErrorMessagesToBeGenerated string `xml:"histogram-of-error-messages-to-be-generated"`
 	NoRoute                               float64 `xml:"no-route"`
 	AdministrativelyProhibited            float64 `xml:"administratively-prohibited"`
 	BeyondScope                           float64 `xml:"beyond-scope"`

@@ -304,6 +304,73 @@ var (
 	icmpEchoDropsWithBroadcastOrMulticastDestinatonAddressDesc       *prometheus.Desc
 	icmpTimestampDropsWithBroadcastOrMulticastDestinationAddressDesc *prometheus.Desc
 	icmpMessageResponsesGeneratedDesc                                *prometheus.Desc
+
+	icmp6CallsToIcmp6ErrorDesc                               *prometheus.Desc
+	icmp6ErrorsNotGeneratedBecauseOldMessageWasIcmpErrorDesc *prometheus.Desc
+	icmp6ErrorsNotGeneratedBecauseRateLimitationDesc         *prometheus.Desc
+	icmp6UnreachableIcmp6PacketsOutputHistoDesc              *prometheus.Desc
+	icmp6Icmp6EchoOutputHistoDesc                            *prometheus.Desc
+	icmp6Icmp6EchoReplyOutputHistoDesc                       *prometheus.Desc
+	icmp6NeighborSolicitationOutputHistoDesc                 *prometheus.Desc
+	icmp6NeighborAdvertisementOutputHistoDesc                *prometheus.Desc
+	icmp6Icmp6MessagesWithBadCodeFieldsDesc                  *prometheus.Desc
+	icmp6MessagesLessThanMinimumLengthDesc                   *prometheus.Desc
+	icmp6BadChecksumsDesc                                    *prometheus.Desc
+	icmp6Icmp6MessagesWithBadLengthDesc                      *prometheus.Desc
+	icmp6UnreachableIcmp6PacketInputHistosDesc               *prometheus.Desc
+	icmp6PacketTooBigInputHistoDesc                          *prometheus.Desc
+	icmp6TimeExceededIcmp6PacketsInputHistoDesc              *prometheus.Desc
+	icmp6Icmp6EchoInputHistoDesc                             *prometheus.Desc
+	icmp6Icmp6EchoReplyInputHistoDesc                        *prometheus.Desc
+	icmp6RouterSolicitationIcmp6PacketsInputHistoDesc        *prometheus.Desc
+	icmp6NeighborSolicitationInputHistoDesc                  *prometheus.Desc
+	icmp6NeighborAdvertisementInputHistoDesc                 *prometheus.Desc
+	icmp6NoRouteDesc                                         *prometheus.Desc
+	icmp6AdministrativelyProhibitedDesc                      *prometheus.Desc
+	icmp6BeyondScopeDesc                                     *prometheus.Desc
+	icmp6AddressUnreachableDesc                              *prometheus.Desc
+	icmp6PortUnreachableDesc                                 *prometheus.Desc
+	icmp6PacketTooBigDesc                                    *prometheus.Desc
+	icmp6TimeExceedTransitDesc                               *prometheus.Desc
+	icmp6TimeExceedReassemblyDesc                            *prometheus.Desc
+	icmp6ErroneousHeaderFieldDesc                            *prometheus.Desc
+	icmp6UnrecognizedNextHeaderDesc                          *prometheus.Desc
+	icmp6UnrecognizedOptionDesc                              *prometheus.Desc
+	icmp6RedirectDesc                                        *prometheus.Desc
+	icmp6UnknownDesc                                         *prometheus.Desc
+	icmp6Icmp6MessageResponsesGeneratedDesc                  *prometheus.Desc
+	icmp6MessagesWithTooManyNdOptionsDesc                    *prometheus.Desc
+	icmp6NdSystemMaxDesc                                     *prometheus.Desc
+	icmp6NdPublicMaxDesc                                     *prometheus.Desc
+	icmp6NdIriMaxDesc                                        *prometheus.Desc
+	icmp6NdMgtMaxDesc                                        *prometheus.Desc
+	icmp6NdPublicCntDesc                                     *prometheus.Desc
+	icmp6NdIriCntDesc                                        *prometheus.Desc
+	icmp6NdMgtCntDesc                                        *prometheus.Desc
+	icmp6NdSystemDropDesc                                    *prometheus.Desc
+	icmp6NdPublicDropDesc                                    *prometheus.Desc
+	icmp6NdIriDropDesc                                       *prometheus.Desc
+	icmp6NdMgtDropDesc                                       *prometheus.Desc
+	icmp6Nd6NdpProxyRequestsDesc                             *prometheus.Desc
+	icmp6Nd6DadProxyRequestsDesc                             *prometheus.Desc
+	icmp6Nd6NdpProxyResponsesDesc                            *prometheus.Desc
+	icmp6Nd6DadProxyConflictsDesc                            *prometheus.Desc
+	icmp6Nd6DupProxyResponsesDesc                            *prometheus.Desc
+	icmp6Nd6NdpProxyResolveCntDesc                           *prometheus.Desc
+	icmp6Nd6DadProxyResolveCntDesc                           *prometheus.Desc
+	icmp6Nd6DadProxyEqmacDropDesc                            *prometheus.Desc
+	icmp6Nd6DadProxyNomacDropDesc                            *prometheus.Desc
+	icmp6Nd6NdpProxyUnrRequestsDesc                          *prometheus.Desc
+	icmp6Nd6DadProxyUnrRequestsDesc                          *prometheus.Desc
+	icmp6Nd6NdpProxyUnrResponsesDesc                         *prometheus.Desc
+	icmp6Nd6DadProxyUnrConflictsDesc                         *prometheus.Desc
+	icmp6Nd6DadProxyUnrResponsesDesc                         *prometheus.Desc
+	icmp6Nd6NdpProxyUnrResolveCntDesc                        *prometheus.Desc
+	icmp6Nd6DadProxyUnrResolveCntDesc                        *prometheus.Desc
+	icmp6Nd6DadProxyUnrEqportDropDesc                        *prometheus.Desc
+	icmp6Nd6DadProxyUnrNomacDropDesc                         *prometheus.Desc
+	icmp6Nd6RequestsDroppedOnEntryDesc                       *prometheus.Desc
+	icmp6Nd6RequestsDroppedDuringRetryDesc                   *prometheus.Desc
 )
 
 func init() {
@@ -610,6 +677,75 @@ func init() {
 	icmpEchoDropsWithBroadcastOrMulticastDestinatonAddressDesc = prometheus.NewDesc(prefix+"icmp_echo_drops_with_broadcast_or_multicast_destination_address", "Number of icmp echo drops with broadcast or multicast destination address", labelsICMP, nil)
 	icmpTimestampDropsWithBroadcastOrMulticastDestinationAddressDesc = prometheus.NewDesc(prefix+"icmp_timestamp_drops_with_broadcast_or_multicast_destination_address", "Number of icmp timestamp drops with broadcast or multicast destination address", labelsICMP, nil)
 	icmpMessageResponsesGeneratedDesc = prometheus.NewDesc(prefix+"icmp_message_responses_generated", "Number of icmp message responses generated", labelsICMP, nil)
+
+	labelsICMP6 := []string{"target", "protocol"}
+	icmp6CallsToIcmp6ErrorDesc = prometheus.NewDesc(prefix+"icmp6_calles_to_icmp6_error", "Number of icmp6 calls to icmp6 error", labelsICMP6, nil)
+	icmp6ErrorsNotGeneratedBecauseOldMessageWasIcmpErrorDesc = prometheus.NewDesc(prefix+"icmp6_errors_not_generated_because_old_message_was_icmp_error", "Number of icmp6 errors not generated because old message was icmp error", labelsICMP6, nil)
+	icmp6ErrorsNotGeneratedBecauseRateLimitationDesc = prometheus.NewDesc(prefix+"icmp6_errors_not_generated_because_rate_limitation", "Number of icmp6 errors not generated becasue of rate limition", labelsICMP6, nil)
+	labelsICMP6Histogram := []string{"target", "protocol", "histogram_type"}
+	icmp6UnreachableIcmp6PacketsOutputHistoDesc = prometheus.NewDesc(prefix+"icmp6_unreachable_icmp6_packets", "Number of icmp6 unreachable icmp6 packets", labelsICMP6Histogram, nil)
+	icmp6Icmp6EchoOutputHistoDesc = prometheus.NewDesc(prefix+"icmp6_icmp6_echo", "Number of icmp6 echos", labelsICMP6Histogram, nil)
+	icmp6Icmp6EchoReplyOutputHistoDesc = prometheus.NewDesc(prefix+"icmp6_icmp6_echo_reply", "Number of icmp6 echo replies", labelsICMP6Histogram, nil)
+	icmp6NeighborSolicitationOutputHistoDesc = prometheus.NewDesc(prefix+"icmp6_neighbor_solicitation", "Number of icmp6 neighbor solicitation", labelsICMP6Histogram, nil)
+	icmp6NeighborAdvertisementOutputHistoDesc = prometheus.NewDesc(prefix+"icmp6_neighbor_advertisement", "Number of icmp6 neighbor advertisement", labelsICMP6Histogram, nil)
+	icmp6Icmp6MessagesWithBadCodeFieldsDesc = prometheus.NewDesc(prefix+"icmp6_messages_with_bad_code_fields", "Number of icmp6 messages with bad code fields", labelsICMP6, nil)
+	icmp6MessagesLessThanMinimumLengthDesc = prometheus.NewDesc(prefix+"icmp6_messages_less_than_minimum_length", "Number of icmp6 messages less than minimum length", labelsICMP6, nil)
+	icmp6BadChecksumsDesc = prometheus.NewDesc(prefix+"icmp6_bad_checksums", "Number of icmp6 bad checksums", labelsICMP6, nil)
+	icmp6Icmp6MessagesWithBadLengthDesc = prometheus.NewDesc(prefix+"icmp6_messages_with_bad_length", "Number of icmp6 messages with bad length", labelsICMP6, nil)
+	icmp6UnreachableIcmp6PacketInputHistosDesc = prometheus.NewDesc(prefix+"icmp6_unreachable_icmp6_packet_input_histogram", "Number of icmp6 unreachable icmp6 packets input histogram", labelsICMP6Histogram, nil)
+	icmp6PacketTooBigInputHistoDesc = prometheus.NewDesc(prefix+"icmp6_packet_too_big_input_histogram", "Number of icmp6 packets too big input histogram", labelsICMP6Histogram, nil)
+	icmp6TimeExceededIcmp6PacketsInputHistoDesc = prometheus.NewDesc(prefix+"icmp6_time_exceeded_icmp6_packets_input_histogram", "Number of icmp6 time exceeded packets input histogram", labelsICMP6Histogram, nil)
+	icmp6Icmp6EchoInputHistoDesc = prometheus.NewDesc(prefix+"icmp6_icmp6_echo_input_histogram", "Number of icmp6 echos input histogram", labelsICMP6Histogram, nil)
+	icmp6Icmp6EchoReplyInputHistoDesc = prometheus.NewDesc(prefix+"icmp6_echo_reply_input_histogram", "Number of icmp6 echo replies input histogram", labelsICMP6Histogram, nil)
+	icmp6RouterSolicitationIcmp6PacketsInputHistoDesc = prometheus.NewDesc(prefix+"icmp6_router_solicitation_icmp6_packets_input_histogram", "Number of icmp6 router solicitation packets input histogram", labelsICMP6Histogram, nil)
+	icmp6NeighborSolicitationInputHistoDesc = prometheus.NewDesc(prefix+"icmp6_neighbor_solicitation_input_histogram", "Number of icmp6 neighbor solicitation packets input histogram", labelsICMP6Histogram, nil)
+	icmp6NeighborAdvertisementInputHistoDesc = prometheus.NewDesc(prefix+"icmp6_neighbor_advertisement_input_histogram", "Number of icmp6 neighbor advertisement packets input histogram", labelsICMP6Histogram, nil)
+	icmp6NoRouteDesc = prometheus.NewDesc(prefix+"icmp6_no_route", "Number ofr icmp6 without route", labelsICMP6, nil)
+	icmp6AdministrativelyProhibitedDesc = prometheus.NewDesc(prefix+"icmp6_administratively_prohibited", "Number of icmp6 adiminiostratively prohibited", labelsICMP6, nil)
+	icmp6BeyondScopeDesc = prometheus.NewDesc(prefix+"icmp6_beyond_scope", "Number of icmp6 beyond scope", labelsICMP6, nil)
+	icmp6AddressUnreachableDesc = prometheus.NewDesc(prefix+"icmp6_address_unreachable", "Number of icmp6 address unreachable", labelsICMP6, nil)
+	icmp6PortUnreachableDesc = prometheus.NewDesc(prefix+"icmp6_port_unreachable", "Number of icmp6 port unreachable", labelsICMP6, nil)
+	icmp6PacketTooBigDesc = prometheus.NewDesc(prefix+"icmp6_packet_too_big", "Number of ICMP6 packets that are too big", labelsICMP6, nil)
+	icmp6TimeExceedTransitDesc = prometheus.NewDesc(prefix+"icmp6_time_exceed_transit", "Number of icmp6 packets whose time exceed transit", labelsICMP6, nil)
+	icmp6TimeExceedReassemblyDesc = prometheus.NewDesc(prefix+"icmp6_time_exceed_reassembly", "Number of icmp6 packets whose time exceed reassembly", labelsICMP6, nil)
+	icmp6ErroneousHeaderFieldDesc = prometheus.NewDesc(prefix+"icmp6_errors_on_header_file", "Number of icmp6 with errors on header file", labelsICMP6, nil)
+	icmp6UnrecognizedNextHeaderDesc = prometheus.NewDesc(prefix+"icmp6_unrecognized_next_header", "Number of icmp6 with unrecognized next header", labelsICMP6, nil)
+	icmp6UnrecognizedOptionDesc = prometheus.NewDesc(prefix+"icmp6_unrecognized_option", "Number of icmp6 with unrecognized option", labelsICMP6, nil)
+	icmp6RedirectDesc = prometheus.NewDesc(prefix+"icmp6_redirect", "Number of icmp6 redirect", labelsICMP6, nil)
+	icmp6UnknownDesc = prometheus.NewDesc(prefix+"icmp6_unknown", "Number of icmp6 unknown", labelsICMP6, nil)
+	icmp6Icmp6MessageResponsesGeneratedDesc = prometheus.NewDesc(prefix+"icmp6_message_responses_generated", "Number of icmp6 message responses generated", labelsICMP6, nil)
+	icmp6MessagesWithTooManyNdOptionsDesc = prometheus.NewDesc(prefix+"icmp6_message_with_to_many_nd_options", "Number of icmp6 messages with too many nd options", labelsICMP6, nil)
+	icmp6NdSystemMaxDesc = prometheus.NewDesc(prefix+"icmp6_nd_system_max", "Number of icmp6 nd system max", labelsICMP6, nil)
+	icmp6NdPublicMaxDesc = prometheus.NewDesc(prefix+"icmp6_nd_public_max", "Number of icmp6 nd public max", labelsICMP6, nil)
+	icmp6NdIriMaxDesc = prometheus.NewDesc(prefix+"icmp6_nd_iri_max", "Number of icmp6 nd iri max", labelsICMP6, nil)
+	icmp6NdMgtMaxDesc = prometheus.NewDesc(prefix+"icmp6_nd_mgt_max", "Number of icmp6 nd mgt max", labelsICMP6, nil)
+	icmp6NdPublicCntDesc = prometheus.NewDesc(prefix+"icmp6_nd_public_cnt", "Number of icmp6 nd public cnt", labelsICMP6, nil)
+	icmp6NdIriCntDesc = prometheus.NewDesc(prefix+"icmp6_nd_iri_cnt", "Number of icmp6 nd iri cnt", labelsICMP6, nil)
+	icmp6NdMgtCntDesc = prometheus.NewDesc(prefix+"icmp6_nd_mgt_cnt", "Number of icmp6 nt mgt cnt", labelsICMP6, nil)
+	icmp6NdSystemDropDesc = prometheus.NewDesc(prefix+"icmp6_nd_system_drop", "Number of icmp6 nd system drop", labelsICMP6, nil)
+	icmp6NdPublicDropDesc = prometheus.NewDesc(prefix+"icmp6_nd_public_drop", "Number of icmp6 nd public drop", labelsICMP6, nil)
+	icmp6NdIriDropDesc = prometheus.NewDesc(prefix+"icmp6_nd_iri_drop", "Number of icmp6 nd iri drops", labelsICMP6, nil)
+	icmp6NdMgtDropDesc = prometheus.NewDesc(prefix+"icmp6_nd_mgt_drop", "Number of icmp6 nd mgt drop", labelsICMP6, nil)
+	icmp6Nd6NdpProxyRequestsDesc = prometheus.NewDesc(prefix+"icmp6_ndp_proxy_requests", "Number of icmp6 ndp proxy requests", labelsICMP6, nil)
+	icmp6Nd6DadProxyRequestsDesc = prometheus.NewDesc(prefix+"icmp6_nd_dad_proxy_requests", "Number of icmp6 nd dad proxy requests", labelsICMP6, nil)
+	icmp6Nd6NdpProxyResponsesDesc = prometheus.NewDesc(prefix+"icmp6_nd6_ndp_proxy_responses", "Number of icmp6 ndp proxy responses", labelsICMP6, nil)
+	icmp6Nd6DadProxyConflictsDesc = prometheus.NewDesc(prefix+"icmp6_nd6_dad_proxy_conflicts", "Number of icmp6 nd6 dad proxy conflicts", labelsICMP6, nil)
+	icmp6Nd6DupProxyResponsesDesc = prometheus.NewDesc(prefix+"icmp6_nd6_dup_proxy_response", "Number of icmp6 nd6 dup proxy responses", labelsICMP6, nil)
+	icmp6Nd6NdpProxyResolveCntDesc = prometheus.NewDesc(prefix+"icmp6_nd6_ndp_proxy_resolve_cnt", "Number of icmp6 nd6 ndp proxy resolve cnt", labelsICMP6, nil)
+	icmp6Nd6DadProxyResolveCntDesc = prometheus.NewDesc(prefix+"icmp6_nd6_dad_proxy_resolve", "Number of icmp nd6 dad proxy resolve", labelsICMP6, nil)
+	icmp6Nd6DadProxyEqmacDropDesc = prometheus.NewDesc(prefix+"icmp6_nd6_dad_proxy_eqmac_drop", "Number of icmp6 nd6 dad proxy eqmac drop", labelsICMP6, nil)
+	icmp6Nd6DadProxyNomacDropDesc = prometheus.NewDesc(prefix+"icmp6_nd6_dad_proxy_nomac_drop", "Number of icmp6 nd6 dad proxy nomac drop", labelsICMP6, nil)
+	icmp6Nd6NdpProxyUnrRequestsDesc = prometheus.NewDesc(prefix+"icmp6_nd6_ndp_proxy_unr_requests", "Number of icmp6 nd6 ndp proxy unr requests", labelsICMP6, nil)
+	icmp6Nd6DadProxyUnrRequestsDesc = prometheus.NewDesc(prefix+"icmp6_nd6_dad_proxy_unr_requests", "Number of icmp6 nd6 dad proxy unr requests", labelsICMP6, nil)
+	icmp6Nd6NdpProxyUnrResponsesDesc = prometheus.NewDesc(prefix+"icmp6_nd6_ndp_proxy_unr_responses", "Number of icmp6 nd6 ndp proxy unr responses", labelsICMP6, nil)
+	icmp6Nd6DadProxyUnrConflictsDesc = prometheus.NewDesc(prefix+"icmp6_nd6_dad_proxy_unr_conflicts", "Number of icmp6 nd6 dad proxy unr conflicts", labelsICMP6, nil)
+	icmp6Nd6DadProxyUnrResponsesDesc = prometheus.NewDesc(prefix+"icmp6_nd6_dad_proxy_unr_responses", "Number of icmp6 nd6 dad proxy unr responses", labelsICMP6, nil)
+	icmp6Nd6NdpProxyUnrResolveCntDesc = prometheus.NewDesc(prefix+"icmp6_nd6_ndp_proxy_unr_resolve_cnt", "Number of icmp6 nd6 ndp proxy unr resolve cnt", labelsICMP6, nil)
+	icmp6Nd6DadProxyUnrResolveCntDesc = prometheus.NewDesc(prefix+"icmp6_nd6_dad_proxy_unr_resolve_cnt", "Number of icmp6 nd6 dad proxy unr resolve cnt", labelsICMP6, nil)
+	icmp6Nd6DadProxyUnrEqportDropDesc = prometheus.NewDesc(prefix+"icmp6_nd6_dad_proxy_unr_eqport_drop", "Number of icmp6 nd6 dad proxy unr eqport drop", labelsICMP6, nil)
+	icmp6Nd6DadProxyUnrNomacDropDesc = prometheus.NewDesc(prefix+"icmp6_nd6_dad_proxy_unr_nomac_droop", "Number of icmp6 nd6 dad proxy unr nomac drop", labelsICMP6, nil)
+	icmp6Nd6RequestsDroppedOnEntryDesc = prometheus.NewDesc(prefix+"icmp6_nd6_requests_dropped_on_entry", "Number of icmp6 nd6 requests dropped on entry", labelsICMP6, nil)
+	icmp6Nd6RequestsDroppedDuringRetryDesc = prometheus.NewDesc(prefix+"icmp6_nd6_requests_dropped_during_retry", "Number of icmp6 nd6 requests dropped during retry", labelsICMP6, nil)
 }
 
 type systemstatisticsCollector struct{}
@@ -917,6 +1053,72 @@ func (c *systemstatisticsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- icmpEchoDropsWithBroadcastOrMulticastDestinatonAddressDesc
 	ch <- icmpTimestampDropsWithBroadcastOrMulticastDestinationAddressDesc
 	ch <- icmpMessageResponsesGeneratedDesc
+	ch <- icmp6CallsToIcmp6ErrorDesc
+	ch <- icmp6ErrorsNotGeneratedBecauseOldMessageWasIcmpErrorDesc
+	ch <- icmp6ErrorsNotGeneratedBecauseRateLimitationDesc
+	ch <- icmp6UnreachableIcmp6PacketsOutputHistoDesc
+	ch <- icmp6Icmp6EchoOutputHistoDesc
+	ch <- icmp6Icmp6EchoReplyOutputHistoDesc
+	ch <- icmp6NeighborSolicitationOutputHistoDesc
+	ch <- icmp6NeighborAdvertisementOutputHistoDesc
+	ch <- icmp6Icmp6MessagesWithBadCodeFieldsDesc
+	ch <- icmp6MessagesLessThanMinimumLengthDesc
+	ch <- icmp6BadChecksumsDesc
+	ch <- icmp6Icmp6MessagesWithBadLengthDesc
+	ch <- icmp6UnreachableIcmp6PacketInputHistosDesc
+	ch <- icmp6PacketTooBigInputHistoDesc
+	ch <- icmp6TimeExceededIcmp6PacketsInputHistoDesc
+	ch <- icmp6Icmp6EchoInputHistoDesc
+	ch <- icmp6Icmp6EchoReplyInputHistoDesc
+	ch <- icmp6RouterSolicitationIcmp6PacketsInputHistoDesc
+	ch <- icmp6NeighborSolicitationInputHistoDesc
+	ch <- icmp6NeighborAdvertisementInputHistoDesc
+	ch <- icmp6NoRouteDesc
+	ch <- icmp6AdministrativelyProhibitedDesc
+	ch <- icmp6BeyondScopeDesc
+	ch <- icmp6AddressUnreachableDesc
+	ch <- icmp6PortUnreachableDesc
+	ch <- icmp6PacketTooBigDesc
+	ch <- icmp6TimeExceedTransitDesc
+	ch <- icmp6TimeExceedReassemblyDesc
+	ch <- icmp6ErroneousHeaderFieldDesc
+	ch <- icmp6UnrecognizedNextHeaderDesc
+	ch <- icmp6UnrecognizedOptionDesc
+	ch <- icmp6RedirectDesc
+	ch <- icmp6UnknownDesc
+	ch <- icmp6Icmp6MessageResponsesGeneratedDesc
+	ch <- icmp6MessagesWithTooManyNdOptionsDesc
+	ch <- icmp6NdSystemMaxDesc
+	ch <- icmp6NdPublicMaxDesc
+	ch <- icmp6NdIriMaxDesc
+	ch <- icmp6NdMgtMaxDesc
+	ch <- icmp6NdPublicCntDesc
+	ch <- icmp6NdIriCntDesc
+	ch <- icmp6NdMgtCntDesc
+	ch <- icmp6NdSystemDropDesc
+	ch <- icmp6NdPublicDropDesc
+	ch <- icmp6NdIriDropDesc
+	ch <- icmp6NdMgtDropDesc
+	ch <- icmp6Nd6NdpProxyRequestsDesc
+	ch <- icmp6Nd6DadProxyRequestsDesc
+	ch <- icmp6Nd6NdpProxyResponsesDesc
+	ch <- icmp6Nd6DadProxyConflictsDesc
+	ch <- icmp6Nd6DupProxyResponsesDesc
+	ch <- icmp6Nd6NdpProxyResolveCntDesc
+	ch <- icmp6Nd6DadProxyResolveCntDesc
+	ch <- icmp6Nd6DadProxyEqmacDropDesc
+	ch <- icmp6Nd6DadProxyNomacDropDesc
+	ch <- icmp6Nd6NdpProxyUnrRequestsDesc
+	ch <- icmp6Nd6DadProxyUnrRequestsDesc
+	ch <- icmp6Nd6NdpProxyUnrResponsesDesc
+	ch <- icmp6Nd6DadProxyUnrConflictsDesc
+	ch <- icmp6Nd6DadProxyUnrResponsesDesc
+	ch <- icmp6Nd6NdpProxyUnrResolveCntDesc
+	ch <- icmp6Nd6DadProxyUnrResolveCntDesc
+	ch <- icmp6Nd6DadProxyUnrEqportDropDesc
+	ch <- icmp6Nd6DadProxyUnrNomacDropDesc
+	ch <- icmp6Nd6RequestsDroppedOnEntryDesc
+	ch <- icmp6Nd6RequestsDroppedDuringRetryDesc
 }
 
 func (c *systemstatisticsCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
@@ -951,6 +1153,11 @@ func (c *systemstatisticsCollector) Collect(client collector.Client, ch chan<- p
 		return err
 	}
 	c.collectSystemStatisticsICMP(ch, labelValues, s)
+	err = client.RunCommandAndParse("show system statistics icmp6", &s)
+	if err != nil {
+		return err
+	}
+	c.collectSystemStatisticsICMP6(ch, labelValues, s)
 	return nil
 }
 
@@ -1271,4 +1478,77 @@ func (c *systemstatisticsCollector) collectSystemStatisticsICMP(ch chan<- promet
 	ch <- prometheus.MustNewConstMetric(icmpEchoDropsWithBroadcastOrMulticastDestinatonAddressDesc, prometheus.CounterValue, s.Statistics.Icmp.EchoDropsWithBroadcastOrMulticastDestinatonAddress, labels...)
 	ch <- prometheus.MustNewConstMetric(icmpTimestampDropsWithBroadcastOrMulticastDestinationAddressDesc, prometheus.CounterValue, s.Statistics.Icmp.TimestampDropsWithBroadcastOrMulticastDestinationAddress, labels...)
 	ch <- prometheus.MustNewConstMetric(icmpMessageResponsesGeneratedDesc, prometheus.CounterValue, s.Statistics.Icmp.MessageResponsesGenerated, labels...)
+}
+
+func (c *systemstatisticsCollector) collectSystemStatisticsICMP6(ch chan<- prometheus.Metric, labelValues []string, s SystemStatistics) {
+	labels := append(labelValues, "ICMP6")
+	ch <- prometheus.MustNewConstMetric(icmp6CallsToIcmp6ErrorDesc, prometheus.CounterValue, s.Statistics.Icmp6.CallsToIcmp6Error, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6ErrorsNotGeneratedBecauseOldMessageWasIcmpErrorDesc, prometheus.CounterValue, s.Statistics.Icmp6.ErrorsNotGeneratedBecauseOldMessageWasIcmpError, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6ErrorsNotGeneratedBecauseRateLimitationDesc, prometheus.CounterValue, s.Statistics.Icmp6.ErrorsNotGeneratedBecauseRateLimitation, labels...)
+	labels = append(labels, "Output Histogram")
+	ch <- prometheus.MustNewConstMetric(icmp6UnreachableIcmp6PacketsOutputHistoDesc, prometheus.CounterValue, s.Statistics.Icmp6.OutputHistogram.UnreachableIcmp6Packets, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Icmp6EchoOutputHistoDesc, prometheus.CounterValue, s.Statistics.Icmp6.OutputHistogram.Icmp6Echo, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Icmp6EchoReplyOutputHistoDesc, prometheus.CounterValue, s.Statistics.Icmp6.OutputHistogram.Icmp6EchoReply, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NeighborSolicitationOutputHistoDesc, prometheus.CounterValue, s.Statistics.Icmp6.OutputHistogram.NeighborSolicitation, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NeighborAdvertisementOutputHistoDesc, prometheus.CounterValue, s.Statistics.Icmp6.OutputHistogram.NeighborAdvertisement, labels...)
+	labels = labels[:len(labels)-1]
+	ch <- prometheus.MustNewConstMetric(icmp6Icmp6MessagesWithBadCodeFieldsDesc, prometheus.CounterValue, s.Statistics.Icmp6.Icmp6MessagesWithBadCodeFields, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6MessagesLessThanMinimumLengthDesc, prometheus.CounterValue, s.Statistics.Icmp6.MessagesLessThanMinimumLength, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6BadChecksumsDesc, prometheus.CounterValue, s.Statistics.Icmp6.BadChecksums, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Icmp6MessagesWithBadLengthDesc, prometheus.CounterValue, s.Statistics.Icmp6.Icmp6MessagesWithBadLength, labels...)
+	labels = append(labels, "Input Histogram")
+	ch <- prometheus.MustNewConstMetric(icmp6UnreachableIcmp6PacketInputHistosDesc, prometheus.CounterValue, s.Statistics.Icmp6.InputHistogram.UnreachableIcmp6Packets, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6PacketTooBigInputHistoDesc, prometheus.CounterValue, s.Statistics.Icmp6.InputHistogram.PacketTooBig, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6TimeExceededIcmp6PacketsInputHistoDesc, prometheus.CounterValue, s.Statistics.Icmp6.InputHistogram.TimeExceededIcmp6Packets, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Icmp6EchoInputHistoDesc, prometheus.CounterValue, s.Statistics.Icmp6.InputHistogram.Icmp6EchoReply, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Icmp6EchoReplyInputHistoDesc, prometheus.CounterValue, s.Statistics.Icmp6.InputHistogram.Icmp6EchoReply, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6RouterSolicitationIcmp6PacketsInputHistoDesc, prometheus.CounterValue, s.Statistics.Icmp6.InputHistogram.RouterSolicitationIcmp6Packets, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NeighborSolicitationInputHistoDesc, prometheus.CounterValue, s.Statistics.Icmp6.InputHistogram.NeighborSolicitation, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NeighborAdvertisementInputHistoDesc, prometheus.CounterValue, s.Statistics.Icmp6.InputHistogram.NeighborAdvertisement, labels...)
+	labels = labels[:len(labels)-1]
+	ch <- prometheus.MustNewConstMetric(icmp6NoRouteDesc, prometheus.CounterValue, s.Statistics.Icmp6.NoRoute, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6AdministrativelyProhibitedDesc, prometheus.CounterValue, s.Statistics.Icmp6.AdministrativelyProhibited, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6BeyondScopeDesc, prometheus.CounterValue, s.Statistics.Icmp6.BeyondScope, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6AddressUnreachableDesc, prometheus.CounterValue, s.Statistics.Icmp6.AddressUnreachable, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6PortUnreachableDesc, prometheus.CounterValue, s.Statistics.Icmp6.PortUnreachable, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6PacketTooBigDesc, prometheus.CounterValue, s.Statistics.Icmp6.PacketTooBig, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6TimeExceedTransitDesc, prometheus.CounterValue, s.Statistics.Icmp6.TimeExceedTransit, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6TimeExceedReassemblyDesc, prometheus.CounterValue, s.Statistics.Icmp6.TimeExceedReassembly, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6ErroneousHeaderFieldDesc, prometheus.CounterValue, s.Statistics.Icmp6.ErroneousHeaderField, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6UnrecognizedNextHeaderDesc, prometheus.CounterValue, s.Statistics.Icmp6.UnrecognizedNextHeader, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6UnrecognizedOptionDesc, prometheus.CounterValue, s.Statistics.Icmp6.UnrecognizedOption, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6RedirectDesc, prometheus.CounterValue, s.Statistics.Icmp6.Redirect, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6UnknownDesc, prometheus.CounterValue, s.Statistics.Icmp6.Unknown, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Icmp6MessageResponsesGeneratedDesc, prometheus.CounterValue, s.Statistics.Icmp6.Icmp6MessageResponsesGenerated, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6MessagesWithTooManyNdOptionsDesc, prometheus.CounterValue, s.Statistics.Icmp6.MessagesWithTooManyNdOptions, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NdSystemMaxDesc, prometheus.CounterValue, s.Statistics.Icmp6.NdSystemMax, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NdPublicMaxDesc, prometheus.CounterValue, s.Statistics.Icmp6.NdPublicMax, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NdIriMaxDesc, prometheus.CounterValue, s.Statistics.Icmp6.NdIriMax, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NdMgtMaxDesc, prometheus.CounterValue, s.Statistics.Icmp6.NdMgtMax, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NdPublicCntDesc, prometheus.CounterValue, s.Statistics.Icmp6.NdPublicCnt, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NdIriCntDesc, prometheus.CounterValue, s.Statistics.Icmp6.NdIriCnt, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NdMgtCntDesc, prometheus.CounterValue, s.Statistics.Icmp6.NdMgtCnt, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NdSystemDropDesc, prometheus.CounterValue, s.Statistics.Icmp6.NdSystemDrop, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NdPublicDropDesc, prometheus.CounterValue, s.Statistics.Icmp6.NdPublicDrop, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NdIriDropDesc, prometheus.CounterValue, s.Statistics.Icmp6.NdIriDrop, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6NdMgtDropDesc, prometheus.CounterValue, s.Statistics.Icmp6.NdMgtDrop, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6NdpProxyRequestsDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6NdpProxyRequests, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6DadProxyRequestsDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6DadProxyRequests, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6NdpProxyResponsesDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6NdpProxyResponses, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6DadProxyConflictsDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6DadProxyConflicts, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6DupProxyResponsesDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6DupProxyResponses, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6NdpProxyResolveCntDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6NdpProxyResolveCnt, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6DadProxyResolveCntDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6DadProxyResolveCnt, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6DadProxyEqmacDropDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6DadProxyEqmacDrop, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6DadProxyNomacDropDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6DadProxyNomacDrop, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6NdpProxyUnrRequestsDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6NdpProxyUnrRequests, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6DadProxyUnrRequestsDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6DadProxyUnrRequests, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6NdpProxyUnrResponsesDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6NdpProxyUnrResponses, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6DadProxyUnrConflictsDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6DadProxyUnrConflicts, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6DadProxyUnrResponsesDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6DadProxyUnrResponses, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6NdpProxyUnrResolveCntDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6NdpProxyUnrResolveCnt, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6DadProxyUnrResolveCntDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6DadProxyUnrResolveCnt, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6DadProxyUnrNomacDropDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6DadProxyUnrNomacDrop, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6RequestsDroppedOnEntryDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6RequestsDroppedOnEntry, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6Nd6RequestsDroppedDuringRetryDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6RequestsDroppedDuringRetry, labels...)
 }

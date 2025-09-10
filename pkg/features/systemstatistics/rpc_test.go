@@ -514,24 +514,24 @@ func TestStatisticsICMPUnmarshaling(t *testing.T) {
 								AnEndpointChangedItsCookieSecret: 6010,
 							},
 							{
-							IcmpEchoReply: 6011,
-							DestinationUnreachable: 6012,
-							IcmpEcho: 6013,
-							TimeStampReply: 6014,
-							TimeExceeded: 6015,
-							TimeStamp: 6016,
-							AddressMaskRequest: 6017,
-							AnEndpointChangedItsCookieSecret: 6018,
+								IcmpEchoReply:                    6011,
+								DestinationUnreachable:           6012,
+								IcmpEcho:                         6013,
+								TimeStampReply:                   6014,
+								TimeExceeded:                     6015,
+								TimeStamp:                        6016,
+								AddressMaskRequest:               6017,
+								AnEndpointChangedItsCookieSecret: 6018,
+							},
 						},
-					},
-						MessagesWithBadCodeFields: 6019,
-						MessagesLessThanTheMinimumLength: 6020,
-						MessagesWithBadChecksum:    6021,
-						MessagesWithBadSourceAddress: 6022,
-						MessagesWithBadLength: 6023,
-						EchoDropsWithBroadcastOrMulticastDestinatonAddress: 6024,
+						MessagesWithBadCodeFields:                                6019,
+						MessagesLessThanTheMinimumLength:                         6020,
+						MessagesWithBadChecksum:                                  6021,
+						MessagesWithBadSourceAddress:                             6022,
+						MessagesWithBadLength:                                    6023,
+						EchoDropsWithBroadcastOrMulticastDestinatonAddress:       6024,
 						TimestampDropsWithBroadcastOrMulticastDestinationAddress: 6025,
-						MessageResponsesGenerated: 6026,
+						MessageResponsesGenerated:                                6026,
 					},
 				},
 			},
@@ -555,6 +555,120 @@ func TestStatisticsICMPUnmarshaling(t *testing.T) {
 			}
 			result.Statistics.Icmp.Text = ""
 			assert.Equal(t, tc.expect.Statistics.Icmp, result.Statistics.Icmp, tc.name)
+			assert.NoError(t, err, "unmarshal should not return error")
+		})
+	}
+}
+
+func TestStatisticsICMP6Unmarshaling(t *testing.T) {
+	type testCase struct {
+		name    string
+		xmlFile string
+		expect  SystemStatistics
+	}
+	tests := []testCase{
+		{
+			name:    "complete_icmp6_statistics",
+			xmlFile: "testsFiles/ICMP6/ICMP6TestDataCase1.xml",
+			expect: SystemStatistics{
+				Statistics: Statistics{
+					Icmp6: ICMP6{
+						CallsToIcmp6Error: 7000,
+						ErrorsNotGeneratedBecauseOldMessageWasIcmpError: 7001,
+						ErrorsNotGeneratedBecauseRateLimitation:         7002,
+						OutputHistogram: ICMP6OutputHistogram{
+							UnreachableIcmp6Packets: 7003,
+							Icmp6Echo:               7004,
+							Icmp6EchoReply:          7005,
+							NeighborSolicitation:    7006,
+							NeighborAdvertisement:   7007,
+						},
+						Icmp6MessagesWithBadCodeFields: 7008,
+						MessagesLessThanMinimumLength:  7009,
+						BadChecksums:                   7010,
+						Icmp6MessagesWithBadLength:     7011,
+						InputHistogram: ICMP6InputHistogram{
+							UnreachableIcmp6Packets:        7012,
+							PacketTooBig:                   7013,
+							TimeExceededIcmp6Packets:       7014,
+							Icmp6Echo:                      7015,
+							Icmp6EchoReply:                 7016,
+							RouterSolicitationIcmp6Packets: 7017,
+							NeighborSolicitation:           7018,
+							NeighborAdvertisement:          7019,
+						},
+						NoRoute:                               7020,
+						AdministrativelyProhibited:            7021,
+						BeyondScope:                           7022,
+						AddressUnreachable:                    7023,
+						PortUnreachable:                       7024,
+						PacketTooBig:                          7025,
+						TimeExceedTransit:                     7026,
+						TimeExceedReassembly:                  7027,
+						ErroneousHeaderField:                  7028,
+						UnrecognizedNextHeader:                7029,
+						UnrecognizedOption:                    7030,
+						Redirect:                              7031,
+						Unknown:                               7032,
+						Icmp6MessageResponsesGenerated:        7033,
+						MessagesWithTooManyNdOptions:          7034,
+						NdSystemMax:                           7035,
+						NdPublicMax:                           7036,
+						NdIriMax:                              7037,
+						NdMgtMax:                              7038,
+						NdPublicCnt:                           7039,
+						NdIriCnt:                              7040,
+						NdMgtCnt:                              7041,
+						NdSystemDrop:                          7042,
+						NdPublicDrop:                          7043,
+						NdIriDrop:                             7044,
+						NdMgtDrop:                             7045,
+						Nd6NdpProxyRequests:                   7046,
+						Nd6DadProxyRequests:                   7047,
+						Nd6NdpProxyResponses:                  7048,
+						Nd6DadProxyConflicts:                  7049,
+						Nd6DupProxyResponses:                  7050,
+						Nd6NdpProxyResolveCnt:                 7051,
+						Nd6DadProxyResolveCnt:                 7052,
+						Nd6DadProxyEqmacDrop:                  7053,
+						Nd6DadProxyNomacDrop:                  7054,
+						Nd6NdpProxyUnrRequests:                7055,
+						Nd6DadProxyUnrRequests:                7056,
+						Nd6NdpProxyUnrResponses:               7057,
+						Nd6DadProxyUnrConflicts:               7058,
+						Nd6DadProxyUnrResponses:               7059,
+						Nd6NdpProxyUnrResolveCnt:              7060,
+						Nd6DadProxyUnrResolveCnt:              7061,
+						Nd6DadProxyUnrEqportDrop:              7062,
+						Nd6DadProxyUnrNomacDrop:               7063,
+						Nd6RequestsDroppedOnEntry:             7064,
+						Nd6RequestsDroppedDuringRetry:         7065,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			fc, err := os.ReadFile(tc.xmlFile)
+			if err != nil {
+				log.Fatal("failed to read xml file in ICMP6 testing due to: ", err)
+			}
+			var result SystemStatistics
+			err = xml.Unmarshal(fc, &result)
+			if err != nil {
+				log.Fatal("failed to unmarshal xml file in ICMP6 testing due to: ", err)
+			}
+			result.Statistics.Icmp6.Text = ""
+			result.Statistics.Icmp6.HistogramOfErrorMessagesToBeGenerated = ""
+			result.Statistics.Icmp6.InputHistogram.Text = ""
+			result.Statistics.Icmp6.OutputHistogram.Text = ""
+			result.Statistics.Icmp6.InputHistogram.HistogramType = ""
+			result.Statistics.Icmp6.OutputHistogram.HistogramType = ""
+			result.Statistics.Icmp6.InputHistogram.Style = ""
+			result.Statistics.Icmp6.OutputHistogram.Style = ""
+			assert.Equal(t, tc.expect.Statistics.Icmp6, result.Statistics.Icmp6, tc.name)
 			assert.NoError(t, err, "unmarshal should not return error")
 		})
 	}

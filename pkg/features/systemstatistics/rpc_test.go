@@ -385,3 +385,345 @@ func TestStatisticsTCPUnmarshaling(t *testing.T) {
 		})
 	}
 }
+
+func TestStatisticsARPUnmarshaling(t *testing.T) {
+	type testCase struct {
+		name    string
+		xmlFile string
+		expect  SystemStatistics
+	}
+
+	tests := []testCase{
+		{
+			name:    "complete_arp_statistics",
+			xmlFile: "testsFiles/ARP/ARPTestDataCase1.xml",
+			expect: SystemStatistics{
+				Statistics: Statistics{
+					Arp: ARP{
+						DatagramsReceived:                                        5000,
+						ArpRequestsReceived:                                      5001,
+						ArpRepliesReceived:                                       5002,
+						ResolutionRequestReceived:                                5003,
+						ResolutionRequestDropped:                                 5004,
+						UnrestrictedProxyRequests:                                5005,
+						RestrictedProxyRequests:                                  5006,
+						ReceivedProxyRequests:                                    5007,
+						ProxyRequestsNotProxied:                                  5008,
+						RestrictedProxyRequestsNotProxied:                        5009,
+						DatagramsWithBogusInterface:                              5010,
+						DatagramsWithIncorrectLength:                             5011,
+						DatagramsForNonIpProtocol:                                5012,
+						DatagramsWithUnsupportedOpcode:                           5013,
+						DatagramsWithBadProtocolAddressLength:                    5014,
+						DatagramsWithBadHardwareAddressLength:                    5015,
+						DatagramsWithMulticastSourceAddress:                      5016,
+						DatagramsWithMulticastTargetAddress:                      5017,
+						DatagramsWithMyOwnHardwareAddress:                        5018,
+						DatagramsForAnAddressNotOnTheInterface:                   5019,
+						DatagramsWithABroadcastSourceAddress:                     5020,
+						DatagramsWithSourceAddressDuplicateToMine:                5021,
+						DatagramsWhichWereNotForMe:                               5022,
+						PacketsDiscardedWaitingForResolution:                     5023,
+						PacketsSentAfterWaitingForResolution:                     5024,
+						ArpRequestsSent:                                          5025,
+						ArpRepliesSent:                                           5026,
+						RequestsForMemoryDenied:                                  5027,
+						RequestsDroppedOnEntry:                                   5028,
+						RequestsDroppedDuringRetry:                               5029,
+						RequestsDroppedDueToInterfaceDeletion:                    5030,
+						RequestsOnUnnumberedInterfaces:                           5031,
+						NewRequestsOnUnnumberedInterfaces:                        5032,
+						RepliesFromUnnumberedInterfaces:                          5033,
+						RequestsOnUnnumberedInterfaceWithNonSubnettedDonor:       5034,
+						RepliesFromUnnumberedInterfaceWithNonSubnettedDonor:      5035,
+						ArpPacketsRejectedAsFamilyIsConfiguredWithDenyArp:        5036,
+						ArpResponsePacketsAreRejectedOnMcAeIclInterface:          5037,
+						ArpRepliesAreRejectedAsSourceAndDestinationIsSame:        5038,
+						ArpProbeForProxyAddressReachableFromTheIncomingInterface: 5039,
+						ArpRequestDiscardedForVrrpSourceAddress:                  5040,
+						SelfArpRequestPacketReceivedOnIrbInterface:               5041,
+						ProxyArpRequestDiscardedAsSourceIpIsAProxyTarget:         5042,
+						ArpPacketsAreDroppedAsNexthopAllocationFailed:            5043,
+						ArpPacketsReceivedFromPeerVrrpRouterAndDiscarded:         5044,
+						ArpPacketsAreRejectedAsTargetIpArpResolveIsInProgress:    5045,
+						GratArpPacketsAreIgnoredAsMacAddressIsNotChanged:         5046,
+						ArpPacketsAreDroppedFromPeerVrrp:                         5047,
+						ArpPacketsAreDroppedAsDriverCallFailed:                   5048,
+						ArpPacketsAreDroppedAsSourceIsNotValidated:               5049,
+						ArpSystemMax:  5050,
+						ArpPublicMax:  5051,
+						ArpIriMax:     5052,
+						ArpMgtMax:     5053,
+						ArpPublicCnt:  5054,
+						ArpIriCnt:     5055,
+						ArpMgtCnt:     5056,
+						ArpSystemDrop: 5057,
+						ArpPublicDrop: 5058,
+						ArpIriDrop:    5059,
+						ArpMgtDrop:    5060,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			fc, err := os.ReadFile(tc.xmlFile)
+			if err != nil {
+				log.Fatal("failed to read xml file in ARP testing due to: ", err)
+			}
+			var result SystemStatistics
+			err = xml.Unmarshal(fc, &result)
+			if err != nil {
+				log.Fatal("failed to unmarshal xml file in ARP testing due to: ", err)
+			}
+
+			result.Statistics.Arp.Text = ""
+			assert.Equal(t, tc.expect.Statistics.Arp, result.Statistics.Arp, tc.name)
+			assert.NoError(t, err, "unmarshal should not return error")
+		})
+	}
+}
+
+func TestStatisticsICMPUnmarshaling(t *testing.T) {
+	type testCase struct {
+		name    string
+		xmlFile string
+		expect  SystemStatistics
+	}
+	tests := []testCase{
+		{
+			name:    "complete_icmp_statistics",
+			xmlFile: "testsFiles/ICMP/ICMPTestDataCase1.xml",
+			expect: SystemStatistics{
+				Statistics: Statistics{
+					Icmp: ICMP{
+						DropsDueToRateLimit:                        6000,
+						CallsToIcmpError:                           6001,
+						ErrorsNotGeneratedBecauseOldMessageWasIcmp: 6002,
+						Histogram: []ICMPHistogram{
+							{
+								IcmpEchoReply:                    6003,
+								DestinationUnreachable:           6004,
+								IcmpEcho:                         6005,
+								TimeStampReply:                   6006,
+								TimeExceeded:                     6007,
+								TimeStamp:                        6008,
+								AddressMaskRequest:               6009,
+								AnEndpointChangedItsCookieSecret: 6010,
+							},
+							{
+								IcmpEchoReply:                    6011,
+								DestinationUnreachable:           6012,
+								IcmpEcho:                         6013,
+								TimeStampReply:                   6014,
+								TimeExceeded:                     6015,
+								TimeStamp:                        6016,
+								AddressMaskRequest:               6017,
+								AnEndpointChangedItsCookieSecret: 6018,
+							},
+						},
+						MessagesWithBadCodeFields:                                6019,
+						MessagesLessThanTheMinimumLength:                         6020,
+						MessagesWithBadChecksum:                                  6021,
+						MessagesWithBadSourceAddress:                             6022,
+						MessagesWithBadLength:                                    6023,
+						EchoDropsWithBroadcastOrMulticastDestinatonAddress:       6024,
+						TimestampDropsWithBroadcastOrMulticastDestinationAddress: 6025,
+						MessageResponsesGenerated:                                6026,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			fc, err := os.ReadFile(tc.xmlFile)
+			if err != nil {
+				log.Fatal("failed to read xml file in ICMP testing due to: ", err)
+			}
+			var result SystemStatistics
+			err = xml.Unmarshal(fc, &result)
+			if err != nil {
+				log.Fatal("failed to unmarshal xml file in ICMP testing due to: ", err)
+			}
+			for i, _ := range result.Statistics.Icmp.Histogram {
+				result.Statistics.Icmp.Histogram[i].Text = ""
+				result.Statistics.Icmp.Histogram[i].TypeOfHistogram = ""
+			}
+			result.Statistics.Icmp.Text = ""
+			assert.Equal(t, tc.expect.Statistics.Icmp, result.Statistics.Icmp, tc.name)
+			assert.NoError(t, err, "unmarshal should not return error")
+		})
+	}
+}
+
+func TestStatisticsICMP6Unmarshaling(t *testing.T) {
+	type testCase struct {
+		name    string
+		xmlFile string
+		expect  SystemStatistics
+	}
+	tests := []testCase{
+		{
+			name:    "complete_icmp6_statistics",
+			xmlFile: "testsFiles/ICMP6/ICMP6TestDataCase1.xml",
+			expect: SystemStatistics{
+				Statistics: Statistics{
+					Icmp6: ICMP6{
+						CallsToIcmp6Error: 7000,
+						ErrorsNotGeneratedBecauseOldMessageWasIcmpError: 7001,
+						ErrorsNotGeneratedBecauseRateLimitation:         7002,
+						OutputHistogram: ICMP6OutputHistogram{
+							UnreachableIcmp6Packets: 7003,
+							Icmp6Echo:               7004,
+							Icmp6EchoReply:          7005,
+							NeighborSolicitation:    7006,
+							NeighborAdvertisement:   7007,
+						},
+						Icmp6MessagesWithBadCodeFields: 7008,
+						MessagesLessThanMinimumLength:  7009,
+						BadChecksums:                   7010,
+						Icmp6MessagesWithBadLength:     7011,
+						InputHistogram: ICMP6InputHistogram{
+							UnreachableIcmp6Packets:        7012,
+							PacketTooBig:                   7013,
+							TimeExceededIcmp6Packets:       7014,
+							Icmp6Echo:                      7015,
+							Icmp6EchoReply:                 7016,
+							RouterSolicitationIcmp6Packets: 7017,
+							NeighborSolicitation:           7018,
+							NeighborAdvertisement:          7019,
+						},
+						NoRoute:                        7020,
+						AdministrativelyProhibited:     7021,
+						BeyondScope:                    7022,
+						AddressUnreachable:             7023,
+						PortUnreachable:                7024,
+						PacketTooBig:                   7025,
+						TimeExceedTransit:              7026,
+						TimeExceedReassembly:           7027,
+						ErroneousHeaderField:           7028,
+						UnrecognizedNextHeader:         7029,
+						UnrecognizedOption:             7030,
+						Redirect:                       7031,
+						Unknown:                        7032,
+						Icmp6MessageResponsesGenerated: 7033,
+						MessagesWithTooManyNdOptions:   7034,
+						NdSystemMax:                    7035,
+						NdPublicMax:                    7036,
+						NdIriMax:                       7037,
+						NdMgtMax:                       7038,
+						NdPublicCnt:                    7039,
+						NdIriCnt:                       7040,
+						NdMgtCnt:                       7041,
+						NdSystemDrop:                   7042,
+						NdPublicDrop:                   7043,
+						NdIriDrop:                      7044,
+						NdMgtDrop:                      7045,
+						Nd6NdpProxyRequests:            7046,
+						Nd6DadProxyRequests:            7047,
+						Nd6NdpProxyResponses:           7048,
+						Nd6DadProxyConflicts:           7049,
+						Nd6DupProxyResponses:           7050,
+						Nd6NdpProxyResolveCnt:          7051,
+						Nd6DadProxyResolveCnt:          7052,
+						Nd6DadProxyEqmacDrop:           7053,
+						Nd6DadProxyNomacDrop:           7054,
+						Nd6NdpProxyUnrRequests:         7055,
+						Nd6DadProxyUnrRequests:         7056,
+						Nd6NdpProxyUnrResponses:        7057,
+						Nd6DadProxyUnrConflicts:        7058,
+						Nd6DadProxyUnrResponses:        7059,
+						Nd6NdpProxyUnrResolveCnt:       7060,
+						Nd6DadProxyUnrResolveCnt:       7061,
+						Nd6DadProxyUnrEqportDrop:       7062,
+						Nd6DadProxyUnrNomacDrop:        7063,
+						Nd6RequestsDroppedOnEntry:      7064,
+						Nd6RequestsDroppedDuringRetry:  7065,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			fc, err := os.ReadFile(tc.xmlFile)
+			if err != nil {
+				log.Fatal("failed to read xml file in ICMP6 testing due to: ", err)
+			}
+			var result SystemStatistics
+			err = xml.Unmarshal(fc, &result)
+			if err != nil {
+				log.Fatal("failed to unmarshal xml file in ICMP6 testing due to: ", err)
+			}
+			result.Statistics.Icmp6.Text = ""
+			result.Statistics.Icmp6.HistogramOfErrorMessagesToBeGenerated = ""
+			result.Statistics.Icmp6.InputHistogram.Text = ""
+			result.Statistics.Icmp6.OutputHistogram.Text = ""
+			result.Statistics.Icmp6.InputHistogram.HistogramType = ""
+			result.Statistics.Icmp6.OutputHistogram.HistogramType = ""
+			result.Statistics.Icmp6.InputHistogram.Style = ""
+			result.Statistics.Icmp6.OutputHistogram.Style = ""
+			assert.Equal(t, tc.expect.Statistics.Icmp6, result.Statistics.Icmp6, tc.name)
+			assert.NoError(t, err, "unmarshal should not return error")
+		})
+	}
+}
+
+func TestStatisticsMPLSUnmarshaling(t *testing.T) {
+	type testCase struct {
+		name    string
+		xmlFile string
+		expect  SystemStatistics
+	}
+	tests := []testCase{
+		{
+			name:    "complete_mpls_statistics",
+			xmlFile: "testsFiles/MPLS/MPLSTestDataCase1.xml",
+			expect: SystemStatistics{
+				Statistics: Statistics{
+					Mpls: MPLS{
+						TotalMplsPacketsReceived:                  8000,
+						PacketsForwarded:                          8001,
+						PacketsDropped:                            8002,
+						PacketsWithHeaderTooSmall:                 8003,
+						AfterTaggingPacketsCanNotFitLinkMtu:       8004,
+						PacketsWithIpv4ExplicitNullTag:            8005,
+						PacketsWithIpv4ExplicitNullChecksumErrors: 8006,
+						PacketsWithRouterAlertTag:                 8007,
+						LspPingPackets:                            8008,
+						PacketsWithTtlExpired:                     8009,
+						PacketsWithTagEncodingError:               8010,
+						PacketsDiscardedDueToNoRoute:              8011,
+						PacketsUsedFirstNexthopInEcmpUnilist:      8012,
+						PacketsDroppedDueToIflDown:                8013,
+						PacketsDroppedAtMplsSocketSend:            8014,
+						PacketsForwardedAtMplsSocketSend:          8015,
+						PacketsDroppedAtP2mpCnhOutput:             8016,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			fc, err := os.ReadFile(tc.xmlFile)
+			if err != nil {
+				log.Fatal("failed to read xml file in MPLS testing due to: ", err)
+			}
+			var result SystemStatistics
+			err = xml.Unmarshal(fc, &result)
+			if err != nil {
+				log.Fatal("failed to unmarshal xml file in MPLS testing due to: ", err)
+			}
+			result.Statistics.Mpls.Text = ""
+			assert.Equal(t, tc.expect.Statistics.Mpls, result.Statistics.Mpls, tc.name)
+			assert.NoError(t, err, "unmarshal should not return error")
+		})
+	}
+}

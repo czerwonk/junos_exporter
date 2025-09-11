@@ -597,52 +597,52 @@ func TestStatisticsICMP6Unmarshaling(t *testing.T) {
 							NeighborSolicitation:           7018,
 							NeighborAdvertisement:          7019,
 						},
-						NoRoute:                               7020,
-						AdministrativelyProhibited:            7021,
-						BeyondScope:                           7022,
-						AddressUnreachable:                    7023,
-						PortUnreachable:                       7024,
-						PacketTooBig:                          7025,
-						TimeExceedTransit:                     7026,
-						TimeExceedReassembly:                  7027,
-						ErroneousHeaderField:                  7028,
-						UnrecognizedNextHeader:                7029,
-						UnrecognizedOption:                    7030,
-						Redirect:                              7031,
-						Unknown:                               7032,
-						Icmp6MessageResponsesGenerated:        7033,
-						MessagesWithTooManyNdOptions:          7034,
-						NdSystemMax:                           7035,
-						NdPublicMax:                           7036,
-						NdIriMax:                              7037,
-						NdMgtMax:                              7038,
-						NdPublicCnt:                           7039,
-						NdIriCnt:                              7040,
-						NdMgtCnt:                              7041,
-						NdSystemDrop:                          7042,
-						NdPublicDrop:                          7043,
-						NdIriDrop:                             7044,
-						NdMgtDrop:                             7045,
-						Nd6NdpProxyRequests:                   7046,
-						Nd6DadProxyRequests:                   7047,
-						Nd6NdpProxyResponses:                  7048,
-						Nd6DadProxyConflicts:                  7049,
-						Nd6DupProxyResponses:                  7050,
-						Nd6NdpProxyResolveCnt:                 7051,
-						Nd6DadProxyResolveCnt:                 7052,
-						Nd6DadProxyEqmacDrop:                  7053,
-						Nd6DadProxyNomacDrop:                  7054,
-						Nd6NdpProxyUnrRequests:                7055,
-						Nd6DadProxyUnrRequests:                7056,
-						Nd6NdpProxyUnrResponses:               7057,
-						Nd6DadProxyUnrConflicts:               7058,
-						Nd6DadProxyUnrResponses:               7059,
-						Nd6NdpProxyUnrResolveCnt:              7060,
-						Nd6DadProxyUnrResolveCnt:              7061,
-						Nd6DadProxyUnrEqportDrop:              7062,
-						Nd6DadProxyUnrNomacDrop:               7063,
-						Nd6RequestsDroppedOnEntry:             7064,
-						Nd6RequestsDroppedDuringRetry:         7065,
+						NoRoute:                        7020,
+						AdministrativelyProhibited:     7021,
+						BeyondScope:                    7022,
+						AddressUnreachable:             7023,
+						PortUnreachable:                7024,
+						PacketTooBig:                   7025,
+						TimeExceedTransit:              7026,
+						TimeExceedReassembly:           7027,
+						ErroneousHeaderField:           7028,
+						UnrecognizedNextHeader:         7029,
+						UnrecognizedOption:             7030,
+						Redirect:                       7031,
+						Unknown:                        7032,
+						Icmp6MessageResponsesGenerated: 7033,
+						MessagesWithTooManyNdOptions:   7034,
+						NdSystemMax:                    7035,
+						NdPublicMax:                    7036,
+						NdIriMax:                       7037,
+						NdMgtMax:                       7038,
+						NdPublicCnt:                    7039,
+						NdIriCnt:                       7040,
+						NdMgtCnt:                       7041,
+						NdSystemDrop:                   7042,
+						NdPublicDrop:                   7043,
+						NdIriDrop:                      7044,
+						NdMgtDrop:                      7045,
+						Nd6NdpProxyRequests:            7046,
+						Nd6DadProxyRequests:            7047,
+						Nd6NdpProxyResponses:           7048,
+						Nd6DadProxyConflicts:           7049,
+						Nd6DupProxyResponses:           7050,
+						Nd6NdpProxyResolveCnt:          7051,
+						Nd6DadProxyResolveCnt:          7052,
+						Nd6DadProxyEqmacDrop:           7053,
+						Nd6DadProxyNomacDrop:           7054,
+						Nd6NdpProxyUnrRequests:         7055,
+						Nd6DadProxyUnrRequests:         7056,
+						Nd6NdpProxyUnrResponses:        7057,
+						Nd6DadProxyUnrConflicts:        7058,
+						Nd6DadProxyUnrResponses:        7059,
+						Nd6NdpProxyUnrResolveCnt:       7060,
+						Nd6DadProxyUnrResolveCnt:       7061,
+						Nd6DadProxyUnrEqportDrop:       7062,
+						Nd6DadProxyUnrNomacDrop:        7063,
+						Nd6RequestsDroppedOnEntry:      7064,
+						Nd6RequestsDroppedDuringRetry:  7065,
 					},
 				},
 			},
@@ -669,6 +669,60 @@ func TestStatisticsICMP6Unmarshaling(t *testing.T) {
 			result.Statistics.Icmp6.InputHistogram.Style = ""
 			result.Statistics.Icmp6.OutputHistogram.Style = ""
 			assert.Equal(t, tc.expect.Statistics.Icmp6, result.Statistics.Icmp6, tc.name)
+			assert.NoError(t, err, "unmarshal should not return error")
+		})
+	}
+}
+
+func TestStatisticsMPLSUnmarshaling(t *testing.T) {
+	type testCase struct {
+		name    string
+		xmlFile string
+		expect  SystemStatistics
+	}
+	tests := []testCase{
+		{
+			name:    "complete_mpls_statistics",
+			xmlFile: "testsFiles/MPLS/MPLSTestDataCase1.xml",
+			expect: SystemStatistics{
+				Statistics: Statistics{
+					Mpls: MPLS{
+						TotalMplsPacketsReceived:                  8000,
+						PacketsForwarded:                          8001,
+						PacketsDropped:                            8002,
+						PacketsWithHeaderTooSmall:                 8003,
+						AfterTaggingPacketsCanNotFitLinkMtu:       8004,
+						PacketsWithIpv4ExplicitNullTag:            8005,
+						PacketsWithIpv4ExplicitNullChecksumErrors: 8006,
+						PacketsWithRouterAlertTag:                 8007,
+						LspPingPackets:                            8008,
+						PacketsWithTtlExpired:                     8009,
+						PacketsWithTagEncodingError:               8010,
+						PacketsDiscardedDueToNoRoute:              8011,
+						PacketsUsedFirstNexthopInEcmpUnilist:      8012,
+						PacketsDroppedDueToIflDown:                8013,
+						PacketsDroppedAtMplsSocketSend:            8014,
+						PacketsForwardedAtMplsSocketSend:          8015,
+						PacketsDroppedAtP2mpCnhOutput:             8016,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			fc, err := os.ReadFile(tc.xmlFile)
+			if err != nil {
+				log.Fatal("failed to read xml file in MPLS testing due to: ", err)
+			}
+			var result SystemStatistics
+			err = xml.Unmarshal(fc, &result)
+			if err != nil {
+				log.Fatal("failed to unmarshal xml file in MPLS testing due to: ", err)
+			}
+			result.Statistics.Mpls.Text = ""
+			assert.Equal(t, tc.expect.Statistics.Mpls, result.Statistics.Mpls, tc.name)
 			assert.NoError(t, err, "unmarshal should not return error")
 		})
 	}

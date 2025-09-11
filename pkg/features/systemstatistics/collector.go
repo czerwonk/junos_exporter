@@ -106,122 +106,122 @@ var (
 	udpDatagramsDeliveredDesc                                *prometheus.Desc
 	udpDatagramsOutputDesc                                   *prometheus.Desc
 
-	tcpPacketsSent                                      *prometheus.Desc
-	tcpSentDataPackets                                  *prometheus.Desc
-	tcpDataPacketsBytes                                 *prometheus.Desc
-	tcpSentDataPacketsRetransmitted                     *prometheus.Desc
-	tcpRetransmittedBytes                               *prometheus.Desc
-	tcpSentDataUnnecessaryRetransmitted                 *prometheus.Desc
-	tcpSentResendsByMtuDiscovery                        *prometheus.Desc
-	tcpSentAckOnlyPackets                               *prometheus.Desc
-	tcpSentPacketsDelayed                               *prometheus.Desc
-	tcpSentUrgOnlyPackets                               *prometheus.Desc
-	tcpSentWindowProbePackets                           *prometheus.Desc
-	tcpSentWindowUpdatePackets                          *prometheus.Desc
-	tcpSentControlPackets                               *prometheus.Desc
-	tcpPacketsReceived                                  *prometheus.Desc
-	tcpReceivedAcks                                     *prometheus.Desc
-	tcpAcksBytes                                        *prometheus.Desc
-	tcpReceivedDuplicateAcks                            *prometheus.Desc
-	tcpReceivedAcksForUnsentData                        *prometheus.Desc
-	tcpPacketsReceivedInSequence                        *prometheus.Desc
-	tcpInSequenceBytes                                  *prometheus.Desc
-	tcpReceivedCompletelyDuplicatePacket                *prometheus.Desc
-	tcpDuplicateInBytes                                 *prometheus.Desc
-	tcpReceivedOldDuplicatePackets                      *prometheus.Desc
-	tcpReceivedPacketsWithSomeDupliacteData             *prometheus.Desc
-	tcpSomeDuplicateInBytes                             *prometheus.Desc
-	tcpReceivedOutOfOrderPackets                        *prometheus.Desc
-	tcpOutOfOrderInBytes                                *prometheus.Desc
-	tcpReceivedPacketsOfDataAfterWindow                 *prometheus.Desc
-	tcpBytes                                            *prometheus.Desc
-	tcpReceivedWindowProbes                             *prometheus.Desc
-	tcpReceivedWindowUpdatePackets                      *prometheus.Desc
-	tcpPacketsReceivedAfterClose                        *prometheus.Desc
-	tcpReceivedDiscardedForBadChecksum                  *prometheus.Desc
-	tcpReceivedDiscardedForBadHeaderOffset              *prometheus.Desc
-	tcpReceivedDiscardedBecausePacketTooShort           *prometheus.Desc
-	tcpConnectionRequests                               *prometheus.Desc
-	tcpConnectionAccepts                                *prometheus.Desc
-	tcpBadConnectionAttempts                            *prometheus.Desc
-	tcpListenQueueOverflows                             *prometheus.Desc
-	tcpBadRstWindow                                     *prometheus.Desc
-	tcpConnectionsEstablished                           *prometheus.Desc
-	tcpConnectionsClosed                                *prometheus.Desc
-	tcpDrops                                            *prometheus.Desc
-	tcpConnectionsUpdatedRttOnClose                     *prometheus.Desc
-	tcpConnectionsUpdatedVarianceOnClose                *prometheus.Desc
-	tcpConnectionsUpdatedSsthreshOnClose                *prometheus.Desc
-	tcpEmbryonicConnectionsDropped                      *prometheus.Desc
-	tcpSegmentsUpdatedRtt                               *prometheus.Desc
-	tcpAttempts                                         *prometheus.Desc
-	tcpRetransmitTimeouts                               *prometheus.Desc
-	tcpConnectionsDroppedByRetransmitTimeout            *prometheus.Desc
-	tcpPersistTimeouts                                  *prometheus.Desc
-	tcpConnectionsDroppedByPersistTimeout               *prometheus.Desc
-	tcpKeepaliveTimeouts                                *prometheus.Desc
-	tcpKeepaliveProbesSent                              *prometheus.Desc
-	tcpKeepaliveConnectionsDropped                      *prometheus.Desc
-	tcpAckHeaderPredictions                             *prometheus.Desc
-	tcpDataPacketHeaderPredictions                      *prometheus.Desc
-	tcpSyncacheEntriesAdded                             *prometheus.Desc
-	tcpRetransmitted                                    *prometheus.Desc
-	tcpDupsyn                                           *prometheus.Desc
-	tcpDropped                                          *prometheus.Desc
-	tcpCompleted                                        *prometheus.Desc
-	tcpBucketOverflow                                   *prometheus.Desc
-	tcpCacheOverflow                                    *prometheus.Desc
-	tcpReset                                            *prometheus.Desc
-	tcpStale                                            *prometheus.Desc
-	tcpAborted                                          *prometheus.Desc
-	tcpBadack                                           *prometheus.Desc
-	tcpUnreach                                          *prometheus.Desc
-	tcpZoneFailures                                     *prometheus.Desc
-	tcpCookiesSent                                      *prometheus.Desc
-	tcpCookiesReceived                                  *prometheus.Desc
-	tcpSackRecoveryEpisodes                             *prometheus.Desc
-	tcpSegmentRetransmits                               *prometheus.Desc
-	tcpByteRetransmits                                  *prometheus.Desc
-	tcpSackOptionsReceived                              *prometheus.Desc
-	tcpSackOptionsSent                                  *prometheus.Desc
-	tcpSackScoreboardOverflow                           *prometheus.Desc
-	tcpAcksSentInResponseButNotExactRsts                *prometheus.Desc
-	tcpAcksSentInResponseToSynsOnEstablishedConnections *prometheus.Desc
-	tcpRcvPacketsDroppedDueToBadAddress                 *prometheus.Desc
-	tcpOutOfSequenceSegmentDrops                        *prometheus.Desc
-	tcpRstPackets                                       *prometheus.Desc
-	tcpIcmpPacketsIgnored                               *prometheus.Desc
-	tcpSendPacketsDropped                               *prometheus.Desc
-	tcpRcvPacketsDropped                                *prometheus.Desc
-	tcpOutgoingSegmentsDropped                          *prometheus.Desc
-	tcpReceivedSynfinDropped                            *prometheus.Desc
-	tcpReceivedIpsecDropped                             *prometheus.Desc
-	tcpReceivedMacDropped                               *prometheus.Desc
-	tcpReceivedMinttlExceeded                           *prometheus.Desc
-	tcpListenstateBadflagsDropped                       *prometheus.Desc
-	tcpFinwaitstateBadflagsDropped                      *prometheus.Desc
-	tcpReceivedDosAttack                                *prometheus.Desc
-	tcpReceivedBadSynack                                *prometheus.Desc
-	tcpSyncacheZoneFull                                 *prometheus.Desc
-	tcpReceivedRstFirewallfilter                        *prometheus.Desc
-	tcpReceivedNoackTimewait                            *prometheus.Desc
-	tcpReceivedNoTimewaitState                          *prometheus.Desc
-	tcpReceivedRstTimewaitState                         *prometheus.Desc
-	tcpReceivedTimewaitDrops                            *prometheus.Desc
-	tcpReceivedBadaddrTimewaitState                     *prometheus.Desc
-	tcpReceivedAckoffInSynSentrcvd                      *prometheus.Desc
-	tcpReceivedBadaddrFirewall                          *prometheus.Desc
-	tcpReceivedNosynSynSent                             *prometheus.Desc
-	tcpReceivedBadrstSynSent                            *prometheus.Desc
-	tcpReceivedBadrstListenState                        *prometheus.Desc
-	tcpOptionMaxsegmentLength                           *prometheus.Desc
-	tcpOptionWindowLength                               *prometheus.Desc
-	tcpOptionTimestampLength                            *prometheus.Desc
-	tcpOptionMd5Length                                  *prometheus.Desc
-	tcpOptionAuthLength                                 *prometheus.Desc
-	tcpOptionSackpermittedLength                        *prometheus.Desc
-	tcpOptionSackLength                                 *prometheus.Desc
-	tcpOptionAuthoptionLength                           *prometheus.Desc
+	tcpPacketsSentDesc                                      *prometheus.Desc
+	tcpSentDataPacketsDesc                                  *prometheus.Desc
+	tcpDataPacketsBytesDesc                                 *prometheus.Desc
+	tcpSentDataPacketsRetransmittedDesc                     *prometheus.Desc
+	tcpRetransmittedBytesDesc                               *prometheus.Desc
+	tcpSentDataUnnecessaryRetransmittedDesc                 *prometheus.Desc
+	tcpSentResendsByMtuDiscoveryDesc                        *prometheus.Desc
+	tcpSentAckOnlyPacketsDesc                               *prometheus.Desc
+	tcpSentPacketsDelayedDesc                               *prometheus.Desc
+	tcpSentUrgOnlyPacketsDesc                               *prometheus.Desc
+	tcpSentWindowProbePacketsDesc                           *prometheus.Desc
+	tcpSentWindowUpdatePacketsDesc                          *prometheus.Desc
+	tcpSentControlPacketsDesc                               *prometheus.Desc
+	tcpPacketsReceivedDesc                                  *prometheus.Desc
+	tcpReceivedAcksDesc                                     *prometheus.Desc
+	tcpAcksBytesDesc                                        *prometheus.Desc
+	tcpReceivedDuplicateAcksDesc                            *prometheus.Desc
+	tcpReceivedAcksForUnsentDataDesc                        *prometheus.Desc
+	tcpPacketsReceivedInSequenceDesc                        *prometheus.Desc
+	tcpInSequenceBytesDesc                                  *prometheus.Desc
+	tcpReceivedCompletelyDuplicatePacketDesc                *prometheus.Desc
+	tcpDuplicateInBytesDesc                                 *prometheus.Desc
+	tcpReceivedOldDuplicatePacketsDesc                      *prometheus.Desc
+	tcpReceivedPacketsWithSomeDupliacteDataDesc             *prometheus.Desc
+	tcpSomeDuplicateInBytesDesc                             *prometheus.Desc
+	tcpReceivedOutOfOrderPacketsDesc                        *prometheus.Desc
+	tcpOutOfOrderInBytesDesc                                *prometheus.Desc
+	tcpReceivedPacketsOfDataAfterWindowDesc                 *prometheus.Desc
+	tcpBytesDesc                                            *prometheus.Desc
+	tcpReceivedWindowProbesDesc                             *prometheus.Desc
+	tcpReceivedWindowUpdatePacketsDesc                      *prometheus.Desc
+	tcpPacketsReceivedAfterCloseDesc                        *prometheus.Desc
+	tcpReceivedDiscardedForBadChecksumDesc                  *prometheus.Desc
+	tcpReceivedDiscardedForBadHeaderOffsetDesc              *prometheus.Desc
+	tcpReceivedDiscardedBecausePacketTooShortDesc           *prometheus.Desc
+	tcpConnectionRequestsDesc                               *prometheus.Desc
+	tcpConnectionAcceptsDesc                                *prometheus.Desc
+	tcpBadConnectionAttemptsDesc                            *prometheus.Desc
+	tcpListenQueueOverflowsDesc                             *prometheus.Desc
+	tcpBadRstWindowDesc                                     *prometheus.Desc
+	tcpConnectionsEstablishedDesc                           *prometheus.Desc
+	tcpConnectionsClosedDesc                                *prometheus.Desc
+	tcpDropsDesc                                            *prometheus.Desc
+	tcpConnectionsUpdatedRttOnCloseDesc                     *prometheus.Desc
+	tcpConnectionsUpdatedVarianceOnCloseDesc                *prometheus.Desc
+	tcpConnectionsUpdatedSsthreshOnCloseDesc                *prometheus.Desc
+	tcpEmbryonicConnectionsDroppedDesc                      *prometheus.Desc
+	tcpSegmentsUpdatedRttDesc                               *prometheus.Desc
+	tcpAttemptsDesc                                         *prometheus.Desc
+	tcpRetransmitTimeoutsDesc                               *prometheus.Desc
+	tcpConnectionsDroppedByRetransmitTimeoutDesc            *prometheus.Desc
+	tcpPersistTimeoutsDesc                                  *prometheus.Desc
+	tcpConnectionsDroppedByPersistTimeoutDesc               *prometheus.Desc
+	tcpKeepaliveTimeoutsDesc                                *prometheus.Desc
+	tcpKeepaliveProbesSentDesc                              *prometheus.Desc
+	tcpKeepaliveConnectionsDroppedDesc                      *prometheus.Desc
+	tcpAckHeaderPredictionsDesc                             *prometheus.Desc
+	tcpDataPacketHeaderPredictionsDesc                      *prometheus.Desc
+	tcpSyncacheEntriesAddedDesc                             *prometheus.Desc
+	tcpRetransmittedDesc                                    *prometheus.Desc
+	tcpDupsynDesc                                           *prometheus.Desc
+	tcpDroppedDesc                                          *prometheus.Desc
+	tcpCompletedDesc                                        *prometheus.Desc
+	tcpBucketOverflowDesc                                   *prometheus.Desc
+	tcpCacheOverflowDesc                                    *prometheus.Desc
+	tcpResetDesc                                            *prometheus.Desc
+	tcpStaleDesc                                            *prometheus.Desc
+	tcpAbortedDesc                                          *prometheus.Desc
+	tcpBadackDesc                                           *prometheus.Desc
+	tcpUnreachDesc                                          *prometheus.Desc
+	tcpZoneFailuresDesc                                     *prometheus.Desc
+	tcpCookiesSentDesc                                      *prometheus.Desc
+	tcpCookiesReceivedDesc                                  *prometheus.Desc
+	tcpSackRecoveryEpisodesDesc                             *prometheus.Desc
+	tcpSegmentRetransmitsDesc                               *prometheus.Desc
+	tcpByteRetransmitsDesc                                  *prometheus.Desc
+	tcpSackOptionsReceivedDesc                              *prometheus.Desc
+	tcpSackOptionsSentDesc                                  *prometheus.Desc
+	tcpSackScoreboardOverflowDesc                           *prometheus.Desc
+	tcpAcksSentInResponseButNotExactRstsDesc                *prometheus.Desc
+	tcpAcksSentInResponseToSynsOnEstablishedConnectionsDesc *prometheus.Desc
+	tcpRcvPacketsDroppedDueToBadAddressDesc                 *prometheus.Desc
+	tcpOutOfSequenceSegmentDropsDesc                        *prometheus.Desc
+	tcpRstPacketsDesc                                       *prometheus.Desc
+	tcpIcmpPacketsIgnoredDesc                               *prometheus.Desc
+	tcpSendPacketsDroppedDesc                               *prometheus.Desc
+	tcpRcvPacketsDroppedDesc                                *prometheus.Desc
+	tcpOutgoingSegmentsDroppedDesc                          *prometheus.Desc
+	tcpReceivedSynfinDroppedDesc                            *prometheus.Desc
+	tcpReceivedIpsecDroppedDesc                             *prometheus.Desc
+	tcpReceivedMacDroppedDesc                               *prometheus.Desc
+	tcpReceivedMinttlExceededDesc                           *prometheus.Desc
+	tcpListenstateBadflagsDroppedDesc                       *prometheus.Desc
+	tcpFinwaitstateBadflagsDroppedDesc                      *prometheus.Desc
+	tcpReceivedDosAttackDesc                                *prometheus.Desc
+	tcpReceivedBadSynackDesc                                *prometheus.Desc
+	tcpSyncacheZoneFullDesc                                 *prometheus.Desc
+	tcpReceivedRstFirewallfilterDesc                        *prometheus.Desc
+	tcpReceivedNoackTimewaitDesc                            *prometheus.Desc
+	tcpReceivedNoTimewaitStateDesc                          *prometheus.Desc
+	tcpReceivedRstTimewaitStateDesc                         *prometheus.Desc
+	tcpReceivedTimewaitDropsDesc                            *prometheus.Desc
+	tcpReceivedBadaddrTimewaitStateDesc                     *prometheus.Desc
+	tcpReceivedAckoffInSynSentrcvdDesc                      *prometheus.Desc
+	tcpReceivedBadaddrFirewallDesc                          *prometheus.Desc
+	tcpReceivedNosynSynSentDesc                             *prometheus.Desc
+	tcpReceivedBadrstSynSentDesc                            *prometheus.Desc
+	tcpReceivedBadrstListenStateDesc                        *prometheus.Desc
+	tcpOptionMaxsegmentLengthDesc                           *prometheus.Desc
+	tcpOptionWindowLengthDesc                               *prometheus.Desc
+	tcpOptionTimestampLengthDesc                            *prometheus.Desc
+	tcpOptionMd5LengthDesc                                  *prometheus.Desc
+	tcpOptionAuthLengthDesc                                 *prometheus.Desc
+	tcpOptionSackpermittedLengthDesc                        *prometheus.Desc
+	tcpOptionSackLengthDesc                                 *prometheus.Desc
+	tcpOptionAuthoptionLengthDesc                           *prometheus.Desc
 
 	arpDatagramsReceivedDesc                                     *prometheus.Desc
 	arpRequestsReceivedDesc                                      *prometheus.Desc
@@ -494,122 +494,122 @@ func init() {
 	udpDatagramsOutputDesc = prometheus.NewDesc(prefix+"udp_datagrams_output", "Number of UDP datagrams output", labelsUDP, nil)
 
 	labelsTCP := []string{"target", "protocol"}
-	tcpPacketsSent = prometheus.NewDesc(prefix+"tcp_packets_sent", "Number of TCP packets sent", labelsTCP, nil)
-	tcpSentDataPackets = prometheus.NewDesc(prefix+"tcp_sent_data_packets", "Number of TCP sent data packets", labelsTCP, nil)
-	tcpDataPacketsBytes = prometheus.NewDesc(prefix+"tcp_data_packets_bytes", "Number of TCP data packets bytes", labelsTCP, nil)
-	tcpSentDataPacketsRetransmitted = prometheus.NewDesc(prefix+"tcp_sent_data_packets_retransmitted", "Number of TCP sent data packets retransmitted", labelsTCP, nil)
-	tcpRetransmittedBytes = prometheus.NewDesc(prefix+"tcp_retransmitted_bytes", "Number of TCP retransmitted bytes", labelsTCP, nil)
-	tcpSentDataUnnecessaryRetransmitted = prometheus.NewDesc(prefix+"tcp_sent_data_unnecessary_retransmitted", "Number of tcp data unnecessary retransmitted packets", labelsTCP, nil)
-	tcpSentResendsByMtuDiscovery = prometheus.NewDesc(prefix+"tcp_sent_resends_by_mtu_discovery", "Number of tcp sent resends by mtu discovery", labelsTCP, nil)
-	tcpSentAckOnlyPackets = prometheus.NewDesc(prefix+"tcp_sent_ack_only_packets", "Number of tcp sent ack only packets", labelsTCP, nil)
-	tcpSentPacketsDelayed = prometheus.NewDesc(prefix+"tcp_sent_packets_delayed", "Number of tcp sent packets delayed", labelsTCP, nil)
-	tcpSentUrgOnlyPackets = prometheus.NewDesc(prefix+"tcp_sent_urg_only_packets", "Number of tcp sent urg only packets", labelsTCP, nil)
-	tcpSentWindowProbePackets = prometheus.NewDesc(prefix+"tcp_sent_window_probe_packets", "Number of tcp sent window probe packets", labelsTCP, nil)
-	tcpSentWindowUpdatePackets = prometheus.NewDesc(prefix+"tcp_sent_window_update_packets", "Number of tcp sent window update packets", labelsTCP, nil)
-	tcpSentControlPackets = prometheus.NewDesc(prefix+"tcp_sent_control_packets", "Number of tcp sent control packets", labelsTCP, nil)
-	tcpPacketsReceived = prometheus.NewDesc(prefix+"tcp_packets_received", "Number of TCP packets received", labelsTCP, nil)
-	tcpReceivedAcks = prometheus.NewDesc(prefix+"tcp_received_acks", "Number of TCP received acks", labelsTCP, nil)
-	tcpAcksBytes = prometheus.NewDesc(prefix+"tcp_acks_bytes", "Number of TCP acks bytes", labelsTCP, nil)
-	tcpReceivedDuplicateAcks = prometheus.NewDesc(prefix+"tcp_received_duplicate_acks", "Number of TCP received duplicate acks", labelsTCP, nil)
-	tcpReceivedAcksForUnsentData = prometheus.NewDesc(prefix+"tcp_received_acks_for_unsent_data", "Number of TCP received acks for unsent data", labelsTCP, nil)
-	tcpPacketsReceivedInSequence = prometheus.NewDesc(prefix+"tcp_packets_received_in_sequence", "Number of TCP packets received in sequence", labelsTCP, nil)
-	tcpInSequenceBytes = prometheus.NewDesc(prefix+"tcp_in_sequence_bytes", "Number of TCP in sequence bytes", labelsTCP, nil)
-	tcpReceivedCompletelyDuplicatePacket = prometheus.NewDesc(prefix+"tcp_received_completely_duplicate_packet", "Number of TCP received completely duplicate packet", labelsTCP, nil)
-	tcpDuplicateInBytes = prometheus.NewDesc(prefix+"tcp_duplicate_in_bytes", "Number of TCP duplicate in bytes", labelsTCP, nil)
-	tcpReceivedOldDuplicatePackets = prometheus.NewDesc(prefix+"tcp_received_old_duplicate_packets", "Number of TCP received old duplicate packets", labelsTCP, nil)
-	tcpReceivedPacketsWithSomeDupliacteData = prometheus.NewDesc(prefix+"tcp_received_packet_with_some_duplicate_data", "Number of TCP received packet with some duplicate data", labelsTCP, nil)
-	tcpSomeDuplicateInBytes = prometheus.NewDesc(prefix+"tcp_some_duplicate_in_bytes", "Number of TCP some duplicate in bytes", labelsTCP, nil)
-	tcpReceivedOutOfOrderPackets = prometheus.NewDesc(prefix+"tcp_received_out_of_order_packets", "Number of TCP received out of order packets", labelsTCP, nil)
-	tcpOutOfOrderInBytes = prometheus.NewDesc(prefix+"tcp_out_of_order_in_bytes", "Number of TCP out of order in bytes", labelsTCP, nil)
-	tcpReceivedPacketsOfDataAfterWindow = prometheus.NewDesc(prefix+"tcp_received_packets_of_data_after_window", "Number of TCP received packets of data after window", labelsTCP, nil)
-	tcpBytes = prometheus.NewDesc(prefix+"tcp_bytes", "Number of TCP bytes", labelsTCP, nil)
-	tcpReceivedWindowProbes = prometheus.NewDesc(prefix+"tcp_received_window_probes", "Number of TCP received window probes", labelsTCP, nil)
-	tcpReceivedWindowUpdatePackets = prometheus.NewDesc(prefix+"tcp_received_window_update_packets", "Number of TCP received window update packets", labelsTCP, nil)
-	tcpPacketsReceivedAfterClose = prometheus.NewDesc(prefix+"tcp_packets_received_after_close", "Number of TCP packets received after close", labelsTCP, nil)
-	tcpReceivedDiscardedForBadChecksum = prometheus.NewDesc(prefix+"tcp_received_discarded_for_bad_checksum", "Number of TCP received discarded for bad checksum", labelsTCP, nil)
-	tcpReceivedDiscardedForBadHeaderOffset = prometheus.NewDesc(prefix+"tcp_received_discarded_for_bad_header_offset", "Number of TCP received discarded for bad header offset", labelsTCP, nil)
-	tcpReceivedDiscardedBecausePacketTooShort = prometheus.NewDesc(prefix+"tcp_received_discarded_because_packet_too_short", "Number of TCP received discarded because packet too short", labelsTCP, nil)
-	tcpConnectionRequests = prometheus.NewDesc(prefix+"tcp_connection_requests", "Number of TCP connection requests", labelsTCP, nil)
-	tcpConnectionAccepts = prometheus.NewDesc(prefix+"tcp_connection_accepts", "Number of TCP connection accepts", labelsTCP, nil)
-	tcpBadConnectionAttempts = prometheus.NewDesc(prefix+"tcp_bad_connection_attempts", "Number of TCP bad connection attempts", labelsTCP, nil)
-	tcpListenQueueOverflows = prometheus.NewDesc(prefix+"tcp_listen_queue_overflows", "Number of TCP listen queue overflows", labelsTCP, nil)
-	tcpBadRstWindow = prometheus.NewDesc(prefix+"tcp_bad_rst_window", "Number of TCP bad rst window", labelsTCP, nil)
-	tcpConnectionsEstablished = prometheus.NewDesc(prefix+"tcp_connections_established", "Number of TCP connections established", labelsTCP, nil)
-	tcpConnectionsClosed = prometheus.NewDesc(prefix+"tcp_connections_closed", "Number of TCP connections closed", labelsTCP, nil)
-	tcpDrops = prometheus.NewDesc(prefix+"tcp_drops", "Number of TCP drops", labelsTCP, nil)
-	tcpConnectionsUpdatedRttOnClose = prometheus.NewDesc(prefix+"tcp_connections_updated_rtt_on_close", "Number of TCP connections updated rtt on close", labelsTCP, nil)
-	tcpConnectionsUpdatedVarianceOnClose = prometheus.NewDesc(prefix+"tcp_connections_updated_variance_on_close", "Number of TCP connections updated variance on close", labelsTCP, nil)
-	tcpConnectionsUpdatedSsthreshOnClose = prometheus.NewDesc(prefix+"tcp_connections_updated_ssthresh_on_close", "Number of TCP connections updated ssthresh on close", labelsTCP, nil)
-	tcpEmbryonicConnectionsDropped = prometheus.NewDesc(prefix+"tcp_embryonic_connections_dropped", "Number of TCP embryonic connections dropped", labelsTCP, nil)
-	tcpSegmentsUpdatedRtt = prometheus.NewDesc(prefix+"tcp_segments_updated_rtt", "Number of TCP segments updated rtt", labelsTCP, nil)
-	tcpAttempts = prometheus.NewDesc(prefix+"tcp_attempts", "Number of TCP attempts", labelsTCP, nil)
-	tcpRetransmitTimeouts = prometheus.NewDesc(prefix+"tcp_retransmit_timeouts", "Number of TCP retransmit timeouts", labelsTCP, nil)
-	tcpConnectionsDroppedByRetransmitTimeout = prometheus.NewDesc(prefix+"tcp_connections_dropped_by_retransmit_timeout", "Number of TCP connections dropped by retransmit timeout", labelsTCP, nil)
-	tcpPersistTimeouts = prometheus.NewDesc(prefix+"tcp_persist_timeouts", "Number of TCP persist timeouts", labelsTCP, nil)
-	tcpConnectionsDroppedByPersistTimeout = prometheus.NewDesc(prefix+"tcp_connections_dropped_by_persist_timeout", "Number of TCP connections dropped by persist timeout", labelsTCP, nil)
-	tcpKeepaliveTimeouts = prometheus.NewDesc(prefix+"tcp_keepalive_timeouts", "Number of TCP keepalive timeouts", labelsTCP, nil)
-	tcpKeepaliveProbesSent = prometheus.NewDesc(prefix+"tcp_keepalive_probes_sent", "Number of TCP keepalive probes sent", labelsTCP, nil)
-	tcpKeepaliveConnectionsDropped = prometheus.NewDesc(prefix+"tcp_keepalive_connections_dropped", "Number of TCP keepalive connections dropped", labelsTCP, nil)
-	tcpAckHeaderPredictions = prometheus.NewDesc(prefix+"tcp_ack_header_predictions", "Number of TCP ack header predictions", labelsTCP, nil)
-	tcpDataPacketHeaderPredictions = prometheus.NewDesc(prefix+"tcp_data_packet_header_predictions", "Number of TCP data packet header predictions", labelsTCP, nil)
-	tcpSyncacheEntriesAdded = prometheus.NewDesc(prefix+"tcp_syncache_entries_added", "Number of TCP syncache entries added", labelsTCP, nil)
-	tcpRetransmitted = prometheus.NewDesc(prefix+"tcp_retransmitted", "Number of TCP retransmitted", labelsTCP, nil)
-	tcpDupsyn = prometheus.NewDesc(prefix+"tcp_dupsyn", "Number of TCP dupsyn", labelsTCP, nil)
-	tcpDropped = prometheus.NewDesc(prefix+"tcp_dropped", "Number of TCP dropped", labelsTCP, nil)
-	tcpCompleted = prometheus.NewDesc(prefix+"tcp_completed", "Number of TCP completed", labelsTCP, nil)
-	tcpBucketOverflow = prometheus.NewDesc(prefix+"tcp_bucket_overflow", "Number of TCP bucket overflow", labelsTCP, nil)
-	tcpCacheOverflow = prometheus.NewDesc(prefix+"tcp_cache_overflow", "Number of TCP cache overflow", labelsTCP, nil)
-	tcpReset = prometheus.NewDesc(prefix+"tcp_reset", "Number of TCP reset", labelsTCP, nil)
-	tcpStale = prometheus.NewDesc(prefix+"tcp_stale", "Number of TCP stale", labelsTCP, nil)
-	tcpAborted = prometheus.NewDesc(prefix+"tcp_aborted", "Number of TCP aborted", labelsTCP, nil)
-	tcpBadack = prometheus.NewDesc(prefix+"tcp_badack", "Number of TCP badack", labelsTCP, nil)
-	tcpUnreach = prometheus.NewDesc(prefix+"tcp_unreach", "Number of TCP unreach", labelsTCP, nil)
-	tcpZoneFailures = prometheus.NewDesc(prefix+"tcp_zone_failures", "Number of TCP zone failures", labelsTCP, nil)
-	tcpCookiesSent = prometheus.NewDesc(prefix+"tcp_cookies_sent", "Number of TCP cookies sent", labelsTCP, nil)
-	tcpCookiesReceived = prometheus.NewDesc(prefix+"tcp_cookies_received", "Number of TCP cookies received", labelsTCP, nil)
-	tcpSackRecoveryEpisodes = prometheus.NewDesc(prefix+"tcp_sack_recovery_episodes", "Number of TCP sack recovery episodes", labelsTCP, nil)
-	tcpSegmentRetransmits = prometheus.NewDesc(prefix+"tcp_segment_retransmits", "Number of TCP segment retransmits", labelsTCP, nil)
-	tcpByteRetransmits = prometheus.NewDesc(prefix+"tcp_byte_retransmits", "Number of TCP byte retransmits", labelsTCP, nil)
-	tcpSackOptionsReceived = prometheus.NewDesc(prefix+"tcp_sack_options_received", "Number of TCP sack options received", labelsTCP, nil)
-	tcpSackOptionsSent = prometheus.NewDesc(prefix+"tcp_sack_options_sent", "Number of TCP sack options sent", labelsTCP, nil)
-	tcpSackScoreboardOverflow = prometheus.NewDesc(prefix+"tcp_sack_scoreboard_overflow", "Number of TCP sack scoreboard overflow", labelsTCP, nil)
-	tcpAcksSentInResponseButNotExactRsts = prometheus.NewDesc(prefix+"tcp_acks_sent_in_response_but_not_exact_rsts", "Number of TCP acks sent in response but not exact rsts", labelsTCP, nil)
-	tcpAcksSentInResponseToSynsOnEstablishedConnections = prometheus.NewDesc(prefix+"tcp_ack_sent_in_response_to_syns_on_established_connections", "Number of TCP acks sent in response to syns on established connections", labelsTCP, nil)
-	tcpRcvPacketsDroppedDueToBadAddress = prometheus.NewDesc(prefix+"tcp_rcv_packets_dropped_due_to_bad_address", "Number of TCP rcv packets dropped due to bad address", labelsTCP, nil)
-	tcpOutOfSequenceSegmentDrops = prometheus.NewDesc(prefix+"tcp_out_of_sequence_segment_drops", "Number of TCP out of sequence segment drops", labelsTCP, nil)
-	tcpRstPackets = prometheus.NewDesc(prefix+"tcp_rst_packets", "Number of TCP rst packets", labelsTCP, nil)
-	tcpIcmpPacketsIgnored = prometheus.NewDesc(prefix+"tcp_icmp_packets_ignored", "Number of TCP icmp packets ignored", labelsTCP, nil)
-	tcpSendPacketsDropped = prometheus.NewDesc(prefix+"tcp_send_packets_dropped", "Number of TCP send packets dropped", labelsTCP, nil)
-	tcpRcvPacketsDropped = prometheus.NewDesc(prefix+"tcp_rcv_packets_dropped", "Number of TCP rcv packets dropped", labelsTCP, nil)
-	tcpOutgoingSegmentsDropped = prometheus.NewDesc(prefix+"tcp_outgoing_segments_dropped", "Number of TCP outgoing segments dropped", labelsTCP, nil)
-	tcpReceivedSynfinDropped = prometheus.NewDesc(prefix+"tcp_received_synfin_dropped", "Number of TCP received synfin dropped", labelsTCP, nil)
-	tcpReceivedIpsecDropped = prometheus.NewDesc(prefix+"tcp_received_ipsec_dropped", "Number of TCP received ipsec dropped", labelsTCP, nil)
-	tcpReceivedMacDropped = prometheus.NewDesc(prefix+"tcp_received_mac_dropped", "Number of TCP received mac dropped", labelsTCP, nil)
-	tcpReceivedMinttlExceeded = prometheus.NewDesc(prefix+"tcp_received_minttl_exceeded", "Number of TCP received minttl exceeded", labelsTCP, nil)
-	tcpListenstateBadflagsDropped = prometheus.NewDesc(prefix+"tcp_listenstate_badflags_dropped", "Number of TCP listenstate badflags dropped", labelsTCP, nil)
-	tcpFinwaitstateBadflagsDropped = prometheus.NewDesc(prefix+"tcp_finwaitstate_badflags_dropped", "Number of TCP finwaitstate badflags dropped", labelsTCP, nil)
-	tcpReceivedDosAttack = prometheus.NewDesc(prefix+"tcp_received_dos_attack", "Number of tcp received dos attack", labelsTCP, nil)
-	tcpReceivedBadSynack = prometheus.NewDesc(prefix+"tcp_received_bad_synack", "Number of tcp received bad synack", labelsTCP, nil)
-	tcpSyncacheZoneFull = prometheus.NewDesc(prefix+"tcp_syncache_zone_full", "Number of TCP syncache zone full", labelsTCP, nil)
-	tcpReceivedRstFirewallfilter = prometheus.NewDesc(prefix+"tcp_received_rst_firewallfilter", "Number of TCP received rst firewallfilter", labelsTCP, nil)
-	tcpReceivedNoackTimewait = prometheus.NewDesc(prefix+"tcp_received_noack_timewait", "Number of TCP received noack timewait", labelsTCP, nil)
-	tcpReceivedNoTimewaitState = prometheus.NewDesc(prefix+"tcp_received_no_timewait_state", "Number of TCP received no timewait state", labelsTCP, nil)
-	tcpReceivedRstTimewaitState = prometheus.NewDesc(prefix+"tcp_received_rst_timewait_state", "Number of TCP received rst timewait state", labelsTCP, nil)
-	tcpReceivedTimewaitDrops = prometheus.NewDesc(prefix+"tcp_received_timewait_drops", "Number of TCP received timewait drops", labelsTCP, nil)
-	tcpReceivedBadaddrTimewaitState = prometheus.NewDesc(prefix+"tcp_received_badaddr_timewait_state", "Number of TCP received badaddr timewait state", labelsTCP, nil)
-	tcpReceivedAckoffInSynSentrcvd = prometheus.NewDesc(prefix+"tcp_received_ackoff_insyn_sentrcvd", "Number of TCP received ackoff in syn sentrcvd", labelsTCP, nil)
-	tcpReceivedBadaddrFirewall = prometheus.NewDesc(prefix+"tcp_received_badaddr_firewall", "Number of TCP received badaddr firewall", labelsTCP, nil)
-	tcpReceivedNosynSynSent = prometheus.NewDesc(prefix+"tcp_received_nosyn_synsent", "Number of TCP received nosyn synsent", labelsTCP, nil)
-	tcpReceivedBadrstSynSent = prometheus.NewDesc(prefix+"tcp_received_badrst_synsent", "Number of TCP received badrst synsent", labelsTCP, nil)
-	tcpReceivedBadrstListenState = prometheus.NewDesc(prefix+"tcp_received_badrst_listenstate", "Number of TCP received badrst listenstate", labelsTCP, nil)
-	tcpOptionMaxsegmentLength = prometheus.NewDesc(prefix+"tcp_option_maxsegment_length", "Number of TCP option maxsegment length", labelsTCP, nil)
-	tcpOptionWindowLength = prometheus.NewDesc(prefix+"tcp_option_window_length", "Number of TCP option window length", labelsTCP, nil)
-	tcpOptionTimestampLength = prometheus.NewDesc(prefix+"tcp_option_timestamp_length", "Number of TCP option timestamp length", labelsTCP, nil)
-	tcpOptionMd5Length = prometheus.NewDesc(prefix+"tcp_option_md5_length", "Number of TCP option md5 length", labelsTCP, nil)
-	tcpOptionAuthLength = prometheus.NewDesc(prefix+"tcp_option_auth_length", "Number of TCP option auth length", labelsTCP, nil)
-	tcpOptionSackpermittedLength = prometheus.NewDesc(prefix+"tcp_option_sackpermitted_length", "Number of TCP option sackpermitted length", labelsTCP, nil)
-	tcpOptionSackLength = prometheus.NewDesc(prefix+"tcp_option_sack_length", "Number of TCP option sack length", labelsTCP, nil)
-	tcpOptionAuthoptionLength = prometheus.NewDesc(prefix+"tcp_option_authoption_length", "Number of TCP option authoption length", labelsTCP, nil)
+	tcpPacketsSentDesc = prometheus.NewDesc(prefix+"tcp_packets_sent", "Number of TCP packets sent", labelsTCP, nil)
+	tcpSentDataPacketsDesc = prometheus.NewDesc(prefix+"tcp_sent_data_packets", "Number of TCP sent data packets", labelsTCP, nil)
+	tcpDataPacketsBytesDesc = prometheus.NewDesc(prefix+"tcp_data_packets_bytes", "Number of TCP data packets bytes", labelsTCP, nil)
+	tcpSentDataPacketsRetransmittedDesc = prometheus.NewDesc(prefix+"tcp_sent_data_packets_retransmitted", "Number of TCP sent data packets retransmitted", labelsTCP, nil)
+	tcpRetransmittedBytesDesc = prometheus.NewDesc(prefix+"tcp_retransmitted_bytes", "Number of TCP retransmitted bytes", labelsTCP, nil)
+	tcpSentDataUnnecessaryRetransmittedDesc = prometheus.NewDesc(prefix+"tcp_sent_data_unnecessary_retransmitted", "Number of tcp data unnecessary retransmitted packets", labelsTCP, nil)
+	tcpSentResendsByMtuDiscoveryDesc = prometheus.NewDesc(prefix+"tcp_sent_resends_by_mtu_discovery", "Number of tcp sent resends by mtu discovery", labelsTCP, nil)
+	tcpSentAckOnlyPacketsDesc = prometheus.NewDesc(prefix+"tcp_sent_ack_only_packets", "Number of tcp sent ack only packets", labelsTCP, nil)
+	tcpSentPacketsDelayedDesc = prometheus.NewDesc(prefix+"tcp_sent_packets_delayed", "Number of tcp sent packets delayed", labelsTCP, nil)
+	tcpSentUrgOnlyPacketsDesc = prometheus.NewDesc(prefix+"tcp_sent_urg_only_packets", "Number of tcp sent urg only packets", labelsTCP, nil)
+	tcpSentWindowProbePacketsDesc = prometheus.NewDesc(prefix+"tcp_sent_window_probe_packets", "Number of tcp sent window probe packets", labelsTCP, nil)
+	tcpSentWindowUpdatePacketsDesc = prometheus.NewDesc(prefix+"tcp_sent_window_update_packets", "Number of tcp sent window update packets", labelsTCP, nil)
+	tcpSentControlPacketsDesc = prometheus.NewDesc(prefix+"tcp_sent_control_packets", "Number of tcp sent control packets", labelsTCP, nil)
+	tcpPacketsReceivedDesc = prometheus.NewDesc(prefix+"tcp_packets_received", "Number of TCP packets received", labelsTCP, nil)
+	tcpReceivedAcksDesc = prometheus.NewDesc(prefix+"tcp_received_acks", "Number of TCP received acks", labelsTCP, nil)
+	tcpAcksBytesDesc = prometheus.NewDesc(prefix+"tcp_acks_bytes", "Number of TCP acks bytes", labelsTCP, nil)
+	tcpReceivedDuplicateAcksDesc = prometheus.NewDesc(prefix+"tcp_received_duplicate_acks", "Number of TCP received duplicate acks", labelsTCP, nil)
+	tcpReceivedAcksForUnsentDataDesc = prometheus.NewDesc(prefix+"tcp_received_acks_for_unsent_data", "Number of TCP received acks for unsent data", labelsTCP, nil)
+	tcpPacketsReceivedInSequenceDesc = prometheus.NewDesc(prefix+"tcp_packets_received_in_sequence", "Number of TCP packets received in sequence", labelsTCP, nil)
+	tcpInSequenceBytesDesc = prometheus.NewDesc(prefix+"tcp_in_sequence_bytes", "Number of TCP in sequence bytes", labelsTCP, nil)
+	tcpReceivedCompletelyDuplicatePacketDesc = prometheus.NewDesc(prefix+"tcp_received_completely_duplicate_packet", "Number of TCP received completely duplicate packet", labelsTCP, nil)
+	tcpDuplicateInBytesDesc = prometheus.NewDesc(prefix+"tcp_duplicate_in_bytes", "Number of TCP duplicate in bytes", labelsTCP, nil)
+	tcpReceivedOldDuplicatePacketsDesc = prometheus.NewDesc(prefix+"tcp_received_old_duplicate_packets", "Number of TCP received old duplicate packets", labelsTCP, nil)
+	tcpReceivedPacketsWithSomeDupliacteDataDesc = prometheus.NewDesc(prefix+"tcp_received_packet_with_some_duplicate_data", "Number of TCP received packet with some duplicate data", labelsTCP, nil)
+	tcpSomeDuplicateInBytesDesc = prometheus.NewDesc(prefix+"tcp_some_duplicate_in_bytes", "Number of TCP some duplicate in bytes", labelsTCP, nil)
+	tcpReceivedOutOfOrderPacketsDesc = prometheus.NewDesc(prefix+"tcp_received_out_of_order_packets", "Number of TCP received out of order packets", labelsTCP, nil)
+	tcpOutOfOrderInBytesDesc = prometheus.NewDesc(prefix+"tcp_out_of_order_in_bytes", "Number of TCP out of order in bytes", labelsTCP, nil)
+	tcpReceivedPacketsOfDataAfterWindowDesc = prometheus.NewDesc(prefix+"tcp_received_packets_of_data_after_window", "Number of TCP received packets of data after window", labelsTCP, nil)
+	tcpBytesDesc = prometheus.NewDesc(prefix+"tcp_bytes", "Number of TCP bytes", labelsTCP, nil)
+	tcpReceivedWindowProbesDesc = prometheus.NewDesc(prefix+"tcp_received_window_probes", "Number of TCP received window probes", labelsTCP, nil)
+	tcpReceivedWindowUpdatePacketsDesc = prometheus.NewDesc(prefix+"tcp_received_window_update_packets", "Number of TCP received window update packets", labelsTCP, nil)
+	tcpPacketsReceivedAfterCloseDesc = prometheus.NewDesc(prefix+"tcp_packets_received_after_close", "Number of TCP packets received after close", labelsTCP, nil)
+	tcpReceivedDiscardedForBadChecksumDesc = prometheus.NewDesc(prefix+"tcp_received_discarded_for_bad_checksum", "Number of TCP received discarded for bad checksum", labelsTCP, nil)
+	tcpReceivedDiscardedForBadHeaderOffsetDesc = prometheus.NewDesc(prefix+"tcp_received_discarded_for_bad_header_offset", "Number of TCP received discarded for bad header offset", labelsTCP, nil)
+	tcpReceivedDiscardedBecausePacketTooShortDesc = prometheus.NewDesc(prefix+"tcp_received_discarded_because_packet_too_short", "Number of TCP received discarded because packet too short", labelsTCP, nil)
+	tcpConnectionRequestsDesc = prometheus.NewDesc(prefix+"tcp_connection_requests", "Number of TCP connection requests", labelsTCP, nil)
+	tcpConnectionAcceptsDesc = prometheus.NewDesc(prefix+"tcp_connection_accepts", "Number of TCP connection accepts", labelsTCP, nil)
+	tcpBadConnectionAttemptsDesc = prometheus.NewDesc(prefix+"tcp_bad_connection_attempts", "Number of TCP bad connection attempts", labelsTCP, nil)
+	tcpListenQueueOverflowsDesc = prometheus.NewDesc(prefix+"tcp_listen_queue_overflows", "Number of TCP listen queue overflows", labelsTCP, nil)
+	tcpBadRstWindowDesc = prometheus.NewDesc(prefix+"tcp_bad_rst_window", "Number of TCP bad rst window", labelsTCP, nil)
+	tcpConnectionsEstablishedDesc = prometheus.NewDesc(prefix+"tcp_connections_established", "Number of TCP connections established", labelsTCP, nil)
+	tcpConnectionsClosedDesc = prometheus.NewDesc(prefix+"tcp_connections_closed", "Number of TCP connections closed", labelsTCP, nil)
+	tcpDropsDesc = prometheus.NewDesc(prefix+"tcp_drops", "Number of TCP drops", labelsTCP, nil)
+	tcpConnectionsUpdatedRttOnCloseDesc = prometheus.NewDesc(prefix+"tcp_connections_updated_rtt_on_close", "Number of TCP connections updated rtt on close", labelsTCP, nil)
+	tcpConnectionsUpdatedVarianceOnCloseDesc = prometheus.NewDesc(prefix+"tcp_connections_updated_variance_on_close", "Number of TCP connections updated variance on close", labelsTCP, nil)
+	tcpConnectionsUpdatedSsthreshOnCloseDesc = prometheus.NewDesc(prefix+"tcp_connections_updated_ssthresh_on_close", "Number of TCP connections updated ssthresh on close", labelsTCP, nil)
+	tcpEmbryonicConnectionsDroppedDesc = prometheus.NewDesc(prefix+"tcp_embryonic_connections_dropped", "Number of TCP embryonic connections dropped", labelsTCP, nil)
+	tcpSegmentsUpdatedRttDesc = prometheus.NewDesc(prefix+"tcp_segments_updated_rtt", "Number of TCP segments updated rtt", labelsTCP, nil)
+	tcpAttemptsDesc = prometheus.NewDesc(prefix+"tcp_attempts", "Number of TCP attempts", labelsTCP, nil)
+	tcpRetransmitTimeoutsDesc = prometheus.NewDesc(prefix+"tcp_retransmit_timeouts", "Number of TCP retransmit timeouts", labelsTCP, nil)
+	tcpConnectionsDroppedByRetransmitTimeoutDesc = prometheus.NewDesc(prefix+"tcp_connections_dropped_by_retransmit_timeout", "Number of TCP connections dropped by retransmit timeout", labelsTCP, nil)
+	tcpPersistTimeoutsDesc = prometheus.NewDesc(prefix+"tcp_persist_timeouts", "Number of TCP persist timeouts", labelsTCP, nil)
+	tcpConnectionsDroppedByPersistTimeoutDesc = prometheus.NewDesc(prefix+"tcp_connections_dropped_by_persist_timeout", "Number of TCP connections dropped by persist timeout", labelsTCP, nil)
+	tcpKeepaliveTimeoutsDesc = prometheus.NewDesc(prefix+"tcp_keepalive_timeouts", "Number of TCP keepalive timeouts", labelsTCP, nil)
+	tcpKeepaliveProbesSentDesc = prometheus.NewDesc(prefix+"tcp_keepalive_probes_sent", "Number of TCP keepalive probes sent", labelsTCP, nil)
+	tcpKeepaliveConnectionsDroppedDesc = prometheus.NewDesc(prefix+"tcp_keepalive_connections_dropped", "Number of TCP keepalive connections dropped", labelsTCP, nil)
+	tcpAckHeaderPredictionsDesc = prometheus.NewDesc(prefix+"tcp_ack_header_predictions", "Number of TCP ack header predictions", labelsTCP, nil)
+	tcpDataPacketHeaderPredictionsDesc = prometheus.NewDesc(prefix+"tcp_data_packet_header_predictions", "Number of TCP data packet header predictions", labelsTCP, nil)
+	tcpSyncacheEntriesAddedDesc = prometheus.NewDesc(prefix+"tcp_syncache_entries_added", "Number of TCP syncache entries added", labelsTCP, nil)
+	tcpRetransmittedDesc = prometheus.NewDesc(prefix+"tcp_retransmitted", "Number of TCP retransmitted", labelsTCP, nil)
+	tcpDupsynDesc = prometheus.NewDesc(prefix+"tcp_dupsyn", "Number of TCP dupsyn", labelsTCP, nil)
+	tcpDroppedDesc = prometheus.NewDesc(prefix+"tcp_dropped", "Number of TCP dropped", labelsTCP, nil)
+	tcpCompletedDesc = prometheus.NewDesc(prefix+"tcp_completed", "Number of TCP completed", labelsTCP, nil)
+	tcpBucketOverflowDesc = prometheus.NewDesc(prefix+"tcp_bucket_overflow", "Number of TCP bucket overflow", labelsTCP, nil)
+	tcpCacheOverflowDesc = prometheus.NewDesc(prefix+"tcp_cache_overflow", "Number of TCP cache overflow", labelsTCP, nil)
+	tcpResetDesc = prometheus.NewDesc(prefix+"tcp_reset", "Number of TCP reset", labelsTCP, nil)
+	tcpStaleDesc = prometheus.NewDesc(prefix+"tcp_stale", "Number of TCP stale", labelsTCP, nil)
+	tcpAbortedDesc = prometheus.NewDesc(prefix+"tcp_aborted", "Number of TCP aborted", labelsTCP, nil)
+	tcpBadackDesc = prometheus.NewDesc(prefix+"tcp_badack", "Number of TCP badack", labelsTCP, nil)
+	tcpUnreachDesc = prometheus.NewDesc(prefix+"tcp_unreach", "Number of TCP unreach", labelsTCP, nil)
+	tcpZoneFailuresDesc = prometheus.NewDesc(prefix+"tcp_zone_failures", "Number of TCP zone failures", labelsTCP, nil)
+	tcpCookiesSentDesc = prometheus.NewDesc(prefix+"tcp_cookies_sent", "Number of TCP cookies sent", labelsTCP, nil)
+	tcpCookiesReceivedDesc = prometheus.NewDesc(prefix+"tcp_cookies_received", "Number of TCP cookies received", labelsTCP, nil)
+	tcpSackRecoveryEpisodesDesc = prometheus.NewDesc(prefix+"tcp_sack_recovery_episodes", "Number of TCP sack recovery episodes", labelsTCP, nil)
+	tcpSegmentRetransmitsDesc = prometheus.NewDesc(prefix+"tcp_segment_retransmits", "Number of TCP segment retransmits", labelsTCP, nil)
+	tcpByteRetransmitsDesc = prometheus.NewDesc(prefix+"tcp_byte_retransmits", "Number of TCP byte retransmits", labelsTCP, nil)
+	tcpSackOptionsReceivedDesc = prometheus.NewDesc(prefix+"tcp_sack_options_received", "Number of TCP sack options received", labelsTCP, nil)
+	tcpSackOptionsSentDesc = prometheus.NewDesc(prefix+"tcp_sack_options_sent", "Number of TCP sack options sent", labelsTCP, nil)
+	tcpSackScoreboardOverflowDesc = prometheus.NewDesc(prefix+"tcp_sack_scoreboard_overflow", "Number of TCP sack scoreboard overflow", labelsTCP, nil)
+	tcpAcksSentInResponseButNotExactRstsDesc = prometheus.NewDesc(prefix+"tcp_acks_sent_in_response_but_not_exact_rsts", "Number of TCP acks sent in response but not exact rsts", labelsTCP, nil)
+	tcpAcksSentInResponseToSynsOnEstablishedConnectionsDesc = prometheus.NewDesc(prefix+"tcp_ack_sent_in_response_to_syns_on_established_connections", "Number of TCP acks sent in response to syns on established connections", labelsTCP, nil)
+	tcpRcvPacketsDroppedDueToBadAddressDesc = prometheus.NewDesc(prefix+"tcp_rcv_packets_dropped_due_to_bad_address", "Number of TCP rcv packets dropped due to bad address", labelsTCP, nil)
+	tcpOutOfSequenceSegmentDropsDesc = prometheus.NewDesc(prefix+"tcp_out_of_sequence_segment_drops", "Number of TCP out of sequence segment drops", labelsTCP, nil)
+	tcpRstPacketsDesc = prometheus.NewDesc(prefix+"tcp_rst_packets", "Number of TCP rst packets", labelsTCP, nil)
+	tcpIcmpPacketsIgnoredDesc = prometheus.NewDesc(prefix+"tcp_icmp_packets_ignored", "Number of TCP icmp packets ignored", labelsTCP, nil)
+	tcpSendPacketsDroppedDesc = prometheus.NewDesc(prefix+"tcp_send_packets_dropped", "Number of TCP send packets dropped", labelsTCP, nil)
+	tcpRcvPacketsDroppedDesc = prometheus.NewDesc(prefix+"tcp_rcv_packets_dropped", "Number of TCP rcv packets dropped", labelsTCP, nil)
+	tcpOutgoingSegmentsDroppedDesc = prometheus.NewDesc(prefix+"tcp_outgoing_segments_dropped", "Number of TCP outgoing segments dropped", labelsTCP, nil)
+	tcpReceivedSynfinDroppedDesc = prometheus.NewDesc(prefix+"tcp_received_synfin_dropped", "Number of TCP received synfin dropped", labelsTCP, nil)
+	tcpReceivedIpsecDroppedDesc = prometheus.NewDesc(prefix+"tcp_received_ipsec_dropped", "Number of TCP received ipsec dropped", labelsTCP, nil)
+	tcpReceivedMacDroppedDesc = prometheus.NewDesc(prefix+"tcp_received_mac_dropped", "Number of TCP received mac dropped", labelsTCP, nil)
+	tcpReceivedMinttlExceededDesc = prometheus.NewDesc(prefix+"tcp_received_minttl_exceeded", "Number of TCP received minttl exceeded", labelsTCP, nil)
+	tcpListenstateBadflagsDroppedDesc = prometheus.NewDesc(prefix+"tcp_listenstate_badflags_dropped", "Number of TCP listenstate badflags dropped", labelsTCP, nil)
+	tcpFinwaitstateBadflagsDroppedDesc = prometheus.NewDesc(prefix+"tcp_finwaitstate_badflags_dropped", "Number of TCP finwaitstate badflags dropped", labelsTCP, nil)
+	tcpReceivedDosAttackDesc = prometheus.NewDesc(prefix+"tcp_received_dos_attack", "Number of tcp received dos attack", labelsTCP, nil)
+	tcpReceivedBadSynackDesc = prometheus.NewDesc(prefix+"tcp_received_bad_synack", "Number of tcp received bad synack", labelsTCP, nil)
+	tcpSyncacheZoneFullDesc = prometheus.NewDesc(prefix+"tcp_syncache_zone_full", "Number of TCP syncache zone full", labelsTCP, nil)
+	tcpReceivedRstFirewallfilterDesc = prometheus.NewDesc(prefix+"tcp_received_rst_firewallfilter", "Number of TCP received rst firewallfilter", labelsTCP, nil)
+	tcpReceivedNoackTimewaitDesc = prometheus.NewDesc(prefix+"tcp_received_noack_timewait", "Number of TCP received noack timewait", labelsTCP, nil)
+	tcpReceivedNoTimewaitStateDesc = prometheus.NewDesc(prefix+"tcp_received_no_timewait_state", "Number of TCP received no timewait state", labelsTCP, nil)
+	tcpReceivedRstTimewaitStateDesc = prometheus.NewDesc(prefix+"tcp_received_rst_timewait_state", "Number of TCP received rst timewait state", labelsTCP, nil)
+	tcpReceivedTimewaitDropsDesc = prometheus.NewDesc(prefix+"tcp_received_timewait_drops", "Number of TCP received timewait drops", labelsTCP, nil)
+	tcpReceivedBadaddrTimewaitStateDesc = prometheus.NewDesc(prefix+"tcp_received_badaddr_timewait_state", "Number of TCP received badaddr timewait state", labelsTCP, nil)
+	tcpReceivedAckoffInSynSentrcvdDesc = prometheus.NewDesc(prefix+"tcp_received_ackoff_insyn_sentrcvd", "Number of TCP received ackoff in syn sentrcvd", labelsTCP, nil)
+	tcpReceivedBadaddrFirewallDesc = prometheus.NewDesc(prefix+"tcp_received_badaddr_firewall", "Number of TCP received badaddr firewall", labelsTCP, nil)
+	tcpReceivedNosynSynSentDesc = prometheus.NewDesc(prefix+"tcp_received_nosyn_synsent", "Number of TCP received nosyn synsent", labelsTCP, nil)
+	tcpReceivedBadrstSynSentDesc = prometheus.NewDesc(prefix+"tcp_received_badrst_synsent", "Number of TCP received badrst synsent", labelsTCP, nil)
+	tcpReceivedBadrstListenStateDesc = prometheus.NewDesc(prefix+"tcp_received_badrst_listenstate", "Number of TCP received badrst listenstate", labelsTCP, nil)
+	tcpOptionMaxsegmentLengthDesc = prometheus.NewDesc(prefix+"tcp_option_maxsegment_length", "Number of TCP option maxsegment length", labelsTCP, nil)
+	tcpOptionWindowLengthDesc = prometheus.NewDesc(prefix+"tcp_option_window_length", "Number of TCP option window length", labelsTCP, nil)
+	tcpOptionTimestampLengthDesc = prometheus.NewDesc(prefix+"tcp_option_timestamp_length", "Number of TCP option timestamp length", labelsTCP, nil)
+	tcpOptionMd5LengthDesc = prometheus.NewDesc(prefix+"tcp_option_md5_length", "Number of TCP option md5 length", labelsTCP, nil)
+	tcpOptionAuthLengthDesc = prometheus.NewDesc(prefix+"tcp_option_auth_length", "Number of TCP option auth length", labelsTCP, nil)
+	tcpOptionSackpermittedLengthDesc = prometheus.NewDesc(prefix+"tcp_option_sackpermitted_length", "Number of TCP option sackpermitted length", labelsTCP, nil)
+	tcpOptionSackLengthDesc = prometheus.NewDesc(prefix+"tcp_option_sack_length", "Number of TCP option sack length", labelsTCP, nil)
+	tcpOptionAuthoptionLengthDesc = prometheus.NewDesc(prefix+"tcp_option_authoption_length", "Number of TCP option authoption length", labelsTCP, nil)
 
 	labelsARP := []string{"target", "protocol"}
 	arpDatagramsReceivedDesc = prometheus.NewDesc(prefix+"arp_datagrams_received", "Number of ARP datagrams received", labelsARP, nil)
@@ -893,122 +893,122 @@ func (c *systemstatisticsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- udpDatagramsDeliveredDesc
 	ch <- udpDatagramsOutputDesc
 
-	ch <- tcpPacketsSent
-	ch <- tcpSentDataPackets
-	ch <- tcpDataPacketsBytes
-	ch <- tcpSentDataPacketsRetransmitted
-	ch <- tcpRetransmittedBytes
-	ch <- tcpSentDataUnnecessaryRetransmitted
-	ch <- tcpSentResendsByMtuDiscovery
-	ch <- tcpSentAckOnlyPackets
-	ch <- tcpSentPacketsDelayed
-	ch <- tcpSentUrgOnlyPackets
-	ch <- tcpSentWindowProbePackets
-	ch <- tcpSentWindowUpdatePackets
-	ch <- tcpSentControlPackets
-	ch <- tcpPacketsReceived
-	ch <- tcpReceivedAcks
-	ch <- tcpAcksBytes
-	ch <- tcpReceivedDuplicateAcks
-	ch <- tcpReceivedAcksForUnsentData
-	ch <- tcpPacketsReceivedInSequence
-	ch <- tcpInSequenceBytes
-	ch <- tcpReceivedCompletelyDuplicatePacket
-	ch <- tcpDuplicateInBytes
-	ch <- tcpReceivedOldDuplicatePackets
-	ch <- tcpReceivedPacketsWithSomeDupliacteData
-	ch <- tcpSomeDuplicateInBytes
-	ch <- tcpReceivedOutOfOrderPackets
-	ch <- tcpOutOfOrderInBytes
-	ch <- tcpReceivedPacketsOfDataAfterWindow
-	ch <- tcpBytes
-	ch <- tcpReceivedWindowProbes
-	ch <- tcpReceivedWindowUpdatePackets
-	ch <- tcpPacketsReceivedAfterClose
-	ch <- tcpReceivedDiscardedForBadChecksum
-	ch <- tcpReceivedDiscardedForBadHeaderOffset
-	ch <- tcpReceivedDiscardedBecausePacketTooShort
-	ch <- tcpConnectionRequests
-	ch <- tcpConnectionAccepts
-	ch <- tcpBadConnectionAttempts
-	ch <- tcpListenQueueOverflows
-	ch <- tcpBadRstWindow
-	ch <- tcpConnectionsEstablished
-	ch <- tcpConnectionsClosed
-	ch <- tcpDrops
-	ch <- tcpConnectionsUpdatedRttOnClose
-	ch <- tcpConnectionsUpdatedVarianceOnClose
-	ch <- tcpConnectionsUpdatedSsthreshOnClose
-	ch <- tcpEmbryonicConnectionsDropped
-	ch <- tcpSegmentsUpdatedRtt
-	ch <- tcpAttempts
-	ch <- tcpRetransmitTimeouts
-	ch <- tcpConnectionsDroppedByRetransmitTimeout
-	ch <- tcpPersistTimeouts
-	ch <- tcpConnectionsDroppedByPersistTimeout
-	ch <- tcpKeepaliveTimeouts
-	ch <- tcpKeepaliveProbesSent
-	ch <- tcpKeepaliveConnectionsDropped
-	ch <- tcpAckHeaderPredictions
-	ch <- tcpDataPacketHeaderPredictions
-	ch <- tcpSyncacheEntriesAdded
-	ch <- tcpRetransmitted
-	ch <- tcpDupsyn
-	ch <- tcpDropped
-	ch <- tcpCompleted
-	ch <- tcpBucketOverflow
-	ch <- tcpCacheOverflow
-	ch <- tcpReset
-	ch <- tcpStale
-	ch <- tcpAborted
-	ch <- tcpBadack
-	ch <- tcpUnreach
-	ch <- tcpZoneFailures
-	ch <- tcpCookiesSent
-	ch <- tcpCookiesReceived
-	ch <- tcpSackRecoveryEpisodes
-	ch <- tcpSegmentRetransmits
-	ch <- tcpByteRetransmits
-	ch <- tcpSackOptionsReceived
-	ch <- tcpSackOptionsSent
-	ch <- tcpSackScoreboardOverflow
-	ch <- tcpAcksSentInResponseButNotExactRsts
-	ch <- tcpAcksSentInResponseToSynsOnEstablishedConnections
-	ch <- tcpRcvPacketsDroppedDueToBadAddress
-	ch <- tcpOutOfSequenceSegmentDrops
-	ch <- tcpRstPackets
-	ch <- tcpIcmpPacketsIgnored
-	ch <- tcpSendPacketsDropped
-	ch <- tcpRcvPacketsDropped
-	ch <- tcpOutgoingSegmentsDropped
-	ch <- tcpReceivedSynfinDropped
-	ch <- tcpReceivedIpsecDropped
-	ch <- tcpReceivedMacDropped
-	ch <- tcpReceivedMinttlExceeded
-	ch <- tcpListenstateBadflagsDropped
-	ch <- tcpFinwaitstateBadflagsDropped
-	ch <- tcpReceivedDosAttack
-	ch <- tcpReceivedBadSynack
-	ch <- tcpSyncacheZoneFull
-	ch <- tcpReceivedRstFirewallfilter
-	ch <- tcpReceivedNoackTimewait
-	ch <- tcpReceivedNoTimewaitState
-	ch <- tcpReceivedRstTimewaitState
-	ch <- tcpReceivedTimewaitDrops
-	ch <- tcpReceivedBadaddrTimewaitState
-	ch <- tcpReceivedAckoffInSynSentrcvd
-	ch <- tcpReceivedBadaddrFirewall
-	ch <- tcpReceivedNosynSynSent
-	ch <- tcpReceivedBadrstSynSent
-	ch <- tcpReceivedBadrstListenState
-	ch <- tcpOptionMaxsegmentLength
-	ch <- tcpOptionWindowLength
-	ch <- tcpOptionTimestampLength
-	ch <- tcpOptionMd5Length
-	ch <- tcpOptionAuthLength
-	ch <- tcpOptionSackpermittedLength
-	ch <- tcpOptionSackLength
-	ch <- tcpOptionAuthoptionLength
+	ch <- tcpPacketsSentDesc
+	ch <- tcpSentDataPacketsDesc
+	ch <- tcpDataPacketsBytesDesc
+	ch <- tcpSentDataPacketsRetransmittedDesc
+	ch <- tcpRetransmittedBytesDesc
+	ch <- tcpSentDataUnnecessaryRetransmittedDesc
+	ch <- tcpSentResendsByMtuDiscoveryDesc
+	ch <- tcpSentAckOnlyPacketsDesc
+	ch <- tcpSentPacketsDelayedDesc
+	ch <- tcpSentUrgOnlyPacketsDesc
+	ch <- tcpSentWindowProbePacketsDesc
+	ch <- tcpSentWindowUpdatePacketsDesc
+	ch <- tcpSentControlPacketsDesc
+	ch <- tcpPacketsReceivedDesc
+	ch <- tcpReceivedAcksDesc
+	ch <- tcpAcksBytesDesc
+	ch <- tcpReceivedDuplicateAcksDesc
+	ch <- tcpReceivedAcksForUnsentDataDesc
+	ch <- tcpPacketsReceivedInSequenceDesc
+	ch <- tcpInSequenceBytesDesc
+	ch <- tcpReceivedCompletelyDuplicatePacketDesc
+	ch <- tcpDuplicateInBytesDesc
+	ch <- tcpReceivedOldDuplicatePacketsDesc
+	ch <- tcpReceivedPacketsWithSomeDupliacteDataDesc
+	ch <- tcpSomeDuplicateInBytesDesc
+	ch <- tcpReceivedOutOfOrderPacketsDesc
+	ch <- tcpOutOfOrderInBytesDesc
+	ch <- tcpReceivedPacketsOfDataAfterWindowDesc
+	ch <- tcpBytesDesc
+	ch <- tcpReceivedWindowProbesDesc
+	ch <- tcpReceivedWindowUpdatePacketsDesc
+	ch <- tcpPacketsReceivedAfterCloseDesc
+	ch <- tcpReceivedDiscardedForBadChecksumDesc
+	ch <- tcpReceivedDiscardedForBadHeaderOffsetDesc
+	ch <- tcpReceivedDiscardedBecausePacketTooShortDesc
+	ch <- tcpConnectionRequestsDesc
+	ch <- tcpConnectionAcceptsDesc
+	ch <- tcpBadConnectionAttemptsDesc
+	ch <- tcpListenQueueOverflowsDesc
+	ch <- tcpBadRstWindowDesc
+	ch <- tcpConnectionsEstablishedDesc
+	ch <- tcpConnectionsClosedDesc
+	ch <- tcpDropsDesc
+	ch <- tcpConnectionsUpdatedRttOnCloseDesc
+	ch <- tcpConnectionsUpdatedVarianceOnCloseDesc
+	ch <- tcpConnectionsUpdatedSsthreshOnCloseDesc
+	ch <- tcpEmbryonicConnectionsDroppedDesc
+	ch <- tcpSegmentsUpdatedRttDesc
+	ch <- tcpAttemptsDesc
+	ch <- tcpRetransmitTimeoutsDesc
+	ch <- tcpConnectionsDroppedByRetransmitTimeoutDesc
+	ch <- tcpPersistTimeoutsDesc
+	ch <- tcpConnectionsDroppedByPersistTimeoutDesc
+	ch <- tcpKeepaliveTimeoutsDesc
+	ch <- tcpKeepaliveProbesSentDesc
+	ch <- tcpKeepaliveConnectionsDroppedDesc
+	ch <- tcpAckHeaderPredictionsDesc
+	ch <- tcpDataPacketHeaderPredictionsDesc
+	ch <- tcpSyncacheEntriesAddedDesc
+	ch <- tcpRetransmittedDesc
+	ch <- tcpDupsynDesc
+	ch <- tcpDroppedDesc
+	ch <- tcpCompletedDesc
+	ch <- tcpBucketOverflowDesc
+	ch <- tcpCacheOverflowDesc
+	ch <- tcpResetDesc
+	ch <- tcpStaleDesc
+	ch <- tcpAbortedDesc
+	ch <- tcpBadackDesc
+	ch <- tcpUnreachDesc
+	ch <- tcpZoneFailuresDesc
+	ch <- tcpCookiesSentDesc
+	ch <- tcpCookiesReceivedDesc
+	ch <- tcpSackRecoveryEpisodesDesc
+	ch <- tcpSegmentRetransmitsDesc
+	ch <- tcpByteRetransmitsDesc
+	ch <- tcpSackOptionsReceivedDesc
+	ch <- tcpSackOptionsSentDesc
+	ch <- tcpSackScoreboardOverflowDesc
+	ch <- tcpAcksSentInResponseButNotExactRstsDesc
+	ch <- tcpAcksSentInResponseToSynsOnEstablishedConnectionsDesc
+	ch <- tcpRcvPacketsDroppedDueToBadAddressDesc
+	ch <- tcpOutOfSequenceSegmentDropsDesc
+	ch <- tcpRstPacketsDesc
+	ch <- tcpIcmpPacketsIgnoredDesc
+	ch <- tcpSendPacketsDroppedDesc
+	ch <- tcpRcvPacketsDroppedDesc
+	ch <- tcpOutgoingSegmentsDroppedDesc
+	ch <- tcpReceivedSynfinDroppedDesc
+	ch <- tcpReceivedIpsecDroppedDesc
+	ch <- tcpReceivedMacDroppedDesc
+	ch <- tcpReceivedMinttlExceededDesc
+	ch <- tcpListenstateBadflagsDroppedDesc
+	ch <- tcpFinwaitstateBadflagsDroppedDesc
+	ch <- tcpReceivedDosAttackDesc
+	ch <- tcpReceivedBadSynackDesc
+	ch <- tcpSyncacheZoneFullDesc
+	ch <- tcpReceivedRstFirewallfilterDesc
+	ch <- tcpReceivedNoackTimewaitDesc
+	ch <- tcpReceivedNoTimewaitStateDesc
+	ch <- tcpReceivedRstTimewaitStateDesc
+	ch <- tcpReceivedTimewaitDropsDesc
+	ch <- tcpReceivedBadaddrTimewaitStateDesc
+	ch <- tcpReceivedAckoffInSynSentrcvdDesc
+	ch <- tcpReceivedBadaddrFirewallDesc
+	ch <- tcpReceivedNosynSynSentDesc
+	ch <- tcpReceivedBadrstSynSentDesc
+	ch <- tcpReceivedBadrstListenStateDesc
+	ch <- tcpOptionMaxsegmentLengthDesc
+	ch <- tcpOptionWindowLengthDesc
+	ch <- tcpOptionTimestampLengthDesc
+	ch <- tcpOptionMd5LengthDesc
+	ch <- tcpOptionAuthLengthDesc
+	ch <- tcpOptionSackpermittedLengthDesc
+	ch <- tcpOptionSackLengthDesc
+	ch <- tcpOptionAuthoptionLengthDesc
 
 	ch <- arpDatagramsReceivedDesc
 	ch <- arpRequestsReceivedDesc
@@ -1262,7 +1262,7 @@ func (c *systemstatisticsCollector) collectSystemStatisticsIPV4(ch chan<- promet
 	ch <- prometheus.MustNewConstMetric(ipv4TimestampOptionsDesc, prometheus.CounterValue, s.Statistics.Ip.TimestampOptions, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv4TimestampAndAddressOptionsDesc, prometheus.CounterValue, s.Statistics.Ip.TimestampAndAddressOptions, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv4TimestampAndPrespecifiedAddressOptionsDesc, prometheus.CounterValue, s.Statistics.Ip.TimestampAndPrespecifiedAddressOptions, labels...)
-	ch <- prometheus.MustNewConstMetric(ipv4OptionPacketsDroppedDueToRateLimitDesc, prometheus.CounterValue, s.Statistics.Ip.OptionPacketsDroppedDueToRateLimit, labels...)
+	ch <- prometheus.MustNewConstMetric(ipv4OptionPacketsDroppedDueToRateLimitDesc, prometheus.GaugeValue, s.Statistics.Ip.OptionPacketsDroppedDueToRateLimit, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv4RouterAlertOptionDesc, prometheus.CounterValue, s.Statistics.Ip.RouterAlertOptions, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv4MulticastPacketsDroppedDesc, prometheus.CounterValue, s.Statistics.Ip.MulticastPacketsDropped, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv4PacketsDroppedDesc, prometheus.CounterValue, s.Statistics.Ip.PacketsDropped, labels...)
@@ -1286,7 +1286,7 @@ func (c *systemstatisticsCollector) collectSystemStatisticsIPV6(ch chan<- promet
 	ch <- prometheus.MustNewConstMetric(ipv6FragmentsReceivedDesc, prometheus.CounterValue, s.Statistics.Ip6.Ip6FragmentsReceived, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv6DuplicateOrOutOfSpaceFragmentsDroppedDesc, prometheus.CounterValue, s.Statistics.Ip6.DuplicateOrOutOfSpaceFragmentsDropped, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv6FragmentsDroppedAfterTimeoutDesc, prometheus.CounterValue, s.Statistics.Ip6.Ip6FragmentsDroppedAfterTimeout, labels...)
-	ch <- prometheus.MustNewConstMetric(ipv6FragmentsThatExceededLimitDesc, prometheus.CounterValue, s.Statistics.Ip6.FragmentsThatExceededLimit, labels...)
+	ch <- prometheus.MustNewConstMetric(ipv6FragmentsThatExceededLimitDesc, prometheus.GaugeValue, s.Statistics.Ip6.FragmentsThatExceededLimit, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv6PacketsReassembledOkDesc, prometheus.CounterValue, s.Statistics.Ip6.Ip6PacketsReassembledOk, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv6PacketsForThisHostDesc, prometheus.CounterValue, s.Statistics.Ip6.Ip6PacketsForThisHost, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv6PacketsForwardedDesc, prometheus.CounterValue, s.Statistics.Ip6.Ip6PacketsForwarded, labels...)
@@ -1316,7 +1316,7 @@ func (c *systemstatisticsCollector) collectSystemStatisticsIPV6(ch chan<- promet
 	ch <- prometheus.MustNewConstMetric(ipv6ForwardCacheHitDesc, prometheus.CounterValue, s.Statistics.Ip6.ForwardCacheHit, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv6ForwardCacheMissDesc, prometheus.CounterValue, s.Statistics.Ip6.ForwardCacheMiss, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv6PacketsDestinedToDeadNextHopDesc, prometheus.CounterValue, s.Statistics.Ip6.Ip6PacketsDestinedToDeadNextHop, labels...)
-	ch <- prometheus.MustNewConstMetric(ipv6OptionPacketsDroppedDueToRateLimitDesc, prometheus.CounterValue, s.Statistics.Ip6.Ip6OptionPacketsDroppedDueToRateLimit, labels...)
+	ch <- prometheus.MustNewConstMetric(ipv6OptionPacketsDroppedDueToRateLimitDesc, prometheus.GaugeValue, s.Statistics.Ip6.Ip6OptionPacketsDroppedDueToRateLimit, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv6PacketsDroppedDesc, prometheus.CounterValue, s.Statistics.Ip6.Ip6PacketsDropped, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv6PacketsDroppedDueToBadProtocolDesc, prometheus.CounterValue, s.Statistics.Ip6.PacketsDroppedDueToBadProtocol, labels...)
 	ch <- prometheus.MustNewConstMetric(ipv6TransitRePacketDroppedOnMgmtInterfaceDesc, prometheus.CounterValue, s.Statistics.Ip6.TransitRePacketDroppedOnMgmtInterface, labels...)
@@ -1340,120 +1340,120 @@ func (c *systemstatisticsCollector) collectSystemStatisticsUDP(ch chan<- prometh
 
 func (c *systemstatisticsCollector) collectSystemStatisticsTCP(ch chan<- prometheus.Metric, labelValues []string, s SystemStatistics) {
 	l := append(labelValues, "tcp")
-	ch <- prometheus.MustNewConstMetric(tcpPacketsSent, prometheus.CounterValue, s.Statistics.Tcp.PacketsSent, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSentDataPackets, prometheus.CounterValue, s.Statistics.Tcp.SentDataPackets, l...)
-	ch <- prometheus.MustNewConstMetric(tcpDataPacketsBytes, prometheus.CounterValue, s.Statistics.Tcp.DataPacketsBytes, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSentDataPacketsRetransmitted, prometheus.CounterValue, s.Statistics.Tcp.SentDataPacketsRetransmitted, l...)
-	ch <- prometheus.MustNewConstMetric(tcpRetransmittedBytes, prometheus.CounterValue, s.Statistics.Tcp.RetransmittedBytes, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSentDataUnnecessaryRetransmitted, prometheus.CounterValue, s.Statistics.Tcp.SentDataUnnecessaryRetransmitted, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSentResendsByMtuDiscovery, prometheus.CounterValue, s.Statistics.Tcp.SentResendsByMtuDiscovery, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSentAckOnlyPackets, prometheus.CounterValue, s.Statistics.Tcp.SentAckOnlyPackets, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSentPacketsDelayed, prometheus.CounterValue, s.Statistics.Tcp.SentPacketsDelayed, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSentUrgOnlyPackets, prometheus.CounterValue, s.Statistics.Tcp.SentUrgOnlyPackets, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSentWindowProbePackets, prometheus.CounterValue, s.Statistics.Tcp.SentWindowProbePackets, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSentWindowUpdatePackets, prometheus.CounterValue, s.Statistics.Tcp.SentWindowUpdatePackets, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSentControlPackets, prometheus.CounterValue, s.Statistics.Tcp.SentControlPackets, l...)
-	ch <- prometheus.MustNewConstMetric(tcpPacketsReceived, prometheus.CounterValue, s.Statistics.Tcp.PacketsReceived, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedAcks, prometheus.CounterValue, s.Statistics.Tcp.ReceivedAcks, l...)
-	ch <- prometheus.MustNewConstMetric(tcpAcksBytes, prometheus.CounterValue, s.Statistics.Tcp.AcksBytes, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedDuplicateAcks, prometheus.CounterValue, s.Statistics.Tcp.ReceivedDuplicateAcks, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedAcksForUnsentData, prometheus.CounterValue, s.Statistics.Tcp.ReceivedAcksForUnsentData, l...)
-	ch <- prometheus.MustNewConstMetric(tcpPacketsReceivedInSequence, prometheus.CounterValue, s.Statistics.Tcp.PacketsReceivedInSequence, l...)
-	ch <- prometheus.MustNewConstMetric(tcpInSequenceBytes, prometheus.CounterValue, s.Statistics.Tcp.InSequenceBytes, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedCompletelyDuplicatePacket, prometheus.CounterValue, s.Statistics.Tcp.ReceivedCompletelyDuplicatePacket, l...)
-	ch <- prometheus.MustNewConstMetric(tcpDuplicateInBytes, prometheus.CounterValue, s.Statistics.Tcp.DuplicateInBytes, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedOldDuplicatePackets, prometheus.CounterValue, s.Statistics.Tcp.ReceivedOldDuplicatePackets, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSomeDuplicateInBytes, prometheus.CounterValue, s.Statistics.Tcp.SomeDuplicateInBytes, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedOutOfOrderPackets, prometheus.CounterValue, s.Statistics.Tcp.ReceivedOutOfOrderPackets, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedPacketsOfDataAfterWindow, prometheus.CounterValue, s.Statistics.Tcp.ReceivedPacketsOfDataAfterWindow, l...)
-	ch <- prometheus.MustNewConstMetric(tcpBytes, prometheus.CounterValue, s.Statistics.Tcp.Bytes, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedWindowProbes, prometheus.CounterValue, s.Statistics.Tcp.ReceivedWindowProbes, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedWindowUpdatePackets, prometheus.CounterValue, s.Statistics.Tcp.ReceivedWindowUpdatePackets, l...)
-	ch <- prometheus.MustNewConstMetric(tcpPacketsReceivedAfterClose, prometheus.CounterValue, s.Statistics.Tcp.PacketsReceivedAfterClose, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedDiscardedForBadChecksum, prometheus.CounterValue, s.Statistics.Tcp.ReceivedDiscardedForBadChecksum, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedDiscardedForBadHeaderOffset, prometheus.CounterValue, s.Statistics.Tcp.ReceivedDiscardedForBadHeaderOffset, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedDiscardedBecausePacketTooShort, prometheus.CounterValue, s.Statistics.Tcp.ReceivedDiscardedBecausePacketTooShort, l...)
-	ch <- prometheus.MustNewConstMetric(tcpConnectionRequests, prometheus.CounterValue, s.Statistics.Tcp.ConnectionRequests, l...)
-	ch <- prometheus.MustNewConstMetric(tcpConnectionAccepts, prometheus.CounterValue, s.Statistics.Tcp.ConnectionAccepts, l...)
-	ch <- prometheus.MustNewConstMetric(tcpBadConnectionAttempts, prometheus.CounterValue, s.Statistics.Tcp.BadConnectionAttempts, l...)
-	ch <- prometheus.MustNewConstMetric(tcpListenQueueOverflows, prometheus.CounterValue, s.Statistics.Tcp.ListenQueueOverflows, l...)
-	ch <- prometheus.MustNewConstMetric(tcpBadRstWindow, prometheus.CounterValue, s.Statistics.Tcp.BadRstWindow, l...)
-	ch <- prometheus.MustNewConstMetric(tcpConnectionsEstablished, prometheus.CounterValue, s.Statistics.Tcp.ConnectionsEstablished, l...)
-	ch <- prometheus.MustNewConstMetric(tcpConnectionsClosed, prometheus.CounterValue, s.Statistics.Tcp.ConnectionsClosed, l...)
-	ch <- prometheus.MustNewConstMetric(tcpDrops, prometheus.CounterValue, s.Statistics.Tcp.Drops, l...)
-	ch <- prometheus.MustNewConstMetric(tcpConnectionsUpdatedRttOnClose, prometheus.CounterValue, s.Statistics.Tcp.ConnectionsUpdatedRttOnClose, l...)
-	ch <- prometheus.MustNewConstMetric(tcpConnectionsUpdatedVarianceOnClose, prometheus.CounterValue, s.Statistics.Tcp.ConnectionsUpdatedVarianceOnClose, l...)
-	ch <- prometheus.MustNewConstMetric(tcpConnectionsUpdatedSsthreshOnClose, prometheus.CounterValue, s.Statistics.Tcp.ConnectionsUpdatedSsthreshOnClose, l...)
-	ch <- prometheus.MustNewConstMetric(tcpEmbryonicConnectionsDropped, prometheus.CounterValue, s.Statistics.Tcp.EmbryonicConnectionsDropped, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSegmentsUpdatedRtt, prometheus.CounterValue, s.Statistics.Tcp.SegmentsUpdatedRtt, l...)
-	ch <- prometheus.MustNewConstMetric(tcpAttempts, prometheus.CounterValue, s.Statistics.Tcp.Attempts, l...)
-	ch <- prometheus.MustNewConstMetric(tcpRetransmitTimeouts, prometheus.CounterValue, s.Statistics.Tcp.RetransmitTimeouts, l...)
-	ch <- prometheus.MustNewConstMetric(tcpConnectionsDroppedByRetransmitTimeout, prometheus.CounterValue, s.Statistics.Tcp.ConnectionsDroppedByRetransmitTimeout, l...)
-	ch <- prometheus.MustNewConstMetric(tcpPersistTimeouts, prometheus.CounterValue, s.Statistics.Tcp.PersistTimeouts, l...)
-	ch <- prometheus.MustNewConstMetric(tcpConnectionsDroppedByPersistTimeout, prometheus.CounterValue, s.Statistics.Tcp.ConnectionsDroppedByPersistTimeout, l...)
-	ch <- prometheus.MustNewConstMetric(tcpKeepaliveTimeouts, prometheus.CounterValue, s.Statistics.Tcp.KeepaliveTimeouts, l...)
-	ch <- prometheus.MustNewConstMetric(tcpKeepaliveProbesSent, prometheus.CounterValue, s.Statistics.Tcp.KeepaliveProbesSent, l...)
-	ch <- prometheus.MustNewConstMetric(tcpKeepaliveConnectionsDropped, prometheus.CounterValue, s.Statistics.Tcp.KeepaliveConnectionsDropped, l...)
-	ch <- prometheus.MustNewConstMetric(tcpAckHeaderPredictions, prometheus.CounterValue, s.Statistics.Tcp.AckHeaderPredictions, l...)
-	ch <- prometheus.MustNewConstMetric(tcpDataPacketHeaderPredictions, prometheus.CounterValue, s.Statistics.Tcp.DataPacketHeaderPredictions, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSyncacheEntriesAdded, prometheus.CounterValue, s.Statistics.Tcp.SyncacheEntriesAdded, l...)
-	ch <- prometheus.MustNewConstMetric(tcpRetransmitted, prometheus.CounterValue, s.Statistics.Tcp.Retransmitted, l...)
-	ch <- prometheus.MustNewConstMetric(tcpDupsyn, prometheus.CounterValue, s.Statistics.Tcp.Dupsyn, l...)
-	ch <- prometheus.MustNewConstMetric(tcpDropped, prometheus.CounterValue, s.Statistics.Tcp.Dropped, l...)
-	ch <- prometheus.MustNewConstMetric(tcpCompleted, prometheus.CounterValue, s.Statistics.Tcp.Completed, l...)
-	ch <- prometheus.MustNewConstMetric(tcpBucketOverflow, prometheus.CounterValue, s.Statistics.Tcp.BucketOverflow, l...)
-	ch <- prometheus.MustNewConstMetric(tcpCacheOverflow, prometheus.CounterValue, s.Statistics.Tcp.CacheOverflow, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReset, prometheus.CounterValue, s.Statistics.Tcp.Reset, l...)
-	ch <- prometheus.MustNewConstMetric(tcpStale, prometheus.CounterValue, s.Statistics.Tcp.Stale, l...)
-	ch <- prometheus.MustNewConstMetric(tcpAborted, prometheus.CounterValue, s.Statistics.Tcp.Aborted, l...)
-	ch <- prometheus.MustNewConstMetric(tcpBadack, prometheus.CounterValue, s.Statistics.Tcp.Badack, l...)
-	ch <- prometheus.MustNewConstMetric(tcpUnreach, prometheus.CounterValue, s.Statistics.Tcp.Unreach, l...)
-	ch <- prometheus.MustNewConstMetric(tcpZoneFailures, prometheus.CounterValue, s.Statistics.Tcp.ZoneFailures, l...)
-	ch <- prometheus.MustNewConstMetric(tcpCookiesSent, prometheus.CounterValue, s.Statistics.Tcp.CookiesSent, l...)
-	ch <- prometheus.MustNewConstMetric(tcpCookiesReceived, prometheus.CounterValue, s.Statistics.Tcp.CookiesReceived, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSackRecoveryEpisodes, prometheus.CounterValue, s.Statistics.Tcp.SackRecoveryEpisodes, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSegmentRetransmits, prometheus.CounterValue, s.Statistics.Tcp.SegmentRetransmits, l...)
-	ch <- prometheus.MustNewConstMetric(tcpByteRetransmits, prometheus.CounterValue, s.Statistics.Tcp.ByteRetransmits, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSackOptionsReceived, prometheus.CounterValue, s.Statistics.Tcp.SackOptionsReceived, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSackOptionsSent, prometheus.CounterValue, s.Statistics.Tcp.SackOptionsReceived, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSackScoreboardOverflow, prometheus.CounterValue, s.Statistics.Tcp.SackScoreboardOverflow, l...)
-	ch <- prometheus.MustNewConstMetric(tcpAcksSentInResponseButNotExactRsts, prometheus.CounterValue, s.Statistics.Tcp.AcksSentInResponseButNotExactRsts, l...)
-	ch <- prometheus.MustNewConstMetric(tcpAcksSentInResponseToSynsOnEstablishedConnections, prometheus.CounterValue, s.Statistics.Tcp.AcksSentInResponseToSynsOnEstablishedConnections, l...)
-	ch <- prometheus.MustNewConstMetric(tcpRcvPacketsDroppedDueToBadAddress, prometheus.CounterValue, s.Statistics.Tcp.RcvPacketsDroppedDueToBadAddress, l...)
-	ch <- prometheus.MustNewConstMetric(tcpOutOfSequenceSegmentDrops, prometheus.CounterValue, s.Statistics.Tcp.OutOfSequenceSegmentDrops, l...)
-	ch <- prometheus.MustNewConstMetric(tcpRstPackets, prometheus.CounterValue, s.Statistics.Tcp.RstPackets, l...)
-	ch <- prometheus.MustNewConstMetric(tcpIcmpPacketsIgnored, prometheus.CounterValue, s.Statistics.Tcp.IcmpPacketsIgnored, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSendPacketsDropped, prometheus.CounterValue, s.Statistics.Tcp.SendPacketsDropped, l...)
-	ch <- prometheus.MustNewConstMetric(tcpRcvPacketsDropped, prometheus.CounterValue, s.Statistics.Tcp.RcvPacketsDropped, l...)
-	ch <- prometheus.MustNewConstMetric(tcpOutgoingSegmentsDropped, prometheus.CounterValue, s.Statistics.Tcp.OutgoingSegmentsDropped, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedSynfinDropped, prometheus.CounterValue, s.Statistics.Tcp.ReceivedSynfinDropped, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedIpsecDropped, prometheus.CounterValue, s.Statistics.Tcp.ReceivedIpsecDropped, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedMacDropped, prometheus.CounterValue, s.Statistics.Tcp.ReceivedMacDropped, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedMinttlExceeded, prometheus.CounterValue, s.Statistics.Tcp.ReceivedMinttlExceeded, l...)
-	ch <- prometheus.MustNewConstMetric(tcpListenstateBadflagsDropped, prometheus.CounterValue, s.Statistics.Tcp.ListenstateBadflagsDropped, l...)
-	ch <- prometheus.MustNewConstMetric(tcpFinwaitstateBadflagsDropped, prometheus.CounterValue, s.Statistics.Tcp.FinwaitstateBadflagsDropped, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedDosAttack, prometheus.CounterValue, s.Statistics.Tcp.ReceivedDosAttack, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedBadSynack, prometheus.CounterValue, s.Statistics.Tcp.ReceivedBadSynack, l...)
-	ch <- prometheus.MustNewConstMetric(tcpSyncacheZoneFull, prometheus.CounterValue, s.Statistics.Tcp.SyncacheZoneFull, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedRstFirewallfilter, prometheus.CounterValue, s.Statistics.Tcp.ReceivedRstFirewallfilter, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedNoackTimewait, prometheus.CounterValue, s.Statistics.Tcp.ReceivedNoackTimewait, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedNoTimewaitState, prometheus.CounterValue, s.Statistics.Tcp.ReceivedNoTimewaitState, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedRstTimewaitState, prometheus.CounterValue, s.Statistics.Tcp.ReceivedRstTimewaitState, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedTimewaitDrops, prometheus.CounterValue, s.Statistics.Tcp.ReceivedTimewaitDrops, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedBadaddrTimewaitState, prometheus.CounterValue, s.Statistics.Tcp.ReceivedBadaddrTimewaitState, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedAckoffInSynSentrcvd, prometheus.CounterValue, s.Statistics.Tcp.ReceivedAckoffInSynSentrcvd, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedBadaddrFirewall, prometheus.CounterValue, s.Statistics.Tcp.ReceivedBadaddrFirewall, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedNosynSynSent, prometheus.CounterValue, s.Statistics.Tcp.ReceivedNosynSynSent, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedBadrstSynSent, prometheus.CounterValue, s.Statistics.Tcp.ReceivedBadrstSynSent, l...)
-	ch <- prometheus.MustNewConstMetric(tcpReceivedBadrstListenState, prometheus.CounterValue, s.Statistics.Tcp.ReceivedBadrstListenState, l...)
-	ch <- prometheus.MustNewConstMetric(tcpOptionMaxsegmentLength, prometheus.CounterValue, s.Statistics.Tcp.OptionMaxsegmentLength, l...)
-	ch <- prometheus.MustNewConstMetric(tcpOptionWindowLength, prometheus.CounterValue, s.Statistics.Tcp.OptionWindowLength, l...)
-	ch <- prometheus.MustNewConstMetric(tcpOptionTimestampLength, prometheus.CounterValue, s.Statistics.Tcp.OptionTimestampLength, l...)
-	ch <- prometheus.MustNewConstMetric(tcpOptionMd5Length, prometheus.CounterValue, s.Statistics.Tcp.OptionMd5Length, l...)
-	ch <- prometheus.MustNewConstMetric(tcpOptionAuthLength, prometheus.CounterValue, s.Statistics.Tcp.OptionAuthLength, l...)
-	ch <- prometheus.MustNewConstMetric(tcpOptionSackpermittedLength, prometheus.CounterValue, s.Statistics.Tcp.OptionSackpermittedLength, l...)
-	ch <- prometheus.MustNewConstMetric(tcpOptionSackLength, prometheus.CounterValue, s.Statistics.Tcp.OptionSackLength, l...)
-	ch <- prometheus.MustNewConstMetric(tcpOptionAuthoptionLength, prometheus.CounterValue, s.Statistics.Tcp.OptionAuthoptionLength, l...)
+	ch <- prometheus.MustNewConstMetric(tcpPacketsSentDesc, prometheus.CounterValue, s.Statistics.Tcp.PacketsSent, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSentDataPacketsDesc, prometheus.CounterValue, s.Statistics.Tcp.SentDataPackets, l...)
+	ch <- prometheus.MustNewConstMetric(tcpDataPacketsBytesDesc, prometheus.CounterValue, s.Statistics.Tcp.DataPacketsBytes, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSentDataPacketsRetransmittedDesc, prometheus.CounterValue, s.Statistics.Tcp.SentDataPacketsRetransmitted, l...)
+	ch <- prometheus.MustNewConstMetric(tcpRetransmittedBytesDesc, prometheus.CounterValue, s.Statistics.Tcp.RetransmittedBytes, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSentDataUnnecessaryRetransmittedDesc, prometheus.CounterValue, s.Statistics.Tcp.SentDataUnnecessaryRetransmitted, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSentResendsByMtuDiscoveryDesc, prometheus.CounterValue, s.Statistics.Tcp.SentResendsByMtuDiscovery, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSentAckOnlyPacketsDesc, prometheus.CounterValue, s.Statistics.Tcp.SentAckOnlyPackets, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSentPacketsDelayedDesc, prometheus.CounterValue, s.Statistics.Tcp.SentPacketsDelayed, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSentUrgOnlyPacketsDesc, prometheus.CounterValue, s.Statistics.Tcp.SentUrgOnlyPackets, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSentWindowProbePacketsDesc, prometheus.CounterValue, s.Statistics.Tcp.SentWindowProbePackets, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSentWindowUpdatePacketsDesc, prometheus.CounterValue, s.Statistics.Tcp.SentWindowUpdatePackets, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSentControlPacketsDesc, prometheus.CounterValue, s.Statistics.Tcp.SentControlPackets, l...)
+	ch <- prometheus.MustNewConstMetric(tcpPacketsReceivedDesc, prometheus.CounterValue, s.Statistics.Tcp.PacketsReceived, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedAcksDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedAcks, l...)
+	ch <- prometheus.MustNewConstMetric(tcpAcksBytesDesc, prometheus.CounterValue, s.Statistics.Tcp.AcksBytes, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedDuplicateAcksDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedDuplicateAcks, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedAcksForUnsentDataDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedAcksForUnsentData, l...)
+	ch <- prometheus.MustNewConstMetric(tcpPacketsReceivedInSequenceDesc, prometheus.CounterValue, s.Statistics.Tcp.PacketsReceivedInSequence, l...)
+	ch <- prometheus.MustNewConstMetric(tcpInSequenceBytesDesc, prometheus.CounterValue, s.Statistics.Tcp.InSequenceBytes, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedCompletelyDuplicatePacketDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedCompletelyDuplicatePacket, l...)
+	ch <- prometheus.MustNewConstMetric(tcpDuplicateInBytesDesc, prometheus.CounterValue, s.Statistics.Tcp.DuplicateInBytes, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedOldDuplicatePacketsDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedOldDuplicatePackets, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSomeDuplicateInBytesDesc, prometheus.CounterValue, s.Statistics.Tcp.SomeDuplicateInBytes, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedOutOfOrderPacketsDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedOutOfOrderPackets, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedPacketsOfDataAfterWindowDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedPacketsOfDataAfterWindow, l...)
+	ch <- prometheus.MustNewConstMetric(tcpBytesDesc, prometheus.CounterValue, s.Statistics.Tcp.Bytes, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedWindowProbesDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedWindowProbes, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedWindowUpdatePacketsDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedWindowUpdatePackets, l...)
+	ch <- prometheus.MustNewConstMetric(tcpPacketsReceivedAfterCloseDesc, prometheus.CounterValue, s.Statistics.Tcp.PacketsReceivedAfterClose, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedDiscardedForBadChecksumDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedDiscardedForBadChecksum, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedDiscardedForBadHeaderOffsetDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedDiscardedForBadHeaderOffset, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedDiscardedBecausePacketTooShortDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedDiscardedBecausePacketTooShort, l...)
+	ch <- prometheus.MustNewConstMetric(tcpConnectionRequestsDesc, prometheus.CounterValue, s.Statistics.Tcp.ConnectionRequests, l...)
+	ch <- prometheus.MustNewConstMetric(tcpConnectionAcceptsDesc, prometheus.CounterValue, s.Statistics.Tcp.ConnectionAccepts, l...)
+	ch <- prometheus.MustNewConstMetric(tcpBadConnectionAttemptsDesc, prometheus.CounterValue, s.Statistics.Tcp.BadConnectionAttempts, l...)
+	ch <- prometheus.MustNewConstMetric(tcpListenQueueOverflowsDesc, prometheus.CounterValue, s.Statistics.Tcp.ListenQueueOverflows, l...)
+	ch <- prometheus.MustNewConstMetric(tcpBadRstWindowDesc, prometheus.CounterValue, s.Statistics.Tcp.BadRstWindow, l...)
+	ch <- prometheus.MustNewConstMetric(tcpConnectionsEstablishedDesc, prometheus.CounterValue, s.Statistics.Tcp.ConnectionsEstablished, l...)
+	ch <- prometheus.MustNewConstMetric(tcpConnectionsClosedDesc, prometheus.CounterValue, s.Statistics.Tcp.ConnectionsClosed, l...)
+	ch <- prometheus.MustNewConstMetric(tcpDropsDesc, prometheus.CounterValue, s.Statistics.Tcp.Drops, l...)
+	ch <- prometheus.MustNewConstMetric(tcpConnectionsUpdatedRttOnCloseDesc, prometheus.CounterValue, s.Statistics.Tcp.ConnectionsUpdatedRttOnClose, l...)
+	ch <- prometheus.MustNewConstMetric(tcpConnectionsUpdatedVarianceOnCloseDesc, prometheus.CounterValue, s.Statistics.Tcp.ConnectionsUpdatedVarianceOnClose, l...)
+	ch <- prometheus.MustNewConstMetric(tcpConnectionsUpdatedSsthreshOnCloseDesc, prometheus.CounterValue, s.Statistics.Tcp.ConnectionsUpdatedSsthreshOnClose, l...)
+	ch <- prometheus.MustNewConstMetric(tcpEmbryonicConnectionsDroppedDesc, prometheus.CounterValue, s.Statistics.Tcp.EmbryonicConnectionsDropped, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSegmentsUpdatedRttDesc, prometheus.CounterValue, s.Statistics.Tcp.SegmentsUpdatedRtt, l...)
+	ch <- prometheus.MustNewConstMetric(tcpAttemptsDesc, prometheus.CounterValue, s.Statistics.Tcp.Attempts, l...)
+	ch <- prometheus.MustNewConstMetric(tcpRetransmitTimeoutsDesc, prometheus.CounterValue, s.Statistics.Tcp.RetransmitTimeouts, l...)
+	ch <- prometheus.MustNewConstMetric(tcpConnectionsDroppedByRetransmitTimeoutDesc, prometheus.CounterValue, s.Statistics.Tcp.ConnectionsDroppedByRetransmitTimeout, l...)
+	ch <- prometheus.MustNewConstMetric(tcpPersistTimeoutsDesc, prometheus.CounterValue, s.Statistics.Tcp.PersistTimeouts, l...)
+	ch <- prometheus.MustNewConstMetric(tcpConnectionsDroppedByPersistTimeoutDesc, prometheus.CounterValue, s.Statistics.Tcp.ConnectionsDroppedByPersistTimeout, l...)
+	ch <- prometheus.MustNewConstMetric(tcpKeepaliveTimeoutsDesc, prometheus.CounterValue, s.Statistics.Tcp.KeepaliveTimeouts, l...)
+	ch <- prometheus.MustNewConstMetric(tcpKeepaliveProbesSentDesc, prometheus.CounterValue, s.Statistics.Tcp.KeepaliveProbesSent, l...)
+	ch <- prometheus.MustNewConstMetric(tcpKeepaliveConnectionsDroppedDesc, prometheus.CounterValue, s.Statistics.Tcp.KeepaliveConnectionsDropped, l...)
+	ch <- prometheus.MustNewConstMetric(tcpAckHeaderPredictionsDesc, prometheus.CounterValue, s.Statistics.Tcp.AckHeaderPredictions, l...)
+	ch <- prometheus.MustNewConstMetric(tcpDataPacketHeaderPredictionsDesc, prometheus.CounterValue, s.Statistics.Tcp.DataPacketHeaderPredictions, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSyncacheEntriesAddedDesc, prometheus.CounterValue, s.Statistics.Tcp.SyncacheEntriesAdded, l...)
+	ch <- prometheus.MustNewConstMetric(tcpRetransmittedDesc, prometheus.CounterValue, s.Statistics.Tcp.Retransmitted, l...)
+	ch <- prometheus.MustNewConstMetric(tcpDupsynDesc, prometheus.CounterValue, s.Statistics.Tcp.Dupsyn, l...)
+	ch <- prometheus.MustNewConstMetric(tcpDroppedDesc, prometheus.CounterValue, s.Statistics.Tcp.Dropped, l...)
+	ch <- prometheus.MustNewConstMetric(tcpCompletedDesc, prometheus.CounterValue, s.Statistics.Tcp.Completed, l...)
+	ch <- prometheus.MustNewConstMetric(tcpBucketOverflowDesc, prometheus.CounterValue, s.Statistics.Tcp.BucketOverflow, l...)
+	ch <- prometheus.MustNewConstMetric(tcpCacheOverflowDesc, prometheus.CounterValue, s.Statistics.Tcp.CacheOverflow, l...)
+	ch <- prometheus.MustNewConstMetric(tcpResetDesc, prometheus.CounterValue, s.Statistics.Tcp.Reset, l...)
+	ch <- prometheus.MustNewConstMetric(tcpStaleDesc, prometheus.CounterValue, s.Statistics.Tcp.Stale, l...)
+	ch <- prometheus.MustNewConstMetric(tcpAbortedDesc, prometheus.CounterValue, s.Statistics.Tcp.Aborted, l...)
+	ch <- prometheus.MustNewConstMetric(tcpBadackDesc, prometheus.CounterValue, s.Statistics.Tcp.Badack, l...)
+	ch <- prometheus.MustNewConstMetric(tcpUnreachDesc, prometheus.CounterValue, s.Statistics.Tcp.Unreach, l...)
+	ch <- prometheus.MustNewConstMetric(tcpZoneFailuresDesc, prometheus.CounterValue, s.Statistics.Tcp.ZoneFailures, l...)
+	ch <- prometheus.MustNewConstMetric(tcpCookiesSentDesc, prometheus.CounterValue, s.Statistics.Tcp.CookiesSent, l...)
+	ch <- prometheus.MustNewConstMetric(tcpCookiesReceivedDesc, prometheus.CounterValue, s.Statistics.Tcp.CookiesReceived, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSackRecoveryEpisodesDesc, prometheus.CounterValue, s.Statistics.Tcp.SackRecoveryEpisodes, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSegmentRetransmitsDesc, prometheus.CounterValue, s.Statistics.Tcp.SegmentRetransmits, l...)
+	ch <- prometheus.MustNewConstMetric(tcpByteRetransmitsDesc, prometheus.CounterValue, s.Statistics.Tcp.ByteRetransmits, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSackOptionsReceivedDesc, prometheus.CounterValue, s.Statistics.Tcp.SackOptionsReceived, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSackOptionsSentDesc, prometheus.CounterValue, s.Statistics.Tcp.SackOptionsReceived, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSackScoreboardOverflowDesc, prometheus.CounterValue, s.Statistics.Tcp.SackScoreboardOverflow, l...)
+	ch <- prometheus.MustNewConstMetric(tcpAcksSentInResponseButNotExactRstsDesc, prometheus.CounterValue, s.Statistics.Tcp.AcksSentInResponseButNotExactRsts, l...)
+	ch <- prometheus.MustNewConstMetric(tcpAcksSentInResponseToSynsOnEstablishedConnectionsDesc, prometheus.CounterValue, s.Statistics.Tcp.AcksSentInResponseToSynsOnEstablishedConnections, l...)
+	ch <- prometheus.MustNewConstMetric(tcpRcvPacketsDroppedDueToBadAddressDesc, prometheus.CounterValue, s.Statistics.Tcp.RcvPacketsDroppedDueToBadAddress, l...)
+	ch <- prometheus.MustNewConstMetric(tcpOutOfSequenceSegmentDropsDesc, prometheus.CounterValue, s.Statistics.Tcp.OutOfSequenceSegmentDrops, l...)
+	ch <- prometheus.MustNewConstMetric(tcpRstPacketsDesc, prometheus.CounterValue, s.Statistics.Tcp.RstPackets, l...)
+	ch <- prometheus.MustNewConstMetric(tcpIcmpPacketsIgnoredDesc, prometheus.CounterValue, s.Statistics.Tcp.IcmpPacketsIgnored, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSendPacketsDroppedDesc, prometheus.CounterValue, s.Statistics.Tcp.SendPacketsDropped, l...)
+	ch <- prometheus.MustNewConstMetric(tcpRcvPacketsDroppedDesc, prometheus.CounterValue, s.Statistics.Tcp.RcvPacketsDropped, l...)
+	ch <- prometheus.MustNewConstMetric(tcpOutgoingSegmentsDroppedDesc, prometheus.CounterValue, s.Statistics.Tcp.OutgoingSegmentsDropped, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedSynfinDroppedDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedSynfinDropped, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedIpsecDroppedDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedIpsecDropped, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedMacDroppedDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedMacDropped, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedMinttlExceededDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedMinttlExceeded, l...)
+	ch <- prometheus.MustNewConstMetric(tcpListenstateBadflagsDroppedDesc, prometheus.CounterValue, s.Statistics.Tcp.ListenstateBadflagsDropped, l...)
+	ch <- prometheus.MustNewConstMetric(tcpFinwaitstateBadflagsDroppedDesc, prometheus.CounterValue, s.Statistics.Tcp.FinwaitstateBadflagsDropped, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedDosAttackDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedDosAttack, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedBadSynackDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedBadSynack, l...)
+	ch <- prometheus.MustNewConstMetric(tcpSyncacheZoneFullDesc, prometheus.CounterValue, s.Statistics.Tcp.SyncacheZoneFull, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedRstFirewallfilterDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedRstFirewallfilter, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedNoackTimewaitDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedNoackTimewait, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedNoTimewaitStateDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedNoTimewaitState, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedRstTimewaitStateDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedRstTimewaitState, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedTimewaitDropsDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedTimewaitDrops, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedBadaddrTimewaitStateDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedBadaddrTimewaitState, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedAckoffInSynSentrcvdDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedAckoffInSynSentrcvd, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedBadaddrFirewallDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedBadaddrFirewall, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedNosynSynSentDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedNosynSynSent, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedBadrstSynSentDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedBadrstSynSent, l...)
+	ch <- prometheus.MustNewConstMetric(tcpReceivedBadrstListenStateDesc, prometheus.CounterValue, s.Statistics.Tcp.ReceivedBadrstListenState, l...)
+	ch <- prometheus.MustNewConstMetric(tcpOptionMaxsegmentLengthDesc, prometheus.CounterValue, s.Statistics.Tcp.OptionMaxsegmentLength, l...)
+	ch <- prometheus.MustNewConstMetric(tcpOptionWindowLengthDesc, prometheus.CounterValue, s.Statistics.Tcp.OptionWindowLength, l...)
+	ch <- prometheus.MustNewConstMetric(tcpOptionTimestampLengthDesc, prometheus.CounterValue, s.Statistics.Tcp.OptionTimestampLength, l...)
+	ch <- prometheus.MustNewConstMetric(tcpOptionMd5LengthDesc, prometheus.CounterValue, s.Statistics.Tcp.OptionMd5Length, l...)
+	ch <- prometheus.MustNewConstMetric(tcpOptionAuthLengthDesc, prometheus.CounterValue, s.Statistics.Tcp.OptionAuthLength, l...)
+	ch <- prometheus.MustNewConstMetric(tcpOptionSackpermittedLengthDesc, prometheus.CounterValue, s.Statistics.Tcp.OptionSackpermittedLength, l...)
+	ch <- prometheus.MustNewConstMetric(tcpOptionSackLengthDesc, prometheus.CounterValue, s.Statistics.Tcp.OptionSackLength, l...)
+	ch <- prometheus.MustNewConstMetric(tcpOptionAuthoptionLengthDesc, prometheus.CounterValue, s.Statistics.Tcp.OptionAuthoptionLength, l...)
 }
 
 func (c *systemstatisticsCollector) collectSystemStatisticsARP(ch chan<- prometheus.Metric, labelValues []string, s SystemStatistics) {
@@ -1523,7 +1523,7 @@ func (c *systemstatisticsCollector) collectSystemStatisticsARP(ch chan<- prometh
 
 func (c *systemstatisticsCollector) collectSystemStatisticsICMP(ch chan<- prometheus.Metric, labelValues []string, s SystemStatistics) {
 	labels := append(labelValues, "ICMP")
-	ch <- prometheus.MustNewConstMetric(icmpDropsDueToRateLimitDesc, prometheus.CounterValue, s.Statistics.Icmp.DropsDueToRateLimit, labels...)
+	ch <- prometheus.MustNewConstMetric(icmpDropsDueToRateLimitDesc, prometheus.GaugeValue, s.Statistics.Icmp.DropsDueToRateLimit, labels...)
 	ch <- prometheus.MustNewConstMetric(icmpCallsToIcmpErrorDesc, prometheus.CounterValue, s.Statistics.Icmp.CallsToIcmpError, labels...)
 	ch <- prometheus.MustNewConstMetric(icmpErrorsNotGeneratedBecauseOldMessageWasIcmp, prometheus.CounterValue, s.Statistics.Icmp.ErrorsNotGeneratedBecauseOldMessageWasIcmp, labels...)
 	for _, histogram := range s.Statistics.Icmp.Histogram {
@@ -1551,7 +1551,7 @@ func (c *systemstatisticsCollector) collectSystemStatisticsICMP6(ch chan<- prome
 	labels := append(labelValues, "ICMP6")
 	ch <- prometheus.MustNewConstMetric(icmp6CallsToIcmp6ErrorDesc, prometheus.CounterValue, s.Statistics.Icmp6.CallsToIcmp6Error, labels...)
 	ch <- prometheus.MustNewConstMetric(icmp6ErrorsNotGeneratedBecauseOldMessageWasIcmpErrorDesc, prometheus.CounterValue, s.Statistics.Icmp6.ErrorsNotGeneratedBecauseOldMessageWasIcmpError, labels...)
-	ch <- prometheus.MustNewConstMetric(icmp6ErrorsNotGeneratedBecauseRateLimitationDesc, prometheus.CounterValue, s.Statistics.Icmp6.ErrorsNotGeneratedBecauseRateLimitation, labels...)
+	ch <- prometheus.MustNewConstMetric(icmp6ErrorsNotGeneratedBecauseRateLimitationDesc, prometheus.GaugeValue, s.Statistics.Icmp6.ErrorsNotGeneratedBecauseRateLimitation, labels...)
 	labels = append(labels, "Output Histogram")
 	ch <- prometheus.MustNewConstMetric(icmp6UnreachableIcmp6PacketsOutputHistoDesc, prometheus.CounterValue, s.Statistics.Icmp6.OutputHistogram.UnreachableIcmp6Packets, labels...)
 	ch <- prometheus.MustNewConstMetric(icmp6Icmp6EchoOutputHistoDesc, prometheus.CounterValue, s.Statistics.Icmp6.OutputHistogram.Icmp6Echo, labels...)

@@ -371,6 +371,24 @@ var (
 	icmp6Nd6DadProxyUnrNomacDropDesc                         *prometheus.Desc
 	icmp6Nd6RequestsDroppedOnEntryDesc                       *prometheus.Desc
 	icmp6Nd6RequestsDroppedDuringRetryDesc                   *prometheus.Desc
+
+	mplsTotalMplsPacketsReceivedDesc                  *prometheus.Desc
+	mplsPacketsForwardedDesc                          *prometheus.Desc
+	mplsPacketsDroppedDesc                            *prometheus.Desc
+	mplsPacketsWithHeaderTooSmallDesc                 *prometheus.Desc
+	mplsAfterTaggingPacketsCanNotFitLinkMtuDesc       *prometheus.Desc
+	mplsPacketsWithIpv4ExplicitNullTagDesc            *prometheus.Desc
+	mplsPacketsWithIpv4ExplicitNullChecksumErrorsDesc *prometheus.Desc
+	mplsPacketsWithRouterAlertTagDesc                 *prometheus.Desc
+	mplsLspPingPacketsDesc                            *prometheus.Desc
+	mplsPacketsWithTtlExpiredDesc                     *prometheus.Desc
+	mplsPacketsWithTagEncodingErrorDesc               *prometheus.Desc
+	mplsPacketsDiscardedDueToNoRouteDesc              *prometheus.Desc
+	mplsPacketsUsedFirstNexthopInEcmpUnilistDesc      *prometheus.Desc
+	mplsPacketsDroppedDueToIflDownDesc                *prometheus.Desc
+	mplsPacketsDroppedAtMplsSocketSendDesc            *prometheus.Desc
+	mplsPacketsForwardedAtMplsSocketSendDesc          *prometheus.Desc
+	mplsPacketsDroppedAtP2mpCnhOutputDesc             *prometheus.Desc
 )
 
 func init() {
@@ -746,6 +764,25 @@ func init() {
 	icmp6Nd6DadProxyUnrNomacDropDesc = prometheus.NewDesc(prefix+"icmp6_nd6_dad_proxy_unr_nomac_droop", "Number of icmp6 nd6 dad proxy unr nomac drop", labelsICMP6, nil)
 	icmp6Nd6RequestsDroppedOnEntryDesc = prometheus.NewDesc(prefix+"icmp6_nd6_requests_dropped_on_entry", "Number of icmp6 nd6 requests dropped on entry", labelsICMP6, nil)
 	icmp6Nd6RequestsDroppedDuringRetryDesc = prometheus.NewDesc(prefix+"icmp6_nd6_requests_dropped_during_retry", "Number of icmp6 nd6 requests dropped during retry", labelsICMP6, nil)
+
+	labelsMPLS := []string{"target", "protocol"}
+	mplsTotalMplsPacketsReceivedDesc = prometheus.NewDesc(prefix+"mpls_total_mpls_packets_received", "Number of mpls packets received", labelsMPLS, nil)
+	mplsPacketsForwardedDesc = prometheus.NewDesc(prefix+"mpls_packets_forwarded", "Number of mpls packets forwarded", labelsMPLS, nil)
+	mplsPacketsDroppedDesc = prometheus.NewDesc(prefix+"mpls_packets_dropped", "Number of mpls packets dropped", labelsMPLS, nil)
+	mplsPacketsWithHeaderTooSmallDesc = prometheus.NewDesc(prefix+"mpls_packets_with_header_too_small", "Number of mpls packets with header too small", labelsMPLS, nil)
+	mplsAfterTaggingPacketsCanNotFitLinkMtuDesc = prometheus.NewDesc(prefix+"mpls_after_tagging_packets_can_not_fit_link_mtu", "Number of mpls after tagging packets can not fit link mtu", labelsMPLS, nil)
+	mplsPacketsWithIpv4ExplicitNullTagDesc = prometheus.NewDesc(prefix+"mpls_packets_with_ipv4_explicit_null_tag", "Number of mpls packets with ipv4 explicit null tag", labelsMPLS, nil)
+	mplsPacketsWithIpv4ExplicitNullChecksumErrorsDesc = prometheus.NewDesc(prefix+"mpls_packets_with_ipv4_explicit_null_checksum_errors", "Number of mpls packets with ipv4 explicit null checksum errors", labelsMPLS, nil)
+	mplsPacketsWithRouterAlertTagDesc = prometheus.NewDesc(prefix+"mpls_packets_with_router_alert_tag", "Number of mpls packets with router alert tag", labelsMPLS, nil)
+	mplsLspPingPacketsDesc = prometheus.NewDesc(prefix+"mpls_lsp_ping_packets", "Number of mpls lsp ping packets", labelsMPLS, nil)
+	mplsPacketsWithTtlExpiredDesc = prometheus.NewDesc(prefix+"mpls_packets_with_ttl_expired", "Number of mpls packets with ttl expired", labelsMPLS, nil)
+	mplsPacketsWithTagEncodingErrorDesc = prometheus.NewDesc(prefix+"mpls_packets_with_tag_encoding_error", "Number of mpls packets with tag encoding error", labelsMPLS, nil)
+	mplsPacketsDiscardedDueToNoRouteDesc = prometheus.NewDesc(prefix+"mpls_packets_discarded_due_to_no_route", "Number of mpls packets discarded due to no route", labelsMPLS, nil)
+	mplsPacketsUsedFirstNexthopInEcmpUnilistDesc = prometheus.NewDesc(prefix+"mpls_packets_used_first_next_hop_in_ecmp_unilist", "Number of mpls packets used first nexthop in ecmp unilist", labelsMPLS, nil)
+	mplsPacketsDroppedDueToIflDownDesc = prometheus.NewDesc(prefix+"mpls_packets_dropped_due_to_ifl_down", "Number of mpls packets dropped due to ifl down", labelsMPLS, nil)
+	mplsPacketsDroppedAtMplsSocketSendDesc = prometheus.NewDesc(prefix+"mpls_packets_dropped_at_mpls_socket_send", "Number of mpls packets dropped at mpls socket send", labelsMPLS, nil)
+	mplsPacketsForwardedAtMplsSocketSendDesc = prometheus.NewDesc(prefix+"mpls_packets_forwarded_at_mpls_socket_send", "Number of mpls packets forwarded at mpls socket send", labelsMPLS, nil)
+	mplsPacketsDroppedAtP2mpCnhOutputDesc = prometheus.NewDesc(prefix+"mpls_packets_dropped_at_p2mp_cnh_output", "Number of mpls packets dropped at p2mp cnh output", labelsMPLS, nil)
 }
 
 type systemstatisticsCollector struct{}
@@ -1119,6 +1156,24 @@ func (c *systemstatisticsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- icmp6Nd6DadProxyUnrNomacDropDesc
 	ch <- icmp6Nd6RequestsDroppedOnEntryDesc
 	ch <- icmp6Nd6RequestsDroppedDuringRetryDesc
+
+	ch <- mplsTotalMplsPacketsReceivedDesc
+	ch <- mplsPacketsForwardedDesc
+	ch <- mplsPacketsDroppedDesc
+	ch <- mplsPacketsWithHeaderTooSmallDesc
+	ch <- mplsAfterTaggingPacketsCanNotFitLinkMtuDesc
+	ch <- mplsPacketsWithIpv4ExplicitNullTagDesc
+	ch <- mplsPacketsWithIpv4ExplicitNullChecksumErrorsDesc
+	ch <- mplsPacketsWithRouterAlertTagDesc
+	ch <- mplsLspPingPacketsDesc
+	ch <- mplsPacketsWithTtlExpiredDesc
+	ch <- mplsPacketsWithTagEncodingErrorDesc
+	ch <- mplsPacketsDiscardedDueToNoRouteDesc
+	ch <- mplsPacketsUsedFirstNexthopInEcmpUnilistDesc
+	ch <- mplsPacketsDroppedDueToIflDownDesc
+	ch <- mplsPacketsDroppedAtMplsSocketSendDesc
+	ch <- mplsPacketsForwardedAtMplsSocketSendDesc
+	ch <- mplsPacketsDroppedAtP2mpCnhOutputDesc
 }
 
 func (c *systemstatisticsCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
@@ -1128,36 +1183,48 @@ func (c *systemstatisticsCollector) Collect(client collector.Client, ch chan<- p
 		return err
 	}
 	c.collectSystemStatisticsIPV4(ch, labelValues, s)
+
 	err = client.RunCommandAndParse("show system statistics ip6", &s)
 	if err != nil {
 		return err
 	}
 	c.collectSystemStatisticsIPV6(ch, labelValues, s)
+
 	err = client.RunCommandAndParse("show system statistics udp", &s)
 	if err != nil {
 		return err
 	}
 	c.collectSystemStatisticsUDP(ch, labelValues, s)
+
 	err = client.RunCommandAndParse("show system statistics tcp", &s)
 	if err != nil {
 		return err
 	}
 	c.collectSystemStatisticsTCP(ch, labelValues, s)
+
 	err = client.RunCommandAndParse("show system statistics arp", &s)
 	if err != nil {
 		return err
 	}
 	c.collectSystemStatisticsARP(ch, labelValues, s)
+
 	err = client.RunCommandAndParse("show system statistics icmp", &s)
 	if err != nil {
 		return err
 	}
 	c.collectSystemStatisticsICMP(ch, labelValues, s)
+
 	err = client.RunCommandAndParse("show system statistics icmp6", &s)
 	if err != nil {
 		return err
 	}
 	c.collectSystemStatisticsICMP6(ch, labelValues, s)
+
+	err = client.RunCommandAndParse("show system statistics mpls", &s)
+	if err != nil {
+		return err
+	}
+	c.collectSystemStatisticsMPLS(ch, labelValues, s)
 	return nil
 }
 
@@ -1551,4 +1618,25 @@ func (c *systemstatisticsCollector) collectSystemStatisticsICMP6(ch chan<- prome
 	ch <- prometheus.MustNewConstMetric(icmp6Nd6DadProxyUnrNomacDropDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6DadProxyUnrNomacDrop, labels...)
 	ch <- prometheus.MustNewConstMetric(icmp6Nd6RequestsDroppedOnEntryDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6RequestsDroppedOnEntry, labels...)
 	ch <- prometheus.MustNewConstMetric(icmp6Nd6RequestsDroppedDuringRetryDesc, prometheus.CounterValue, s.Statistics.Icmp6.Nd6RequestsDroppedDuringRetry, labels...)
+}
+
+func (c *systemstatisticsCollector) collectSystemStatisticsMPLS(ch chan<- prometheus.Metric, labelValues []string, s SystemStatistics) {
+	labels := append(labelValues, "MPLS")
+	ch <- prometheus.MustNewConstMetric(mplsTotalMplsPacketsReceivedDesc, prometheus.CounterValue, s.Statistics.Mpls.TotalMplsPacketsReceived, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsPacketsForwardedDesc, prometheus.CounterValue, s.Statistics.Mpls.PacketsForwarded, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsPacketsDroppedDesc, prometheus.CounterValue, s.Statistics.Mpls.PacketsDropped, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsPacketsWithHeaderTooSmallDesc, prometheus.CounterValue, s.Statistics.Mpls.PacketsWithHeaderTooSmall, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsAfterTaggingPacketsCanNotFitLinkMtuDesc, prometheus.CounterValue, s.Statistics.Mpls.AfterTaggingPacketsCanNotFitLinkMtu, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsPacketsWithIpv4ExplicitNullTagDesc, prometheus.CounterValue, s.Statistics.Mpls.PacketsWithIpv4ExplicitNullTag, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsPacketsWithIpv4ExplicitNullChecksumErrorsDesc, prometheus.CounterValue, s.Statistics.Mpls.PacketsWithIpv4ExplicitNullChecksumErrors, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsPacketsWithRouterAlertTagDesc, prometheus.CounterValue, s.Statistics.Mpls.PacketsWithRouterAlertTag, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsLspPingPacketsDesc, prometheus.CounterValue, s.Statistics.Mpls.LspPingPackets, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsPacketsWithTtlExpiredDesc, prometheus.CounterValue, s.Statistics.Mpls.PacketsWithTtlExpired, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsPacketsWithTagEncodingErrorDesc, prometheus.CounterValue, s.Statistics.Mpls.PacketsWithTagEncodingError, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsPacketsDiscardedDueToNoRouteDesc, prometheus.CounterValue, s.Statistics.Mpls.PacketsDiscardedDueToNoRoute, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsPacketsUsedFirstNexthopInEcmpUnilistDesc, prometheus.CounterValue, s.Statistics.Mpls.PacketsUsedFirstNexthopInEcmpUnilist, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsPacketsDroppedDueToIflDownDesc, prometheus.CounterValue, s.Statistics.Mpls.PacketsDroppedDueToIflDown, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsPacketsDroppedAtMplsSocketSendDesc, prometheus.CounterValue, s.Statistics.Mpls.PacketsDroppedAtMplsSocketSend, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsPacketsForwardedAtMplsSocketSendDesc, prometheus.CounterValue, s.Statistics.Mpls.PacketsForwardedAtMplsSocketSend, labels...)
+	ch <- prometheus.MustNewConstMetric(mplsPacketsDroppedAtP2mpCnhOutputDesc, prometheus.CounterValue, s.Statistics.Mpls.PacketsDroppedAtP2mpCnhOutput, labels...)
 }

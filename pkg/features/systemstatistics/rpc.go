@@ -27,26 +27,7 @@ type Statistics struct {
 	Arp  ARP `xml:"arp"`
 	Ip6  IP6 `xml:"ip6"`
 	Icmp6 ICMP6`xml:"icmp6"`
-	Mpls struct {
-		Text                                      string `xml:",chardata"`
-		TotalMplsPacketsReceived                  string `xml:"total-mpls-packets-received"`
-		PacketsForwarded                          string `xml:"packets-forwarded"`
-		PacketsDropped                            string `xml:"packets-dropped"`
-		PacketsWithHeaderTooSmall                 string `xml:"packets-with-header-too-small"`
-		AfterTaggingPacketsCanNotFitLinkMtu       string `xml:"after-tagging-packets-can-not-fit-link-mtu"`
-		PacketsWithIpv4ExplicitNullTag            string `xml:"packets-with-ipv4-explicit-null-tag"`
-		PacketsWithIpv4ExplicitNullChecksumErrors string `xml:"packets-with-ipv4-explicit-null-checksum-errors"`
-		PacketsWithRouterAlertTag                 string `xml:"packets-with-router-alert-tag"`
-		LspPingPackets                            string `xml:"lsp-ping-packets"`
-		PacketsWithTtlExpired                     string `xml:"packets-with-ttl-expired"`
-		PacketsWithTagEncodingError               string `xml:"packets-with-tag-encoding-error"`
-		PacketsDiscardedDueToNoRoute              string `xml:"packets-discarded-due-to-no-route"`
-		PacketsUsedFirstNexthopInEcmpUnilist      string `xml:"packets-used-first-nexthop-in-ecmp-unilist"`
-		PacketsDroppedDueToIflDown                string `xml:"packets-dropped-due-to-ifl-down"`
-		PacketsDroppedAtMplsSocketSend            string `xml:"packets-dropped-at-mpls-socket-send"`
-		PacketsForwardedAtMplsSocketSend          string `xml:"packets-forwarded-at-mpls-socket-send"`
-		PacketsDroppedAtP2mpCnhOutput             string `xml:"packets-dropped-at-p2mp-cnh-output"`
-	} `xml:"mpls"`
+	Mpls MPLS`xml:"mpls"`
 }
 
 type IP struct {
@@ -462,4 +443,25 @@ type ICMP6InputHistogram struct {
 	RouterSolicitationIcmp6Packets float64 `xml:"router-solicitation-icmp6-packets"`
 	NeighborSolicitation           float64 `xml:"neighbor-solicitation"`
 	NeighborAdvertisement          float64 `xml:"neighbor-advertisement"`
+}
+
+type MPLS struct {
+	Text                                      string `xml:",chardata"`
+	TotalMplsPacketsReceived                  float64 `xml:"total-mpls-packets-received"`
+	PacketsForwarded                          float64 `xml:"packets-forwarded"`
+	PacketsDropped                            float64 `xml:"packets-dropped"`
+	PacketsWithHeaderTooSmall                 float64 `xml:"packets-with-header-too-small"`
+	AfterTaggingPacketsCanNotFitLinkMtu       float64 `xml:"after-tagging-packets-can-not-fit-link-mtu"`
+	PacketsWithIpv4ExplicitNullTag            float64 `xml:"packets-with-ipv4-explicit-null-tag"`
+	PacketsWithIpv4ExplicitNullChecksumErrors float64 `xml:"packets-with-ipv4-explicit-null-checksum-errors"`
+	PacketsWithRouterAlertTag                 float64 `xml:"packets-with-router-alert-tag"`
+	LspPingPackets                            float64 `xml:"lsp-ping-packets"`
+	PacketsWithTtlExpired                     float64 `xml:"packets-with-ttl-expired"`
+	PacketsWithTagEncodingError               float64 `xml:"packets-with-tag-encoding-error"`
+	PacketsDiscardedDueToNoRoute              float64 `xml:"packets-discarded-due-to-no-route"`
+	PacketsUsedFirstNexthopInEcmpUnilist      float64 `xml:"packets-used-first-nexthop-in-ecmp-unilist"`
+	PacketsDroppedDueToIflDown                float64 `xml:"packets-dropped-due-to-ifl-down"`
+	PacketsDroppedAtMplsSocketSend            float64 `xml:"packets-dropped-at-mpls-socket-send"`
+	PacketsForwardedAtMplsSocketSend          float64 `xml:"packets-forwarded-at-mpls-socket-send"`
+	PacketsDroppedAtP2mpCnhOutput             float64 `xml:"packets-dropped-at-p2mp-cnh-output"`
 }

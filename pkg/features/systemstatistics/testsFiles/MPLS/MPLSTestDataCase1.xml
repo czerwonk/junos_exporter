@@ -1,0 +1,26 @@
+<rpc-reply xmlns:junos="http://xml.juniper.net/junos/24.2R2-S1.6/junos">
+    <statistics>
+        <mpls>
+            <total-mpls-packets-received>8000</total-mpls-packets-received>
+            <packets-forwarded>8001</packets-forwarded>
+            <packets-dropped>8002</packets-dropped>
+            <packets-with-header-too-small>8003</packets-with-header-too-small>
+            <after-tagging-packets-can-not-fit-link-mtu>8004</after-tagging-packets-can-not-fit-link-mtu>
+            <packets-with-ipv4-explicit-null-tag>8005</packets-with-ipv4-explicit-null-tag>
+            <packets-with-ipv4-explicit-null-checksum-errors>8006</packets-with-ipv4-explicit-null-checksum-errors>
+            <packets-with-router-alert-tag>8007</packets-with-router-alert-tag>
+            <lsp-ping-packets>8008</lsp-ping-packets>
+            <packets-with-ttl-expired>8009</packets-with-ttl-expired>
+            <packets-with-tag-encoding-error>8010</packets-with-tag-encoding-error>
+            <packets-discarded-due-to-no-route>8011</packets-discarded-due-to-no-route>
+            <packets-used-first-nexthop-in-ecmp-unilist>8012</packets-used-first-nexthop-in-ecmp-unilist>
+            <packets-dropped-due-to-ifl-down>8013</packets-dropped-due-to-ifl-down>
+            <packets-dropped-at-mpls-socket-send>8014</packets-dropped-at-mpls-socket-send>
+            <packets-forwarded-at-mpls-socket-send>8015</packets-forwarded-at-mpls-socket-send>
+            <packets-dropped-at-p2mp-cnh-output>8016</packets-dropped-at-p2mp-cnh-output>
+        </mpls>
+    </statistics>
+    <cli>
+        <banner></banner>
+    </cli>
+</rpc-reply>

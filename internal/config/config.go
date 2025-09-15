@@ -161,7 +161,7 @@ func setDefaultValues(c *Config) {
 	f.OSPF = true
 	f.ISIS = true
 	f.LDP = true
-	f.LLDP = true
+	f.LLDP = false
 	f.Routes = true
 	f.Firewall = true
 	f.RoutingEngine = true

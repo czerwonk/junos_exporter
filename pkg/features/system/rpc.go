@@ -76,13 +76,26 @@ type satelliteChassis struct {
 type licenseInformation struct {
 	LicenseInfo struct {
 		License []struct {
-			Name  string `xml:"name"`
-			Description string `xml:"description"`
-			Installed  int `xml:"licensed"`
-			Used int `xml:"used-licensed"`
-			Needed int `xml:"needed"`
+			Name         string `xml:"name"`
+			Description  string `xml:"description"`
+			Installed    int    `xml:"licensed"`
+			Used         int    `xml:"used-licensed"`
+			Needed       int    `xml:"needed"`
 			ValidityType string `xml:"validity-type"`
-			EndDate string `xml:"end-date"`
+			EndDate      string `xml:"end-date"`
 		} `xml:"feature-summary"`
 	} `xml:"license-usage-summary"`
+}
+
+type systemCommit struct {
+	CommitInfo struct {
+		CommitHistory []struct {
+			SequenceNumber int    `xml:"sequence-number"`
+			User           string `xml:"user"`
+			Client         string `xml:"client"`
+			DateTime       struct {
+				Seconds int `xml:"seconds,attr"`
+			} `xml:"date-time"`
+		} `xml:"commit-history"`
+	} `xml:"commit-information"`
 }

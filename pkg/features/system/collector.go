@@ -57,6 +57,8 @@ var (
 	licenseNeededDesc    *prometheus.Desc
 	licenseExpiryDesc    *prometheus.Desc
 
+	commitInfoDesc *prometheus.Desc
+
 	// regex
 	regex1Ints        *regexp.Regexp = regexp.MustCompile(`^(\d+).*`)
 	regex2Ints        *regexp.Regexp = regexp.MustCompile(`^(\d+)\/(\d+).*`)
@@ -72,6 +74,8 @@ func init() {
 	var l []string
 
 	l = []string{"target"}
+	commitInfoDesc = prometheus.NewDesc(prefix+"system_commit_time", "Unix timestamp of last commit", l, nil)
+
 	mbufsCurrentDesc = prometheus.NewDesc(prefix+"mbufs_bytes_current", "Current number of bytes in mbufs", l, nil)
 	mbufsCacheDesc = prometheus.NewDesc(prefix+"mbufs_bytes_cache", "Cached number of bytes in mbufs", l, nil)
 	mbufsTotalDesc = prometheus.NewDesc(prefix+"mbufs_bytes_total", "Total nuumber of bytes in mbufs", l, nil)
@@ -154,6 +158,7 @@ func (*systemCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- licenseInstalledDesc
 	ch <- licenseNeededDesc
 	ch <- licenseExpiryDesc
+	ch <- commitInfoDesc
 }
 
 // Collect collects metrics from JunOS
@@ -183,6 +188,11 @@ func (c *systemCollector) CollectSystem(client collector.Client, ch chan<- prome
 
 	if client.IsScrapingLicenseEnabled() {
 		c.collectLicense(client, ch, labelValues)
+	}
+
+	err = c.collectCommit(client, ch, labelValues)
+	if err != nil {
+		return fmt.Errorf("unable to collect commit information: %w", err)
 	}
 
 	return nil
@@ -484,4 +494,20 @@ func (c *systemCollector) collectLicense(client collector.Client, ch chan<- prom
 			}
 		}
 	}
+}
+
+func (c *systemCollector) collectCommit(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	sc := &systemCommit{}
+	err := client.RunCommandAndParse("show system commit", sc)
+	if err != nil {
+		return err
+	}
+
+	for _, che := range sc.CommitInfo.CommitHistory {
+		if che.SequenceNumber == 0 {
+			ch <- prometheus.MustNewConstMetric(commitInfoDesc, prometheus.GaugeValue, float64(che.DateTime.Seconds), labelValues...)
+		}
+	}
+
+	return nil
 }

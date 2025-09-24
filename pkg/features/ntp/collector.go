@@ -22,8 +22,6 @@ var (
 	ntpLeapDesc      *prometheus.Desc
 	ntpPrecisionDesc *prometheus.Desc
 	ntpPollDesc      *prometheus.Desc
-
-// ntpServerDesc     *prometheus.Desc
 )
 
 func init() {
@@ -36,7 +34,6 @@ func init() {
 	ntpLeapDesc = prometheus.NewDesc(prefix+"leap", "Leap indicator (00=ok, 01: last minute with 61 seconds, 10: last minute with 59 seconds, 11: not syncronized)", l, nil)
 	ntpPrecisionDesc = prometheus.NewDesc(prefix+"precision", "Clock precision (should be -20 to -22)", l, nil)
 	ntpPollDesc = prometheus.NewDesc(prefix+"poll_interval", "Poll interval in seconds", l, nil)
-	// ntpServerDesc = prometheus.NewDesc(prefix+"server_info", "NTP server info", append(l, "refid"), nil)
 }
 
 type ntpCollector struct{}
@@ -58,7 +55,6 @@ func (c *ntpCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- ntpLeapDesc
 	ch <- ntpPrecisionDesc
 	ch <- ntpPollDesc
-	// ch <- ntpServerDesc
 }
 
 func (c *ntpCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
@@ -109,13 +105,6 @@ func (c *ntpCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 	exportMetric(ch, ntpLeapDesc, parseLeap(result.Leap), labels)
 	exportMetric(ch, ntpPrecisionDesc, result.Precision, labels)
 	exportMetric(ch, ntpPollDesc, result.PollInterval, labels)
-
-	//	ch <- prometheus.MustNewConstMetric(
-	//		ntpServerDesc,
-	//		prometheus.GaugeValue,
-	//		1,
-	//		append(labels, result.RefID)...,
-	//	)
 
 	return nil
 }

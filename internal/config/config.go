@@ -152,7 +152,7 @@ func setDefaultValues(c *Config) {
 	c.LSEnabled = false
 	f := &c.Features
 	f.Alarm = true
-	f.NTP = true
+	f.NTP = false
 	f.BGP = true
 	f.Environment = true
 	f.Interfaces = true

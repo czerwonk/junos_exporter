@@ -43,6 +43,8 @@ func dot1xInterfaceState(State string) float64 {
 		return 2
 	case "Connecting":
 		return 3
+    case "Held":
+        return 4		
 	default:
 		return 0
 	}

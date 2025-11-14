@@ -14,7 +14,7 @@ var (
 )
 
 func init() {
-	l := []string{"interface_name", "user_mac_address", "authenticated_method", "authenticated_vlan", "authenticated_voip_vlan", "user_name"}
+	l := []string{"target", "interface_name", "user_mac_address", "authenticated_method", "authenticated_vlan", "authenticated_voip_vlan", "user_name"}
 	currAuthStateDesc = prometheus.NewDesc(prefix+"auth_state", "Interface dot1x Authentication State", l, nil)
 }
 

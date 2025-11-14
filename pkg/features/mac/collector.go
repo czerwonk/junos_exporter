@@ -3,6 +3,8 @@
 package mac
 
 import (
+	"errors"
+
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -47,17 +49,39 @@ func (*macCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *macCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = result{}
-	err := client.RunCommandAndParse("show ethernet-switching table summary", &x)
+	var oldResult oldResult
+	var newResult newResult
+
+	// Try parsing old format first
+	err := client.RunCommandAndParse("show ethernet-switching table summary", &oldResult)
 	if err != nil {
 		return err
 	}
 
-	entry := x.Information.Table.Entry
-	ch <- prometheus.MustNewConstMetric(totalCount, prometheus.GaugeValue, float64(entry.TotalCount), labelValues...)
-	ch <- prometheus.MustNewConstMetric(recieveCount, prometheus.GaugeValue, float64(entry.ReceiveCount), labelValues...)
-	ch <- prometheus.MustNewConstMetric(dynamicCount, prometheus.GaugeValue, float64(entry.DynamicCount), labelValues...)
-	ch <- prometheus.MustNewConstMetric(floodCount, prometheus.GaugeValue, float64(entry.FloodCount), labelValues...)
+	// Check if old format parsed some data
+	if oldResult.Information.Table.Entry.TotalCount != 0 {
+		entry := oldResult.Information.Table.Entry
+		ch <- prometheus.MustNewConstMetric(totalCount, prometheus.GaugeValue, float64(entry.TotalCount), labelValues...)
+		ch <- prometheus.MustNewConstMetric(recieveCount, prometheus.GaugeValue, float64(entry.ReceiveCount), labelValues...)
+		ch <- prometheus.MustNewConstMetric(dynamicCount, prometheus.GaugeValue, float64(entry.DynamicCount), labelValues...)
+		ch <- prometheus.MustNewConstMetric(floodCount, prometheus.GaugeValue, float64(entry.FloodCount), labelValues...)
+		return nil
+	}
 
-	return nil
+	// Otherwise try parsing new format
+	err = client.RunCommandAndParse("show ethernet-switching table summary", &newResult)
+	if err != nil {
+		return err
+	}
+
+	if newResult.Macdb.TableSummary.TotalMacCount != 0 {
+		ch <- prometheus.MustNewConstMetric(totalCount, prometheus.GaugeValue, float64(newResult.Macdb.TableSummary.TotalMacCount), labelValues...)
+		// For new format, other counts are unknown so send zeros or skip
+		ch <- prometheus.MustNewConstMetric(recieveCount, prometheus.GaugeValue, 0, labelValues...)
+		ch <- prometheus.MustNewConstMetric(dynamicCount, prometheus.GaugeValue, 0, labelValues...)
+		ch <- prometheus.MustNewConstMetric(floodCount, prometheus.GaugeValue, 0, labelValues...)
+		return nil
+	}
+
+	return errors.New("no mac count found in either old or new XML")
 }

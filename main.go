@@ -43,6 +43,7 @@ var (
 	debug                       = flag.Bool("debug", false, "Show verbose debug output in log")
 	alarmEnabled                = flag.Bool("alarm.enabled", true, "Scrape Alarm metrics")
 	bgpEnabled                  = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
+	dot1xEnabled                = flag.Bool("dot1x.enabled", false, "Scrape dot1x metrics")
 	ospfEnabled                 = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
 	isisEnabled                 = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
 	l2circuitEnabled            = flag.Bool("l2circuit.enabled", false, "Scrape l2circuit metrics")
@@ -231,6 +232,7 @@ func loadConfigFromFlags() *config.Config {
 	f := &c.Features
 	f.Alarm = *alarmEnabled
 	f.BGP = *bgpEnabled
+	f.DOT1X = *dot1xEnabled
 	f.Environment = *environmentEnabled
 	f.Firewall = *firewallEnabled
 	f.Interfaces = *interfacesEnabled

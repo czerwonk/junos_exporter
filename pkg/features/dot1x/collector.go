@@ -3,6 +3,8 @@
 package dot1x
 
 import (
+	"strconv"
+
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -102,6 +104,15 @@ func (c *dot1xCollector) collectForInterface(p dot1xInterface, ch chan<- prometh
 	l := append(labelValues, []string{p.InterfaceName, p.UserMacAddress, p.UserName}...)
 	ch <- prometheus.MustNewConstMetric(currAuthStateDesc, prometheus.GaugeValue, dot1xInterfaceState(p.State), l...)
 	ch <- prometheus.MustNewConstMetric(currAuthMethodeDesc, prometheus.GaugeValue, dot1xInterfaceAuthMethhod(p.AuthenticatedMethod), l...)
-	ch <- prometheus.MustNewConstMetric(currAuthVlanDesc, prometheus.GaugeValue, float64(p.AuthenticatedVlan), l...)
-	ch <- prometheus.MustNewConstMetric(currAuthVoipVlanDesc, prometheus.GaugeValue, float64(p.AuthenticatedVoipVlan), l...)
+	ch <- prometheus.MustNewConstMetric(currAuthVlanDesc, prometheus.GaugeValue, parseVlanOrDefault(p.AuthenticatedVlan), l...)
+	ch <- prometheus.MustNewConstMetric(currAuthVoipVlanDesc, prometheus.GaugeValue, parseVlanOrDefault(p.AuthenticatedVoipVlan), l...)
+}
+
+func parseVlanOrDefault(vlan string) float64 {
+	val, err := strconv.ParseInt(vlan, 10, 64)
+	if err != nil {
+		return 0
+	}
+
+	return float64(val)
 }

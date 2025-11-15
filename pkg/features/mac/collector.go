@@ -3,6 +3,8 @@
 package mac
 
 import (
+	"fmt"
+
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -47,17 +49,30 @@ func (*macCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *macCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = result{}
+	var x result
 	err := client.RunCommandAndParse("show ethernet-switching table summary", &x)
 	if err != nil {
 		return err
 	}
 
-	entry := x.Information.Table.Entry
-	ch <- prometheus.MustNewConstMetric(totalCount, prometheus.GaugeValue, float64(entry.TotalCount), labelValues...)
-	ch <- prometheus.MustNewConstMetric(recieveCount, prometheus.GaugeValue, float64(entry.ReceiveCount), labelValues...)
-	ch <- prometheus.MustNewConstMetric(dynamicCount, prometheus.GaugeValue, float64(entry.DynamicCount), labelValues...)
-	ch <- prometheus.MustNewConstMetric(floodCount, prometheus.GaugeValue, float64(entry.FloodCount), labelValues...)
+	if x.NewMacdb != nil {
+		// new XML element l2ng-l2ald-rtb-macdb is present
+		ch <- prometheus.MustNewConstMetric(totalCount, prometheus.GaugeValue, float64(x.NewMacdb.TableSummary.TotalMacCount), labelValues...)
+		ch <- prometheus.MustNewConstMetric(recieveCount, prometheus.GaugeValue, 0, labelValues...)
+		ch <- prometheus.MustNewConstMetric(dynamicCount, prometheus.GaugeValue, 0, labelValues...)
+		ch <- prometheus.MustNewConstMetric(floodCount, prometheus.GaugeValue, 0, labelValues...)
+		return nil
+	}
 
-	return nil
+	if x.OldInformation != nil {
+		// old XML element ethernet-switching-table-information is present
+		entry := x.OldInformation.Table.Entry
+		ch <- prometheus.MustNewConstMetric(totalCount, prometheus.GaugeValue, float64(entry.TotalCount), labelValues...)
+		ch <- prometheus.MustNewConstMetric(recieveCount, prometheus.GaugeValue, float64(entry.ReceiveCount), labelValues...)
+		ch <- prometheus.MustNewConstMetric(dynamicCount, prometheus.GaugeValue, float64(entry.DynamicCount), labelValues...)
+		ch <- prometheus.MustNewConstMetric(floodCount, prometheus.GaugeValue, float64(entry.FloodCount), labelValues...)
+		return nil
+	}
+
+	return fmt.Errorf("neither old nor new MAC table data found in XML")
 }

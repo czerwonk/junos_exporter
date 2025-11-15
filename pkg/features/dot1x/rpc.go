@@ -13,8 +13,8 @@ type dot1xInterface struct {
 	InterfaceName         string `xml:"interface-name"`
 	UserMacAddress        string `xml:"user-mac-address"`
 	AuthenticatedMethod   string `xml:"authenticated-method"`
-	AuthenticatedVlan     string `xml:"authenticated-vlan"`
-	AuthenticatedVoipVlan string `xml:"authenticated-voip-vlan"`
+	AuthenticatedVlan     int64  `xml:"authenticated-vlan"`
+	AuthenticatedVoipVlan int64  `xml:"authenticated-voip-vlan"`
 	UserName              string `xml:"user-name"`
 	State                 string `xml:"state"`
 }

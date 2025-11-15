@@ -41,7 +41,8 @@ var (
 	sshKeepAliveTimeout         = flag.Duration("ssh.keep-alive-timeout", 15*time.Second, "Duration to wait for keep alive message response")
 	sshExpireTimeout            = flag.Duration("ssh.expire-timeout", 15*time.Minute, "Duration after an connection is terminated when it is not used")
 	debug                       = flag.Bool("debug", false, "Show verbose debug output in log")
-	alarmEnabled                = flag.Bool("alarm.enabled", true, "Scrape Alarm metrics")
+	alarmEnabled                = flag.Bool("alarm.enabled", false, "Scrape Alarm metrics")
+	ntpEnabled                  = flag.Bool("ntp.enabled", false, "Scrape NTP metrics")
 	bgpEnabled                  = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
 	ospfEnabled                 = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
 	isisEnabled                 = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
@@ -230,6 +231,7 @@ func loadConfigFromFlags() *config.Config {
 
 	f := &c.Features
 	f.Alarm = *alarmEnabled
+	f.NTP = *ntpEnabled
 	f.BGP = *bgpEnabled
 	f.Environment = *environmentEnabled
 	f.Firewall = *firewallEnabled

@@ -10,12 +10,18 @@ import (
 const prefix string = "junos_dot1x_"
 
 var (
-	currAuthStateDesc *prometheus.Desc
+	currAuthStateDesc    *prometheus.Desc
+	currAuthMethodeDesc  *prometheus.Desc
+	currAuthVlanDesc     *prometheus.Desc
+	currAuthVoipVlanDesc *prometheus.Desc
 )
 
 func init() {
-	l := []string{"target", "interface_name", "user_mac_address", "authenticated_method", "authenticated_vlan", "authenticated_voip_vlan", "user_name"}
-	currAuthStateDesc = prometheus.NewDesc(prefix+"auth_state", "Interface dot1x Authentication State", l, nil)
+	l := []string{"target", "interface_name", "user_mac_address", "user_name"}
+	currAuthStateDesc = prometheus.NewDesc(prefix+"auth_state", "Interface dot1x Authentication State 1: Authenticated, 2: Initialize, 3: Connecting, 4: Held", l, nil)
+	currAuthMethodeDesc = prometheus.NewDesc(prefix+"auth_method", "Interface dot1x Authentication Method 1: Radius, 2: Mac Radius, 3: None, 4: Fail", l, nil)
+	currAuthVlanDesc = prometheus.NewDesc(prefix+"authenticated_vlan", "Interface dot1x Authentication ", l, nil)
+	currAuthVoipVlanDesc = prometheus.NewDesc(prefix+"authenticated_voip_vlan", "Interface dot1x Authenticated Voip Vlan", l, nil)
 }
 
 type dot1xCollector struct{}
@@ -33,6 +39,9 @@ func (*dot1xCollector) Name() string {
 // Describe describes the metrics
 func (*dot1xCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- currAuthStateDesc
+	ch <- currAuthMethodeDesc
+	ch <- currAuthVlanDesc
+	ch <- currAuthVoipVlanDesc
 }
 
 func dot1xInterfaceState(State string) float64 {
@@ -43,8 +52,23 @@ func dot1xInterfaceState(State string) float64 {
 		return 2
 	case "Connecting":
 		return 3
-    case "Held":
-        return 4		
+	case "Held":
+		return 4
+	default:
+		return 0
+	}
+}
+
+func dot1xInterfaceAuthMethhod(State string) float64 {
+	switch State {
+	case "Radius":
+		return 1
+	case "Mac Radius":
+		return 2
+	case "None":
+		return 3
+	case "Fail":
+		return 4
 	default:
 		return 0
 	}
@@ -75,6 +99,9 @@ func (c *dot1xCollector) collect(client collector.Client, ch chan<- prometheus.M
 }
 
 func (c *dot1xCollector) collectForInterface(p dot1xInterface, ch chan<- prometheus.Metric, labelValues []string) {
-	l := append(labelValues, []string{p.InterfaceName, p.UserMacAddress, p.AuthenticatedMethod, p.AuthenticatedVlan, p.AuthenticatedVoipVlan, p.UserName}...)
+	l := append(labelValues, []string{p.InterfaceName, p.UserMacAddress, p.UserName}...)
 	ch <- prometheus.MustNewConstMetric(currAuthStateDesc, prometheus.GaugeValue, dot1xInterfaceState(p.State), l...)
+	ch <- prometheus.MustNewConstMetric(currAuthMethodeDesc, prometheus.GaugeValue, dot1xInterfaceAuthMethhod(p.AuthenticatedMethod), l...)
+	ch <- prometheus.MustNewConstMetric(currAuthVlanDesc, prometheus.GaugeValue, float64(p.AuthenticatedVlan), l...)
+	ch <- prometheus.MustNewConstMetric(currAuthVoipVlanDesc, prometheus.GaugeValue, float64(p.AuthenticatedVoipVlan), l...)
 }

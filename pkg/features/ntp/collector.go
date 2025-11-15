@@ -65,28 +65,26 @@ func (c *ntpCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 		return errors.Wrap(err, "failed to execute NTP command")
 	}
 
-	// Hier wird das parseResult direkt aus den Metriken erzeugt
 	metrics := parseNTPOutput(reply.Output.Text)
 	if len(metrics) == 0 {
 		return errors.New("no NTP metrics parsed")
 	}
 
-	tc := mustParseFloat(metrics["tc"])
+	tc := parseFloatOrDefault(metrics["tc"])
 	if tc == 0 {
 		tc = 10
 	}
 
-	// Konvertierung der Metriken in parseResult
 	result := &parseResult{
 		AssocID:      metrics["associd"],
-		Stratum:      mustParseFloat(metrics["stratum"]),
+		Stratum:      parseFloatOrDefault(metrics["stratum"]),
 		RefID:        metrics["refid"],
-		Offset:       mustParseFloat(metrics["offset"]),
-		SysJitter:    mustParseFloat(metrics["sys_jitter"]),
-		ClkJitter:    mustParseFloat(metrics["clk_jitter"]),
-		RootDelay:    mustParseFloat(metrics["rootdelay"]),
+		Offset:       parseFloatOrDefault(metrics["offset"]),
+		SysJitter:    parseFloatOrDefault(metrics["sys_jitter"]),
+		ClkJitter:    parseFloatOrDefault(metrics["clk_jitter"]),
+		RootDelay:    parseFloatOrDefault(metrics["rootdelay"]),
 		Leap:         metrics["leap"],
-		Precision:    mustParseFloat(metrics["precision"]),
+		Precision:    parseFloatOrDefault(metrics["precision"]),
 		PollInterval: math.Pow(2, tc), // 2^10 = 1024
 	}
 
@@ -134,15 +132,17 @@ func parseLeap(leap string) float64 {
 	}
 }
 
-func mustParseFloat(s string) float64 {
-	s = strings.Trim(s, "+,\" ") // Kommas entfernen
+func parseFloatOrDefault(s string) float64 {
+	s = strings.Trim(s, "+,\" ")
 	if s == "" || s == "-" {
 		return 0
 	}
+
 	f, err := strconv.ParseFloat(s, 64)
 	if err != nil {
 		log.Printf("Parse error for '%s': %v", s, err)
 		return 0
 	}
+
 	return f
 }

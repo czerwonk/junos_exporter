@@ -66,6 +66,7 @@ type FeatureConfig struct {
 	Environment         bool `yaml:"environment,omitempty"`
 	BFD                 bool `yaml:"bfd,omitempty"`
 	BGP                 bool `yaml:"bgp,omitempty"`
+	DOT1X               bool `yaml:"dot1x,omitempty"`
 	OSPF                bool `yaml:"ospf,omitempty"`
 	ISIS                bool `yaml:"isis,omitempty"`
 	NAT                 bool `yaml:"nat,omitempty"`
@@ -106,7 +107,6 @@ type FeatureConfig struct {
 	KRT                 bool `yaml:"krt,omitempty"`
 	TWAMP               bool `yaml:"twamp,omitempty"`
 	SystemStatistics    bool `yaml:"system_statistics,omitempty"`
-
 }
 
 // New creates a new config

@@ -1,10 +1,9 @@
-// In rpc.go NUR folgendes belassen:
 package ntp
 
 import (
 	"encoding/xml"
 	"regexp"
-        "strings"
+	"strings"
 )
 
 type rpcReply struct {
@@ -34,7 +33,7 @@ func parseNTPOutput(output string) map[string]string {
 	metrics := make(map[string]string)
 	for _, m := range matches {
 		key := m[1]
-                value := strings.Trim(m[2], "\", ")
+		value := strings.Trim(m[2], "\", ")
 		metrics[key] = value
 	}
 	return metrics

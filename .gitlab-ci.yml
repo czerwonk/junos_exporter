@@ -1,4 +1,4 @@
-image: docker:23.0.4
+image: docker:28.1-dind
 services:
   - name: docker:dind
     entrypoint: ["dockerd-entrypoint.sh", "--tls=false"]

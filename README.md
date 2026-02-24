@@ -40,6 +40,7 @@ The following metrics are supported by now:
 * Interface diagnostics (optical signals)
 * ISIS (number of adjacencies, total number of routers)
 * NAT (all available statistics from services nat)
+* Chassis cluster HA status (SRX)
 * Environment (temperatures, fans and PEM power statistics)
 * Routing engine statistics
 * Storage (total, available and used blocks, used percentage)
@@ -57,6 +58,17 @@ The following metrics are supported by now:
 
 ## Feature specific mappings
 Some collected time series behave like enums - Integer values represent a certain state/meaning.
+
+### Chassis cluster (`junos_chassis_cluster_node_status`)
+```
+1: primary
+2: secondary
+3: secondary-hold
+4: disabled
+5: lost
+6: not-configured
+7: ineligible
+```
 
 ### L2circuits
 ```   
@@ -189,30 +201,53 @@ devices:
 # Optional
 # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
 features:
+  accounting: false
   alarm: true
-  environment: true
+  arp: false
+  bfd: false
   bgp: true
-  ospf: true
-  isis: false
-  nat: true
-  l2circuit: true
-  ldp: true
-  routes: true
-  routing_engine: true
-  firewall: false
-  interfaces: true
+  cluster: false
+  ddos_protection: false
+  dot1x: false
+  environment: true
+  firewall: true
+  fpc: false
   interface_diagnostic: true
   interface_queue: true
-  storage: true
-  accounting: true
-  ipsec: true
-  security: true
-  fpc: true
-  rpki: true
+  interfaces: true
+  ipsec: false
+  isis: true
+  krt: false
+  l2circuit: false
+  l2vpn: false
+  lacp: false
+  ldp: true
+  license: false
+  lldp: false
+  mac: false
+  macsec: true
+  mpls_lsp: false
+  nat: false
+  nat2: false
+  ntp: false
+  ospf: true
+  poe: false
+  power: false
+  routes: true
+  routing_engine: true
+  rpki: false
   rpm: false
-  satellite: true
-  system: true
-  power: true
+  satellite: false
+  security: false
+  security_ike: false
+  security_policies: false
+  storage: false
+  subscriber: false
+  system: false
+  system_statistics: true
+  twamp: false
+  vpws: false
+  vrrp: false
 ```
 
 ## Dynamic Interface Labels

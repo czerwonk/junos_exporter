@@ -16,6 +16,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/arp"
 	"github.com/czerwonk/junos_exporter/pkg/features/bfd"
 	"github.com/czerwonk/junos_exporter/pkg/features/bgp"
+	"github.com/czerwonk/junos_exporter/pkg/features/cluster"
 	"github.com/czerwonk/junos_exporter/pkg/features/dot1x"
 	"github.com/czerwonk/junos_exporter/pkg/features/environment"
 	"github.com/czerwonk/junos_exporter/pkg/features/firewall"
@@ -122,6 +123,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "routes", f.Routes, route.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "rpki", f.RPKI, rpki.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "rpm", f.RPM, rpm.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "cluster", f.Cluster, cluster.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "security", f.Security, security.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "security_ike", f.SecurityIKE, securityike.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "security_policies", f.SecurityPolicies, securitypolicies.NewCollector)

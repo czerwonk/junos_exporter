@@ -85,6 +85,7 @@ type FeatureConfig struct {
 	Storage             bool `yaml:"storage,omitempty"`
 	Accounting          bool `yaml:"accounting,omitempty"`
 	IPSec               bool `yaml:"ipsec,omitempty"`
+	Cluster             bool `yaml:"cluster,omitempty"`
 	Security            bool `yaml:"security,omitempty"`
 	SecurityIKE         bool `yaml:"security_ike,omitempty"`
 	SecurityPolicies    bool `yaml:"security_policies,omitempty"`

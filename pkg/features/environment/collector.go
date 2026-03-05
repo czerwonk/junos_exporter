@@ -9,8 +9,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/czerwonk/junos_exporter/pkg/collector"
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/czerwonk/junos_exporter/pkg/collector"
 )
 
 const prefix string = "junos_environment_"
@@ -26,6 +28,7 @@ var (
 	dcCurrentDesc    *prometheus.Desc
 	dcPowerDesc      *prometheus.Desc
 	dcLoadDesc       *prometheus.Desc
+	dcOutputDesc     *prometheus.Desc
 )
 
 func init() {
@@ -40,6 +43,7 @@ func init() {
 	dcCurrentDesc = prometheus.NewDesc(prefix+"pem_current", "PEM current value", l, nil)
 	dcPowerDesc = prometheus.NewDesc(prefix+"pem_power_usage", "PEM power usage in W", l, nil)
 	dcLoadDesc = prometheus.NewDesc(prefix+"pem_power_load_percent", "PEM power usage percent of total", l, nil)
+	dcOutputDesc = prometheus.NewDesc(prefix+"pem_dc_output", "PSM DC output status (1 OK, 0 not OK)", l, nil)
 
 	l = []string{"target", "re_name", "item", "fan_name"}
 	fanDesc = prometheus.NewDesc(prefix+"pem_fanspeed", "Fan speed in RPM", l, nil)
@@ -63,13 +67,26 @@ func (*environmentCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- temperaturesDesc
 	ch <- fanDesc
 	ch <- dcPowerDesc
+	ch <- dcOutputDesc
 }
 
 // Collect collects metrics from JunOS
 func (c *environmentCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	c.environmentItems(client, ch, labelValues)
-	c.environmentPEMItems(client, ch, labelValues)
-
+	var v showVersionResult
+	err := client.RunCommandAndParse("show version", &v)
+	if err != nil {
+		//return errors.Wrap(err, "failed to run command 'show version'")
+		return errors.Wrap(err, "failed to run command 'show version'")
+	}
+    //QFX5220 have a  slightly different xml for environment information, so we need to check the product model before collecting environment metrics
+    fmt.Printf("model is %s", v.SoftwareInformation.ProductModel)
+    if strings.Contains(strings.ToLower(v.SoftwareInformation.ProductModel), "qfx5220"){
+        c.environmentItemsForSomeSwitchModels(client, ch, labelValues)
+        c.environmentPEMItemsForSomeSwitchModels(client, ch, labelValues)
+	} else {
+	    c.environmentItems(client, ch, labelValues)
+        c.environmentPEMItems(client, ch, labelValues)
+	}
 	return nil
 }
 
@@ -134,6 +151,8 @@ func (c *environmentCollector) environmentItems(client collector.Client, ch chan
 	return nil
 }
 
+
+
 func (c *environmentCollector) environmentPEMItems(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = multiEngineResult{}
 
@@ -187,6 +206,97 @@ func (c *environmentCollector) environmentPEMItems(client collector.Client, ch c
 				ch <- prometheus.MustNewConstMetric(dcLoadDesc, prometheus.GaugeValue, e.DcInformation.DcDetail.DcLoad, l...)
 			}
 		}
+	}
+
+	return nil
+}
+
+func (c *environmentCollector) environmentItemsForSomeSwitchModels(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	x := environmentResultSomeSwitches{}
+
+	statusValues := map[string]int{
+		"OK":      1,
+		"Testing": 2,
+		"Failed":  3,
+		"Absent":  4,
+		"Present": 5,
+	}
+
+	err := client.RunCommandAndParseWithParser("show chassis environment", func(b []byte) error {
+		return xml.Unmarshal(b, &x)
+	})
+	if err != nil {
+		return nil
+	}
+
+	reName := "N/A"
+	for _, item := range x.EnvironmentInformation.EnvironmentItem {
+		l := append(labelValues, reName)
+
+		if strings.Contains(item.Name, "Power Supply") || strings.Contains(item.Name, "PEM") || strings.Contains(item.Name, "PSM") {
+			ch <- prometheus.MustNewConstMetric(powerSupplyDesc, prometheus.GaugeValue, float64(statusValues[item.Status]), append(l, item.Name, item.Status)...)
+		} else if strings.Contains(item.Name, "Fan") {
+			if strings.Contains(item.Name, "Airflow") {
+				ch <- prometheus.MustNewConstMetric(fanAirflowDesc, prometheus.GaugeValue, float64(statusValues[item.Status]), append(l, item.Name, item.Status)...)
+			} else {
+				ch <- prometheus.MustNewConstMetric(fanStatusDesc, prometheus.GaugeValue, float64(statusValues[item.Status]), append(l, item.Name, item.Status)...)
+			}
+		} else if item.Temperature.Celsius != "" {
+			tempVal, err := strconv.ParseFloat(item.Temperature.Celsius, 64)
+			if err != nil {
+				return fmt.Errorf("could not parse temperature value to float: %s", item.Temperature.Celsius)
+			}
+			ch <- prometheus.MustNewConstMetric(temperaturesDesc, prometheus.GaugeValue, tempVal, append(l, item.Name)...)
+		}
+	}
+
+	return nil
+}
+
+func (c *environmentCollector) environmentPEMItemsForSomeSwitchModels(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	x := multiEngineResultSomeSwitches{}
+
+	stateValues := map[string]int{
+		"Online":  1,
+		"Present": 2,
+		"Empty":   3,
+		"Offline": 4,
+	}
+
+	err := client.RunCommandAndParseWithParser("show chassis environment pem", func(b []byte) error {
+		return xml.Unmarshal(b, &x)
+	})
+	if err != nil {
+		err := client.RunCommandAndParseWithParser("show chassis environment psm", func(b []byte) error {
+			return xml.Unmarshal(b, &x)
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	reName := "N/A"
+	for _, item := range x.EnvironmentComponentInformation.EnvironmentComponentItem {
+		l := append(labelValues, reName, item.Name)
+
+		ch <- prometheus.MustNewConstMetric(pemDesc, prometheus.GaugeValue, float64(stateValues[item.State]), append(l, item.State)...)
+
+		fan1Speed := item.PsmInformation.FanSpeedReadingPsm.Fan1Speed
+		if fan1Speed != "" {
+			rpms, err := strconv.ParseFloat(strings.TrimSuffix(fan1Speed, " RPM"), 64)
+			if err != nil {
+				return fmt.Errorf("could not parse fan speed value to float: %s", fan1Speed)
+			}
+			ch <- prometheus.MustNewConstMetric(fanDesc, prometheus.GaugeValue, rpms, append(l, item.PsmInformation.FanSpeedReadingPsm.Fan1Name)...)
+		}
+
+		dcOutputVal := 0.0
+		fmt.Printf("value of dc output is %s", item.PsmInformation.PsmStatus.DcOutput)
+		if strings.EqualFold(strings.ToLower(item.PsmInformation.PsmStatus.DcOutput), "ok") {
+		    fmt.Printf("inside dc output metric")
+			dcOutputVal = 1.0
+		}
+		ch <- prometheus.MustNewConstMetric(dcOutputDesc, prometheus.GaugeValue, dcOutputVal, l...)
 	}
 
 	return nil

@@ -1,10 +1,24 @@
 # Helm chart for helm v3
 
-## How to use
+## Installing the chart
 
-### Authentication
+The chart is published to the GitHub Container Registry as an OCI artifact on every release.
 
-#### SSH key authentication
+```shell
+helm install junos-exporter oci://ghcr.io/czerwonk/charts/junos-exporter --version <version>
+```
+
+
+### Local installation from source
+
+```shell
+cd helm
+helm install junosexporter ./junosexporter
+```
+
+## Authentication
+
+### SSH key authentication
 Add your SSH key and `configyml` to `values.yml`.
 
 `sshkey` is a base64-encoded SSH private key you want to use for authentication.
@@ -17,7 +31,7 @@ sshkey: QWRkIHlvdXIgb3duIGlkX3JzYSBoZXJl
 It is also possible to use the existing-secret pattern (e.g. with ExternalSecrets operator),
 the secret with the SSH key should be mounted via `extraVolumes` and `extraVolumeMounts`.
 
-#### Password authentication
+### Password authentication
 To use password authentication the following `values.yaml` configuration could
 be used with a `junos-exporter-ssh` secret object storing SSH secrets:
 
@@ -55,10 +69,10 @@ data:
   username: BASE64_ENCODED_SSH_USERNAME
 ```
 
-### Devices configuration
+## Devices configuration
 Add your devices to the devices in `configyml` in `values.yaml`
 
-### Handling configuration/authorization changes
+## Handling configuration/authorization changes
 To force reload of the exporter pods upon `configyml` or `sshkey` configuration changes,
 enable the `rollOutJunosExporterPods` option in `values.yaml`.
 
@@ -70,8 +84,20 @@ annotations:
   reloader.stakater.com/auto: "true"
 ```
 
-### Installation
+## Versioning
+
+The chart version tracks the application version — `chart version 0.15.1` packages
+`junos_exporter v0.15.1`. Chart-only fixes (template changes, new values) are released as
+patch bumps independent of the application version.
+
+## Contributing to the chart
+
+Any pull request that modifies chart files (`templates/`, `values.yaml`, etc.) **must** also
+bump the `version` field in `Chart.yaml`. Without a `version` bump the Helm Chart Publish
+workflow will not trigger and no new chart artifact will be published.
+
+To verify the chart is valid before opening a PR:
+
 ```shell
-cd helm
-helm install junosexporter ./junosexporter
+helm lint helm/junosexporter
 ```

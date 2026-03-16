@@ -1,0 +1,49 @@
+on:
+  workflow_run:
+    workflows: ["Docker Build (tag)"]
+    types:
+      - completed
+
+name: Helm Chart Release PR
+
+jobs:
+  create-pr:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v6
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${{ github.event.workflow_run.head_branch }}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "chart_version=${TAG#v}" >> $GITHUB_OUTPUT
+
+      - name: Update Chart versions
+        run: |
+          sed -i "s/^version:.*/version: ${{ steps.version.outputs.chart_version }}/" helm/junosexporter/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: ${{ steps.version.outputs.tag }}/" helm/junosexporter/Chart.yaml
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(helm): release chart ${{ steps.version.outputs.chart_version }}"
+          branch: helm-release/${{ steps.version.outputs.chart_version }}
+          title: "chore(helm): release chart ${{ steps.version.outputs.chart_version }}"
+          body: |
+            Automated chart version bump following app release `${{ steps.version.outputs.tag }}`.
+
+            Changes:
+            - `version`: bumped to `${{ steps.version.outputs.chart_version }}`
+            - `appVersion`: bumped to `${{ steps.version.outputs.tag }}`
+
+            Merging this PR will trigger the Helm Chart Publish workflow, which packages and pushes
+            the chart to `oci://ghcr.io/${{ github.repository_owner }}/charts`.
+          labels: helm

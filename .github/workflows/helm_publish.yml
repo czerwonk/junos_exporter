@@ -1,0 +1,38 @@
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - helm/junosexporter/Chart.yaml
+
+name: Helm Chart Publish
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v6
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Lint chart
+        run: helm lint helm/junosexporter
+
+      - name: Package Helm chart
+        run: helm package helm/junosexporter --destination ./charts-release
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Helm chart to OCI registry
+        run: helm push ./charts-release/*.tgz oci://ghcr.io/${{ github.repository_owner }}/charts

@@ -28,6 +28,13 @@ var (
 	dcLoadDesc       *prometheus.Desc
 )
 
+var pemStateValues = map[string]int{
+	"Online":  1,
+	"Present": 2,
+	"Empty":   3,
+	"Offline": 4,
+}
+
 func init() {
 	l := []string{"target", "re_name", "item"}
 	temperaturesDesc = prometheus.NewDesc(prefix+"item_temp", "Temperature of the air flowing past", l, nil)
@@ -105,12 +112,12 @@ func (c *environmentCollector) environmentItems(client collector.Client, ch chan
 			return nil
 		}
 
-		if len(y.Results.RoutingEngines) > 0 {
-			x.Results.RoutingEngines[0].EnvironmentInformation.Items = append(x.Results.RoutingEngines[0].EnvironmentInformation.Items, y.Results.RoutingEngines[0].EnvironmentInformation.Items...)
+		if len(y.MultiREResults.RoutingEngines) > 0 {
+			x.MultiREResults.RoutingEngines[0].EnvironmentInformation.Items = append(x.MultiREResults.RoutingEngines[0].EnvironmentInformation.Items, y.MultiREResults.RoutingEngines[0].EnvironmentInformation.Items...)
 		}
 	}
 
-	for _, re := range x.Results.RoutingEngines {
+	for _, re := range x.MultiREResults.RoutingEngines {
 		l := labelValues
 		for _, item := range re.EnvironmentInformation.Items {
 			l = append(labelValues, re.Name)
@@ -135,58 +142,66 @@ func (c *environmentCollector) environmentItems(client collector.Client, ch chan
 }
 
 func (c *environmentCollector) environmentPEMItems(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = multiEngineResult{}
-
-	stateValues := map[string]int{
-		"Online":  1,
-		"Present": 2,
-		"Empty":   3,
-		"Offline": 4,
-	}
-
+	var mer = multiEngineResult{}
 	err := client.RunCommandAndParseWithParser("show chassis environment pem", func(b []byte) error {
-		return parseXML(b, &x)
+		return parseXML(b, &mer)
 	})
 	if err != nil {
 		err := client.RunCommandAndParseWithParser("show chassis environment psm", func(b []byte) error {
-			return parseXML(b, &x)
+			return parseXML(b, &mer)
 		})
 		if err != nil {
 			return err
 		}
 	}
 
-	for _, re := range x.Results.RoutingEngines {
+	for _, e := range mer.EnvironmentComponentInformation.EnvironmentComponentItem {
+		err := processEnvironmentComponentItem(e, ch, labelValues, "N/A")
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, re := range mer.MultiREResults.RoutingEngines {
 		for _, e := range re.EnvironmentComponentInformation.EnvironmentComponentItem {
-			l := append(labelValues, re.Name, e.Name)
-
-			ch <- prometheus.MustNewConstMetric(pemDesc, prometheus.GaugeValue, float64(stateValues[e.State]), append(l, e.State)...)
-
-			for _, f := range e.FanSpeedReading {
-				rpms, err := strconv.ParseFloat(strings.TrimSuffix(f.FanSpeed, " RPM"), 64)
-				if err != nil {
-					return fmt.Errorf("could not parse fan speed value to float: %s", f.FanSpeed)
-				}
-				ch <- prometheus.MustNewConstMetric(fanDesc, prometheus.GaugeValue, rpms, append(l, f.FanName)...)
-			}
-
-			voltage := 0.0
-			if e.DcInformation.DcDetail.DcVoltage > 0 {
-				voltage = e.DcInformation.DcDetail.DcVoltage
-			}
-
-			if e.DcInformation.DcDetail.Str3DcVoltage > 0 {
-
-				voltage = e.DcInformation.DcDetail.Str3DcVoltage
-			}
-
-			if voltage > 0 {
-				ch <- prometheus.MustNewConstMetric(dcVoltageDesc, prometheus.GaugeValue, voltage, l...)
-				ch <- prometheus.MustNewConstMetric(dcCurrentDesc, prometheus.GaugeValue, e.DcInformation.DcDetail.DcCurrent, l...)
-				ch <- prometheus.MustNewConstMetric(dcPowerDesc, prometheus.GaugeValue, e.DcInformation.DcDetail.DcPower, l...)
-				ch <- prometheus.MustNewConstMetric(dcLoadDesc, prometheus.GaugeValue, e.DcInformation.DcDetail.DcLoad, l...)
+			err := processEnvironmentComponentItem(e, ch, labelValues, re.Name)
+			if err != nil {
+				return err
 			}
 		}
+	}
+
+	return nil
+}
+
+func processEnvironmentComponentItem(e environmentComponentItem, ch chan<- prometheus.Metric, labelValues []string, reName string) error {
+	l := append(labelValues, reName, e.Name)
+
+	ch <- prometheus.MustNewConstMetric(pemDesc, prometheus.GaugeValue, float64(pemStateValues[e.State]), append(l, e.State)...)
+
+	for _, f := range e.FanSpeedReading {
+		rpms, err := strconv.ParseFloat(strings.TrimSuffix(f.FanSpeed, " RPM"), 64)
+		if err != nil {
+			return fmt.Errorf("could not parse fan speed value to float: %s", f.FanSpeed)
+		}
+		ch <- prometheus.MustNewConstMetric(fanDesc, prometheus.GaugeValue, rpms, append(l, f.FanName)...)
+	}
+
+	voltage := 0.0
+	if e.DcInformation.DcDetail.DcVoltage > 0 {
+		voltage = e.DcInformation.DcDetail.DcVoltage
+	}
+
+	if e.DcInformation.DcDetail.Str3DcVoltage > 0 {
+
+		voltage = e.DcInformation.DcDetail.Str3DcVoltage
+	}
+
+	if voltage > 0 {
+		ch <- prometheus.MustNewConstMetric(dcVoltageDesc, prometheus.GaugeValue, voltage, l...)
+		ch <- prometheus.MustNewConstMetric(dcCurrentDesc, prometheus.GaugeValue, e.DcInformation.DcDetail.DcCurrent, l...)
+		ch <- prometheus.MustNewConstMetric(dcPowerDesc, prometheus.GaugeValue, e.DcInformation.DcDetail.DcPower, l...)
+		ch <- prometheus.MustNewConstMetric(dcLoadDesc, prometheus.GaugeValue, e.DcInformation.DcDetail.DcLoad, l...)
 	}
 
 	return nil
@@ -204,7 +219,7 @@ func parseXML(b []byte, res *multiEngineResult) error {
 		return err
 	}
 
-	res.Results.RoutingEngines = []routingEngine{
+	res.MultiREResults.RoutingEngines = []routingEngine{
 		{
 			Name:                            "N/A",
 			EnvironmentComponentInformation: fi.EnvironmentComponentInformation,

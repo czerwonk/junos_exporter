@@ -51,3 +51,86 @@ type singleRoutingEngineResult struct {
 	XMLName               xml.Name              `xml:"rpc-reply"`
 	PowerUsageInformation powerUsageInformation `xml:"power-usage-information"`
 }
+
+type powerBudgetResult struct {
+	XMLName                xml.Name                 `xml:"rpc-reply"`
+	PowerBudgetInformation []PowerBudgetInformation `xml:"power-budget-information"`
+}
+
+type PowerBudgetInformation struct {
+	LineCardSlot        string `xml:"line-card-slot"`
+	PSUs                []PSU
+	PsuRedundancyConfig string `xml:"psu-redundancy-config"`
+	TotalPowerSupplied  int    `xml:"total-power-supplied"`
+	BasePower           int    `xml:"base-power"`
+	ActualPowerUsed     int    `xml:"actual-power-used"`
+}
+
+type PSU struct {
+	Slot          int    `xml:"psu-slot"`
+	Type          string `xml:"psu-type"`
+	PowerSupplied int    `xml:"power-supplied"`
+	State         string `xml:"state"`
+}
+
+// UnmarshalXML handles the flat, ungrouped PSU sibling elements by accumulating
+// PSU fields into a new PSU each time a <psu-slot> is encountered.
+func (p *PowerBudgetInformation) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var current *PSU
+
+	flush := func() {
+		if current != nil {
+			p.PSUs = append(p.PSUs, *current)
+			current = nil
+		}
+	}
+
+	for {
+		tok, err := d.Token()
+		if err != nil {
+			return err
+		}
+
+		switch t := tok.(type) {
+		case xml.StartElement:
+			switch t.Name.Local {
+			case "line-card-slot":
+				d.DecodeElement(&p.LineCardSlot, &t)
+			case "psu-slot":
+				flush() // save previous PSU before starting a new one
+				current = &PSU{}
+				d.DecodeElement(&current.Slot, &t)
+			case "psu-type":
+				if current != nil {
+					d.DecodeElement(&current.Type, &t)
+				}
+			case "power-supplied-psu":
+				if current != nil {
+					d.DecodeElement(&current.PowerSupplied, &t)
+				}
+			case "power-supply-state":
+				if current != nil {
+					d.DecodeElement(&current.State, &t)
+				}
+			case "total-power-supplied":
+				d.DecodeElement(&p.TotalPowerSupplied, &t)
+			case "base-power":
+				d.DecodeElement(&p.BasePower, &t)
+			case "actual-power-used":
+				d.DecodeElement(&p.ActualPowerUsed, &t)
+			default:
+				d.Skip()
+			}
+		case xml.EndElement:
+			if t.Name.Local == start.Name.Local {
+				flush() // save the last pending PSU
+				return nil
+			}
+		}
+	}
+}
+
+type ChassisHardwareResult struct {
+	XMLName  xml.Name `xml:"rpc-reply"`
+	Platform string   `xml:"chassis-inventory>chassis>description"`
+}

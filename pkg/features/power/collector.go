@@ -4,6 +4,7 @@ package power
 
 import (
 	"encoding/xml"
+	"fmt"
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
@@ -26,7 +27,19 @@ var (
 	dcCurrentDesc            *prometheus.Desc
 	dcVoltageDesc            *prometheus.Desc
 	dcLoadDesc               *prometheus.Desc
+
+	// EX4300 power budget statistics
+	powerBudgetSuppliedPsuDesc      *prometheus.Desc
+	powerBudgetPowerSupplyStateDesc *prometheus.Desc
+	powerBudgetTotalPowerSupplied   *prometheus.Desc
+	powerBudgetActualPowerUsed      *prometheus.Desc
 )
+
+var stateValues = map[string]int{
+	"Online":  1,
+	"Present": 2,
+	"Empty":   3,
+}
 
 func init() {
 	l := []string{"target", "re_name"}
@@ -48,6 +61,11 @@ func init() {
 	dcLoadDesc = prometheus.NewDesc(prefix+"pem_power_load_percent", "PEM power usage percent of total", l, nil)
 
 	pemPowerStateDesc = prometheus.NewDesc(prefix+"pem_power_state", "PEM power state. 1 - Online, 2 - Present, 3 - Empty", append(l, "state"), nil)
+
+	powerBudgetSuppliedPsuDesc = prometheus.NewDesc(prefix+"budget_power_supplied_psu", "Power supplied by the PSU, in watts", []string{"target", "line_card_slot", "psu_slot", "psu_type"}, nil)
+	powerBudgetPowerSupplyStateDesc = prometheus.NewDesc(prefix+"budget_power_supply_state", "Power supply state. 1 - Online, 2 - Present, 3 - Empty", []string{"target", "line_card_slot", "psu_slot", "psu_type", "power_supply_state"}, nil)
+	powerBudgetTotalPowerSupplied = prometheus.NewDesc(prefix+"budget_total_power_supplied", "Total power supplied by the PSU, in watts", []string{"target", "line_card_slot"}, nil)
+	powerBudgetActualPowerUsed = prometheus.NewDesc(prefix+"budget_actual_power_used", "Actual power used by the system, in watts", []string{"target", "line_card_slot"}, nil)
 }
 
 type powerCollector struct {
@@ -80,23 +98,70 @@ func (*powerCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dcLoadDesc
 }
 
-// Collect collects metrics from JunOS
 func (c *powerCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	stateValues := map[string]int{
-		"Online":  1,
-		"Present": 2,
-		"Empty":   3,
+	platform, err := c.getPlatform(client)
+	if err != nil {
+		return fmt.Errorf("failed to get platform: %w", err)
 	}
 
-	var x = multiRoutingEngineResult{}
-	err := client.RunCommandAndParseWithParser("show chassis power", func(b []byte) error {
-		return parseXML(b, &x)
+	if isEX4300(platform) {
+		return c.collectChassisPowerBudgetStatistics(client, ch, labelValues)
+	}
+
+	return c.collectChassisPower(client, ch, labelValues)
+}
+
+func isEX4300(platform string) bool {
+	return strings.HasPrefix(platform, "EX4300")
+}
+
+func (c *powerCollector) getPlatform(client collector.Client) (string, error) {
+	var chasHW ChassisHardwareResult
+	err := client.RunCommandAndParseWithParser("show chassis hardware", func(b []byte) error {
+		return xml.Unmarshal(b, &chasHW)
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return chasHW.Platform, nil
+}
+
+func (c *powerCollector) collectChassisPowerBudgetStatistics(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	powerBudgetRes := powerBudgetResult{}
+	err := client.RunCommandAndParseWithParser("show chassis power-budget-statistics", func(b []byte) error {
+		return xml.Unmarshal(b, &powerBudgetRes)
 	})
 	if err != nil {
 		return err
 	}
 
-	for _, re := range x.Results.RoutingEngine {
+	for _, i := range powerBudgetRes.PowerBudgetInformation {
+		l := append(labelValues, i.LineCardSlot)
+		ch <- prometheus.MustNewConstMetric(powerBudgetTotalPowerSupplied, prometheus.GaugeValue, float64(i.TotalPowerSupplied), l...)
+		ch <- prometheus.MustNewConstMetric(powerBudgetActualPowerUsed, prometheus.GaugeValue, float64(i.ActualPowerUsed), l...)
+
+		for _, psu := range i.PSUs {
+			pl := append(l, fmt.Sprintf("%d", psu.Slot), psu.Type)
+			ch <- prometheus.MustNewConstMetric(powerBudgetSuppliedPsuDesc, prometheus.GaugeValue, float64(psu.PowerSupplied), pl...)
+			ch <- prometheus.MustNewConstMetric(powerBudgetPowerSupplyStateDesc, prometheus.GaugeValue, float64(stateValues[psu.State]), append(pl, psu.State)...)
+		}
+	}
+
+	return nil
+}
+
+// Collect collects metrics from JunOS
+func (c *powerCollector) collectChassisPower(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	var mreRes = multiRoutingEngineResult{}
+	err := client.RunCommandAndParseWithParser("show chassis power", func(b []byte) error {
+		return parseXML(b, &mreRes)
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, re := range mreRes.Results.RoutingEngine {
 		l := append(labelValues, re.Name)
 
 		if re.PowerUsageInformation.PowerUsageSystem.CapacitySysActual > 0 {

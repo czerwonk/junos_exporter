@@ -81,6 +81,7 @@ var (
 	lacpEnabled                 = flag.Bool("lacp.enabled", false, "Scrape LACP metrics")
 	bfdEnabled                  = flag.Bool("bfd.enabled", false, "Scrape BFD metrics")
 	clusterEnabled              = flag.Bool("cluster.enabled", false, "Scrape chassis cluster metrics")
+	virtualChassisEnabled       = flag.Bool("virtual_chassis.enabled", false, "Scrape virtual chassis metrics")
 	vrrpEnabled                 = flag.Bool("vrrp.enabled", false, "Scrape VRRP metrics")
 	vpwsEnabled                 = flag.Bool("vpws.enabled", false, "Scrape EVPN VPWS metrics")
 	mplsLSPEnabled              = flag.Bool("mpls_lsp.enabled", false, "Scrape MPLS LSP metrics")
@@ -282,6 +283,7 @@ func loadConfigFromFlags() *config.Config {
 	f.System = *systemEnabled
 	f.SystemStatistics = *systemstatisticsEnabled
 	f.TWAMP = *twampEnabled
+	f.VirtualChassis = *virtualChassisEnabled
 	f.VPWS = *vpwsEnabled
 	f.VRRP = *vrrpEnabled
 	return c

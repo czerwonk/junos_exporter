@@ -71,7 +71,7 @@ Some collected time series behave like enums - Integer values represent a certai
 ```
 
 ### L2circuits
-```   
+```
 0:EI -- encapsulation invalid
 1:MM -- mtu mismatch
 2:EM -- encapsulation mismatch
@@ -98,8 +98,8 @@ Some collected time series behave like enums - Integer values represent a certai
 ```
 
 ### LDP
-```   
-0: "Nonexistant"
+```
+0: "Nonexistent"
 1: "Operational"
 ```
 
@@ -115,7 +115,7 @@ Some collected time series behave like enums - Integer values represent a certai
 
 ### VRRP
 States map to human readable names like this:
-```   
+```
 1: "init"
 2: "backup"
 3: "master"
@@ -125,7 +125,7 @@ States map to human readable names like this:
 Expiry is either presented as number of days until expiry date or certain special values.
 ```
 0 ... n = Days until expiry
-     -1 = Expired 
+     -1 = Expired
    +Inf = Permanent license
    -Inf = Invalid
 ```
@@ -153,7 +153,7 @@ docker run -d --restart unless-stopped -p 9326:9326 -e SSH_KEYFILE=/ssh-keyfile 
 
 ### Authentication
 junos_exporter supports SSH authentication via key or password based authentication.
-`-ssh.keyfile=<file>` enables key based authentication. `-ssh.password=<password-string>` enables password based authenticaton, this can also be enabled via the config file in the form of a `password: <password-string>` entry.
+`-ssh.keyfile=<file>` enables key based authentication. `-ssh.password=<password-string>` enables password based authentication, this can also be enabled via the config file in the form of a `password: <password-string>` entry.
 Authentication order is ssh key, if none is found the cli flag is checked, the config file is checked last. If no valid auth method is specified junos_exporter exits with an error.
 Specify the ssh username with the cli flag `-ssh.user`, with the `username` key under the configuration file or use the default username of `junos_exporter`.
 
@@ -253,7 +253,7 @@ features:
 ## Dynamic Interface Labels
 Version 0.9.5 introduced dynamic labels retrieved from the interface descriptions. Version 0.12.4 added support for dynamic labels on BGP metrics. Flags are supported a well. The first part (label name) has to comply to the following rules:
 * must not begin with a figure
-* must only contain this charakters: A-Z,a-z,0-9,_
+* must only contain this characters: A-Z,a-z,0-9,_
 * is treated lower case
 * must no conflict with label names used in junos_exporter
 
@@ -279,24 +279,21 @@ Label value: 202739
 ### Custom Label RegEx
 
 To override the default behavior a `interface_description_regex` can be supplied. This parameter can be given at a global level or per device. To use per-device regexes the target devices need to be defined in the exporter config. Per-device regex cannot be used in combination with `-config.ignore-targets`.
- 
+
 #### Example
-The default regex `\[([^=\]]+)(=[^\]]+)?\]` would match interface descriptions like `"Description [foo] [bar=123]"`.  
-If we use `[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]` we can now match for `"Description [foo, bar=123]"` instead.  
+The default regex `\[([^=\]]+)(=[^\]]+)?\]` would match interface descriptions like `"Description [foo] [bar=123]"`.
+If we use `[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]` we can now match for `"Description [foo, bar=123]"` instead.
 
 
 ### Grafana Dashboards
-
-There is an example Grafana Dashboard included (grafana_dashboard.json), which has some basic variables to choose your device(s) / interface(s)
-
-![screenshot](grafana_screenshot.png)
+There are example Grafana dashboards included in [example/dashboards](example/dashboards).
 
 ## Third Party Components
 This software uses components of the following projects
 * Prometheus Go client library (https://github.com/prometheus/client_golang)
 
-## Contributers
-for a full list of contributers have a look at https://github.com/czerwonk/junos_exporter/graphs/contributors
+## Contributors
+for a full list of contributors have a look at https://github.com/czerwonk/junos_exporter/graphs/contributors
 
 ## License
 (c) Daniel Czerwonk, 2017. Licensed under [MIT](LICENSE) license.

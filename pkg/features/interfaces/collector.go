@@ -16,45 +16,52 @@ import (
 const prefix = "junos_interface_"
 
 type description struct {
-	receiveBytesDesc            *prometheus.Desc
-	receivePacketsDesc          *prometheus.Desc
-	receiveErrorsDesc           *prometheus.Desc
-	receiveDropsDesc            *prometheus.Desc
-	interfaceSpeedDesc          *prometheus.Desc
-	interfaceBPDUErrorDesc      *prometheus.Desc
-	transmitBytesDesc           *prometheus.Desc
-	transmitPacketsDesc         *prometheus.Desc
-	transmitErrorsDesc          *prometheus.Desc
-	transmitDropsDesc           *prometheus.Desc
-	ipv6receiveBytesDesc        *prometheus.Desc
-	ipv6receivePacketsDesc      *prometheus.Desc
-	ipv6transmitBytesDesc       *prometheus.Desc
-	ipv6transmitPacketsDesc     *prometheus.Desc
-	adminStatusDesc             *prometheus.Desc
-	operStatusDesc              *prometheus.Desc
-	errorStatusDesc             *prometheus.Desc
-	lastFlappedDesc             *prometheus.Desc
-	receiveUnicastsDesc         *prometheus.Desc
-	receiveBroadcastsDesc       *prometheus.Desc
-	receiveMulticastsDesc       *prometheus.Desc
-	receiveCRCErrorsDesc        *prometheus.Desc
-	transmitUnicastsDesc        *prometheus.Desc
-	transmitBroadcastsDesc      *prometheus.Desc
-	transmitMulticastsDesc      *prometheus.Desc
-	transmitCRCErrorsDesc       *prometheus.Desc
-	fecCcwCountDesc             *prometheus.Desc
-	fecNccwCountDesc            *prometheus.Desc
-	fecCcwErrorRateDesc         *prometheus.Desc
-	fecNccwErrorRateDesc        *prometheus.Desc
-	receiveOversizedFramesDesc  *prometheus.Desc
-	receiveJabberFramesDesc     *prometheus.Desc
-	receiveFragmentFramesDesc   *prometheus.Desc
-	receiveVlanTaggedFramesDesc *prometheus.Desc
-	receiveCodeViolationsDesc   *prometheus.Desc
-	receiveTotalErrorsDesc      *prometheus.Desc
-	transmitTotalErrorsDesc     *prometheus.Desc
-	mtuDesc                     *prometheus.Desc
-	fecModeDesc                 *prometheus.Desc
+	receiveBytesDesc               *prometheus.Desc
+	receivePacketsDesc             *prometheus.Desc
+	receiveErrorsDesc              *prometheus.Desc
+	receiveDropsDesc               *prometheus.Desc
+	interfaceSpeedDesc             *prometheus.Desc
+	interfaceBPDUErrorDesc         *prometheus.Desc
+	transmitBytesDesc              *prometheus.Desc
+	transmitPacketsDesc            *prometheus.Desc
+	transmitErrorsDesc             *prometheus.Desc
+	transmitCarrierTransitionsDesc *prometheus.Desc
+	transmitDropsDesc              *prometheus.Desc
+	transmitCollisions             *prometheus.Desc
+	transmitAgedPackets            *prometheus.Desc
+	transmitFIFOErrors             *prometheus.Desc
+	transmitCRCErrors              *prometheus.Desc
+	transmitMTUErrors              *prometheus.Desc
+	transmitResourceErrors         *prometheus.Desc
+	ipv6receiveBytesDesc           *prometheus.Desc
+	ipv6receivePacketsDesc         *prometheus.Desc
+	ipv6transmitBytesDesc          *prometheus.Desc
+	ipv6transmitPacketsDesc        *prometheus.Desc
+	adminStatusDesc                *prometheus.Desc
+	operStatusDesc                 *prometheus.Desc
+	errorStatusDesc                *prometheus.Desc
+	lastFlappedDesc                *prometheus.Desc
+	receiveUnicastsDesc            *prometheus.Desc
+	receiveBroadcastsDesc          *prometheus.Desc
+	receiveMulticastsDesc          *prometheus.Desc
+	receiveCRCErrorsDesc           *prometheus.Desc
+	transmitUnicastsDesc           *prometheus.Desc
+	transmitBroadcastsDesc         *prometheus.Desc
+	transmitMulticastsDesc         *prometheus.Desc
+	transmitCRCErrorsDesc          *prometheus.Desc
+	fecCcwCountDesc                *prometheus.Desc
+	fecNccwCountDesc               *prometheus.Desc
+	fecCcwErrorRateDesc            *prometheus.Desc
+	fecNccwErrorRateDesc           *prometheus.Desc
+	receiveOversizedFramesDesc     *prometheus.Desc
+	receiveJabberFramesDesc        *prometheus.Desc
+	receiveFragmentFramesDesc      *prometheus.Desc
+	receiveVlanTaggedFramesDesc    *prometheus.Desc
+	receiveCodeViolationsDesc      *prometheus.Desc
+	receiveTotalErrorsDesc         *prometheus.Desc
+	transmitTotalErrorsDesc        *prometheus.Desc
+	mtuDesc                        *prometheus.Desc
+	fecModeDesc                    *prometheus.Desc
 }
 
 func newDescriptions(dynLabels dynamiclabels.Labels) *description {
@@ -71,6 +78,13 @@ func newDescriptions(dynLabels dynamiclabels.Labels) *description {
 	d.transmitBytesDesc = prometheus.NewDesc(prefix+"transmit_bytes", "Transmitted data in bytes", l, nil)
 	d.transmitPacketsDesc = prometheus.NewDesc(prefix+"transmit_packets_total", "Transmitted packets", l, nil)
 	d.transmitErrorsDesc = prometheus.NewDesc(prefix+"transmit_errors", "Number of errors caused by outgoing packets", l, nil)
+	d.transmitCarrierTransitionsDesc = prometheus.NewDesc(prefix+"transmit_carrier_transitions", "Number of carrier transitions of outgoing link", l, nil)
+	d.transmitCollisions = prometheus.NewDesc(prefix+"transmit_collisions", "Number of outgoing packet collisions", l, nil)
+	d.transmitAgedPackets = prometheus.NewDesc(prefix+"transmit_aged_packets", "Number of outgoing aged packets ", l, nil)
+	d.transmitFIFOErrors = prometheus.NewDesc(prefix+"transmit_fifo_erros", "Number of outgoing packets with FIFO errors", l, nil)
+	d.transmitCRCErrors = prometheus.NewDesc(prefix+"transmit_crc_errors", "Number of outgoing packets with CRC errors ", l, nil)
+	d.transmitMTUErrors = prometheus.NewDesc(prefix+"transmit_mtu_errors", "Number of outgoing packets with MTU errors ", l, nil)
+	d.transmitResourceErrors = prometheus.NewDesc(prefix+"transmit_resource_errors", "Number of coutgoing packets with resource errors", l, nil)
 	d.transmitDropsDesc = prometheus.NewDesc(prefix+"transmit_drops", "Number of dropped outgoing packets", l, nil)
 	d.ipv6receiveBytesDesc = prometheus.NewDesc(prefix+"IPv6_receive_bytes_total", "Received IPv6 data in bytes", l, nil)
 	d.ipv6receivePacketsDesc = prometheus.NewDesc(prefix+"IPv6_receive_packets_total", "Received IPv6 packets", l, nil)
@@ -134,6 +148,13 @@ func (*interfaceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- d.interfaceBPDUErrorDesc
 	ch <- d.transmitBytesDesc
 	ch <- d.transmitPacketsDesc
+	ch <- d.transmitCarrierTransitionsDesc
+	ch <- d.transmitCollisions
+	ch <- d.transmitAgedPackets
+	ch <- d.transmitFIFOErrors
+	ch <- d.transmitCRCErrors
+	ch <- d.transmitMTUErrors
+	ch <- d.transmitResourceErrors
 	ch <- d.transmitDropsDesc
 	ch <- d.transmitErrorsDesc
 	ch <- d.ipv6receiveBytesDesc
@@ -204,6 +225,7 @@ func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfa
 			ReceivePackets:          float64(phy.Stats.InputPackets),
 			Speed:                   phy.Speed,
 			BPDUError:               phy.BPDUError == "detected",
+			CarrierTransitions:      float64(phy.OutputErrors.CarrierTransitions),
 			TransmitDrops:           float64(phy.OutputErrors.Drops),
 			TransmitErrors:          float64(phy.OutputErrors.Errors),
 			TransmitBytes:           float64(phy.Stats.OutputBytes),
@@ -340,6 +362,13 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, ch chan<- pr
 		ch <- prometheus.MustNewConstMetric(d.operStatusDesc, prometheus.GaugeValue, float64(operUp), lv...)
 		ch <- prometheus.MustNewConstMetric(d.errorStatusDesc, prometheus.GaugeValue, float64(err), lv...)
 		ch <- prometheus.MustNewConstMetric(d.transmitErrorsDesc, prometheus.CounterValue, s.TransmitErrors, lv...)
+		ch <- prometheus.MustNewConstMetric(d.transmitCarrierTransitionsDesc, prometheus.CounterValue, s.CarrierTransitions, lv...)
+		ch <- prometheus.MustNewConstMetric(d.transmitCollisions, prometheus.CounterValue, s.Collisions, lv...)
+		ch <- prometheus.MustNewConstMetric(d.transmitAgedPackets, prometheus.CounterValue, s.AgedPackets, lv...)
+		ch <- prometheus.MustNewConstMetric(d.transmitFIFOErrors, prometheus.CounterValue, s.FIFOErrors, lv...)
+		ch <- prometheus.MustNewConstMetric(d.transmitCRCErrors, prometheus.CounterValue, s.CRCErrors, lv...)
+		ch <- prometheus.MustNewConstMetric(d.transmitMTUErrors, prometheus.CounterValue, s.MTUErrors, lv...)
+		ch <- prometheus.MustNewConstMetric(d.transmitResourceErrors, prometheus.CounterValue, s.ResourceErrors, lv...)
 		ch <- prometheus.MustNewConstMetric(d.transmitDropsDesc, prometheus.CounterValue, s.TransmitDrops, lv...)
 		ch <- prometheus.MustNewConstMetric(d.receiveErrorsDesc, prometheus.CounterValue, s.ReceiveErrors, lv...)
 		ch <- prometheus.MustNewConstMetric(d.receiveDropsDesc, prometheus.CounterValue, s.ReceiveDrops, lv...)

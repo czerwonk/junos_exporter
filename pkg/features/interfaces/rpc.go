@@ -23,8 +23,15 @@ type phyInterface struct {
 		Errors uint64 `xml:"input-errors"`
 	} `xml:"input-error-list"`
 	OutputErrors struct {
-		Drops  uint64 `xml:"output-drops"`
-		Errors uint64 `xml:"output-errors"`
+		CarrierTransitions uint64 `xml:"output-carrier-transitions"`
+		Errors             uint64 `xml:"output-errors"`
+		Drops              uint64 `xml:"output-drops"`
+		Collisions         uint64 `xml:"output-collisions"`
+		AgedPackets        uint64 `xml:"output-aged-packets"`
+		FIFOErrors         uint64 `xml:"output-fifo-errors"`
+		CRCErrors          uint64 `xml:"output-crc-errors"`
+		MTUErrors          uint64 `xml:"output-mtu-errors"`
+		ResourceErrors     uint64 `xml:"output-resource-errors"`
 	} `xml:"output-error-list"`
 	InterfaceFlapped struct {
 		Seconds uint64 `xml:"seconds,attr"`

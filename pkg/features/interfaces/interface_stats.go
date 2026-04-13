@@ -19,7 +19,14 @@ type interfaceStats struct {
 	TransmitBytes           float64
 	TransmitPackets         float64
 	TransmitErrors          float64
+	CarrierTransitions      float64
 	TransmitDrops           float64
+	Collisions              float64
+	AgedPackets             float64
+	FIFOErrors              float64
+	CRCErrors               float64
+	MTUErrors               float64
+	ResourceErrors          float64
 	IPv6ReceiveBytes        float64
 	IPv6ReceivePackets      float64
 	IPv6TransmitBytes       float64

@@ -3,14 +3,14 @@
 package virtualchassis
 
 import (
-    "encoding/xml"
-    "testing"
+	"encoding/xml"
+	"testing"
 
-    "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseChassisClusterStatus(t *testing.T) {
-    body := `<rpc-reply xmlns:junos="http://xml.juniper.net/junos/23.4R2-S7.4/junos">
+	body := `<rpc-reply xmlns:junos="http://xml.juniper.net/junos/23.4R2-S7.4/junos">
     <virtual-chassis-information>
         <preprovisioned-virtual-chassis-information>
             <virtual-chassis-id>1234.1234.1234</virtual-chassis-id>
@@ -36,7 +36,7 @@ func TestParseChassisClusterStatus(t *testing.T) {
                 <member-status>Prsnt</member-status>
                 <member-id>1</member-id>
                 <fpc-slot>(FPC 1)</fpc-slot>
-                <member-priority>129</member-priority>
+                <member-priority>130</member-priority>
                 <member-mixed-mode>N</member-mixed-mode>
                 <member-route-mode>VC</member-route-mode>
                 <member-role>Master*</member-role>
@@ -51,25 +51,25 @@ func TestParseChassisClusterStatus(t *testing.T) {
     </virtual-chassis-information>
 </rpc-reply>`
 
-    var reply VirtualChassisReply
-    err := xml.Unmarshal([]byte(body), &reply)
+	var reply VirtualChassisReply
+	err := xml.Unmarshal([]byte(body), &reply)
 
-    if err != nil {
-        t.Fatal(err)
-    }
+	if err != nil {
+		t.Fatal(err)
+	}
 
-    assert.Equal(t, string{"1234.1234.1234"}, reply.VirtChassInfo.PreProvisVCInfo, "virtual-chassis-id")
-    assert.Len(t, reply.VirtChassInfo.MemberList, 2)
+	assert.Equal(t, "1234.1234.1234", reply.VirtChassInfo.PreProvisVCInfo.VirtChassID, "virtual-chassis-id")
+	assert.Len(t, reply.VirtChassInfo.MemberList, 2)
 
-    member0 := reply.VirtChassInfo.MemberList[0]
-    assert.Equal(t, 0, member0.MemberID, "member-id")
-    assert.Equal(t, 129, member0.MemberPriority, "member-priority")
-    assert.Equal(t, []string{"Y","N"}, member0.MemberMixedMode, "member-mixed-mode")
-    assert.Equal(t, []string{"Master*", "Backup"}, member0.MemberRole, "member-role")
+	member0 := reply.VirtChassInfo.MemberList[0]
+	assert.Equal(t, 0, member0.MemberID, "member-id")
+	assert.Equal(t, 129, member0.MemberPriority, "member-priority")
+	assert.Equal(t, "N", member0.MemberMixedMode, "member-mixed-mode")
+	assert.Equal(t, "Backup", member0.MemberRole, "member-role")
 
-    member1 := reply.VirtChassInfo.MemberList[1]
-    assert.Equal(t, 1, member1.MemberID, "member-id")
-    assert.Equal(t, 129, member1.MemberPriority, "member-priority")
-    assert.Equal(t, []string{"Y","N"}, member1.MemberMixedMode, "member-mixed-mode")
-    assert.Equal(t, []string{"Master*", "Backup"}, member1.MemberRole, "member-role")
+	member1 := reply.VirtChassInfo.MemberList[1]
+	assert.Equal(t, 1, member1.MemberID, "member-id")
+	assert.Equal(t, 130, member1.MemberPriority, "member-priority")
+	assert.Equal(t, "N", member1.MemberMixedMode, "member-mixed-mode")
+	assert.Equal(t, "Master*", member1.MemberRole, "member-role")
 }

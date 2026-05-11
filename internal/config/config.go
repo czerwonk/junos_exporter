@@ -97,6 +97,7 @@ type FeatureConfig struct {
 	Power               bool `yaml:"power,omitempty"`
 	MAC                 bool `yaml:"mac,omitempty"`
 	MPLSLSP             bool `yaml:"mpls_lsp,omitempty"`
+	VirtualChassis      bool `yaml:"virtual_chassis,omitempty"`
 	VPWS                bool `yaml:"vpws,omitempty"`
 	VRRP                bool `yaml:"vrrp,omitempty"`
 	License             bool `yaml:"license,omitempty"`
@@ -200,6 +201,7 @@ func setDefaultValues(c *Config) {
 	f.System = false
 	f.SystemStatistics = true
 	f.TWAMP = false
+	f.VirtualChassis = false
 	f.VPWS = false
 	f.VRRP = false
 }

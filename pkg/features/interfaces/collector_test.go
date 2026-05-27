@@ -54,7 +54,7 @@ func TestInterfaceCollectorCommand(t *testing.T) {
 		{
 			name:              "custom argument",
 			extensiveArgument: "[!(d)][!(i)]*",
-			expectedCmd:       "show interfaces [!(d)][!(i)]* extensive",
+			expectedCmd:       "show interfaces extensive [!(d)][!(i)]*",
 		},
 	}
 

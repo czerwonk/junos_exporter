@@ -98,7 +98,9 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	})
 	c.addCollectorIfEnabledForDevice(device, "dot1x", f.DOT1X, dot1x.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "env", f.Environment, environment.NewCollector)
-	c.addCollectorIfEnabledForDevice(device, "firewall", f.Firewall, firewall.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "firewall", f.Firewall, func() collector.RPCCollector {
+		return firewall.NewCollector(deviceFirewallFilterNameRegex(c.cfg, device.Host))
+	})
 	c.addCollectorIfEnabledForDevice(device, "fpc", f.FPC, fpc.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "ifacediag", f.InterfaceDiagnostic, func() collector.RPCCollector {
 		return interfacediagnostics.NewCollector(descRe)

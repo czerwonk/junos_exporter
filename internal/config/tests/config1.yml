@@ -20,4 +20,5 @@ features:
   firewall: false
 
 interface_name_regex: '[!(d)][!(i)]*'
+firewall_filter_name_regex: 'test-filter.*'
 

@@ -189,6 +189,7 @@ devices:
     # Optional
     # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
     # interface_name_regex: '[!(d)][!(i)]*'
+    # firewall_filter_name_regex: 'test-filter.*'
     features:
       isis: true
   - host: switch\d+
@@ -202,6 +203,7 @@ devices:
 # Optional
 # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
 # interface_name_regex: '[!(d)][!(i)]*'
+# firewall_filter_name_regex: 'test-filter.*'
 features:
   accounting: false
   alarm: true
@@ -303,6 +305,24 @@ This argument can be supplied via:
   ```
 
 If provided, the exporter will execute `show interfaces <argument> extensive` instead of the default `show interfaces extensive`.
+
+
+### Configuring Firewall Filter Name Regex
+
+By default, the firewall collector executes the command `show firewall filter regex .*` to retrieve statistics for all firewall filters.
+If you want to limit the collector to query only specific filters matching a regular expression, you can configure a custom regex using the `firewall_filter_name_regex` option.
+
+This regex can be supplied via:
+- **CLI Flag**: `-firewall.filter-name-regex="test-filter.*"`
+- **Config File (Global)**: `firewall_filter_name_regex: 'test-filter.*'`
+- **Config File (Per-Device)**: Under a specific device configuration:
+  ```yaml
+  devices:
+    - host: router1
+      firewall_filter_name_regex: 'router1-filter.*'
+  ```
+
+If provided, the exporter will execute `show firewall filter regex <regex>` with your custom pattern instead of `.*`.
 
 
 ### Grafana Dashboards

@@ -12,14 +12,15 @@ import (
 
 // Config represents the configuration for the exporter
 type Config struct {
-	Password           string          `yaml:"password"`
-	Targets            []string        `yaml:"targets,omitempty"`
-	Devices            []*DeviceConfig `yaml:"devices,omitempty"`
-	Features           FeatureConfig   `yaml:"features,omitempty"`
-	LSEnabled          bool            `yaml:"logical_systems,omitempty"`
-	IfDescReStr        string          `yaml:"interface_description_regex,omitempty"`
-	IfDescReg          *regexp.Regexp  `yaml:"-"`
-	InterfaceNameRegex string          `yaml:"interface_name_regex,omitempty"`
+	Password                string          `yaml:"password"`
+	Targets                 []string        `yaml:"targets,omitempty"`
+	Devices                 []*DeviceConfig `yaml:"devices,omitempty"`
+	Features                FeatureConfig   `yaml:"features,omitempty"`
+	LSEnabled               bool            `yaml:"logical_systems,omitempty"`
+	IfDescReStr             string          `yaml:"interface_description_regex,omitempty"`
+	IfDescReg               *regexp.Regexp  `yaml:"-"`
+	InterfaceNameRegex      string          `yaml:"interface_name_regex,omitempty"`
+	FirewallFilterNameRegex string          `yaml:"firewall_filter_name_regex,omitempty"`
 }
 
 func (c *Config) load(dynamicIfaceLabels bool) error {
@@ -48,17 +49,18 @@ func (c *Config) load(dynamicIfaceLabels bool) error {
 
 // DeviceConfig is the config representation of 1 device
 type DeviceConfig struct {
-	Host               string         `yaml:"host"`
-	Username           string         `yaml:"username,omitempty"`
-	Password           string         `yaml:"password,omitempty"`
-	KeyFile            string         `yaml:"key_file,omitempty"`
-	KeyPassphrase      string         `yaml:"key_passphrase,omitempty"`
-	Features           *FeatureConfig `yaml:"features,omitempty"`
-	IfDescRegStr       string         `yaml:"interface_description_regex,omitempty"`
-	IfDescReg          *regexp.Regexp `yaml:"-"`
-	IsHostPattern      bool           `yaml:"host_pattern,omitempty"`
-	HostPattern        *regexp.Regexp
-	InterfaceNameRegex string `yaml:"interface_name_regex,omitempty"`
+	Host                    string         `yaml:"host"`
+	Username                string         `yaml:"username,omitempty"`
+	Password                string         `yaml:"password,omitempty"`
+	KeyFile                 string         `yaml:"key_file,omitempty"`
+	KeyPassphrase           string         `yaml:"key_passphrase,omitempty"`
+	Features                *FeatureConfig `yaml:"features,omitempty"`
+	IfDescRegStr            string         `yaml:"interface_description_regex,omitempty"`
+	IfDescReg               *regexp.Regexp `yaml:"-"`
+	IsHostPattern           bool           `yaml:"host_pattern,omitempty"`
+	HostPattern             *regexp.Regexp
+	InterfaceNameRegex      string `yaml:"interface_name_regex,omitempty"`
+	FirewallFilterNameRegex string `yaml:"firewall_filter_name_regex,omitempty"`
 }
 
 // FeatureConfig is the list of collectors enabled or disabled

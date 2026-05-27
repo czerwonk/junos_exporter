@@ -6,7 +6,7 @@ type SystemStatistics struct {
 	XMLName    xml.Name   `xml:"rpc-reply"`
 	//Text       string     `xml:",chardata"`
 	//Junos      string     `xml:"junos,attr"`
-	rpcReply    rpcReply  `xml:"rpc-reply"`
+	// rpcReply    rpcReply  `xml:"rpc-reply"`
 	Statistics   Statistics `xml:"statistics"`
 		Cli        struct {
 			Text   string `xml:",chardata"`
@@ -15,9 +15,9 @@ type SystemStatistics struct {
 
 }
 
-type rpcReply struct {
-	XMLName xml.Name `xml:"rpc-reply"`
-}
+// type rpcReply struct {
+// 	XMLName xml.Name `xml:"rpc-reply"`
+// }
 type Statistics struct {
 	Text string `xml:",chardata"`
 	Tcp  TCP `xml:"tcp"`

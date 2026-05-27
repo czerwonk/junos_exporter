@@ -188,7 +188,7 @@ func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfa
 	var x = result{}
 	cmd := "show interfaces extensive"
 	if c.extensiveArgument != "" {
-		cmd = fmt.Sprintf("show interfaces %s extensive", c.extensiveArgument)
+		cmd = fmt.Sprintf("show interfaces extensive %s", c.extensiveArgument)
 	}
 	err := client.RunCommandAndParse(cmd, &x)
 	if err != nil {

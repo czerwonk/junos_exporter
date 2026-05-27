@@ -290,11 +290,11 @@ If we use `[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]` we can now match for `"Description 
 ### Configuring Interfaces Collector Command Argument
 
 By default, the interfaces collector executes the command `show interfaces extensive` to retrieve detailed interface statistics.
-If you want to query only specific interfaces or apply a wildcard filter (for example, to reduce scrape times or target specific ports), you can configure a custom argument using the `interfaces_extensive_argument` option. One example is for use with subscriber management, where `'[!(d)][!(i)]*'` will avoid scraping all the demux interfaces.
+If you want to query only specific interfaces or apply a wildcard filter (for example, to reduce scrape times or target specific ports), you can configure a custom argument using the `interfaces_extensive_argument` option. One example is for use with subscriber management, where `'"[!(d)][!(i)]*"'` will avoid scraping all the demux interfaces.
 
 This argument can be supplied via:
-- **CLI Flag**: `-interfaces.extensive-argument="[!(d)][!(i)]*"`
-- **Config File (Global)**: `interfaces_extensive_argument: '[!(d)][!(i)]*'`
+- **CLI Flag**: `-interfaces.extensive-argument="\"[!(d)][!(i)]*\""`
+- **Config File (Global)**: `interfaces_extensive_argument: '"[!(d)][!(i)]*"'`
 - **Config File (Per-Device)**: Under a specific device configuration:
   ```yaml
   devices:

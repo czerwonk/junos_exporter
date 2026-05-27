@@ -14,9 +14,9 @@ type SystemStatistics struct {
 	} `xml:"cli"`
 }
 
-// type rpcReply struct {
-// 	XMLName xml.Name `xml:"rpc-reply"`
-// }
+type rpcReply struct {
+	XMLName xml.Name `xml:"rpc-reply"`
+}
 type Statistics struct {
 	Text  string `xml:",chardata"`
 	Tcp   TCP    `xml:"tcp"`

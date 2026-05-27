@@ -26,3 +26,5 @@ devices:
       ipsec: true
       rpki: true
       power: true
+    interface_name_regex: 'ge-*'
+

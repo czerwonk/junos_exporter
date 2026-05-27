@@ -188,6 +188,7 @@ devices:
     password: secret
     # Optional
     # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
+    # interface_name_regex: '[!(d)][!(i)]*'
     features:
       isis: true
   - host: switch\d+
@@ -200,6 +201,7 @@ devices:
 
 # Optional
 # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
+# interface_name_regex: '[!(d)][!(i)]*'
 features:
   accounting: false
   alarm: true
@@ -283,6 +285,24 @@ To override the default behavior a `interface_description_regex` can be supplied
 #### Example
 The default regex `\[([^=\]]+)(=[^\]]+)?\]` would match interface descriptions like `"Description [foo] [bar=123]"`.
 If we use `[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]` we can now match for `"Description [foo, bar=123]"` instead.
+
+
+### Configuring Interfaces Collector Command Argument
+
+By default, the interfaces collector executes the command `show interfaces extensive` to retrieve detailed interface statistics.
+If you want to query only specific interfaces or apply a wildcard filter (for example, to reduce scrape times or target specific ports), you can configure a custom argument using the `interface_name_regex` option. One example is for use with subscriber management, where `'"[!(d)][!(i)]*"'` will avoid scraping all the demux interfaces.
+
+This argument can be supplied via:
+- **CLI Flag**: `-interfaces.name-regex="\"[!(d)][!(i)]*\""`
+- **Config File (Global)**: `interface_name_regex: '"[!(d)][!(i)]*"'`
+- **Config File (Per-Device)**: Under a specific device configuration:
+  ```yaml
+  devices:
+    - host: router1
+      interface_name_regex: 'ge-*'
+  ```
+
+If provided, the exporter will execute `show interfaces <argument> extensive` instead of the default `show interfaces extensive`.
 
 
 ### Grafana Dashboards

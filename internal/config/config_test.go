@@ -42,6 +42,7 @@ func TestShouldParse(t *testing.T) {
 	assertFeature("Storage", c.Features.Storage, false, t)
 	assertFeature("FPC", c.Features.FPC, true, t)
 	assertFeature("Power", c.Features.Power, false, t)
+	assert.Equal(t, "[!(d)][!(i)]*", c.InterfaceNameRegex, "InterfaceNameRegex")
 }
 
 func TestShouldUseDefaults(t *testing.T) {
@@ -118,6 +119,7 @@ func TestShouldParseDevices(t *testing.T) {
 	assertFeature("FPC", f.FPC, true, t)
 	assertFeature("RPKI", f.RPKI, true, t)
 	assertFeature("Power", f.Power, true, t)
+	assert.Equal(t, "ge-*", d2.InterfaceNameRegex, "Device 2: InterfaceNameRegex")
 }
 
 func TestShouldParseDevicesWithPattern(t *testing.T) {

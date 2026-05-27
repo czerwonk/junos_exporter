@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"log"
+
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 )
 
@@ -27,9 +28,9 @@ func WithSatellite() ClientOption {
 }
 
 func WithLicenseInformation() ClientOption {
-  return func(cl *Client) {
-    cl.license = true
-  }
+	return func(cl *Client) {
+		cl.license = true
+	}
 }
 
 // Client sends commands to JunOS and parses results

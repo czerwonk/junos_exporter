@@ -45,5 +45,13 @@ func localASNForPeer(p peer) string {
 		return strconv.FormatInt(p.OptionInformation.LocalAs, 10)
 	}
 
-	return strconv.FormatInt(p.OptionInformation.LocalSystemAs, 10)
+	if p.OptionInformation.LocalSystemAs > 0 {
+		return strconv.FormatInt(p.OptionInformation.LocalSystemAs, 10)
+	}
+
+	if p.LocalASN > 0 {
+		return strconv.FormatInt(p.LocalASN, 10)
+	}
+
+	return "unknown"
 }

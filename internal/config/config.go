@@ -3,6 +3,7 @@
 package config
 
 import (
+	"fmt"
 	"io"
 	"regexp"
 
@@ -11,12 +12,37 @@ import (
 
 // Config represents the configuration for the exporter
 type Config struct {
-	Password  string          `yaml:"password"`
-	Targets   []string        `yaml:"targets,omitempty"`
-	Devices   []*DeviceConfig `yaml:"devices,omitempty"`
-	Features  FeatureConfig   `yaml:"features,omitempty"`
-	LSEnabled bool            `yaml:"logical_systems,omitempty"`
-	IfDescReg string          `yaml:"interface_description_regex,omitempty"`
+	Password    string          `yaml:"password"`
+	Targets     []string        `yaml:"targets,omitempty"`
+	Devices     []*DeviceConfig `yaml:"devices,omitempty"`
+	Features    FeatureConfig   `yaml:"features,omitempty"`
+	LSEnabled   bool            `yaml:"logical_systems,omitempty"`
+	IfDescReStr string          `yaml:"interface_description_regex,omitempty"`
+	IfDescReg   *regexp.Regexp  `yaml:"-"`
+}
+
+func (c *Config) load(dynamicIfaceLabels bool) error {
+	if c.IfDescReStr != "" && dynamicIfaceLabels {
+		re, err := regexp.Compile(c.IfDescReStr)
+		if err != nil {
+			return fmt.Errorf("unable to compile interfce description regex %q: %w", c.IfDescReStr, err)
+		}
+
+		c.IfDescReg = re
+	}
+
+	for _, d := range c.Devices {
+		if d.IfDescRegStr != "" && dynamicIfaceLabels {
+			re, err := regexp.Compile(c.IfDescReStr)
+			if err != nil {
+				return fmt.Errorf("unable to compile interfce description regex %q: %w", c.IfDescReStr, err)
+			}
+
+			d.IfDescReg = re
+		}
+	}
+
+	return nil
 }
 
 // DeviceConfig is the config representation of 1 device
@@ -27,7 +53,8 @@ type DeviceConfig struct {
 	KeyFile       string         `yaml:"key_file,omitempty"`
 	KeyPassphrase string         `yaml:"key_passphrase,omitempty"`
 	Features      *FeatureConfig `yaml:"features,omitempty"`
-	IfDescReg     string         `yaml:"interface_description_regex,omitempty"`
+	IfDescRegStr  string         `yaml:"interface_description_regex,omitempty"`
+	IfDescReg     *regexp.Regexp `yaml:"-"`
 	IsHostPattern bool           `yaml:"host_pattern,omitempty"`
 	HostPattern   *regexp.Regexp
 }
@@ -35,16 +62,20 @@ type DeviceConfig struct {
 // FeatureConfig is the list of collectors enabled or disabled
 type FeatureConfig struct {
 	Alarm               bool `yaml:"alarm,omitempty"`
+	NTP                 bool `yaml:"ntp,omitempty"`
 	Environment         bool `yaml:"environment,omitempty"`
 	BFD                 bool `yaml:"bfd,omitempty"`
 	BGP                 bool `yaml:"bgp,omitempty"`
+	DOT1X               bool `yaml:"dot1x,omitempty"`
 	OSPF                bool `yaml:"ospf,omitempty"`
 	ISIS                bool `yaml:"isis,omitempty"`
 	NAT                 bool `yaml:"nat,omitempty"`
 	NAT2                bool `yaml:"nat2,omitempty"`
 	L2Circuit           bool `yaml:"l2circuit,omitempty"`
+	L2Vpn               bool `yaml:"l2vpn,omitempty"`
 	LACP                bool `yaml:"lacp,omitempty"`
 	LDP                 bool `yaml:"ldp,omitempty"`
+	LLDP                bool `yaml:"lldp,omitempty"`
 	Routes              bool `yaml:"routes,omitempty"`
 	RoutingEngine       bool `yaml:"routing_engine,omitempty"`
 	Firewall            bool `yaml:"firewall,omitempty"`
@@ -54,6 +85,7 @@ type FeatureConfig struct {
 	Storage             bool `yaml:"storage,omitempty"`
 	Accounting          bool `yaml:"accounting,omitempty"`
 	IPSec               bool `yaml:"ipsec,omitempty"`
+	Cluster             bool `yaml:"cluster,omitempty"`
 	Security            bool `yaml:"security,omitempty"`
 	SecurityIKE         bool `yaml:"security_ike,omitempty"`
 	SecurityPolicies    bool `yaml:"security_policies,omitempty"`
@@ -65,10 +97,18 @@ type FeatureConfig struct {
 	Power               bool `yaml:"power,omitempty"`
 	MAC                 bool `yaml:"mac,omitempty"`
 	MPLSLSP             bool `yaml:"mpls_lsp,omitempty"`
+	VirtualChassis      bool `yaml:"virtual_chassis,omitempty"`
 	VPWS                bool `yaml:"vpws,omitempty"`
 	VRRP                bool `yaml:"vrrp,omitempty"`
 	License             bool `yaml:"license,omitempty"`
 	Subscriber          bool `yaml:"subscriber,omitempty"`
+	MACSec              bool `yaml:"macsec,omitempty"`
+	ARP                 bool `yaml:"arp,omitempty"`
+	Poe                 bool `yaml:"poe,omitempty"`
+	DDOSProtection      bool `yaml:"ddos_protection,omitempty"`
+	KRT                 bool `yaml:"krt,omitempty"`
+	TWAMP               bool `yaml:"twamp,omitempty"`
+	SystemStatistics    bool `yaml:"system_statistics,omitempty"`
 }
 
 // New creates a new config
@@ -82,7 +122,7 @@ func New() *Config {
 }
 
 // Load loads a config from reader
-func Load(reader io.Reader) (*Config, error) {
+func Load(reader io.Reader, dynamicIfaceLabels bool) (*Config, error) {
 	b, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
@@ -90,6 +130,11 @@ func Load(reader io.Reader) (*Config, error) {
 
 	c := New()
 	err = yaml.Unmarshal(b, c)
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.load(dynamicIfaceLabels)
 	if err != nil {
 		return nil, err
 	}
@@ -110,37 +155,55 @@ func Load(reader io.Reader) (*Config, error) {
 func setDefaultValues(c *Config) {
 	c.Password = ""
 	c.LSEnabled = false
-	c.IfDescReg = ""
 	f := &c.Features
+	f.Accounting = false
 	f.Alarm = true
+	f.ARP = false
+	f.BFD = false
 	f.BGP = true
+	f.Cluster = false
+	f.DDOSProtection = false
+	f.DOT1X = false
 	f.Environment = true
+	f.Firewall = true
+	f.FPC = false
 	f.Interfaces = true
 	f.InterfaceDiagnostic = true
 	f.InterfaceQueue = true
 	f.IPSec = false
-	f.OSPF = true
 	f.ISIS = true
-	f.LDP = true
-	f.Routes = true
-	f.Firewall = true
-	f.RoutingEngine = true
-	f.Security = false
-	f.SecurityPolicies = false
-	f.Storage = false
-	f.Accounting = false
-	f.FPC = false
+	f.KRT = false
 	f.L2Circuit = false
+	f.L2Vpn = false
+	f.LACP = false
+	f.LDP = true
+	f.License = false
+	f.LLDP = false
+	f.MAC = false
+	f.MACSec = true
+	f.MPLSLSP = false
+	f.NAT = false
+	f.NAT2 = false
+	f.NTP = false
+	f.OSPF = true
+	f.Poe = false
+	f.Power = false
+	f.Routes = true
+	f.RoutingEngine = true
 	f.RPKI = false
 	f.RPM = false
 	f.Satellite = false
-	f.Power = false
-	f.MAC = false
-	f.MPLSLSP = false
+	f.Security = false
+	f.SecurityIKE = false
+	f.SecurityPolicies = false
+	f.Storage = false
+	f.Subscriber = false
+	f.System = false
+	f.SystemStatistics = true
+	f.TWAMP = false
+	f.VirtualChassis = false
 	f.VPWS = false
 	f.VRRP = false
-	f.BFD = false
-	f.License = false
 }
 
 // FeaturesForDevice gets the feature set configured for a device

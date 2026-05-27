@@ -18,6 +18,7 @@ type physicalInterface struct {
 
 type queue struct {
 	Number               string `xml:"queue-number"`
+	ForwaringClassName   string `xml:"forwarding-class-name"`
 	QueuedPackets        uint64 `xml:"queue-counters-queued-packets"`
 	QueuedBytes          uint64 `xml:"queue-counters-queued-bytes"`
 	TransferedPackets    uint64 `xml:"queue-counters-trans-packets"`

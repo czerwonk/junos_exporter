@@ -3,12 +3,15 @@
 package system
 
 import (
+	"encoding/xml"
 	"fmt"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
-	"math"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/prometheus/client_golang/prometheus"
@@ -49,10 +52,12 @@ var (
 
 	hardwareInfoDesc *prometheus.Desc
 
-	licenseUsedDesc *prometheus.Desc
+	licenseUsedDesc      *prometheus.Desc
 	licenseInstalledDesc *prometheus.Desc
-	licenseNeededDesc *prometheus.Desc
-	licenseExpiryDesc *prometheus.Desc
+	licenseNeededDesc    *prometheus.Desc
+	licenseExpiryDesc    *prometheus.Desc
+
+	commitInfoDesc *prometheus.Desc
 
 	// regex
 	regex1Ints        *regexp.Regexp = regexp.MustCompile(`^(\d+).*`)
@@ -69,6 +74,8 @@ func init() {
 	var l []string
 
 	l = []string{"target"}
+	commitInfoDesc = prometheus.NewDesc(prefix+"system_commit_time", "Unix timestamp of last commit", l, nil)
+
 	mbufsCurrentDesc = prometheus.NewDesc(prefix+"mbufs_bytes_current", "Current number of bytes in mbufs", l, nil)
 	mbufsCacheDesc = prometheus.NewDesc(prefix+"mbufs_bytes_cache", "Cached number of bytes in mbufs", l, nil)
 	mbufsTotalDesc = prometheus.NewDesc(prefix+"mbufs_bytes_total", "Total nuumber of bytes in mbufs", l, nil)
@@ -151,6 +158,7 @@ func (*systemCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- licenseInstalledDesc
 	ch <- licenseNeededDesc
 	ch <- licenseExpiryDesc
+	ch <- commitInfoDesc
 }
 
 // Collect collects metrics from JunOS
@@ -166,7 +174,7 @@ func (c *systemCollector) Collect(client collector.Client, ch chan<- prometheus.
 func (c *systemCollector) CollectSystem(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	err := c.collectBuffers(client, ch, labelValues)
 	if err != nil {
-		return fmt.Errorf("could not get buffer information: %w", err)
+		return fmt.Errorf("could not get system buffers: %w", err)
 	}
 
 	err = c.collectSystemInformation(client, ch, labelValues)
@@ -182,12 +190,74 @@ func (c *systemCollector) CollectSystem(client collector.Client, ch chan<- prome
 		c.collectLicense(client, ch, labelValues)
 	}
 
+	err = c.collectCommit(client, ch, labelValues)
+	if err != nil {
+		return fmt.Errorf("unable to collect commit information: %w", err)
+	}
+
 	return nil
 }
 
 func (c *systemCollector) collectBuffers(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	r := &buffers{}
-	err := client.RunCommandAndParse("show system buffers", r)
+
+	err := client.RunCommandAndParseWithParser("show system buffers", func(b []byte) error {
+		if string(b[:]) == "\nerror: syntax error, expecting <command>: buffers\n" || strings.Contains(string(b[:]), "error: command is not valid on the") {
+			log.Infof("system doesn't support show system buffers command")
+			return nil
+		}
+		err := xml.Unmarshal(b, &r)
+		if err != nil {
+			return err
+		}
+		ch <- prometheus.MustNewConstMetric(mbufsCurrentDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufsCurrent), labelValues...)
+		ch <- prometheus.MustNewConstMetric(mbufsCacheDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufsCache), labelValues...)
+		ch <- prometheus.MustNewConstMetric(mbufsTotalDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufsTotal), labelValues...)
+		ch <- prometheus.MustNewConstMetric(mbufsDeniedDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufsDenied), labelValues...)
+
+		ch <- prometheus.MustNewConstMetric(mbufClustersCurrentDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersCurrent), labelValues...)
+		ch <- prometheus.MustNewConstMetric(mbufClustersCacheDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersCache), labelValues...)
+		ch <- prometheus.MustNewConstMetric(mbufClustersTotalDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersTotal), labelValues...)
+		ch <- prometheus.MustNewConstMetric(mbufClustersMaxDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersMax), labelValues...)
+		ch <- prometheus.MustNewConstMetric(mbufClustersDeniedDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersDenied), labelValues...)
+
+		ch <- prometheus.MustNewConstMetric(mbufClustersFromPacketZoneCurrentDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersFromPacketZoneCurrent), labelValues...)
+		ch <- prometheus.MustNewConstMetric(mbufClustersFromPacketZoneCacheDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufClustersFromPacketZoneCache), labelValues...)
+
+		l := append(labelValues, "4k")
+		ch <- prometheus.MustNewConstMetric(jumboClustersCurrentDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersCurrent4K), l...)
+		ch <- prometheus.MustNewConstMetric(jumboClustersCacheDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersCache4K), l...)
+		ch <- prometheus.MustNewConstMetric(jumboClustersTotalDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersTotal4K), l...)
+		ch <- prometheus.MustNewConstMetric(jumboClustersMaxDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersMax4K), l...)
+		ch <- prometheus.MustNewConstMetric(jumboClustersDeniedDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersDenied4K), l...)
+
+		l = append(labelValues, "9k")
+		ch <- prometheus.MustNewConstMetric(jumboClustersCurrentDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersCurrent9K), l...)
+		ch <- prometheus.MustNewConstMetric(jumboClustersCacheDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersCache9K), l...)
+		ch <- prometheus.MustNewConstMetric(jumboClustersTotalDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersTotal9K), l...)
+		ch <- prometheus.MustNewConstMetric(jumboClustersMaxDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersMax9K), l...)
+		ch <- prometheus.MustNewConstMetric(jumboClustersDeniedDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersDenied9K), l...)
+
+		l = append(labelValues, "16k")
+		ch <- prometheus.MustNewConstMetric(jumboClustersCurrentDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersCurrent16K), l...)
+		ch <- prometheus.MustNewConstMetric(jumboClustersCacheDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersCache16K), l...)
+		ch <- prometheus.MustNewConstMetric(jumboClustersTotalDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersTotal16K), l...)
+		ch <- prometheus.MustNewConstMetric(jumboClustersMaxDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersMax16K), l...)
+		ch <- prometheus.MustNewConstMetric(jumboClustersDeniedDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.JumboClustersDenied16K), l...)
+
+		ch <- prometheus.MustNewConstMetric(sfbufsDeniedDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.SfbufsDenied), labelValues...)
+		ch <- prometheus.MustNewConstMetric(sfbufsDelayedDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.SfbufsDelayed), labelValues...)
+
+		ch <- prometheus.MustNewConstMetric(mbufAndClustersDeniedDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.MbufAndClustersDenied), labelValues...)
+		ch <- prometheus.MustNewConstMetric(ioInitDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.IoInit), labelValues...)
+
+		// network alloc values seem to be Kb
+		ch <- prometheus.MustNewConstMetric(networkAllocCurrentDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.NetworkAllocCurrent*1024), labelValues...)
+		ch <- prometheus.MustNewConstMetric(networkAllocCacheDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.NetworkAllocCache*1024), labelValues...)
+		ch <- prometheus.MustNewConstMetric(networkAllocTotalDesc, prometheus.GaugeValue, float64(r.MemoryStatistics.NetworkAllocTotal*1024), labelValues...)
+		return nil
+	})
+
 	if err != nil {
 		return err
 	}
@@ -409,20 +479,35 @@ func (c *systemCollector) collectLicense(client collector.Client, ch chan<- prom
 		ch <- prometheus.MustNewConstMetric(licenseInstalledDesc, prometheus.GaugeValue, float64(lic.Installed), licenseLabels...)
 		ch <- prometheus.MustNewConstMetric(licenseNeededDesc, prometheus.GaugeValue, float64(lic.Needed), licenseLabels...)
 
-		expiry_str := strings.ToLower(lic.ValidityType)
-		expiry, err := time.Parse("2006-01-02 03:04:05 MST", expiry_str)
-		if err != nil {
-			if strings.Compare(expiry_str, "expired") == 0 {
-				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(-1), licenseLabels...)
-			} else if strings.Compare(expiry_str, "permanent") == 0 {
-				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(1)), licenseLabels...)
-			} else {
-				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(-1)), licenseLabels...)
-			}
+		if strings.Compare(lic.ValidityType, "expired") == 0 {
+			ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(-1), licenseLabels...)
+		} else if strings.Compare(lic.ValidityType, "permanent") == 0 {
+			ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(1)), licenseLabels...)
 		} else {
-			license_ttl_days := time.Until(expiry).Hours() / 24.0
-			ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(license_ttl_days), licenseLabels...)
+			expiry_str := strings.ToLower(lic.EndDate)
+			expiry, err := time.Parse("2006-01-02", expiry_str)
+			if err != nil {
+				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(math.Inf(-1)), licenseLabels...)
+			} else {
+				license_ttl_days := time.Until(expiry).Hours() / 24.0
+				ch <- prometheus.MustNewConstMetric(licenseExpiryDesc, prometheus.GaugeValue, float64(license_ttl_days), licenseLabels...)
+			}
 		}
 	}
 }
 
+func (c *systemCollector) collectCommit(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	sc := &systemCommit{}
+	err := client.RunCommandAndParse("show system commit", sc)
+	if err != nil {
+		return err
+	}
+
+	for _, che := range sc.CommitInfo.CommitHistory {
+		if che.SequenceNumber == 0 {
+			ch <- prometheus.MustNewConstMetric(commitInfoDesc, prometheus.GaugeValue, float64(che.DateTime.Seconds), labelValues...)
+		}
+	}
+
+	return nil
+}

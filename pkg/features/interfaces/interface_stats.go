@@ -44,4 +44,6 @@ type interfaceStats struct {
 	ReceiveCodeViolations   float64
 	ReceiveTotalErrors      float64
 	TransmitTotalErrors     float64
+	MTU                     string
+	FECMode                 float64
 }

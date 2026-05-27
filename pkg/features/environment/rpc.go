@@ -5,11 +5,12 @@ package environment
 import "encoding/xml"
 
 type multiEngineResult struct {
-	XMLName xml.Name           `xml:"rpc-reply"`
-	Results multiEngineResults `xml:"multi-routing-engine-results"`
+	XMLName                         xml.Name                        `xml:"rpc-reply"`
+	MultiREResults                  multiREResults                  `xml:"multi-routing-engine-results"`
+	EnvironmentComponentInformation environmentComponentInformation `xml:"environment-component-information"`
 }
 
-type multiEngineResults struct {
+type multiREResults struct {
 	RoutingEngines []routingEngine `xml:"multi-routing-engine-item"`
 }
 

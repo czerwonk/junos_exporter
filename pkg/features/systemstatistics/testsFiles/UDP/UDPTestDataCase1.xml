@@ -1,0 +1,17 @@
+<rpc-reply>
+    <statistics>
+        <udp>
+            <datagrams-received>3000</datagrams-received>
+            <datagrams-with-incomplete-header>3001</datagrams-with-incomplete-header>
+            <datagrams-with-bad-datalength-field>3002</datagrams-with-bad-datalength-field>
+            <datagrams-with-bad-checksum>3003</datagrams-with-bad-checksum>
+            <datagrams-dropped-due-to-no-socket>3004</datagrams-dropped-due-to-no-socket>
+            <broadcast-or-multicast-datagrams-dropped-due-to-no-socket>3005</broadcast-or-multicast-datagrams-dropped-due-to-no-socket>
+            <datagrams-dropped-due-to-full-socket-buffers>3006</datagrams-dropped-due-to-full-socket-buffers>
+            <datagrams-not-for-hashed-pcb>3007</datagrams-not-for-hashed-pcb>
+            <datagrams-delivered>3008</datagrams-delivered>
+            <datagrams-output>3009</datagrams-output>
+        </udp>
+    </statistics>
+    <cli><banner>user@router></banner></cli>
+</rpc-reply>

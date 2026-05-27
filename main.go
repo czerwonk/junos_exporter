@@ -15,16 +15,17 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/czerwonk/junos_exporter/pkg/connector"
-	"go.opentelemetry.io/otel/codes"
-
 	"github.com/czerwonk/junos_exporter/internal/config"
+	"github.com/czerwonk/junos_exporter/pkg/connector"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/otel/codes"
+
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "0.12.3"
+const version string = "0.15.4"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -41,10 +42,13 @@ var (
 	sshExpireTimeout            = flag.Duration("ssh.expire-timeout", 15*time.Minute, "Duration after an connection is terminated when it is not used")
 	debug                       = flag.Bool("debug", false, "Show verbose debug output in log")
 	alarmEnabled                = flag.Bool("alarm.enabled", true, "Scrape Alarm metrics")
+	ntpEnabled                  = flag.Bool("ntp.enabled", false, "Scrape NTP metrics")
 	bgpEnabled                  = flag.Bool("bgp.enabled", true, "Scrape BGP metrics")
+	dot1xEnabled                = flag.Bool("dot1x.enabled", false, "Scrape dot1x metrics")
 	ospfEnabled                 = flag.Bool("ospf.enabled", true, "Scrape OSPFv3 metrics")
-	isisEnabled                 = flag.Bool("isis.enabled", false, "Scrape ISIS metrics")
+	isisEnabled                 = flag.Bool("isis.enabled", true, "Scrape ISIS metrics")
 	l2circuitEnabled            = flag.Bool("l2circuit.enabled", false, "Scrape l2circuit metrics")
+	l2vpnEnabled                = flag.Bool("l2vpn.enabled", false, "Scrape l2vpn metrics")
 	natEnabled                  = flag.Bool("nat.enabled", false, "Scrape NAT metrics")
 	nat2Enabled                 = flag.Bool("nat2.enabled", false, "Scrape NAT2 metrics")
 	ldpEnabled                  = flag.Bool("ldp.enabled", true, "Scrape ldp metrics")
@@ -56,12 +60,14 @@ var (
 	interfaceDiagnosticsEnabled = flag.Bool("ifdiag.enabled", true, "Scrape optical interface diagnostic metrics")
 	ipsecEnabled                = flag.Bool("ipsec.enabled", false, "Scrape IPSec metrics")
 	securityEnabled             = flag.Bool("security.enabled", false, "Scrape security metrics")
+	securityIKEEnabled          = flag.Bool("security_ike.enabled", false, "Scrape security IKE metrics")
 	securityPoliciesEnabled     = flag.Bool("security_policies.enabled", false, "Scrape security policy metrics")
-	storageEnabled              = flag.Bool("storage.enabled", true, "Scrape system storage metrics")
-	fpcEnabled                  = flag.Bool("fpc.enabled", true, "Scrape line card metrics")
+	storageEnabled              = flag.Bool("storage.enabled", false, "Scrape system storage metrics")
+	fpcEnabled                  = flag.Bool("fpc.enabled", false, "Scrape line card metrics")
 	accountingEnabled           = flag.Bool("accounting.enabled", false, "Scrape accounting flow metrics")
-	interfaceQueuesEnabled      = flag.Bool("queues.enabled", false, "Scrape interface queue metrics")
+	interfaceQueuesEnabled      = flag.Bool("queues.enabled", true, "Scrape interface queue metrics")
 	rpkiEnabled                 = flag.Bool("rpki.enabled", false, "Scrape rpki metrics")
+	rpmEnabled                  = flag.Bool("rpm.enabled", false, "Scrape RPM metrics")
 	satelliteEnabled            = flag.Bool("satellite.enabled", false, "Scrape metrics from satellite devices")
 	systemEnabled               = flag.Bool("system.enabled", false, "Scrape system metrics")
 	macEnabled                  = flag.Bool("mac.enabled", false, "Scrape MAC address table metrics")
@@ -70,9 +76,13 @@ var (
 	dynamicIfaceLabels          = flag.Bool("dynamic-interface-labels", true, "Parse interface descriptions to get labels dynamically")
 	interfaceDescriptionRegex   = flag.String("interface-description-regex", "", "give a regex to retrieve the interface description labels")
 	lsEnabled                   = flag.Bool("logical-systems.enabled", false, "Enable logical systems support")
-	powerEnabled                = flag.Bool("power.enabled", true, "Scrape power metrics")
+	powerEnabled                = flag.Bool("power.enabled", false, "Scrape power metrics")
+	lldpEnabled                 = flag.Bool("lldp.enabled", false, "Scrape LLDP metrics")
 	lacpEnabled                 = flag.Bool("lacp.enabled", false, "Scrape LACP metrics")
 	bfdEnabled                  = flag.Bool("bfd.enabled", false, "Scrape BFD metrics")
+	clusterEnabled              = flag.Bool("cluster.enabled", false, "Scrape chassis cluster metrics")
+	virtualChassisEnabled       = flag.Bool("virtual_chassis.enabled", false, "Scrape virtual chassis metrics")
+	vrrpEnabled                 = flag.Bool("vrrp.enabled", false, "Scrape VRRP metrics")
 	vpwsEnabled                 = flag.Bool("vpws.enabled", false, "Scrape EVPN VPWS metrics")
 	mplsLSPEnabled              = flag.Bool("mpls_lsp.enabled", false, "Scrape MPLS LSP metrics")
 	licenseEnabled              = flag.Bool("license.enabled", false, "Scrape license metrics")
@@ -83,6 +93,13 @@ var (
 	tracingProvider             = flag.String("tracing.provider", "", "Sets the tracing provider (stdout or collector)")
 	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
 	subscriberEnabled           = flag.Bool("subscriber.enabled", false, "Scrape subscribers detail")
+	macsecEnabled               = flag.Bool("macsec.enabled", true, "Scrape MACSec metrics")
+	arpEnabled                  = flag.Bool("arps.enabled", false, "Scrape ARP metrics")
+	poeEnabled                  = flag.Bool("poe.enabled", false, "Scrape PoE metrics")
+	ddosProtectionEnabled       = flag.Bool("ddos_protection.enabled", false, "Scrape DDoS protection metrics")
+	krtEnabled                  = flag.Bool("krt.enabled", false, "Scrape KRT queue metrics")
+	twampEnabled                = flag.Bool("twamp.enabled", false, "Scrape TWAMP metrics")
+	systemstatisticsEnabled     = flag.Bool("systemstatistics.enabled", true, "Scrape system statistics metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -120,12 +137,12 @@ func main() {
 	}
 	defer shutdownTracing()
 
-	initChannels()
+	initChannels(ctx)
 
 	startServer()
 }
 
-func initChannels() {
+func initChannels(ctx context.Context) {
 	hup := make(chan os.Signal, 1)
 	signal.Notify(hup, syscall.SIGHUP)
 
@@ -149,13 +166,19 @@ func initChannels() {
 				} else {
 					rc <- nil
 				}
+			case <-ctx.Done():
+				shutdown()
 			case <-term:
-				log.Infoln("Closing connections to devices")
-				connManager.Close()
-				os.Exit(0)
+				shutdown()
 			}
 		}
 	}()
+}
+
+func shutdown() {
+	log.Infoln("Closing connections to devices")
+	connManager.CloseAll()
+	os.Exit(0)
 }
 
 func printVersion() {
@@ -187,7 +210,7 @@ func reinitialize() error {
 	defer configMu.Unlock()
 
 	if connManager != nil {
-		connManager.Close()
+		connManager.CloseAll()
 		connManager = nil
 	}
 
@@ -205,48 +228,64 @@ func loadConfig() (*config.Config, error) {
 		return nil, err
 	}
 
-	return config.Load(bytes.NewReader(b))
+	return config.Load(bytes.NewReader(b), *dynamicIfaceLabels)
 }
 
 func loadConfigFromFlags() *config.Config {
 	c := config.New()
 	c.Targets = strings.Split(*sshHosts, ",")
 	c.LSEnabled = *lsEnabled
-	c.IfDescReg = *interfaceDescriptionRegex
+	c.IfDescReStr = *interfaceDescriptionRegex
 
 	f := &c.Features
+	f.Accounting = *accountingEnabled
 	f.Alarm = *alarmEnabled
+	f.ARP = *arpEnabled
+	f.BFD = *bfdEnabled
 	f.BGP = *bgpEnabled
+	f.Cluster = *clusterEnabled
+	f.DDOSProtection = *ddosProtectionEnabled
+	f.DOT1X = *dot1xEnabled
 	f.Environment = *environmentEnabled
 	f.Firewall = *firewallEnabled
+	f.FPC = *fpcEnabled
 	f.Interfaces = *interfacesEnabled
 	f.InterfaceDiagnostic = *interfaceDiagnosticsEnabled
 	f.InterfaceQueue = *interfaceQueuesEnabled
 	f.IPSec = *ipsecEnabled
-	f.Security = *securityEnabled
-	f.SecurityPolicies = *securityPoliciesEnabled
 	f.ISIS = *isisEnabled
+	f.KRT = *krtEnabled
+	f.L2Circuit = *l2circuitEnabled
+	f.L2Vpn = *l2vpnEnabled
+	f.LACP = *lacpEnabled
+	f.LDP = *ldpEnabled
+	f.License = *licenseEnabled
+	f.LLDP = *lldpEnabled
+	f.MAC = *macEnabled
+	f.MACSec = *macsecEnabled
+	f.MPLSLSP = *mplsLSPEnabled
 	f.NAT = *natEnabled
 	f.NAT2 = *nat2Enabled
+	f.NTP = *ntpEnabled
 	f.OSPF = *ospfEnabled
-	f.LDP = *ldpEnabled
-	f.L2Circuit = *l2circuitEnabled
+	f.Poe = *poeEnabled
+	f.Power = *powerEnabled
 	f.Routes = *routesEnabled
 	f.RoutingEngine = *routingEngineEnabled
-	f.Accounting = *accountingEnabled
-	f.FPC = *fpcEnabled
 	f.RPKI = *rpkiEnabled
-	f.Storage = *storageEnabled
+	f.RPM = *rpmEnabled
 	f.Satellite = *satelliteEnabled
-	f.System = *systemEnabled
-	f.Power = *powerEnabled
-	f.MAC = *macEnabled
-	f.LACP = *lacpEnabled
-	f.BFD = *bfdEnabled
-	f.VPWS = *vpwsEnabled
-	f.MPLSLSP = *mplsLSPEnabled
-	f.License = *licenseEnabled
+	f.Security = *securityEnabled
+	f.SecurityIKE = *securityIKEEnabled
+	f.SecurityPolicies = *securityPoliciesEnabled
+	f.Storage = *storageEnabled
 	f.Subscriber = *subscriberEnabled
+	f.System = *systemEnabled
+	f.SystemStatistics = *systemstatisticsEnabled
+	f.TWAMP = *twampEnabled
+	f.VirtualChassis = *virtualChassisEnabled
+	f.VPWS = *vpwsEnabled
+	f.VRRP = *vrrpEnabled
 	return c
 }
 
@@ -319,9 +358,10 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 
 	logicalSystem := r.URL.Query().Get("ls")
 	if !cfg.LSEnabled && logicalSystem != "" {
+		err := fmt.Errorf("Logical systems not enabled but the logical system '%s' in parameters", logicalSystem)
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		http.Error(w, fmt.Sprintf("Logical systems not enabled but the logical system '%s' in parameters", logicalSystem), 400)
+		http.Error(w, err.Error(), 400)
 		return
 	}
 
@@ -333,7 +373,8 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{
 		ErrorLog:      l,
-		ErrorHandling: promhttp.ContinueOnError}).ServeHTTP(w, r)
+		ErrorHandling: promhttp.ContinueOnError,
+	}).ServeHTTP(w, r)
 }
 
 func devicesForRequest(r *http.Request) ([]*connector.Device, error) {

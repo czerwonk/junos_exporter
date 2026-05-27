@@ -5,9 +5,10 @@ package collector
 import (
 	"context"
 
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"github.com/czerwonk/junos_exporter/pkg/rpc"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 type Client interface {
@@ -19,7 +20,7 @@ type Client interface {
 
 	// IsSatelliteEnabled returns if sattelite features are enabled on the device
 	IsSatelliteEnabled() bool
-	
+
 	IsScrapingLicenseEnabled() bool
 
 	// Device returns device information for the connected device

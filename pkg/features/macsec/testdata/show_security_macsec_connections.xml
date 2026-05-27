@@ -1,0 +1,74 @@
+<rpc-reply xmlns:junos="http://xml.juniper.net/junos/23.2R2-S1.3/junos">
+    <macsec-connection-information>
+        <macsec-interface-common-information>
+            <interface-name>et-0/0/0</interface-name>
+            <connectivity-association-name>cc12.evc12-es12.lfg12</connectivity-association-name>
+            <cipher-suite>XXX-YYY-ZZZ-65000</cipher-suite>
+            <encryption>on</encryption>
+            <offset>0</offset>
+            <include-sci>no</include-sci>
+            <replay-protect>off</replay-protect>
+            <replay-protect-window>0</replay-protect-window>
+        </macsec-interface-common-information>
+        <create-time junos:seconds="1300258">2w1d 01:10:58</create-time>
+        <outbound-secure-channel>
+            <sci>AA:AA:AA:AA:AA:AA/1</sci>
+            <outgoing-packet-number>29462517698</outgoing-packet-number>
+            <outbound-secure-association>
+                <association-number>0</association-number>
+                <association-number-status>inuse</association-number-status>
+                <create-time junos:seconds="1300258">2w1d 01:10:58</create-time>
+            </outbound-secure-association>
+        </outbound-secure-channel>
+        <inbound-secure-channel>
+            <sci>AA:AA:AA:AA:AA:AB/1</sci>
+            <inbound-secure-association>
+                <association-number>0</association-number>
+                <association-number-status>inuse</association-number-status>
+                <create-time junos:seconds="1300258">2w1d 01:10:58</create-time>
+            </inbound-secure-association>
+        </inbound-secure-channel>
+        <macsec-interface-common-information>
+            <interface-name>et-0/0/1</interface-name>
+            <connectivity-association-name>cc12.bnt12-cc12.evc12</connectivity-association-name>
+            <cipher-suite>XXX-YYY-ZZZ-65000</cipher-suite>
+            <encryption>off</encryption>
+            <offset>0</offset>
+            <include-sci>yes</include-sci>
+            <replay-protect>on</replay-protect>
+            <replay-protect-window>0</replay-protect-window>
+        </macsec-interface-common-information>
+        <create-time junos:seconds="784806">1w2d 02:00:06</create-time>
+        <macsec-interface-common-information>
+            <interface-name>et-0/0/6</interface-name>
+            <connectivity-association-name>cc12.evc12-cc12.mis12</connectivity-association-name>
+            <cipher-suite>XXX-YYY-ZZZ-65000</cipher-suite>
+            <encryption>on</encryption>
+            <offset>0</offset>
+            <include-sci>no</include-sci>
+            <replay-protect>off</replay-protect>
+            <replay-protect-window>0</replay-protect-window>
+        </macsec-interface-common-information>
+        <create-time junos:seconds="309851">3d 14:04:11</create-time>
+        <outbound-secure-channel>
+            <sci>AA:AA:AA:AA:AA:AC/1</sci>
+            <outgoing-packet-number>4543932225</outgoing-packet-number>
+            <outbound-secure-association>
+                <association-number>0</association-number>
+                <association-number-status>inuse</association-number-status>
+                <create-time junos:seconds="309851">3d 14:04:11</create-time>
+            </outbound-secure-association>
+        </outbound-secure-channel>
+        <inbound-secure-channel>
+            <sci>AA:AA:AA:AA:AA:AD/1</sci>
+            <inbound-secure-association>
+                <association-number>0</association-number>
+                <association-number-status>inuse</association-number-status>
+                <create-time junos:seconds="309851">3d 14:04:11</create-time>
+            </inbound-secure-association>
+        </inbound-secure-channel>
+    </macsec-connection-information>
+    <cli>
+        <banner></banner>
+    </cli>
+</rpc-reply>

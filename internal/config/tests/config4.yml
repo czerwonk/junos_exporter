@@ -17,6 +17,7 @@ devices:
       interface_queue: true
       interfaces: true
       l2circuit: false
+      l2vpn: false
       storage: false
       fpc: false
       firewall: false
@@ -25,4 +26,3 @@ devices:
       ipsec: false
       rpki: false
       power: true
-

@@ -1,10 +1,11 @@
+{{- if and .Values.prometheusOperator .Values.serviceMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ .Release.Name }}-serviceMonitor
+  name: {{ .Release.Name }}-servicemonitor
   namespace: {{ .Values.namespace }}
-  release: {{ .Values.prometheusOperator }}
   labels:
+    release: {{ .Values.prometheusOperator }}
     {{- include "junos_exporter.labels" . | nindent 4 }}
 spec:
   endpoints:
@@ -13,4 +14,6 @@ spec:
     interval: {{ default "120s" .Values.serviceMonitor.interval }}
   jobLabel: {{ default "jobLabel" .Values.serviceMonitor.jobLabel }}
   selector:
-    {{- include "junos_exporter.selectorLabels" . | nindent 4 }}
+    matchLabels:
+      {{- include "junos_exporter.selectorLabels" . | nindent 6 }}
+{{- end }}

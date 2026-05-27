@@ -2,14 +2,14 @@
 
 package interfacediagnostics
 
-type fPCInformationStruct struct {
-	FPCInformation fPCInformation `xml:"fpc-information"`
+type fpcInformationStruct struct {
+	FPCInformation fpcInformation `xml:"fpc-information"`
 }
-type fPCInformation struct {
-	FPC fPC `xml:"fpc"`
+type fpcInformation struct {
+	FPC fpc `xml:"fpc"`
 }
 
-type fPC struct {
+type fpc struct {
 	PicDetail picDetail `xml:"pic-detail"`
 }
 
@@ -46,6 +46,7 @@ type physicalInterface struct {
 	OperStatus       string `xml:"oper-status"`
 	LocalIndex       string `xml:"local-index"`
 	SnmpIndex        string `xml:"snmp-index"`
+	Description      string `xml:"description"`
 	IfType           string `xml:"if-type"`
 	LinkLevelType    string `xml:"link-level-type"`
 	Mtu              string `xml:"mtu"`
@@ -60,11 +61,9 @@ type physicalInterface struct {
 }
 
 type trafficStat struct {
-	InputBytes    uint64   `xml:"input-bytes"`
-	InputPackets  uint64   `xml:"input-packets"`
-	OutputBytes   uint64   `xml:"output-bytes"`
-	OutputPackets uint64   `xml:"output-packets"`
-	IPv6Traffic   ipv6Stat `xml:"ipv6-transit-statistics"`
+	InputBytes  uint64   `xml:"input-bytes"`
+	OutputBytes uint64   `xml:"output-bytes"`
+	IPv6Traffic ipv6Stat `xml:"ipv6-transit-statistics"`
 }
 type ipv6Stat struct {
 	InputBytes    uint64 `xml:"input-bytes"`

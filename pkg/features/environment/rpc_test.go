@@ -168,12 +168,12 @@ func TestParseMultiREOutputQFXPEM(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].EnvironmentComponentInformation)
+	assert.NotEmpty(t, rpc.MultiREResults.RoutingEngines[0].EnvironmentComponentInformation)
 
 	// test first routing engine
-	assert.Equal(t, "fpc0", rpc.Results.RoutingEngines[0].Name, "re-name")
+	assert.Equal(t, "fpc0", rpc.MultiREResults.RoutingEngines[0].Name, "re-name")
 
-	f := rpc.Results.RoutingEngines[0].EnvironmentComponentInformation.EnvironmentComponentItem[0]
+	f := rpc.MultiREResults.RoutingEngines[0].EnvironmentComponentInformation.EnvironmentComponentItem[0]
 
 	assert.Equal(t, "FPC 0 PEM 0", f.Name, "name")
 
@@ -185,9 +185,9 @@ func TestParseMultiREOutputQFXPEM(t *testing.T) {
 	assert.Equal(t, float64(96), f.DcInformation.DcDetail.DcPower, "dc-power")
 
 	// test the second routing engine
-	assert.Equal(t, "fpc1", rpc.Results.RoutingEngines[1].Name, "re-name")
+	assert.Equal(t, "fpc1", rpc.MultiREResults.RoutingEngines[1].Name, "re-name")
 
-	f = rpc.Results.RoutingEngines[1].EnvironmentComponentInformation.EnvironmentComponentItem[1]
+	f = rpc.MultiREResults.RoutingEngines[1].EnvironmentComponentInformation.EnvironmentComponentItem[1]
 
 	assert.Equal(t, "FPC 1 PEM 1", f.Name, "name")
 
@@ -310,11 +310,11 @@ func TestParseNoMultiREOutputMXPEM(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].EnvironmentComponentInformation)
+	assert.NotEmpty(t, rpc.MultiREResults.RoutingEngines[0].EnvironmentComponentInformation)
 
-	assert.Equal(t, "N/A", rpc.Results.RoutingEngines[0].Name, "re-name")
+	assert.Equal(t, "N/A", rpc.MultiREResults.RoutingEngines[0].Name, "re-name")
 
-	f := rpc.Results.RoutingEngines[0].EnvironmentComponentInformation.EnvironmentComponentItem[0]
+	f := rpc.MultiREResults.RoutingEngines[0].EnvironmentComponentInformation.EnvironmentComponentItem[0]
 
 	assert.Equal(t, "PEM 0", f.Name, "name")
 	assert.Equal(t, "Online", f.State, "state")
@@ -350,11 +350,11 @@ func TestParseNoMultiREOutputMX(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].EnvironmentInformation)
+	assert.NotEmpty(t, rpc.MultiREResults.RoutingEngines[0].EnvironmentInformation)
 
-	assert.Equal(t, "N/A", rpc.Results.RoutingEngines[0].Name, "re-name")
+	assert.Equal(t, "N/A", rpc.MultiREResults.RoutingEngines[0].Name, "re-name")
 
-	f := rpc.Results.RoutingEngines[0].EnvironmentInformation.Items[0]
+	f := rpc.MultiREResults.RoutingEngines[0].EnvironmentInformation.Items[0]
 
 	assert.Equal(t, "PEM 0", f.Name, "name")
 	assert.Equal(t, "OK", f.Status, "status")
@@ -413,17 +413,17 @@ func TestParseMultiREOutputSRX(t *testing.T) {
 	}
 
 	// test first routing engine
-	assert.Equal(t, "node0", rpc.Results.RoutingEngines[0].Name, "re-name")
+	assert.Equal(t, "node0", rpc.MultiREResults.RoutingEngines[0].Name, "re-name")
 
-	f := rpc.Results.RoutingEngines[0].EnvironmentInformation.Items[0]
+	f := rpc.MultiREResults.RoutingEngines[0].EnvironmentInformation.Items[0]
 
 	assert.Equal(t, "Power Supply 0", f.Name, "name")
 	assert.Equal(t, "OK", f.Status, "status")
 
 	// test the second routing engine
-	assert.Equal(t, "node1", rpc.Results.RoutingEngines[1].Name, "re-name")
+	assert.Equal(t, "node1", rpc.MultiREResults.RoutingEngines[1].Name, "re-name")
 
-	f = rpc.Results.RoutingEngines[1].EnvironmentInformation.Items[1]
+	f = rpc.MultiREResults.RoutingEngines[1].EnvironmentInformation.Items[1]
 
 	assert.Equal(t, "Power Supply 1", f.Name, "name")
 	assert.Equal(t, "OK", f.Status, "status")
@@ -585,38 +585,38 @@ func TestParseNoMultiREOutputEX(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, rpc.Results.RoutingEngines[0].EnvironmentInformation)
+	assert.NotEmpty(t, rpc.MultiREResults.RoutingEngines[0].EnvironmentInformation)
 
-	assert.Equal(t, "N/A", rpc.Results.RoutingEngines[0].Name, "re-name")
+	assert.Equal(t, "N/A", rpc.MultiREResults.RoutingEngines[0].Name, "re-name")
 
-	f := rpc.Results.RoutingEngines[0].EnvironmentInformation.Items[0]
+	f := rpc.MultiREResults.RoutingEngines[0].EnvironmentInformation.Items[0]
 
 	assert.Equal(t, "FPC 0 Power Supply 0", f.Name, "name")
 	assert.Equal(t, "OK", f.Status, "status")
 
-	f = rpc.Results.RoutingEngines[0].EnvironmentInformation.Items[3]
+	f = rpc.MultiREResults.RoutingEngines[0].EnvironmentInformation.Items[3]
 
 	assert.Equal(t, "FPC 1 Power Supply 1", f.Name, "name")
 	assert.Equal(t, "OK", f.Status, "status")
 
-	f = rpc.Results.RoutingEngines[0].EnvironmentInformation.Items[4]
+	f = rpc.MultiREResults.RoutingEngines[0].EnvironmentInformation.Items[4]
 
 	assert.Equal(t, "FPC 0 CPU", f.Name, "name")
 	assert.Equal(t, "OK", f.Status, "status")
 	assert.Equal(t, float64(65), f.Temperature.Value, "temperature")
 
-	f = rpc.Results.RoutingEngines[0].EnvironmentInformation.Items[15]
+	f = rpc.MultiREResults.RoutingEngines[0].EnvironmentInformation.Items[15]
 
 	assert.Equal(t, "FPC 1 PHY-4/5", f.Name, "name")
 	assert.Equal(t, "OK", f.Status, "status")
 	assert.Equal(t, float64(47), f.Temperature.Value, "temperature")
 
-	f = rpc.Results.RoutingEngines[0].EnvironmentInformation.Items[16]
+	f = rpc.MultiREResults.RoutingEngines[0].EnvironmentInformation.Items[16]
 
 	assert.Equal(t, "FPC 0 Fan 0", f.Name, "name")
 	assert.Equal(t, "OK", f.Status, "status")
 
-	f = rpc.Results.RoutingEngines[0].EnvironmentInformation.Items[23]
+	f = rpc.MultiREResults.RoutingEngines[0].EnvironmentInformation.Items[23]
 
 	assert.Equal(t, "FPC 1 Fan 1 Airflow", f.Name, "name")
 	assert.Equal(t, "OK", f.Status, "status")

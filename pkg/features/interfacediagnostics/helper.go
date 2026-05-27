@@ -111,10 +111,13 @@ func interfaceMediaInfoFromRPCResult(interfaceMediaList *[]physicalInterface) ma
 	for _, i := range *interfaceMediaList {
 		if strings.HasPrefix(i.Name, "xe") || strings.HasPrefix(i.Name, "ge") || strings.HasPrefix(i.Name, "et") {
 			iface := i
-			slotIndex := iface.Name[3:]
-			interfaceMediaDict[slotIndex] = &iface
+			interfaceMediaDict[slotIndex(iface.Name)] = &iface
 		}
 	}
 
 	return interfaceMediaDict
+}
+
+func slotIndex(ifName string) string {
+	return ifName[3:]
 }

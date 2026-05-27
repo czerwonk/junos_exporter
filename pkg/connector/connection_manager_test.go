@@ -55,8 +55,7 @@ func TestTCPAddressForHost(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			m := NewConnectionManager()
-			assert.Equal(t, test.expected, m.tcpAddressForHost(test.host))
+			assert.Equal(t, test.expected, tcpAddressForHost(test.host))
 		})
 	}
 }

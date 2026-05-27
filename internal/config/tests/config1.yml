@@ -14,6 +14,7 @@ features:
   interface_queue: true
   interfaces: false
   l2circuit: true
+  l2vpn: true
   storage: false
   fpc: true
   firewall: false

@@ -40,6 +40,7 @@ The following metrics are supported by now:
 * Interface diagnostics (optical signals)
 * ISIS (number of adjacencies, total number of routers)
 * NAT (all available statistics from services nat)
+* Chassis cluster HA status (SRX)
 * Environment (temperatures, fans and PEM power statistics)
 * Routing engine statistics
 * Storage (total, available and used blocks, used percentage)
@@ -50,14 +51,27 @@ The following metrics are supported by now:
 * License statistics (installed/used/needed)
 * L2circuits (tunnel state, number of tunnels)
 * LDP (number of neighbors, sessions and session states)
+* LLDP (local port, local parent interface, remote port and remote system name)
 * VRRP (state per interface)
 * Subscribers Information (show subscribers client-type dhcp detail)
+* PoE (show poe interface)
 
 ## Feature specific mappings
 Some collected time series behave like enums - Integer values represent a certain state/meaning.
 
+### Chassis cluster (`junos_chassis_cluster_node_status`)
+```
+1: primary
+2: secondary
+3: secondary-hold
+4: disabled
+5: lost
+6: not-configured
+7: ineligible
+```
+
 ### L2circuits
-```   
+```
 0:EI -- encapsulation invalid
 1:MM -- mtu mismatch
 2:EM -- encapsulation mismatch
@@ -84,8 +98,8 @@ Some collected time series behave like enums - Integer values represent a certai
 ```
 
 ### LDP
-```   
-0: "Nonexistant"
+```
+0: "Nonexistent"
 1: "Operational"
 ```
 
@@ -101,7 +115,7 @@ Some collected time series behave like enums - Integer values represent a certai
 
 ### VRRP
 States map to human readable names like this:
-```   
+```
 1: "init"
 2: "backup"
 3: "master"
@@ -111,7 +125,7 @@ States map to human readable names like this:
 Expiry is either presented as number of days until expiry date or certain special values.
 ```
 0 ... n = Days until expiry
-     -1 = Expired 
+     -1 = Expired
    +Inf = Permanent license
    -Inf = Invalid
 ```
@@ -139,7 +153,7 @@ docker run -d --restart unless-stopped -p 9326:9326 -e SSH_KEYFILE=/ssh-keyfile 
 
 ### Authentication
 junos_exporter supports SSH authentication via key or password based authentication.
-`-ssh.keyfile=<file>` enables key based authentication. `-ssh.password=<password-string>` enables password based authenticaton, this can also be enabled via the config file in the form of a `password: <password-string>` entry.
+`-ssh.keyfile=<file>` enables key based authentication. `-ssh.password=<password-string>` enables password based authentication, this can also be enabled via the config file in the form of a `password: <password-string>` entry.
 Authentication order is ssh key, if none is found the cli flag is checked, the config file is checked last. If no valid auth method is specified junos_exporter exits with an error.
 Specify the ssh username with the cli flag `-ssh.user`, with the `username` key under the configuration file or use the default username of `junos_exporter`.
 
@@ -187,36 +201,59 @@ devices:
 # Optional
 # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
 features:
+  accounting: false
   alarm: true
-  environment: true
+  arp: false
+  bfd: false
   bgp: true
-  ospf: true
-  isis: false
-  nat: true
-  l2circuit: true
-  ldp: true
-  routes: true
-  routing_engine: true
-  firewall: false
-  interfaces: true
+  cluster: false
+  ddos_protection: false
+  dot1x: false
+  environment: true
+  firewall: true
+  fpc: false
   interface_diagnostic: true
   interface_queue: true
-  storage: true
-  accounting: true
-  ipsec: true
-  security: true
-  fpc: true
-  rpki: true
+  interfaces: true
+  ipsec: false
+  isis: true
+  krt: false
+  l2circuit: false
+  l2vpn: false
+  lacp: false
+  ldp: true
+  license: false
+  lldp: false
+  mac: false
+  macsec: true
+  mpls_lsp: false
+  nat: false
+  nat2: false
+  ntp: false
+  ospf: true
+  poe: false
+  power: false
+  routes: true
+  routing_engine: true
+  rpki: false
   rpm: false
-  satellite: true
-  system: true
-  power: true
+  satellite: false
+  security: false
+  security_ike: false
+  security_policies: false
+  storage: false
+  subscriber: false
+  system: false
+  system_statistics: true
+  twamp: false
+  vpws: false
+  vrrp: false
 ```
 
 ## Dynamic Interface Labels
-Version 0.9.5 introduced dynamic labels retrieved from the interface descriptions. Flags are supported a well. The first part (label name) has to comply to the following rules:
+Version 0.9.5 introduced dynamic labels retrieved from the interface descriptions. Version 0.12.4 added support for dynamic labels on BGP metrics. Flags are supported a well. The first part (label name) has to comply to the following rules:
 * must not begin with a figure
-* must only contain this charakters: A-Z,a-z,0-9,_
+* must only contain this characters: A-Z,a-z,0-9,_
 * is treated lower case
 * must no conflict with label names used in junos_exporter
 
@@ -242,24 +279,21 @@ Label value: 202739
 ### Custom Label RegEx
 
 To override the default behavior a `interface_description_regex` can be supplied. This parameter can be given at a global level or per device. To use per-device regexes the target devices need to be defined in the exporter config. Per-device regex cannot be used in combination with `-config.ignore-targets`.
- 
+
 #### Example
-The default regex `\[([^=\]]+)(=[^\]]+)?\]` would match interface descriptions like `"Description [foo] [bar=123]"`.  
-If we use `[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]` we can now match for `"Description [foo, bar=123]"` instead.  
+The default regex `\[([^=\]]+)(=[^\]]+)?\]` would match interface descriptions like `"Description [foo] [bar=123]"`.
+If we use `[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]` we can now match for `"Description [foo, bar=123]"` instead.
 
 
 ### Grafana Dashboards
-
-There is an example Grafana Dashboard included (grafana_dashboard.json), which has some basic variables to choose your device(s) / interface(s)
-
-![screenshot](grafana_screenshot.png)
+There are example Grafana dashboards included in [example/dashboards](example/dashboards).
 
 ## Third Party Components
 This software uses components of the following projects
 * Prometheus Go client library (https://github.com/prometheus/client_golang)
 
-## Contributers
-for a full list of contributers have a look at https://github.com/czerwonk/junos_exporter/graphs/contributors
+## Contributors
+for a full list of contributors have a look at https://github.com/czerwonk/junos_exporter/graphs/contributors
 
 ## License
 (c) Daniel Czerwonk, 2017. Licensed under [MIT](LICENSE) license.

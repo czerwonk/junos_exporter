@@ -107,7 +107,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 		return interfacequeue.NewCollector(descRe)
 	})
 	c.addCollectorIfEnabledForDevice(device, "iface", f.Interfaces, func() collector.RPCCollector {
-		return interfaces.NewCollector(descRe)
+		return interfaces.NewCollector(descRe, deviceInterfacesExtensiveArgument(c.cfg, device.Host))
 	})
 	c.addCollectorIfEnabledForDevice(device, "ipsec", f.IPSec, ipsec.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "isis", f.ISIS, isis.NewCollector)

@@ -26,3 +26,5 @@ devices:
       ipsec: true
       rpki: true
       power: true
+    interfaces_extensive_argument: 'ge-*'
+

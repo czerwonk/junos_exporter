@@ -3,6 +3,7 @@
 package interfaces
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -106,13 +107,15 @@ func newDescriptions(dynLabels dynamiclabels.Labels) *description {
 
 // Collector collects interface metrics
 type interfaceCollector struct {
-	descriptionRe *regexp.Regexp
+	descriptionRe     *regexp.Regexp
+	extensiveArgument string
 }
 
 // NewCollector creates a new collector
-func NewCollector(descRe *regexp.Regexp) collector.RPCCollector {
+func NewCollector(descRe *regexp.Regexp, extensiveArgument string) collector.RPCCollector {
 	c := &interfaceCollector{
-		descriptionRe: descRe,
+		descriptionRe:     descRe,
+		extensiveArgument: extensiveArgument,
 	}
 
 	return c
@@ -183,7 +186,11 @@ func (c *interfaceCollector) Collect(client collector.Client, ch chan<- promethe
 
 func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfaceStats, error) {
 	var x = result{}
-	err := client.RunCommandAndParse("show interfaces extensive", &x)
+	cmd := "show interfaces extensive"
+	if c.extensiveArgument != "" {
+		cmd = fmt.Sprintf("show interfaces %s extensive", c.extensiveArgument)
+	}
+	err := client.RunCommandAndParse(cmd, &x)
 	if err != nil {
 		return nil, err
 	}

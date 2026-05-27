@@ -76,6 +76,17 @@ func deviceInterfaceRegex(cfg *config.Config, host string) *regexp.Regexp {
 	return dynamiclabels.DefaultInterfaceDescRegex()
 }
 
+func deviceInterfacesExtensiveArgument(cfg *config.Config, host string) string {
+	dc := cfg.FindDeviceConfig(host)
+
+	if dc != nil && dc.InterfacesExtensiveArgument != "" {
+		return dc.InterfacesExtensiveArgument
+	}
+
+	return cfg.InterfacesExtensiveArgument
+}
+
+
 func clientForDevice(device *connector.Device, connManager *connector.SSHConnectionManager) (*rpc.Client, error) {
 	conn, err := connManager.GetSSHConnection(device)
 	if err != nil {

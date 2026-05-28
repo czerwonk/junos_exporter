@@ -315,6 +315,15 @@ Label name: peer
 Label value: 202739
 ```
 
+### Enriching other collectors via PromQL join
+Dynamic labels are attached only to metrics whose source RPC carries the description text (interfaces, interfacediagnostics, interfacequeue, bgp). Other collectors with an `interface` label — for example EVPN's `junos_evpn_interface_status` or `junos_evpn_esi_designated_forwarder_info` — can pick up the same labels at query time via a vector join on `(target, interface)`:
+```
+junos_evpn_interface_status
+  * on(target, interface) group_left(prod, peer, customer)
+    junos_interfaces_up
+```
+This requires the `interfaces` collector to be enabled (the default).
+
 ### Custom Label RegEx
 
 To override the default behavior a `interface_description_regex` can be supplied. This parameter can be given at a global level or per device. To use per-device regexes the target devices need to be defined in the exporter config. Per-device regex cannot be used in combination with `-config.ignore-targets`.

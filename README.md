@@ -211,6 +211,7 @@ features:
   dot1x: false
   environment: true
   evpn: false
+  evpn_ip_prefix: false
   firewall: true
   fpc: false
   interface_diagnostic: true

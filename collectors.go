@@ -20,6 +20,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/dot1x"
 	"github.com/czerwonk/junos_exporter/pkg/features/environment"
 	"github.com/czerwonk/junos_exporter/pkg/features/evpn"
+	"github.com/czerwonk/junos_exporter/pkg/features/evpnipprefix"
 	"github.com/czerwonk/junos_exporter/pkg/features/firewall"
 	"github.com/czerwonk/junos_exporter/pkg/features/fpc"
 	"github.com/czerwonk/junos_exporter/pkg/features/interfacediagnostics"
@@ -100,6 +101,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "dot1x", f.DOT1X, dot1x.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "env", f.Environment, environment.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "evpn", f.EVPN, evpn.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "evpn_ip_prefix", f.EVPNIPPrefix, evpnipprefix.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "firewall", f.Firewall, firewall.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "fpc", f.FPC, fpc.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "ifacediag", f.InterfaceDiagnostic, func() collector.RPCCollector {

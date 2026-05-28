@@ -55,7 +55,8 @@ var (
 	routingEngineEnabled        = flag.Bool("routingengine.enabled", true, "Scrape Routing Engine metrics")
 	routesEnabled               = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
 	environmentEnabled          = flag.Bool("environment.enabled", true, "Scrape environment metrics")
-	evpnEnabled                 = flag.Bool("evpn.enabled", false, "Scrape EVPN instance metrics")
+	evpnEnabled                 = flag.Bool("evpn.enabled", false, "Scrape EVPN instance, detail tables (interfaces/IRBs/bridge-domains/ESIs), duplicate-MAC, and L3 context metrics")
+	evpnIPPrefixEnabled         = flag.Bool("evpn_ip_prefix.enabled", false, "Scrape EVPN Type-5 (IP-prefix) database metrics; potentially large on busy fabrics")
 	firewallEnabled             = flag.Bool("firewall.enabled", true, "Scrape Firewall count metrics")
 	interfacesEnabled           = flag.Bool("interfaces.enabled", true, "Scrape interface metrics")
 	interfaceDiagnosticsEnabled = flag.Bool("ifdiag.enabled", true, "Scrape optical interface diagnostic metrics")
@@ -249,6 +250,7 @@ func loadConfigFromFlags() *config.Config {
 	f.DOT1X = *dot1xEnabled
 	f.Environment = *environmentEnabled
 	f.EVPN = *evpnEnabled
+	f.EVPNIPPrefix = *evpnIPPrefixEnabled
 	f.Firewall = *firewallEnabled
 	f.FPC = *fpcEnabled
 	f.Interfaces = *interfacesEnabled

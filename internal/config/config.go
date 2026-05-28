@@ -65,6 +65,7 @@ type FeatureConfig struct {
 	NTP                 bool `yaml:"ntp,omitempty"`
 	Environment         bool `yaml:"environment,omitempty"`
 	EVPN                bool `yaml:"evpn,omitempty"`
+	EVPNIPPrefix        bool `yaml:"evpn_ip_prefix,omitempty"`
 	BFD                 bool `yaml:"bfd,omitempty"`
 	BGP                 bool `yaml:"bgp,omitempty"`
 	DOT1X               bool `yaml:"dot1x,omitempty"`
@@ -167,6 +168,7 @@ func setDefaultValues(c *Config) {
 	f.DOT1X = false
 	f.Environment = true
 	f.EVPN = false
+	f.EVPNIPPrefix = false
 	f.Firewall = true
 	f.FPC = false
 	f.Interfaces = true

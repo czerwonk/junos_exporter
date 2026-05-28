@@ -210,6 +210,7 @@ features:
   ddos_protection: false
   dot1x: false
   environment: true
+  evpn: false
   firewall: true
   fpc: false
   interface_diagnostic: true

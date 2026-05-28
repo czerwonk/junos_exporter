@@ -100,6 +100,7 @@ var (
 	krtEnabled                  = flag.Bool("krt.enabled", false, "Scrape KRT queue metrics")
 	twampEnabled                = flag.Bool("twamp.enabled", false, "Scrape TWAMP metrics")
 	systemstatisticsEnabled     = flag.Bool("systemstatistics.enabled", true, "Scrape system statistics metrics")
+	ufdEnabled                  = flag.Bool("ufd.enabled", false, "Scrape UFD (uplink-failure-detection) metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -283,6 +284,7 @@ func loadConfigFromFlags() *config.Config {
 	f.System = *systemEnabled
 	f.SystemStatistics = *systemstatisticsEnabled
 	f.TWAMP = *twampEnabled
+	f.UFD = *ufdEnabled
 	f.VirtualChassis = *virtualChassisEnabled
 	f.VPWS = *vpwsEnabled
 	f.VRRP = *vrrpEnabled

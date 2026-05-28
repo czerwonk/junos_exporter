@@ -246,6 +246,7 @@ features:
   system: false
   system_statistics: true
   twamp: false
+  ufd: false
   vpws: false
   vrrp: false
 ```

@@ -52,6 +52,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/system"
 	"github.com/czerwonk/junos_exporter/pkg/features/systemstatistics"
 	"github.com/czerwonk/junos_exporter/pkg/features/twamp"
+	"github.com/czerwonk/junos_exporter/pkg/features/ufd"
 	"github.com/czerwonk/junos_exporter/pkg/features/virtualchassis"
 	"github.com/czerwonk/junos_exporter/pkg/features/vpws"
 	"github.com/czerwonk/junos_exporter/pkg/features/vrrp"
@@ -144,6 +145,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "krt", f.KRT, krt.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "twamp", f.TWAMP, twamp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "system_statistics", f.SystemStatistics, systemstatistics.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "ufd", f.UFD, ufd.NewCollector)
 
 }
 

@@ -7,6 +7,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -20,6 +21,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/exporter-toolkit/web"
 	"go.opentelemetry.io/otel/codes"
 
 	log "github.com/sirupsen/logrus"
@@ -95,6 +97,7 @@ var (
 	tlsEnabled                  = flag.Bool("tls.enabled", false, "Enables TLS")
 	tlsCertChainPath            = flag.String("tls.cert-file", "", "Path to TLS cert file")
 	tlsKeyPath                  = flag.String("tls.key-file", "", "Path to TLS key file")
+	webConfigFile               = flag.String("web.config.file", "", "Path to web-config YAML (TLS + basic-auth, see prometheus/exporter-toolkit). When set, overrides -tls.* flags.")
 	tracingEnabled              = flag.Bool("tracing.enabled", false, "Enables tracing using OpenTelemetry")
 	tracingProvider             = flag.String("tracing.provider", "", "Sets the tracing provider (stdout or collector)")
 	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
@@ -389,13 +392,47 @@ func startServer() {
 	http.HandleFunc(*metricsPath, handleMetricsRequest)
 	http.HandleFunc("/-/reload", updateConfiguration)
 
-	log.Infof("Listening for %s on %s (TLS: %v)", *metricsPath, *listenAddress, *tlsEnabled)
+	log.Infof("Listening for %s on %s (TLS: %v, web-config: %q)",
+		*metricsPath, *listenAddress, *tlsEnabled, *webConfigFile)
+
+	if *webConfigFile != "" {
+		if *tlsEnabled || *tlsCertChainPath != "" || *tlsKeyPath != "" {
+			log.Warnf("-web.config.file=%q overrides legacy -tls.* flags; "+
+				"TLS now comes from the YAML's tls_server_config block (or is "+
+				"disabled if that block is absent)", *webConfigFile)
+		}
+		server := &http.Server{Addr: *listenAddress}
+		flags := &web.FlagConfig{
+			WebListenAddresses: &[]string{*listenAddress},
+			WebSystemdSocket:   ptrBool(false),
+			WebConfigFile:      webConfigFile,
+		}
+		log.Fatal(web.ListenAndServe(server, flags, slogShim()))
+		return
+	}
+
 	if *tlsEnabled {
 		log.Fatal(http.ListenAndServeTLS(*listenAddress, *tlsCertChainPath, *tlsKeyPath, nil))
 		return
 	}
 
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
+}
+
+func ptrBool(b bool) *bool { return &b }
+
+// slogShim returns a *slog.Logger that forwards records to the package-level
+// logrus logger so output from exporter-toolkit stays consistent with the rest
+// of the exporter's logs.
+func slogShim() *slog.Logger {
+	return slog.New(slog.NewTextHandler(logrusWriter{}, nil))
+}
+
+type logrusWriter struct{}
+
+func (logrusWriter) Write(p []byte) (int, error) {
+	log.Info(strings.TrimRight(string(p), "\n"))
+	return len(p), nil
 }
 
 func updateConfiguration(w http.ResponseWriter, r *http.Request) {

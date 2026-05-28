@@ -42,7 +42,7 @@ import "encoding/xml"
 // local-origin, two remote-received) distinguished by <table-description>.
 
 type singleEngineResult struct {
-	XMLName  xml.Name      `xml:"rpc-reply"`
+	XMLName  xml.Name       `xml:"rpc-reply"`
 	Contexts []pfxL3Context `xml:"evpn-ip-prefix-database-information>evpn-pfxdb-l3-context"`
 }
 
@@ -59,13 +59,13 @@ type routingEngine struct {
 }
 
 type pfxL3Context struct {
-	Name           string             `xml:"context-name"`
-	LocalTables    []pfxLocalTable    `xml:"evpn-pfxdb-ip-table"`
-	RemoteTables   []pfxRemoteTable   `xml:"evpn-pfxdb-evpn-ip-table"`
+	Name         string           `xml:"context-name"`
+	LocalTables  []pfxLocalTable  `xml:"evpn-pfxdb-ip-table"`
+	RemoteTables []pfxRemoteTable `xml:"evpn-pfxdb-evpn-ip-table"`
 }
 
 type pfxLocalTable struct {
-	Description string         `xml:"table-description"`
+	Description string          `xml:"table-description"`
 	Entries     []pfxLocalEntry `xml:"evpn-pfxdb-ip-entry"`
 }
 
@@ -80,8 +80,8 @@ type pfxRemoteTable struct {
 }
 
 type pfxRemoteEntry struct {
-	Prefix         string                 `xml:"entry-prefix"`
-	ETag           string                 `xml:"entry-etag"`
+	Prefix         string                   `xml:"entry-prefix"`
+	ETag           string                   `xml:"entry-etag"`
 	Advertisements []pfxRemoteAdvertisement `xml:"evpn-pfxdb-evpn-ip-adv"`
 }
 

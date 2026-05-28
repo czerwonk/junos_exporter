@@ -47,6 +47,7 @@ var (
 	bridgeDomainInterfaceUpCount *prometheus.Desc
 	esiResolved                  *prometheus.Desc
 	esiRemotePECount             *prometheus.Desc
+	esiDesignatedForwarderInfo   *prometheus.Desc
 
 	// ============== Duplicate-MAC descriptors (from show evpn database state duplicate) ==============
 	duplicateMACTotal *prometheus.Desc
@@ -64,8 +65,8 @@ func init() {
 	interfaceLabels := []string{"target", "instance", "interface", "esi", "mode", "etree_role"}
 	irbLabels := []string{"target", "instance", "irb_interface", "vni_id", "l3_context"}
 	bdLabels := []string{"target", "instance", "vlan_id", "domain_id", "irb_interface", "mode", "mac_sync"}
-	esiLabels := []string{"target", "instance", "esi", "status", "local_interface", "designated_forwarder", "backup_forwarder", "df_algorithm"}
 	esiCountLabels := []string{"target", "instance", "esi"}
+	esiDFLabels := []string{"target", "instance", "esi", "designated_forwarder", "backup_forwarder", "df_algorithm", "local_interface"}
 	l3CtxLabels := []string{"target", "context", "type", "advertisement_mode", "router_mac", "encapsulation"}
 	stateLabels := []string{"target"}
 
@@ -128,10 +129,13 @@ func init() {
 	bridgeDomainInterfaceUpCount = prometheus.NewDesc(prefix+"bridge_domain_interface_up_count",
 		"Interfaces currently up in this bridge-domain", bdLabels, nil)
 	esiResolved = prometheus.NewDesc(prefix+"esi_resolved",
-		"EVPN ESI resolution state (0: unresolved, 1: resolved). Labels carry the local-interface bind, DF election state, backup forwarder, and DF election algorithm.",
-		esiLabels, nil)
+		"EVPN ESI resolution state (0: unresolved, 1: resolved). Join with junos_evpn_esi_designated_forwarder_info on (target, instance, esi) for DF/local-interface labels.",
+		esiCountLabels, nil)
 	esiRemotePECount = prometheus.NewDesc(prefix+"esi_remote_pe_count",
 		"Number of remote PEs known for this Ethernet Segment", esiCountLabels, nil)
+	esiDesignatedForwarderInfo = prometheus.NewDesc(prefix+"esi_designated_forwarder_info",
+		"EVPN ESI designated-forwarder election state (gauge=1 info-pattern). Labels churn on DF election events; join with junos_evpn_esi_resolved for clean state queries.",
+		esiDFLabels, nil)
 
 	// Duplicate-MAC: target-level total always emitted, per-instance only when > 0.
 	duplicateMACTotal = prometheus.NewDesc(prefix+"duplicate_mac_total",
@@ -174,7 +178,7 @@ func (*evpnCollector) Describe(ch chan<- *prometheus.Desc) {
 		neighborEthernetSegmentRoutes,
 		interfaceStatus, irbStatus,
 		bridgeDomainInterfaceCount, bridgeDomainInterfaceUpCount,
-		esiResolved, esiRemotePECount,
+		esiResolved, esiRemotePECount, esiDesignatedForwarderInfo,
 		duplicateMACTotal, duplicateMACCount,
 		l3ContextVNI, l3ContextCount,
 	} {
@@ -298,13 +302,26 @@ func (c *evpnCollector) emitInstance(ch chan<- prometheus.Metric, labelValues []
 		ch <- prometheus.MustNewConstMetric(bridgeDomainInterfaceUpCount, prometheus.GaugeValue, bd.InterfacesUp, l...)
 	}
 	for _, esi := range in.ESIs {
-		// ESI is "resolved" if the status text contains "Resolved" (the
-		// other observed value is an empty string for unconfigured remote
-		// segments).
+		// _resolved is a pure-state gauge with stable labels — operators
+		// alert on this directly without worrying about DF-election churn.
 		resolved := 0.0
 		if strings.Contains(strings.ToLower(esi.Status), "resolved") {
 			resolved = 1.0
 		}
+		esiLabels := append(append([]string{}, base...), esi.Value)
+		ch <- prometheus.MustNewConstMetric(esiResolved, prometheus.GaugeValue, resolved, esiLabels...)
+
+		if esi.RemotePEInfo != nil {
+			ch <- prometheus.MustNewConstMetric(esiRemotePECount, prometheus.GaugeValue, esi.RemotePEInfo.Count, esiLabels...)
+		}
+
+		// _designated_forwarder_info is an info-pattern series carrying the
+		// labels that *do* change on DF-election events (DF/backup IPs,
+		// local-interface bind, algorithm). It deliberately churns when those
+		// rotate — operators query `changes(... [window])` on this series to
+		// detect DF instability, and `group_left(...)` it onto _resolved for
+		// dashboards. Emitted only when at least one of the labels is
+		// populated, to avoid noise on remote ESIs with no local state.
 		localIfName, dfAddr, backupAddr, dfAlgo := "", "", "", ""
 		if esi.LocalIntf != nil {
 			localIfName = esi.LocalIntf.Name
@@ -314,14 +331,9 @@ func (c *evpnCollector) emitInstance(ch chan<- prometheus.Metric, labelValues []
 			backupAddr = esi.DFInfo.BackupForwarder
 			dfAlgo = esi.DFInfo.Algorithm
 		}
-		statusLabel := strings.TrimSpace(esi.Status)
-
-		l := append(append([]string{}, base...), esi.Value, statusLabel, localIfName, dfAddr, backupAddr, dfAlgo)
-		ch <- prometheus.MustNewConstMetric(esiResolved, prometheus.GaugeValue, resolved, l...)
-
-		if esi.RemotePEInfo != nil {
-			cl := append(append([]string{}, base...), esi.Value)
-			ch <- prometheus.MustNewConstMetric(esiRemotePECount, prometheus.GaugeValue, esi.RemotePEInfo.Count, cl...)
+		if dfAddr != "" || backupAddr != "" || dfAlgo != "" || localIfName != "" {
+			dfLabels := append(append([]string{}, base...), esi.Value, dfAddr, backupAddr, dfAlgo, localIfName)
+			ch <- prometheus.MustNewConstMetric(esiDesignatedForwarderInfo, prometheus.GaugeValue, 1, dfLabels...)
 		}
 	}
 }

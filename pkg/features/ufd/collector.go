@@ -3,6 +3,7 @@
 package ufd
 
 import (
+	"encoding/xml"
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
@@ -77,13 +78,17 @@ func (*ufdCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *ufdCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var res = result{}
-	err := client.RunCommandAndParse("show uplink-failure-detection", &res)
+	var groups []ufdGroup
+	err := client.RunCommandAndParseWithParser("show uplink-failure-detection", func(b []byte) error {
+		var perr error
+		groups, perr = parseGroups(b)
+		return perr
+	})
 	if err != nil {
 		return err
 	}
 
-	for _, g := range res.Groups {
+	for _, g := range groups {
 		groupLabels := append(labelValues, g.Name)
 
 		active := 0.0
@@ -113,6 +118,31 @@ func (c *ufdCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 	}
 
 	return nil
+}
+
+// parseGroups handles both response shapes documented in the QFX YANG: the
+// direct <uplink-failure-detection-information> body and the multi-RE / VC
+// wrapper. Same dispatch pattern as the alarm collector. When multiple REs
+// report groups, they are merged - the re-name is not exposed as a label
+// today (matches the alarm collector's behaviour).
+func parseGroups(b []byte) ([]ufdGroup, error) {
+	if strings.Contains(string(b), "<multi-routing-engine-results") {
+		var m multiEngineResult
+		if err := xml.Unmarshal(b, &m); err != nil {
+			return nil, err
+		}
+		var groups []ufdGroup
+		for _, re := range m.Engines.Items {
+			groups = append(groups, re.Groups...)
+		}
+		return groups, nil
+	}
+
+	var s singleEngineResult
+	if err := xml.Unmarshal(b, &s); err != nil {
+		return nil, err
+	}
+	return s.Groups, nil
 }
 
 // splitMark separates the trailing "*" marker from the interface name and

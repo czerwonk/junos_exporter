@@ -3,7 +3,6 @@
 package ufd
 
 import (
-	"encoding/xml"
 	"testing"
 )
 
@@ -32,8 +31,8 @@ const healthySample = `<rpc-reply>
 
 // Synthetic multi-group sample modelled on real older-Junos output:
 // two <ufd-group> siblings inside ONE <ufd-group-information> wrapper,
-// no debounce-interval element (older Junos / not configured),
-// second group in failure-action Active (uplinks lost their "*" marker).
+// no debounce-interval element, second group in failure-action Active
+// (uplinks lost their "*" marker).
 const multiGroupSample = `<rpc-reply>
   <uplink-failure-detection-information>
     <ufd-group-information>
@@ -63,17 +62,60 @@ const multiGroupSample = `<rpc-reply>
   </uplink-failure-detection-information>
 </rpc-reply>`
 
+// Synthetic multi-RE / Virtual Chassis sample. The QFX UFD YANG declares
+// the response can be wrapped in <multi-routing-engine-results> with a
+// <multi-routing-engine-item> per RE / VC member. Each RE reports its own
+// UFD groups; we merge them.
+const multiEngineSample = `<rpc-reply>
+  <multi-routing-engine-results>
+    <multi-routing-engine-item>
+      <re-name>fpc0</re-name>
+      <uplink-failure-detection-information>
+        <ufd-group-information>
+          <ufd-group>
+            <ufd-group-name>vc-group-1</ufd-group-name>
+            <link-to-monitor-list>
+              <uplink-interface>et-0/0/55*</uplink-interface>
+            </link-to-monitor-list>
+            <link-to-disable-list>
+              <downlink-interface>xe-0/0/46*</downlink-interface>
+            </link-to-disable-list>
+            <failure-action>Inactive</failure-action>
+          </ufd-group>
+        </ufd-group-information>
+      </uplink-failure-detection-information>
+    </multi-routing-engine-item>
+    <multi-routing-engine-item>
+      <re-name>fpc1</re-name>
+      <uplink-failure-detection-information>
+        <ufd-group-information>
+          <ufd-group>
+            <ufd-group-name>vc-group-2</ufd-group-name>
+            <link-to-monitor-list>
+              <uplink-interface>et-1/0/55*</uplink-interface>
+            </link-to-monitor-list>
+            <link-to-disable-list>
+              <downlink-interface>xe-1/0/46*</downlink-interface>
+            </link-to-disable-list>
+            <failure-action>Inactive</failure-action>
+          </ufd-group>
+        </ufd-group-information>
+      </uplink-failure-detection-information>
+    </multi-routing-engine-item>
+  </multi-routing-engine-results>
+</rpc-reply>`
+
 func TestParseUFDHealthy(t *testing.T) {
-	var r result
-	if err := xml.Unmarshal([]byte(healthySample), &r); err != nil {
-		t.Fatalf("unmarshal failed: %v", err)
+	groups, err := parseGroups([]byte(healthySample))
+	if err != nil {
+		t.Fatalf("parseGroups failed: %v", err)
 	}
 
-	if len(r.Groups) != 1 {
-		t.Fatalf("expected 1 group, got %d", len(r.Groups))
+	if len(groups) != 1 {
+		t.Fatalf("expected 1 group, got %d", len(groups))
 	}
 
-	g := r.Groups[0]
+	g := groups[0]
 	if g.Name != "uplink-group-1" {
 		t.Errorf("group name: got %q", g.Name)
 	}
@@ -92,41 +134,58 @@ func TestParseUFDHealthy(t *testing.T) {
 }
 
 func TestParseUFDMultiGroup(t *testing.T) {
-	var r result
-	if err := xml.Unmarshal([]byte(multiGroupSample), &r); err != nil {
-		t.Fatalf("unmarshal failed: %v", err)
+	groups, err := parseGroups([]byte(multiGroupSample))
+	if err != nil {
+		t.Fatalf("parseGroups failed: %v", err)
 	}
 
-	if len(r.Groups) != 2 {
-		t.Fatalf("expected 2 groups, got %d", len(r.Groups))
+	if len(groups) != 2 {
+		t.Fatalf("expected 2 groups, got %d", len(groups))
 	}
 
-	// First group: healthy, single uplink, two downlinks
-	if r.Groups[0].Name != "group-a" {
-		t.Errorf("group 0 name: got %q", r.Groups[0].Name)
+	if groups[0].Name != "group-a" {
+		t.Errorf("group 0 name: got %q", groups[0].Name)
 	}
-	if r.Groups[0].FailureAction != "Inactive" {
-		t.Errorf("group 0 failure-action: got %q", r.Groups[0].FailureAction)
+	if groups[0].FailureAction != "Inactive" {
+		t.Errorf("group 0 failure-action: got %q", groups[0].FailureAction)
 	}
-	if r.Groups[0].DebounceInterval != 0 {
-		t.Errorf("group 0 debounce default: got %v want 0", r.Groups[0].DebounceInterval)
-	}
-	if len(r.Groups[0].Uplinks) != 1 {
-		t.Errorf("group 0 uplinks: got %#v", r.Groups[0].Uplinks)
+	if groups[0].DebounceInterval != 0 {
+		t.Errorf("group 0 debounce default: got %v want 0", groups[0].DebounceInterval)
 	}
 
-	// Second group: triggered failure, multiple uplinks (no "*"), single downlink
-	if r.Groups[1].Name != "group-b" {
-		t.Errorf("group 1 name: got %q", r.Groups[1].Name)
+	if groups[1].Name != "group-b" {
+		t.Errorf("group 1 name: got %q", groups[1].Name)
 	}
-	if r.Groups[1].FailureAction != "Active" {
-		t.Errorf("group 1 failure-action: got %q want Active", r.Groups[1].FailureAction)
+	if groups[1].FailureAction != "Active" {
+		t.Errorf("group 1 failure-action: got %q want Active", groups[1].FailureAction)
 	}
-	if len(r.Groups[1].Uplinks) != 2 {
-		t.Errorf("group 1 uplinks: got %#v", r.Groups[1].Uplinks)
+	if len(groups[1].Uplinks) != 2 {
+		t.Errorf("group 1 uplinks: got %#v", groups[1].Uplinks)
 	}
-	if len(r.Groups[1].Downlinks) != 1 {
-		t.Errorf("group 1 downlinks: got %#v", r.Groups[1].Downlinks)
+}
+
+func TestParseUFDMultiEngine(t *testing.T) {
+	groups, err := parseGroups([]byte(multiEngineSample))
+	if err != nil {
+		t.Fatalf("parseGroups failed: %v", err)
+	}
+
+	if len(groups) != 2 {
+		t.Fatalf("expected 2 merged groups (one per RE), got %d", len(groups))
+	}
+
+	names := []string{groups[0].Name, groups[1].Name}
+	wantNames := map[string]bool{"vc-group-1": false, "vc-group-2": false}
+	for _, n := range names {
+		if _, ok := wantNames[n]; !ok {
+			t.Errorf("unexpected group name %q", n)
+		}
+		wantNames[n] = true
+	}
+	for n, seen := range wantNames {
+		if !seen {
+			t.Errorf("expected to see group %q but didn't", n)
+		}
 	}
 }
 

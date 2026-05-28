@@ -55,6 +55,8 @@ The following metrics are supported by now:
 * VRRP (state per interface)
 * Subscribers Information (show subscribers client-type dhcp detail)
 * PoE (show poe interface)
+* EVPN (per-EVI state, neighbor route counts, detail tables for interfaces / IRBs / bridge-domains / ESIs with DF election, duplicate-MAC detection, L3 contexts)
+* EVPN Type-5 / IP-prefix database (per-context per-AFI local + remote prefix counts, accepted/rejected advertisements) — separate flag (`-evpn_ip_prefix.enabled`) because the response scales with prefix count
 
 ## Feature specific mappings
 Some collected time series behave like enums - Integer values represent a certain state/meaning.
@@ -119,6 +121,35 @@ States map to human readable names like this:
 1: "init"
 2: "backup"
 3: "master"
+```
+
+### EVPN
+The EVPN collector exposes both per-EVI scalars and several state metrics. The state metrics all use the same 0/1 mapping:
+
+```
+junos_evpn_interface_status   0: Down   1: Up
+junos_evpn_irb_status         0: Down   1: Up
+junos_evpn_esi_resolved       0: unresolved (or remote-only)   1: resolved (local-bound)
+```
+
+`junos_evpn_esi_designated_forwarder_info` is an info-pattern gauge that is always `1` when emitted; its labels (`designated_forwarder`, `backup_forwarder`, `df_algorithm`, `local_interface`) deliberately churn on DF-election events, so it is split off from `junos_evpn_esi_resolved` to keep state-alert queries stable. Join on `(target, instance, esi)` for Grafana dashboards:
+
+```
+junos_evpn_esi_resolved
+  * on(target, instance, esi)
+  group_left(designated_forwarder, backup_forwarder, local_interface)
+    junos_evpn_esi_designated_forwarder_info
+```
+
+The duplicate-MAC suppression total is always emitted and is the primary alert signal:
+```
+junos_evpn_duplicate_mac_total > 0   # forwarding loop or split-brain
+```
+
+### EVPN Type-5 IP prefix
+`junos_evpn_ip_prefix_advertisement_count` uses a `status` discriminator label (`accepted`, `rejected`, …) so rejected Type-5 routes can be alerted on without separate metric families:
+```
+junos_evpn_ip_prefix_advertisement_count{status="rejected"} > 0
 ```
 
 ### License statistics

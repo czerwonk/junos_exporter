@@ -42,6 +42,8 @@ The following metrics are supported by now:
 * NAT (all available statistics from services nat)
 * Chassis cluster HA status (SRX)
 * Environment (temperatures, fans and PEM power statistics)
+* EVPN (per-EVI state, neighbor route counts, detail tables for interfaces / IRBs / bridge-domains / ESIs with DF election, duplicate-MAC detection, L3 contexts)
+* EVPN Type-5 / IP-prefix database (per-context per-AFI local + remote prefix counts, accepted/rejected advertisements) — separate flag (`-evpn_ip_prefix.enabled`) because the response scales with prefix count
 * Routing engine statistics
 * Storage (total, available and used blocks, used percentage)
 * Firewall filters (counters and policers) - needs explicit rights beyond read-only
@@ -55,8 +57,6 @@ The following metrics are supported by now:
 * VRRP (state per interface)
 * Subscribers Information (show subscribers client-type dhcp detail)
 * PoE (show poe interface)
-* EVPN (per-EVI state, neighbor route counts, detail tables for interfaces / IRBs / bridge-domains / ESIs with DF election, duplicate-MAC detection, L3 contexts)
-* EVPN Type-5 / IP-prefix database (per-context per-AFI local + remote prefix counts, accepted/rejected advertisements) — separate flag (`-evpn_ip_prefix.enabled`) because the response scales with prefix count
 
 ## Feature specific mappings
 Some collected time series behave like enums - Integer values represent a certain state/meaning.

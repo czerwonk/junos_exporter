@@ -83,8 +83,7 @@ func (c *ufdCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 		return err
 	}
 
-	for _, gi := range res.Information.GroupInfos {
-		g := gi.Group
+	for _, g := range res.Groups {
 		groupLabels := append(labelValues, g.Name)
 
 		active := 0.0

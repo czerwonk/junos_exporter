@@ -237,17 +237,6 @@ devices:
       evpn: true
       evpn_ip_prefix: true
 
-# Optional
-# interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
-#
-# Global feature defaults. Two EVPN-specific knobs are exposed:
-#   - `evpn`:           per-EVI state, neighbor route counts, detail tables
-#                       (interfaces / IRBs / bridge-domains / ESIs with DF
-#                       election), duplicate-MAC detection, L3 contexts.
-#                       Issues 3 RPCs against the device when enabled.
-#   - `evpn_ip_prefix`: EVPN Type-5 (IP-prefix) database. Separated because
-#                       response size scales with prefix count on busy
-#                       fabrics; enable per-device where Type-5 is in use.
 features:
   accounting: false
   alarm: true

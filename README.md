@@ -157,22 +157,30 @@ junos_exporter supports SSH authentication via key or password based authenticat
 Authentication order is ssh key, if none is found the cli flag is checked, the config file is checked last. If no valid auth method is specified junos_exporter exits with an error.
 Specify the ssh username with the cli flag `-ssh.user`, with the `username` key under the configuration file or use the default username of `junos_exporter`.
 
-#### SSH key passphrase
+#### SSH key passphrase and password
 
-If the SSH key is encrypted, its passphrase can be provided from one of
-three mutually-exclusive sources:
+Both the SSH key passphrase and the SSH password can be supplied from any
+one of three mutually-exclusive sources -- a literal flag value, the
+contents of an environment variable, or the contents of a file:
 
-- `-ssh.keyPassphrase=<string>` — literal value. Avoid for production use:
-  the passphrase appears in `ps` output and shell history.
-- `-ssh.keyPassphraseEnv=<NAME>` — read from environment variable `NAME`.
-  The variable must be set and non-empty at startup.
-- `-ssh.keyPassphraseFile=<PATH>` — read from a file (a single trailing
-  newline is trimmed). Suitable for use with systemd `LoadCredential=`
-  or Kubernetes secrets.
+| Secret | Literal | Environment variable | File |
+|---|---|---|---|
+| Key passphrase | `-ssh.keyPassphrase=<string>` | `-ssh.keyPassphraseEnv=<NAME>` | `-ssh.keyPassphraseFile=<PATH>` |
+| Password       | `-ssh.password=<string>`      | `-ssh.passwordEnv=<NAME>`      | `-ssh.passwordFile=<PATH>`      |
 
-Setting more than one of these flags is a configuration error and the
-exporter exits at startup. Only the global flag is affected; the
-per-device `key_passphrase` field in the YAML config is unchanged.
+- The literal forms (`-ssh.keyPassphrase` / `-ssh.password`) are convenient
+  but the value appears in `ps` output and shell history -- avoid for
+  production.
+- The `*Env` flags read from the named environment variable. The variable
+  must exist and be non-empty at startup, otherwise the exporter exits.
+- The `*File` flags read from the given path; a single trailing newline is
+  trimmed. Suitable for systemd `LoadCredential=`, Docker secrets and
+  Kubernetes secrets.
+
+Within each group (passphrase, password) setting more than one source is a
+configuration error and the exporter exits at startup with a clear message.
+Only the global flags are affected; the per-device `key_passphrase` and
+`password` fields in the YAML config are unchanged.
 
 ### Target Parameter
 By default, all configured targets will be scrapped when `/metrics` is hit. As an alternative, it is possible to scrape a specific target by passing the target's hostname/IP address to the target parameter - e.g. ` http://localhost:9326/metrics?target=1.2.3.4`. The specific target must be present in the configuration file or passed in with the ssh.targets flag, you can also specify the `-config.ignore-targets` flag if you don't want to specify targets in the config or commandline, if none of this matches the request will be denied. This can be used with the below example Prometheus config:

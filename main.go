@@ -392,8 +392,13 @@ func startServer() {
 	http.HandleFunc(*metricsPath, handleMetricsRequest)
 	http.HandleFunc("/-/reload", updateConfiguration)
 
-	log.Infof("Listening for %s on %s (TLS: %v, web-config: %q)",
-		*metricsPath, *listenAddress, *tlsEnabled, *webConfigFile)
+	if *webConfigFile != "" {
+		log.Infof("Listening for %s on %s (web-config: %q)",
+			*metricsPath, *listenAddress, *webConfigFile)
+	} else {
+		log.Infof("Listening for %s on %s (TLS: %v)",
+			*metricsPath, *listenAddress, *tlsEnabled)
+	}
 
 	if *webConfigFile != "" {
 		if *tlsEnabled || *tlsCertChainPath != "" || *tlsKeyPath != "" {

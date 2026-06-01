@@ -258,8 +258,8 @@ multiple certs, hot reload) is documented at
 Generate a bcrypt hash with `htpasswd`:
 
 ```bash
-htpasswd -B -n -b prom 's3cret'
-# prom:$2y$05$...bcrypt-hash...
+htpasswd -B -C 10 -n -b prom 's3cret'
+# prom:$2y$10$...bcrypt-hash...
 ```
 
 Prometheus side:

@@ -232,6 +232,65 @@ scrape_configs:
         replacement: 127.0.0.1:9326  # The junos_exporter's real hostname:port.
 ```
 
+### HTTP server: TLS and basic auth
+
+The exporter integrates [`prometheus/exporter-toolkit`](https://github.com/prometheus/exporter-toolkit),
+the same web server used by `node_exporter`, `blackbox_exporter` and the rest
+of the Prometheus ecosystem. Pass a web-config YAML file with
+`-web.config.file=<path>` to enable TLS, HTTP basic auth, or both:
+
+```yaml
+# web.config.yml
+tls_server_config:
+  cert_file: /etc/junos_exporter/server.crt
+  key_file:  /etc/junos_exporter/server.key
+
+basic_auth_users:
+  prom:    $2y$10$<bcrypt-hash>
+  grafana: $2y$10$<another-bcrypt-hash>
+```
+
+Both blocks are optional — basic auth works over plain HTTP, and TLS works
+without basic auth. The full schema (client-cert verification, cipher suites,
+multiple certs, hot reload) is documented at
+[exporter-toolkit/docs/web-configuration.md](https://github.com/prometheus/exporter-toolkit/blob/master/docs/web-configuration.md).
+
+Generate a bcrypt hash with `htpasswd`:
+
+```bash
+htpasswd -B -C 10 -n -b prom 's3cret'
+# prom:$2y$10$...bcrypt-hash...
+```
+
+Prometheus side:
+
+```yaml
+scrape_configs:
+  - job_name: junos
+    scheme: https
+    basic_auth:
+      username: prom
+      password_file: /etc/prometheus/junos_exporter_password
+    static_configs:
+      - targets: [junos-exporter.example.com:9326]
+```
+
+#### Dispatch / backwards compatibility
+
+| `-web.config.file` | `-tls.enabled` | Behaviour |
+|---|---|---|
+| empty | false | plain HTTP (unchanged) |
+| empty | true  | TLS via legacy `-tls.cert-file` / `-tls.key-file` (unchanged) |
+| set   | any   | `exporter-toolkit` handles everything; legacy `-tls.*` flags are ignored |
+
+The legacy `-tls.enabled` / `-tls.cert-file` / `-tls.key-file` flags keep
+working unchanged for existing deployments. New deployments should prefer
+`-web.config.file`, which adds basic-auth support and hot-reload of cert files.
+
+If both `-web.config.file` and any legacy `-tls.*` flag are set, the exporter
+logs a warning at startup so operators see that the YAML config has taken
+over and the legacy flags are being ignored.
+
 ## Config file
 
 The exporter can be configured with a YAML based config file:

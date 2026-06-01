@@ -16,10 +16,12 @@ import (
 	"time"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
+	"github.com/czerwonk/junos_exporter/internal/log/slogadapter"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/exporter-toolkit/web"
 	"go.opentelemetry.io/otel/codes"
 
 	log "github.com/sirupsen/logrus"
@@ -95,6 +97,7 @@ var (
 	tlsEnabled                  = flag.Bool("tls.enabled", false, "Enables TLS")
 	tlsCertChainPath            = flag.String("tls.cert-file", "", "Path to TLS cert file")
 	tlsKeyPath                  = flag.String("tls.key-file", "", "Path to TLS key file")
+	webConfigFile               = flag.String("web.config.file", "", "Path to web-config YAML (TLS + basic-auth, see prometheus/exporter-toolkit). When set, overrides -tls.* flags.")
 	tracingEnabled              = flag.Bool("tracing.enabled", false, "Enables tracing using OpenTelemetry")
 	tracingProvider             = flag.String("tracing.provider", "", "Sets the tracing provider (stdout or collector)")
 	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
@@ -389,7 +392,30 @@ func startServer() {
 	http.HandleFunc(*metricsPath, handleMetricsRequest)
 	http.HandleFunc("/-/reload", updateConfiguration)
 
-	log.Infof("Listening for %s on %s (TLS: %v)", *metricsPath, *listenAddress, *tlsEnabled)
+	if *webConfigFile != "" {
+		log.Infof("Listening for %s on %s (web-config: %q)",
+			*metricsPath, *listenAddress, *webConfigFile)
+	} else {
+		log.Infof("Listening for %s on %s (TLS: %v)",
+			*metricsPath, *listenAddress, *tlsEnabled)
+	}
+
+	if *webConfigFile != "" {
+		if *tlsEnabled || *tlsCertChainPath != "" || *tlsKeyPath != "" {
+			log.Warnf("-web.config.file=%q overrides legacy -tls.* flags; "+
+				"TLS now comes from the YAML's tls_server_config block (or is "+
+				"disabled if that block is absent)", *webConfigFile)
+		}
+		server := &http.Server{Addr: *listenAddress}
+		flags := &web.FlagConfig{
+			WebListenAddresses: &[]string{*listenAddress},
+			WebSystemdSocket:   ptrBool(false),
+			WebConfigFile:      webConfigFile,
+		}
+		log.Fatal(web.ListenAndServe(server, flags, slogadapter.New()))
+		return
+	}
+
 	if *tlsEnabled {
 		log.Fatal(http.ListenAndServeTLS(*listenAddress, *tlsCertChainPath, *tlsKeyPath, nil))
 		return
@@ -397,6 +423,8 @@ func startServer() {
 
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
 }
+
+func ptrBool(b bool) *bool { return &b }
 
 func updateConfiguration(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {

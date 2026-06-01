@@ -115,7 +115,7 @@ type clientTracingAdapter struct {
 }
 
 // RunCommandAndParse implements RunCommandAndParse of the collector.Client interface
-func (cta *clientTracingAdapter) RunCommandAndParse(cmd string, obj interface{}) error {
+func (cta *clientTracingAdapter) RunCommandAndParse(cmd string, obj any) error {
 	return cta.cl.RunCommandAndParse(cmd, obj)
 }
 

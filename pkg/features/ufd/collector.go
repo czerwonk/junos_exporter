@@ -149,8 +149,8 @@ func parseGroups(b []byte) ([]ufdGroup, error) {
 // returns the clean name plus 1.0 if the marker was present, 0.0 otherwise.
 func splitMark(s string) (string, float64) {
 	s = strings.TrimSpace(s)
-	if strings.HasSuffix(s, "*") {
-		return strings.TrimSuffix(s, "*"), 1.0
+	if before, ok := strings.CutSuffix(s, "*"); ok {
+		return before, 1.0
 	}
 	return s, 0.0
 }

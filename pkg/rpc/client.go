@@ -53,7 +53,7 @@ func NewClient(ssh *connector.SSHConnection, opts ...ClientOption) *Client {
 }
 
 // RunCommandAndParse runs a command on JunOS and unmarshals the XML result
-func (c *Client) RunCommandAndParse(cmd string, obj interface{}) error {
+func (c *Client) RunCommandAndParse(cmd string, obj any) error {
 	return c.RunCommandAndParseWithParser(cmd, func(b []byte) error {
 		return xml.Unmarshal(b, obj)
 	})

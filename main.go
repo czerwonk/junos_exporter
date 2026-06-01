@@ -241,12 +241,14 @@ func resolveSSHSecrets() error {
 	); err != nil {
 		return fmt.Errorf("ssh key passphrase: %w", err)
 	}
+
 	if err := resolveSecretFromSources(
 		sshPassword, sshPasswordEnv, sshPasswordFile,
 		"-ssh.password", "-ssh.passwordEnv", "-ssh.passwordFile",
 	); err != nil {
 		return fmt.Errorf("ssh password: %w", err)
 	}
+
 	return nil
 }
 
@@ -409,7 +411,7 @@ func startServer() {
 		server := &http.Server{Addr: *listenAddress}
 		flags := &web.FlagConfig{
 			WebListenAddresses: &[]string{*listenAddress},
-			WebSystemdSocket:   ptrBool(false),
+			WebSystemdSocket:   new(false),
 			WebConfigFile:      webConfigFile,
 		}
 		log.Fatal(web.ListenAndServe(server, flags, slogadapter.New()))
@@ -424,7 +426,8 @@ func startServer() {
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
 }
 
-func ptrBool(b bool) *bool { return &b }
+//go:fix inline
+func ptrBool(b bool) *bool { return new(b) }
 
 func updateConfiguration(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {

@@ -83,7 +83,7 @@ func (c *alarmCollector) alarmCounter(client collector.Client) (*alarmCounter, *
 
 	var alarms []details
 
-	messages := make(map[string]interface{})
+	messages := make(map[string]any)
 	for _, cmd := range cmds {
 		var a = multiEngineResult{}
 		err := client.RunCommandAndParseWithParser(cmd, func(b []byte) error {
@@ -141,7 +141,7 @@ func parseXML(b []byte, res *multiEngineResult) error {
 
 	res.Information.RoutingEngines = []routingEngine{
 		{
-			Name:        "N/A",
+			Name:      "N/A",
 			AlarmInfo: se.Information,
 		},
 	}

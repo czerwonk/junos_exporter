@@ -4,7 +4,7 @@ package isis
 
 import (
 	"encoding/xml"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -15,19 +15,19 @@ import (
 func Test_ParseXML_DataDriven(t *testing.T) {
 	backupCoverageXMLData, _ := os.Open("backupCoverageXMLData.xml")
 	backupSPFXMLData, _ := os.Open("backupSPFXMLData.xml")
-	backupCoverageData, _ := ioutil.ReadAll(backupCoverageXMLData)
-	backupSPFData, _ := ioutil.ReadAll(backupSPFXMLData)
+	backupCoverageData, _ := io.ReadAll(backupCoverageXMLData)
+	backupSPFData, _ := io.ReadAll(backupSPFXMLData)
 	tests := []struct {
 		name       string
 		xmlData    string
 		resultType string
-		validate   func(t *testing.T, data interface{})
+		validate   func(t *testing.T, data any)
 	}{
 		{
 			name:       "Parse Backup SPF Data",
 			xmlData:    string(backupSPFData),
 			resultType: "spf",
-			validate: func(t *testing.T, data interface{}) {
+			validate: func(t *testing.T, data any) {
 				resultsSPF := data.(*backupSPF)
 				assert.Len(t, resultsSPF.IsisSpfInformation.IsisSpf, 2)
 				assert.Len(t, resultsSPF.IsisSpfInformation.IsisSpf[1].IsisBackupSpfResult, 1)
@@ -38,7 +38,7 @@ func Test_ParseXML_DataDriven(t *testing.T) {
 			name:       "Parse Backup Coverage Data",
 			xmlData:    string(backupCoverageData),
 			resultType: "coverage",
-			validate: func(t *testing.T, data interface{}) {
+			validate: func(t *testing.T, data any) {
 				resultsCoverage := data.(*backupCoverage)
 				assert.Len(t, resultsCoverage.IsisBackupCoverageInformation.IsisBackupCoverage.Level, 1)
 				assert.Len(t, resultsCoverage.IsisBackupCoverageInformation.IsisBackupCoverage.IsisRouteCoverageIpv6, 6)

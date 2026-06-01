@@ -34,8 +34,12 @@ var (
 	sshHosts                    = flag.String("ssh.targets", "", "Hosts to scrape")
 	sshUsername                 = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
 	sshKeyFile                  = flag.String("ssh.keyfile", "", "Public key file to use when connecting to junos devices using ssh")
-	sshKeyPassphrase            = flag.String("ssh.keyPassphrase", "", "Passphrase to decrypt key file if it's encrypted")
-	sshPassword                 = flag.String("ssh.password", "", "Password to use when connecting to junos devices using ssh")
+	sshKeyPassphrase            = flag.String("ssh.keyPassphrase", "", "Passphrase to decrypt key file if it's encrypted (mutually exclusive with -ssh.keyPassphraseEnv and -ssh.keyPassphraseFile)")
+	sshKeyPassphraseEnv         = flag.String("ssh.keyPassphraseEnv", "", "Name of an environment variable to read the SSH key passphrase from")
+	sshKeyPassphraseFile        = flag.String("ssh.keyPassphraseFile", "", "Path to a file containing the SSH key passphrase (trailing newline trimmed)")
+	sshPassword                 = flag.String("ssh.password", "", "Password to use when connecting to junos devices using ssh (mutually exclusive with -ssh.passwordEnv and -ssh.passwordFile)")
+	sshPasswordEnv              = flag.String("ssh.passwordEnv", "", "Name of an environment variable to read the SSH password from")
+	sshPasswordFile             = flag.String("ssh.passwordFile", "", "Path to a file containing the SSH password (trailing newline trimmed)")
 	sshReconnectInterval        = flag.Duration("ssh.reconnect-interval", 30*time.Second, "Duration to wait before reconnecting to a device after connection got lost")
 	sshKeepAliveInterval        = flag.Duration("ssh.keep-alive-interval", 10*time.Second, "Duration to wait between keep alive messages")
 	sshKeepAliveTimeout         = flag.Duration("ssh.keep-alive-timeout", 15*time.Second, "Duration to wait for keep alive message response")
@@ -121,6 +125,10 @@ func main() {
 	if *showVersion {
 		printVersion()
 		os.Exit(0)
+	}
+
+	if err := resolveSSHSecrets(); err != nil {
+		log.Fatalf("could not resolve ssh credentials: %v", err)
 	}
 
 	err := initialize()
@@ -215,6 +223,65 @@ func reinitialize() error {
 	}
 
 	return initialize()
+}
+
+// resolveSSHSecrets materialises both *sshKeyPassphrase and *sshPassword from
+// their respective literal flag / environment variable / file sources. Within
+// each group, the three sources are mutually exclusive.
+func resolveSSHSecrets() error {
+	if err := resolveSecretFromSources(
+		sshKeyPassphrase, sshKeyPassphraseEnv, sshKeyPassphraseFile,
+		"-ssh.keyPassphrase", "-ssh.keyPassphraseEnv", "-ssh.keyPassphraseFile",
+	); err != nil {
+		return fmt.Errorf("ssh key passphrase: %w", err)
+	}
+	if err := resolveSecretFromSources(
+		sshPassword, sshPasswordEnv, sshPasswordFile,
+		"-ssh.password", "-ssh.passwordEnv", "-ssh.passwordFile",
+	); err != nil {
+		return fmt.Errorf("ssh password: %w", err)
+	}
+	return nil
+}
+
+// resolveSecretFromSources reads a secret from one of three mutually-exclusive
+// sources -- a literal flag, an environment variable named by another flag, or
+// a file path named by a third flag -- and writes the resolved value back into
+// *literal so downstream code can keep reading the same pointer.
+func resolveSecretFromSources(literal, envName, filePath *string, literalFlag, envFlag, fileFlag string) error {
+	set := 0
+	if *literal != "" {
+		set++
+	}
+	if *envName != "" {
+		set++
+	}
+	if *filePath != "" {
+		set++
+	}
+	if set > 1 {
+		return fmt.Errorf("%s, %s and %s are mutually exclusive; set at most one", literalFlag, envFlag, fileFlag)
+	}
+
+	if *envName != "" {
+		v := os.Getenv(*envName)
+		if v == "" {
+			return fmt.Errorf("environment variable %q referenced by %s is empty or unset", *envName, envFlag)
+		}
+		*literal = v
+		return nil
+	}
+
+	if *filePath != "" {
+		b, err := os.ReadFile(*filePath)
+		if err != nil {
+			return fmt.Errorf("could not read %s %q: %w", fileFlag, *filePath, err)
+		}
+		*literal = strings.TrimRight(string(b), "\r\n")
+		return nil
+	}
+
+	return nil
 }
 
 func loadConfig() (*config.Config, error) {

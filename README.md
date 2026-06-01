@@ -55,6 +55,7 @@ The following metrics are supported by now:
 * VRRP (state per interface)
 * Subscribers Information (show subscribers client-type dhcp detail)
 * PoE (show poe interface)
+* UFD (uplink-failure-detection group state)
 
 ## Feature specific mappings
 Some collected time series behave like enums - Integer values represent a certain state/meaning.
@@ -271,6 +272,7 @@ features:
   system: false
   system_statistics: true
   twamp: false
+  ufd: false
   vpws: false
   vrrp: false
 ```

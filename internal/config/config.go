@@ -109,6 +109,7 @@ type FeatureConfig struct {
 	KRT                 bool `yaml:"krt,omitempty"`
 	TWAMP               bool `yaml:"twamp,omitempty"`
 	SystemStatistics    bool `yaml:"system_statistics,omitempty"`
+	UFD                 bool `yaml:"ufd,omitempty"`
 }
 
 // New creates a new config
@@ -201,6 +202,7 @@ func setDefaultValues(c *Config) {
 	f.System = false
 	f.SystemStatistics = true
 	f.TWAMP = false
+	f.UFD = false
 	f.VirtualChassis = false
 	f.VPWS = false
 	f.VRRP = false

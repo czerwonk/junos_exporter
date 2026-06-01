@@ -1,10 +1,10 @@
 package arp
 
 import (
-	"github.com/pkg/errors"
-	"github.com/prometheus/client_golang/prometheus"
+	"fmt"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const prefix string = "junos_arp_"
@@ -36,7 +36,7 @@ func (c *arpCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 	var res results
 	err := client.RunCommandAndParse("show arp no-resolve", &res)
 	if err != nil {
-		return errors.Wrap(err, "failed to run command 'show arp no-resolve'")
+		return fmt.Errorf("failed to run command 'show arp no-resolve': %w", err)
 	}
 
 	interfaces := make(map[string]float64)

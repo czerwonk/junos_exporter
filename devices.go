@@ -10,7 +10,6 @@ import (
 
 	"github.com/czerwonk/junos_exporter/internal/config"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
-	"github.com/pkg/errors"
 )
 
 func devicesForConfig(cfg *config.Config) ([]*connector.Device, error) {
@@ -53,7 +52,7 @@ func devicesFromTargets(targets []string) []*config.DeviceConfig {
 func deviceFromDeviceConfig(device *config.DeviceConfig, hostname string, cfg *config.Config) (*connector.Device, error) {
 	auth, err := authForDevice(device, cfg)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not initialize config for device %s", device.Host)
+		return nil, fmt.Errorf("could not initialize config for device %s: %w", device.Host, err)
 	}
 
 	// check whether there is a device specific regex otherwise fallback to global regex
@@ -100,19 +99,19 @@ func authForDevice(device *config.DeviceConfig, cfg *config.Config) (connector.A
 		return connector.AuthByPassword(user, *sshPassword), nil
 	}
 
-	return nil, errors.New("no valid authentication method available")
+	return nil, fmt.Errorf("no valid authentication method available")
 }
 
 func authForKeyFile(username, keyFile, keyPassphrase string) (connector.AuthMethod, error) {
 	f, err := os.Open(keyFile)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not open ssh key file")
+		return nil, fmt.Errorf("could not open ssh key file: %w", err)
 	}
 	defer f.Close()
 
 	auth, err := connector.AuthByKey(username, f, keyPassphrase)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not load ssh private key file")
+		return nil, fmt.Errorf("could not load ssh private key file: %w", err)
 	}
 
 	return auth, nil

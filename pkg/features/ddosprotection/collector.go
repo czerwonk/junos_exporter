@@ -1,10 +1,10 @@
 package ddosprotection
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
@@ -147,19 +147,19 @@ func (c *ddosCollector) Collect(client collector.Client, ch chan<- prometheus.Me
 	var s statistics
 	err := client.RunCommandAndParse("show ddos-protection protocols statistics", &s)
 	if err != nil {
-		return errors.Wrap(err, "failed to run command 'show ddos-protection protocols statistics'")
+		return fmt.Errorf("failed to run command 'show ddos-protection protocols statistics': %w", err)
 	}
 	c.collectStatistics(s, ch, labelValues)
 	var p parameters
 	err = client.RunCommandAndParse("show ddos-protection protocols parameters", &p)
 	if err != nil {
-		return errors.Wrap(err, "failed to run command 'show ddos-protection protocols parameters'")
+		return fmt.Errorf("failed to run command 'show ddos-protection protocols parameters': %w", err)
 	}
 	c.collectParameters(p, ch, labelValues)
 	var f flowDetection
 	err = client.RunCommandAndParse("show ddos-protection protocols flow-detection", &f)
 	if err != nil {
-		return errors.Wrap(err, "failed to run command 'show ddos-protection protocols flow-detection'")
+		return fmt.Errorf("failed to run command 'show ddos-protection protocols flow-detection': %w", err)
 	}
 	//if flow detection is disabled on all protocols and all packets, we will not collect the metrics for it at all
 	for _, group := range f.DdosProtocolsInformation.DdosProtocolGroup {

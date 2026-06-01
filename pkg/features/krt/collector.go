@@ -1,10 +1,10 @@
 package krt
 
 import (
-	"github.com/pkg/errors"
-	"github.com/prometheus/client_golang/prometheus"
+	"fmt"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const prefix string = "junos_krt"
@@ -32,7 +32,7 @@ func (c *krtCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 	var k resultKRT
 	err := client.RunCommandAndParse("show krt queue", &k)
 	if err != nil {
-		return errors.Wrap(err, "failed to run command 'show krt queue'")
+		return fmt.Errorf("failed to run command 'show krt queue': %w", err)
 	}
 	c.collectKRT(k, ch, labelValues)
 	return nil

@@ -7,8 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	"fmt"
+
 	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -63,12 +64,12 @@ func (c *ntpCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 
 	err := client.RunCommandAndParse("show ntp status | display xml", &reply)
 	if err != nil {
-		return errors.Wrap(err, "failed to execute NTP command")
+		return fmt.Errorf("failed to execute NTP command: %w", err)
 	}
 
 	metrics := parseNTPOutput(reply.Output.Text)
 	if len(metrics) == 0 {
-		return errors.New("no NTP metrics parsed")
+		return fmt.Errorf("no NTP metrics parsed")
 	}
 
 	tc := parseFloatOrDefault(metrics["tc"])

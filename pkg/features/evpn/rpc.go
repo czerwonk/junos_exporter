@@ -51,7 +51,7 @@ type routingEngine struct {
 // mac-database-status-table, and the per-interface tables. The detail
 // sub-tables (Interfaces, IRBInterfaces, BridgeDomains, ESIs) are
 // populated when the device returns the extensive output and are only
-// consumed by the collector when the -evpn.detail.enabled flag is set.
+// consumed by the collector when the EVPN feature is enabled.
 type evpnInstance struct {
 	Name                           string         `xml:"evpn-instance-name"`
 	RouteDistinguisher             string         `xml:"route-distinguisher"`
@@ -71,8 +71,8 @@ type evpnInstance struct {
 	RouterID                       string         `xml:"evpn-router-id"`
 	SourceVTEPAddr                 string         `xml:"evpn-source-vtep-ipaddr"`
 
-	// Detail tables — populated by extensive output, parsed only when
-	// the evpn_detail feature is enabled (cardinality opt-in).
+	// Detail tables — populated by extensive output when supported by the device.
+	// The collector parses these tables whenever they are present.
 	Interfaces      []evpnInterface `xml:"evpn-interface-status-table>evpn-interface"`
 	IRBInterfaceTbl []irbInterface  `xml:"irb-interface-status-table>irb-interface"`
 	BridgeDomains   []bridgeDomain  `xml:"bridge-domain-status-table>bridge-domain"`

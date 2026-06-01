@@ -83,7 +83,7 @@ func (c *l2circuitCollector) Collect(client collector.Client, ch chan<- promethe
 	neighbors := x.Information.Neighbors
 
 	connCount := 0
-	for i := 0; i < len(neighbors); i++ {
+	for i := range neighbors {
 		connCount += +len(neighbors[i].Connections)
 	}
 

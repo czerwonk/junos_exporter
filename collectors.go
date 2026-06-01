@@ -19,6 +19,8 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/cluster"
 	"github.com/czerwonk/junos_exporter/pkg/features/dot1x"
 	"github.com/czerwonk/junos_exporter/pkg/features/environment"
+	"github.com/czerwonk/junos_exporter/pkg/features/evpn"
+	"github.com/czerwonk/junos_exporter/pkg/features/evpnipprefix"
 	"github.com/czerwonk/junos_exporter/pkg/features/firewall"
 	"github.com/czerwonk/junos_exporter/pkg/features/fpc"
 	"github.com/czerwonk/junos_exporter/pkg/features/interfacediagnostics"
@@ -52,6 +54,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/system"
 	"github.com/czerwonk/junos_exporter/pkg/features/systemstatistics"
 	"github.com/czerwonk/junos_exporter/pkg/features/twamp"
+	"github.com/czerwonk/junos_exporter/pkg/features/ufd"
 	"github.com/czerwonk/junos_exporter/pkg/features/virtualchassis"
 	"github.com/czerwonk/junos_exporter/pkg/features/vpws"
 	"github.com/czerwonk/junos_exporter/pkg/features/vrrp"
@@ -98,6 +101,8 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	})
 	c.addCollectorIfEnabledForDevice(device, "dot1x", f.DOT1X, dot1x.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "env", f.Environment, environment.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "evpn", f.EVPN, evpn.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "evpn_ip_prefix", f.EVPNIPPrefix, evpnipprefix.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "firewall", f.Firewall, func() collector.RPCCollector {
 		return firewall.NewCollector(deviceFirewallFilterNameRegex(c.cfg, device.Host))
 	})
@@ -146,6 +151,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "krt", f.KRT, krt.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "twamp", f.TWAMP, twamp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "system_statistics", f.SystemStatistics, systemstatistics.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "ufd", f.UFD, ufd.NewCollector)
 
 }
 

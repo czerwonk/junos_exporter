@@ -3,10 +3,10 @@
 package isis
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
@@ -122,21 +122,21 @@ func (c *isisCollector) Collect(client collector.Client, ch chan<- prometheus.Me
 	var ifas interfaces
 	err = client.RunCommandAndParse("show isis interface extensive", &ifas)
 	if err != nil {
-		return errors.Wrap(err, "failed to run command 'show isis interface extensive'")
+		return fmt.Errorf("failed to run command 'show isis interface extensive': %w", err)
 	}
 	c.isisInterfaces(ifas, ch, labelValues)
 
 	var coverage backupCoverage
 	err = client.RunCommandAndParse("show isis backup coverage", &coverage)
 	if err != nil {
-		return errors.Wrap(err, "failed to run command 'show isis backup coverage'")
+		return fmt.Errorf("failed to run command 'show isis backup coverage': %w", err)
 	}
 	c.isisBackupCoverage(coverage, ch, labelValues)
 
 	var backupPath backupSPF
 	err = client.RunCommandAndParse("show isis backup spf results", &backupPath)
 	if err != nil {
-		return errors.Wrap(err, "failed to run command 'show isis backup spf results'")
+		return fmt.Errorf("failed to run command 'show isis backup spf results': %w", err)
 	}
 	c.isisBackupPath(backupPath, ch, labelValues)
 	return nil

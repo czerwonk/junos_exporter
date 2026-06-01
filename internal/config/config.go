@@ -68,6 +68,8 @@ type FeatureConfig struct {
 	Alarm               bool `yaml:"alarm,omitempty"`
 	NTP                 bool `yaml:"ntp,omitempty"`
 	Environment         bool `yaml:"environment,omitempty"`
+	EVPN                bool `yaml:"evpn,omitempty"`
+	EVPNIPPrefix        bool `yaml:"evpn_ip_prefix,omitempty"`
 	BFD                 bool `yaml:"bfd,omitempty"`
 	BGP                 bool `yaml:"bgp,omitempty"`
 	DOT1X               bool `yaml:"dot1x,omitempty"`
@@ -113,6 +115,7 @@ type FeatureConfig struct {
 	KRT                 bool `yaml:"krt,omitempty"`
 	TWAMP               bool `yaml:"twamp,omitempty"`
 	SystemStatistics    bool `yaml:"system_statistics,omitempty"`
+	UFD                 bool `yaml:"ufd,omitempty"`
 }
 
 // New creates a new config
@@ -169,6 +172,8 @@ func setDefaultValues(c *Config) {
 	f.DDOSProtection = false
 	f.DOT1X = false
 	f.Environment = true
+	f.EVPN = false
+	f.EVPNIPPrefix = false
 	f.Firewall = true
 	f.FPC = false
 	f.Interfaces = true
@@ -205,6 +210,7 @@ func setDefaultValues(c *Config) {
 	f.System = false
 	f.SystemStatistics = true
 	f.TWAMP = false
+	f.UFD = false
 	f.VirtualChassis = false
 	f.VPWS = false
 	f.VRRP = false

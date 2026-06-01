@@ -16,16 +16,18 @@ import (
 	"time"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
+	"github.com/czerwonk/junos_exporter/internal/log/slogadapter"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/exporter-toolkit/web"
 	"go.opentelemetry.io/otel/codes"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "0.15.4"
+const version string = "0.16.0"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -34,8 +36,12 @@ var (
 	sshHosts                    = flag.String("ssh.targets", "", "Hosts to scrape")
 	sshUsername                 = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
 	sshKeyFile                  = flag.String("ssh.keyfile", "", "Public key file to use when connecting to junos devices using ssh")
-	sshKeyPassphrase            = flag.String("ssh.keyPassphrase", "", "Passphrase to decrypt key file if it's encrypted")
-	sshPassword                 = flag.String("ssh.password", "", "Password to use when connecting to junos devices using ssh")
+	sshKeyPassphrase            = flag.String("ssh.keyPassphrase", "", "Passphrase to decrypt key file if it's encrypted (mutually exclusive with -ssh.keyPassphraseEnv and -ssh.keyPassphraseFile)")
+	sshKeyPassphraseEnv         = flag.String("ssh.keyPassphraseEnv", "", "Name of an environment variable to read the SSH key passphrase from")
+	sshKeyPassphraseFile        = flag.String("ssh.keyPassphraseFile", "", "Path to a file containing the SSH key passphrase (trailing newline trimmed)")
+	sshPassword                 = flag.String("ssh.password", "", "Password to use when connecting to junos devices using ssh (mutually exclusive with -ssh.passwordEnv and -ssh.passwordFile)")
+	sshPasswordEnv              = flag.String("ssh.passwordEnv", "", "Name of an environment variable to read the SSH password from")
+	sshPasswordFile             = flag.String("ssh.passwordFile", "", "Path to a file containing the SSH password (trailing newline trimmed)")
 	sshReconnectInterval        = flag.Duration("ssh.reconnect-interval", 30*time.Second, "Duration to wait before reconnecting to a device after connection got lost")
 	sshKeepAliveInterval        = flag.Duration("ssh.keep-alive-interval", 10*time.Second, "Duration to wait between keep alive messages")
 	sshKeepAliveTimeout         = flag.Duration("ssh.keep-alive-timeout", 15*time.Second, "Duration to wait for keep alive message response")
@@ -55,6 +61,8 @@ var (
 	routingEngineEnabled        = flag.Bool("routingengine.enabled", true, "Scrape Routing Engine metrics")
 	routesEnabled               = flag.Bool("routes.enabled", true, "Scrape routing table metrics")
 	environmentEnabled          = flag.Bool("environment.enabled", true, "Scrape environment metrics")
+	evpnEnabled                 = flag.Bool("evpn.enabled", false, "Scrape EVPN instance, detail tables (interfaces/IRBs/bridge-domains/ESIs), duplicate-MAC, and L3 context metrics")
+	evpnIPPrefixEnabled         = flag.Bool("evpn_ip_prefix.enabled", false, "Scrape EVPN Type-5 (IP-prefix) database metrics; potentially large on busy fabrics")
 	firewallEnabled             = flag.Bool("firewall.enabled", true, "Scrape Firewall count metrics")
 	interfacesEnabled           = flag.Bool("interfaces.enabled", true, "Scrape interface metrics")
 	interfaceDiagnosticsEnabled = flag.Bool("ifdiag.enabled", true, "Scrape optical interface diagnostic metrics")
@@ -91,6 +99,7 @@ var (
 	tlsEnabled                  = flag.Bool("tls.enabled", false, "Enables TLS")
 	tlsCertChainPath            = flag.String("tls.cert-file", "", "Path to TLS cert file")
 	tlsKeyPath                  = flag.String("tls.key-file", "", "Path to TLS key file")
+	webConfigFile               = flag.String("web.config.file", "", "Path to web-config YAML (TLS + basic-auth, see prometheus/exporter-toolkit). When set, overrides -tls.* flags.")
 	tracingEnabled              = flag.Bool("tracing.enabled", false, "Enables tracing using OpenTelemetry")
 	tracingProvider             = flag.String("tracing.provider", "", "Sets the tracing provider (stdout or collector)")
 	tracingCollectorEndpoint    = flag.String("tracing.collector.grpc-endpoint", "", "Sets the tracing provider (stdout or collector)")
@@ -102,6 +111,7 @@ var (
 	krtEnabled                  = flag.Bool("krt.enabled", false, "Scrape KRT queue metrics")
 	twampEnabled                = flag.Bool("twamp.enabled", false, "Scrape TWAMP metrics")
 	systemstatisticsEnabled     = flag.Bool("systemstatistics.enabled", true, "Scrape system statistics metrics")
+	ufdEnabled                  = flag.Bool("ufd.enabled", false, "Scrape UFD (uplink-failure-detection) metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -123,6 +133,10 @@ func main() {
 	if *showVersion {
 		printVersion()
 		os.Exit(0)
+	}
+
+	if err := resolveSSHSecrets(); err != nil {
+		log.Fatalf("could not resolve ssh credentials: %v", err)
 	}
 
 	err := initialize()
@@ -219,6 +233,67 @@ func reinitialize() error {
 	return initialize()
 }
 
+// resolveSSHSecrets materialises both *sshKeyPassphrase and *sshPassword from
+// their respective literal flag / environment variable / file sources. Within
+// each group, the three sources are mutually exclusive.
+func resolveSSHSecrets() error {
+	if err := resolveSecretFromSources(
+		sshKeyPassphrase, sshKeyPassphraseEnv, sshKeyPassphraseFile,
+		"-ssh.keyPassphrase", "-ssh.keyPassphraseEnv", "-ssh.keyPassphraseFile",
+	); err != nil {
+		return fmt.Errorf("ssh key passphrase: %w", err)
+	}
+
+	if err := resolveSecretFromSources(
+		sshPassword, sshPasswordEnv, sshPasswordFile,
+		"-ssh.password", "-ssh.passwordEnv", "-ssh.passwordFile",
+	); err != nil {
+		return fmt.Errorf("ssh password: %w", err)
+	}
+
+	return nil
+}
+
+// resolveSecretFromSources reads a secret from one of three mutually-exclusive
+// sources -- a literal flag, an environment variable named by another flag, or
+// a file path named by a third flag -- and writes the resolved value back into
+// *literal so downstream code can keep reading the same pointer.
+func resolveSecretFromSources(literal, envName, filePath *string, literalFlag, envFlag, fileFlag string) error {
+	set := 0
+	if *literal != "" {
+		set++
+	}
+	if *envName != "" {
+		set++
+	}
+	if *filePath != "" {
+		set++
+	}
+	if set > 1 {
+		return fmt.Errorf("%s, %s and %s are mutually exclusive; set at most one", literalFlag, envFlag, fileFlag)
+	}
+
+	if *envName != "" {
+		v := os.Getenv(*envName)
+		if v == "" {
+			return fmt.Errorf("environment variable %q referenced by %s is empty or unset", *envName, envFlag)
+		}
+		*literal = v
+		return nil
+	}
+
+	if *filePath != "" {
+		b, err := os.ReadFile(*filePath)
+		if err != nil {
+			return fmt.Errorf("could not read %s %q: %w", fileFlag, *filePath, err)
+		}
+		*literal = strings.TrimRight(string(b), "\r\n")
+		return nil
+	}
+
+	return nil
+}
+
 func loadConfig() (*config.Config, error) {
 	if len(*configFile) == 0 {
 		return loadConfigFromFlags(), nil
@@ -251,6 +326,8 @@ func loadConfigFromFlags() *config.Config {
 	f.DDOSProtection = *ddosProtectionEnabled
 	f.DOT1X = *dot1xEnabled
 	f.Environment = *environmentEnabled
+	f.EVPN = *evpnEnabled
+	f.EVPNIPPrefix = *evpnIPPrefixEnabled
 	f.Firewall = *firewallEnabled
 	f.FPC = *fpcEnabled
 	f.Interfaces = *interfacesEnabled
@@ -287,6 +364,7 @@ func loadConfigFromFlags() *config.Config {
 	f.System = *systemEnabled
 	f.SystemStatistics = *systemstatisticsEnabled
 	f.TWAMP = *twampEnabled
+	f.UFD = *ufdEnabled
 	f.VirtualChassis = *virtualChassisEnabled
 	f.VPWS = *vpwsEnabled
 	f.VRRP = *vrrpEnabled
@@ -320,13 +398,42 @@ func startServer() {
 	http.HandleFunc(*metricsPath, handleMetricsRequest)
 	http.HandleFunc("/-/reload", updateConfiguration)
 
-	log.Infof("Listening for %s on %s (TLS: %v)", *metricsPath, *listenAddress, *tlsEnabled)
+	if *webConfigFile != "" {
+		log.Infof("Listening for %s on %s (web-config: %q)",
+			*metricsPath, *listenAddress, *webConfigFile)
+	} else {
+		log.Infof("Listening for %s on %s (TLS: %v)",
+			*metricsPath, *listenAddress, *tlsEnabled)
+	}
+
+	if *webConfigFile != "" {
+		startListeningWithWebConfig()
+		return
+	}
+
 	if *tlsEnabled {
 		log.Fatal(http.ListenAndServeTLS(*listenAddress, *tlsCertChainPath, *tlsKeyPath, nil))
 		return
 	}
 
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
+}
+
+func startListeningWithWebConfig() {
+	if *tlsEnabled || *tlsCertChainPath != "" || *tlsKeyPath != "" {
+		log.Warnf("-web.config.file=%q overrides legacy -tls.* flags; "+
+			"TLS now comes from the YAML's tls_server_config block (or is "+
+			"disabled if that block is absent)", *webConfigFile)
+	}
+
+	server := &http.Server{Addr: *listenAddress}
+	flags := &web.FlagConfig{
+		WebListenAddresses: &[]string{*listenAddress},
+		WebSystemdSocket:   new(false),
+		WebConfigFile:      webConfigFile,
+	}
+
+	log.Fatal(web.ListenAndServe(server, flags, slogadapter.New()))
 }
 
 func updateConfiguration(w http.ResponseWriter, r *http.Request) {

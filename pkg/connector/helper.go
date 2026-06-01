@@ -3,16 +3,16 @@
 package connector
 
 import (
+	"fmt"
 	"io"
 
-	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
 )
 
 func loadPrivateKey(r io.Reader, keyPassphrase string) (ssh.AuthMethod, error) {
 	b, err := io.ReadAll(r)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not read from reader")
+		return nil, fmt.Errorf("could not read from reader: %w", err)
 	}
 
 	var key ssh.Signer
@@ -23,7 +23,7 @@ func loadPrivateKey(r io.Reader, keyPassphrase string) (ssh.AuthMethod, error) {
 	}
 
 	if err != nil {
-		return nil, errors.Wrap(err, "could not parse private key")
+		return nil, fmt.Errorf("could not parse private key: %w", err)
 	}
 
 	return ssh.PublicKeys(key), nil

@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"golang.org/x/crypto/ssh"
@@ -80,13 +79,13 @@ func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 	sshClient := c.getSSHClient()
 	if sshClient == nil {
 		c.Stop(fmt.Errorf("No ssh client"))
-		return nil, errors.New(fmt.Sprintf("no SSH client to %s", c.device.Host))
+		return nil, fmt.Errorf("no SSH client to %s", c.device.Host)
 	}
 
 	session, err := c.sshClient.NewSession()
 	if err != nil {
 		c.Stop(fmt.Errorf("SSH session failure"))
-		return nil, errors.Wrapf(err, "could not open session with %s", c.device.Host)
+		return nil, fmt.Errorf("could not open session with %s: %w", c.device.Host, err)
 	}
 	defer session.Close()
 
@@ -96,7 +95,7 @@ func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 	err = session.Run(cmd)
 	if err != nil {
 		c.Stop(fmt.Errorf("failed running command"))
-		return nil, errors.Wrapf(err, "could not run command %q on %s", cmd, c.device.Host)
+		return nil, fmt.Errorf("could not run command %q on %s: %w", cmd, c.device.Host, err)
 	}
 
 	return b.Bytes(), nil

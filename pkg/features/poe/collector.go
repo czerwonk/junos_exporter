@@ -1,11 +1,14 @@
+// SPDX-License-Identifier: MIT
+
 package poe
 
 import (
-	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/pkg/errors"
-	"github.com/prometheus/client_golang/prometheus"
+	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/czerwonk/junos_exporter/pkg/collector"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const prefix string = "junos_poe_"
@@ -53,7 +56,7 @@ func (p poeCollector) Collect(client collector.Client, ch chan<- prometheus.Metr
 	var result poeInterfaceResult
 	err := client.RunCommandAndParse("show poe interface", &result)
 	if err != nil {
-		return errors.Wrap(err, "failed to run command 'show poe interface'")
+		return fmt.Errorf("failed to run command 'show poe interface': %w", err)
 	}
 	for _, i := range result.Poe.InterfaceInformation {
 		p.CollectForInterface(i, ch, labelValues)

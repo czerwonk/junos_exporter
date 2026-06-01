@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package l2vpn
 
 type l2vpnRpc struct {

@@ -42,6 +42,8 @@ The following metrics are supported by now:
 * NAT (all available statistics from services nat)
 * Chassis cluster HA status (SRX)
 * Environment (temperatures, fans and PEM power statistics)
+* EVPN (per-EVI state, neighbor route counts, detail tables for interfaces / IRBs / bridge-domains / ESIs with DF election, duplicate-MAC detection, L3 contexts)
+* EVPN Type-5 / IP-prefix database (per-context per-AFI local + remote prefix counts, accepted/rejected advertisements) — separate flag (`-evpn_ip_prefix.enabled`) because the response scales with prefix count
 * Routing engine statistics
 * Storage (total, available and used blocks, used percentage)
 * Firewall filters (counters and policers) - needs explicit rights beyond read-only
@@ -55,6 +57,7 @@ The following metrics are supported by now:
 * VRRP (state per interface)
 * Subscribers Information (show subscribers client-type dhcp detail)
 * PoE (show poe interface)
+* UFD (uplink-failure-detection group state)
 
 ## Feature specific mappings
 Some collected time series behave like enums - Integer values represent a certain state/meaning.
@@ -121,6 +124,35 @@ States map to human readable names like this:
 3: "master"
 ```
 
+### EVPN
+The EVPN collector exposes both per-EVI scalars and several state metrics. The state metrics all use the same 0/1 mapping:
+
+```
+junos_evpn_interface_status   0: Down   1: Up
+junos_evpn_irb_status         0: Down   1: Up
+junos_evpn_esi_resolved       0: unresolved (or remote-only)   1: resolved (local-bound)
+```
+
+`junos_evpn_esi_designated_forwarder_info` is an info-pattern gauge that is always `1` when emitted; its labels (`designated_forwarder`, `backup_forwarder`, `df_algorithm`, `local_interface`) deliberately churn on DF-election events, so it is split off from `junos_evpn_esi_resolved` to keep state-alert queries stable. Join on `(target, instance, esi)` for Grafana dashboards:
+
+```
+junos_evpn_esi_resolved
+  * on(target, instance, esi)
+  group_left(designated_forwarder, backup_forwarder, local_interface)
+    junos_evpn_esi_designated_forwarder_info
+```
+
+The duplicate-MAC suppression total is always emitted and is the primary alert signal:
+```
+junos_evpn_duplicate_mac_total > 0   # forwarding loop or split-brain
+```
+
+### EVPN Type-5 IP prefix
+`junos_evpn_ip_prefix_advertisement_count` uses a `status` discriminator label (`accepted`, `rejected`, …) so rejected Type-5 routes can be alerted on without separate metric families:
+```
+junos_evpn_ip_prefix_advertisement_count{status="rejected"} > 0
+```
+
 ### License statistics
 Expiry is either presented as number of days until expiry date or certain special values.
 ```
@@ -157,6 +189,31 @@ junos_exporter supports SSH authentication via key or password based authenticat
 Authentication order is ssh key, if none is found the cli flag is checked, the config file is checked last. If no valid auth method is specified junos_exporter exits with an error.
 Specify the ssh username with the cli flag `-ssh.user`, with the `username` key under the configuration file or use the default username of `junos_exporter`.
 
+#### SSH key passphrase and password
+
+Both the SSH key passphrase and the SSH password can be supplied from any
+one of three mutually-exclusive sources -- a literal flag value, the
+contents of an environment variable, or the contents of a file:
+
+| Secret | Literal | Environment variable | File |
+|---|---|---|---|
+| Key passphrase | `-ssh.keyPassphrase=<string>` | `-ssh.keyPassphraseEnv=<NAME>` | `-ssh.keyPassphraseFile=<PATH>` |
+| Password       | `-ssh.password=<string>`      | `-ssh.passwordEnv=<NAME>`      | `-ssh.passwordFile=<PATH>`      |
+
+- The literal forms (`-ssh.keyPassphrase` / `-ssh.password`) are convenient
+  but the value appears in `ps` output and shell history -- avoid for
+  production.
+- The `*Env` flags read from the named environment variable. The variable
+  must exist and be non-empty at startup, otherwise the exporter exits.
+- The `*File` flags read from the given path; a single trailing newline is
+  trimmed. Suitable for systemd `LoadCredential=`, Docker secrets and
+  Kubernetes secrets.
+
+Within each group (passphrase, password) setting more than one source is a
+configuration error and the exporter exits at startup with a clear message.
+Only the global flags are affected; the per-device `key_passphrase` and
+`password` fields in the YAML config are unchanged.
+
 ### Target Parameter
 By default, all configured targets will be scrapped when `/metrics` is hit. As an alternative, it is possible to scrape a specific target by passing the target's hostname/IP address to the target parameter - e.g. ` http://localhost:9326/metrics?target=1.2.3.4`. The specific target must be present in the configuration file or passed in with the ssh.targets flag, you can also specify the `-config.ignore-targets` flag if you don't want to specify targets in the config or commandline, if none of this matches the request will be denied. This can be used with the below example Prometheus config:
 
@@ -174,6 +231,65 @@ scrape_configs:
       - target_label: __address__
         replacement: 127.0.0.1:9326  # The junos_exporter's real hostname:port.
 ```
+
+### HTTP server: TLS and basic auth
+
+The exporter integrates [`prometheus/exporter-toolkit`](https://github.com/prometheus/exporter-toolkit),
+the same web server used by `node_exporter`, `blackbox_exporter` and the rest
+of the Prometheus ecosystem. Pass a web-config YAML file with
+`-web.config.file=<path>` to enable TLS, HTTP basic auth, or both:
+
+```yaml
+# web.config.yml
+tls_server_config:
+  cert_file: /etc/junos_exporter/server.crt
+  key_file:  /etc/junos_exporter/server.key
+
+basic_auth_users:
+  prom:    $2y$10$<bcrypt-hash>
+  grafana: $2y$10$<another-bcrypt-hash>
+```
+
+Both blocks are optional — basic auth works over plain HTTP, and TLS works
+without basic auth. The full schema (client-cert verification, cipher suites,
+multiple certs, hot reload) is documented at
+[exporter-toolkit/docs/web-configuration.md](https://github.com/prometheus/exporter-toolkit/blob/master/docs/web-configuration.md).
+
+Generate a bcrypt hash with `htpasswd`:
+
+```bash
+htpasswd -B -C 10 -n -b prom 's3cret'
+# prom:$2y$10$...bcrypt-hash...
+```
+
+Prometheus side:
+
+```yaml
+scrape_configs:
+  - job_name: junos
+    scheme: https
+    basic_auth:
+      username: prom
+      password_file: /etc/prometheus/junos_exporter_password
+    static_configs:
+      - targets: [junos-exporter.example.com:9326]
+```
+
+#### Dispatch / backwards compatibility
+
+| `-web.config.file` | `-tls.enabled` | Behaviour |
+|---|---|---|
+| empty | false | plain HTTP (unchanged) |
+| empty | true  | TLS via legacy `-tls.cert-file` / `-tls.key-file` (unchanged) |
+| set   | any   | `exporter-toolkit` handles everything; legacy `-tls.*` flags are ignored |
+
+The legacy `-tls.enabled` / `-tls.cert-file` / `-tls.key-file` flags keep
+working unchanged for existing deployments. New deployments should prefer
+`-web.config.file`, which adds basic-auth support and hot-reload of cert files.
+
+If both `-web.config.file` and any legacy `-tls.*` flag are set, the exporter
+logs a warning at startup so operators see that the YAML config has taken
+over and the legacy flags are being ignored.
 
 ## Config file
 
@@ -199,6 +315,14 @@ devices:
     host_pattern: true
     features:
       bgp: false
+  - host: dc-leaf\d+
+    # Example: enable the EVPN collector (instance metrics, detail tables,
+    # duplicate-MAC, L3 contexts) on every DC leaf. Type-5 IP-prefix routes
+    # are gated separately because the response size scales with prefix count.
+    host_pattern: true
+    features:
+      evpn: true
+      evpn_ip_prefix: true
 
 # Optional
 # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
@@ -214,6 +338,8 @@ features:
   ddos_protection: false
   dot1x: false
   environment: true
+  evpn: false
+  evpn_ip_prefix: false
   firewall: true
   fpc: false
   interface_diagnostic: true
@@ -250,6 +376,7 @@ features:
   system: false
   system_statistics: true
   twamp: false
+  ufd: false
   vpws: false
   vrrp: false
 ```
@@ -279,6 +406,15 @@ Description: XYZ [peer=202739]
 Label name: peer
 Label value: 202739
 ```
+
+### Enriching other collectors via PromQL join
+Dynamic labels are attached only to metrics whose source RPC carries the description text (interfaces, interfacediagnostics, interfacequeue, bgp). Other collectors with an `interface` label — for example EVPN's `junos_evpn_interface_status` or `junos_evpn_esi_designated_forwarder_info` — can pick up the same labels at query time via a vector join on `(target, interface)`:
+```
+junos_evpn_interface_status
+  * on(target, interface) group_left(prod, peer, customer)
+    junos_interfaces_up
+```
+This requires the `interfaces` collector to be enabled (the default).
 
 ### Custom Label RegEx
 

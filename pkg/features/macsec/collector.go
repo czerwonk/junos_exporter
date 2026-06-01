@@ -1,10 +1,12 @@
+// SPDX-License-Identifier: MIT
+
 // This plugin for MACsec collects metrics from the command "show security macsec connections".
 package macsec
 
 import (
+	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
@@ -101,19 +103,19 @@ func (c *macsecCollector) Collect(client collector.Client, ch chan<- prometheus.
 		return nil
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to run command 'show security macsec connections'")
+		return fmt.Errorf("failed to run command 'show security macsec connections': %w", err)
 	}
 
 	i, err := ParseShowSecurityMacsecConnections(macsecData)
 	if err != nil {
-		return errors.Wrap(err, "failed to parse 'show security macsec connections' output")
+		return fmt.Errorf("failed to parse 'show security macsec connections' output: %w", err)
 	}
 
 	c.collectForInterfaces(*i, ch, labelValues)
 	var s ShowSecMacsecStats
 	err = client.RunCommandAndParse("show security macsec statistics", &s)
 	if err != nil {
-		return errors.Wrap(err, "failed to run command 'show security macsec statistics'")
+		return fmt.Errorf("failed to run command 'show security macsec statistics': %w", err)
 	}
 	c.collectForStats(s, ch, labelValues)
 	return nil

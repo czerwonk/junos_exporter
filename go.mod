@@ -3,7 +3,6 @@ module github.com/czerwonk/junos_exporter
 go 1.26.0
 
 require (
-	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/client_model v0.6.2
 	github.com/prometheus/exporter-toolkit v0.16.0

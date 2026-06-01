@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // This plugin for MACsec collects metrics from the command "show security macsec connections".
 package macsec
 

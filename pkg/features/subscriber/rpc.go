@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 package subscriber
 
 type subcsribers_information struct {

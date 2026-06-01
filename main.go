@@ -27,7 +27,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "0.15.4"
+const version string = "0.16.0"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -403,18 +403,7 @@ func startServer() {
 	}
 
 	if *webConfigFile != "" {
-		if *tlsEnabled || *tlsCertChainPath != "" || *tlsKeyPath != "" {
-			log.Warnf("-web.config.file=%q overrides legacy -tls.* flags; "+
-				"TLS now comes from the YAML's tls_server_config block (or is "+
-				"disabled if that block is absent)", *webConfigFile)
-		}
-		server := &http.Server{Addr: *listenAddress}
-		flags := &web.FlagConfig{
-			WebListenAddresses: &[]string{*listenAddress},
-			WebSystemdSocket:   new(false),
-			WebConfigFile:      webConfigFile,
-		}
-		log.Fatal(web.ListenAndServe(server, flags, slogadapter.New()))
+		startListeningWithWebConfig()
 		return
 	}
 
@@ -426,8 +415,22 @@ func startServer() {
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
 }
 
-//go:fix inline
-func ptrBool(b bool) *bool { return new(b) }
+func startListeningWithWebConfig() {
+	if *tlsEnabled || *tlsCertChainPath != "" || *tlsKeyPath != "" {
+		log.Warnf("-web.config.file=%q overrides legacy -tls.* flags; "+
+			"TLS now comes from the YAML's tls_server_config block (or is "+
+			"disabled if that block is absent)", *webConfigFile)
+	}
+
+	server := &http.Server{Addr: *listenAddress}
+	flags := &web.FlagConfig{
+		WebListenAddresses: &[]string{*listenAddress},
+		WebSystemdSocket:   new(false),
+		WebConfigFile:      webConfigFile,
+	}
+
+	log.Fatal(web.ListenAndServe(server, flags, slogadapter.New()))
+}
 
 func updateConfiguration(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {

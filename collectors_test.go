@@ -97,3 +97,40 @@ func TestCollectorsForDevices(t *testing.T) {
 	assert.Equal(t, 1, len(cd2), "device 2 collector count")
 	assert.Equal(t, "Interfaces", cd2[0].Name(), "device 2 collector name")
 }
+
+func TestPerDeviceCollectors(t *testing.T) {
+	c := &config.Config{
+		Devices: []*config.DeviceConfig{
+			{
+				Host:               "device1",
+				InterfaceNameRegex: "ge-*",
+				Features: &config.FeatureConfig{
+					Interfaces: true,
+				},
+			},
+			{
+				Host:               "device2",
+				InterfaceNameRegex: "xe-*",
+				Features: &config.FeatureConfig{
+					Interfaces: true,
+				},
+			},
+		},
+	}
+
+	d1 := &connector.Device{Host: "device1"}
+	d2 := &connector.Device{Host: "device2"}
+
+	cols := collectorsForDevices([]*connector.Device{d1, d2}, c, "")
+
+	col1 := cols.collectorsForDevice(d1)
+	assert.Equal(t, 1, len(col1), "device 1 collector count")
+	assert.Equal(t, "Interfaces", col1[0].Name())
+
+	col2 := cols.collectorsForDevice(d2)
+	assert.Equal(t, 1, len(col2), "device 2 collector count")
+	assert.Equal(t, "Interfaces", col2[0].Name())
+
+	assert.NotSame(t, col1[0], col2[0], "collectors for different devices should be separate instances")
+}
+

@@ -154,22 +154,25 @@ func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, ke
 		return
 	}
 
-	col, found := c.collectors[key]
+	colKey := key + "_" + device.Host
+	col, found := c.collectors[colKey]
 	if !found {
 		col = newCollector()
-		c.collectors[key] = col
+		c.collectors[colKey] = col
 	}
 
 	c.devices[device.Host] = append(c.devices[device.Host], col)
 }
 
 func (c *collectors) allEnabledCollectors() []collector.RPCCollector {
-	collectors := make([]collector.RPCCollector, len(c.collectors))
+	collectors := make([]collector.RPCCollector, 0)
+	seen := make(map[string]bool)
 
-	i := 0
-	for _, collector := range c.collectors {
-		collectors[i] = collector
-		i++
+	for _, col := range c.collectors {
+		if !seen[col.Name()] {
+			seen[col.Name()] = true
+			collectors = append(collectors, col)
+		}
 	}
 
 	return collectors

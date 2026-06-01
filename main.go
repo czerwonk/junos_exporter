@@ -7,7 +7,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,6 +16,7 @@ import (
 	"time"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
+	"github.com/czerwonk/junos_exporter/internal/log/slogadapter"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -407,7 +407,7 @@ func startServer() {
 			WebSystemdSocket:   ptrBool(false),
 			WebConfigFile:      webConfigFile,
 		}
-		log.Fatal(web.ListenAndServe(server, flags, slogShim()))
+		log.Fatal(web.ListenAndServe(server, flags, slogadapter.New()))
 		return
 	}
 
@@ -420,20 +420,6 @@ func startServer() {
 }
 
 func ptrBool(b bool) *bool { return &b }
-
-// slogShim returns a *slog.Logger that forwards records to the package-level
-// logrus logger so output from exporter-toolkit stays consistent with the rest
-// of the exporter's logs.
-func slogShim() *slog.Logger {
-	return slog.New(slog.NewTextHandler(logrusWriter{}, nil))
-}
-
-type logrusWriter struct{}
-
-func (logrusWriter) Write(p []byte) (int, error) {
-	log.Info(strings.TrimRight(string(p), "\n"))
-	return len(p), nil
-}
 
 func updateConfiguration(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {

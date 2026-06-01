@@ -42,6 +42,8 @@ The following metrics are supported by now:
 * NAT (all available statistics from services nat)
 * Chassis cluster HA status (SRX)
 * Environment (temperatures, fans and PEM power statistics)
+* EVPN (per-EVI state, neighbor route counts, detail tables for interfaces / IRBs / bridge-domains / ESIs with DF election, duplicate-MAC detection, L3 contexts)
+* EVPN Type-5 / IP-prefix database (per-context per-AFI local + remote prefix counts, accepted/rejected advertisements) — separate flag (`-evpn_ip_prefix.enabled`) because the response scales with prefix count
 * Routing engine statistics
 * Storage (total, available and used blocks, used percentage)
 * Firewall filters (counters and policers) - needs explicit rights beyond read-only
@@ -120,6 +122,35 @@ States map to human readable names like this:
 1: "init"
 2: "backup"
 3: "master"
+```
+
+### EVPN
+The EVPN collector exposes both per-EVI scalars and several state metrics. The state metrics all use the same 0/1 mapping:
+
+```
+junos_evpn_interface_status   0: Down   1: Up
+junos_evpn_irb_status         0: Down   1: Up
+junos_evpn_esi_resolved       0: unresolved (or remote-only)   1: resolved (local-bound)
+```
+
+`junos_evpn_esi_designated_forwarder_info` is an info-pattern gauge that is always `1` when emitted; its labels (`designated_forwarder`, `backup_forwarder`, `df_algorithm`, `local_interface`) deliberately churn on DF-election events, so it is split off from `junos_evpn_esi_resolved` to keep state-alert queries stable. Join on `(target, instance, esi)` for Grafana dashboards:
+
+```
+junos_evpn_esi_resolved
+  * on(target, instance, esi)
+  group_left(designated_forwarder, backup_forwarder, local_interface)
+    junos_evpn_esi_designated_forwarder_info
+```
+
+The duplicate-MAC suppression total is always emitted and is the primary alert signal:
+```
+junos_evpn_duplicate_mac_total > 0   # forwarding loop or split-brain
+```
+
+### EVPN Type-5 IP prefix
+`junos_evpn_ip_prefix_advertisement_count` uses a `status` discriminator label (`accepted`, `rejected`, …) so rejected Type-5 routes can be alerted on without separate metric families:
+```
+junos_evpn_ip_prefix_advertisement_count{status="rejected"} > 0
 ```
 
 ### License statistics
@@ -223,9 +254,15 @@ devices:
     host_pattern: true
     features:
       bgp: false
+  - host: dc-leaf\d+
+    # Example: enable the EVPN collector (instance metrics, detail tables,
+    # duplicate-MAC, L3 contexts) on every DC leaf. Type-5 IP-prefix routes
+    # are gated separately because the response size scales with prefix count.
+    host_pattern: true
+    features:
+      evpn: true
+      evpn_ip_prefix: true
 
-# Optional
-# interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
 features:
   accounting: false
   alarm: true
@@ -236,6 +273,8 @@ features:
   ddos_protection: false
   dot1x: false
   environment: true
+  evpn: false
+  evpn_ip_prefix: false
   firewall: true
   fpc: false
   interface_diagnostic: true
@@ -302,6 +341,15 @@ Description: XYZ [peer=202739]
 Label name: peer
 Label value: 202739
 ```
+
+### Enriching other collectors via PromQL join
+Dynamic labels are attached only to metrics whose source RPC carries the description text (interfaces, interfacediagnostics, interfacequeue, bgp). Other collectors with an `interface` label — for example EVPN's `junos_evpn_interface_status` or `junos_evpn_esi_designated_forwarder_info` — can pick up the same labels at query time via a vector join on `(target, interface)`:
+```
+junos_evpn_interface_status
+  * on(target, interface) group_left(prod, peer, customer)
+    junos_interfaces_up
+```
+This requires the `interfaces` collector to be enabled (the default).
 
 ### Custom Label RegEx
 

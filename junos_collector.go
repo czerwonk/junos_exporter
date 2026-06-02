@@ -137,18 +137,16 @@ func (c *junosCollector) Collect(ch chan<- prometheus.Metric) {
 	ctx, span := tracer.Start(c.ctx, "Collect")
 	defer span.End()
 
-	wg := &sync.WaitGroup{}
-
-	wg.Add(len(c.devices))
+	var wg sync.WaitGroup
 	for _, d := range c.devices {
-		go c.collectForHost(ctx, d, ch, wg)
+		wg.Go(func() {
+			c.collectForHost(ctx, d, ch)
+		})
 	}
-
 	wg.Wait()
 }
 
-func (c *junosCollector) collectForHost(ctx context.Context, device *connector.Device, ch chan<- prometheus.Metric, wg *sync.WaitGroup) {
-	defer wg.Done()
+func (c *junosCollector) collectForHost(ctx context.Context, device *connector.Device, ch chan<- prometheus.Metric) {
 
 	ctx, span := tracer.Start(ctx, "CollectForHost", trace.WithAttributes(
 		attribute.String("host", device.Host),

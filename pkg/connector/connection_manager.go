@@ -144,10 +144,8 @@ func formatHost(host string) string {
 }
 
 // CloseAll closes all TCP connections and stops keep alives
-func (m *SSHConnectionManager) CloseAll() error {
+func (m *SSHConnectionManager) CloseAll() {
 	for _, c := range m.connections {
 		c.Stop(fmt.Errorf("end of world"))
 	}
-
-	return nil
 }

@@ -17,17 +17,17 @@ type Config struct {
 	Devices                 []*DeviceConfig `yaml:"devices,omitempty"`
 	Features                FeatureConfig   `yaml:"features,omitempty"`
 	LSEnabled               bool            `yaml:"logical_systems,omitempty"`
-	IfDescReStr             string          `yaml:"interface_description_regex,omitempty"`
+	IfDescRegStr            string          `yaml:"interface_description_regex,omitempty"`
 	IfDescReg               *regexp.Regexp  `yaml:"-"`
 	InterfaceNameRegex      string          `yaml:"interface_name_regex,omitempty"`
 	FirewallFilterNameRegex string          `yaml:"firewall_filter_name_regex,omitempty"`
 }
 
 func (c *Config) load(dynamicIfaceLabels bool) error {
-	if c.IfDescReStr != "" && dynamicIfaceLabels {
-		re, err := regexp.Compile(c.IfDescReStr)
+	if c.IfDescRegStr != "" && dynamicIfaceLabels {
+		re, err := regexp.Compile(c.IfDescRegStr)
 		if err != nil {
-			return fmt.Errorf("unable to compile interfce description regex %q: %w", c.IfDescReStr, err)
+			return fmt.Errorf("unable to compile interfce description regex %q: %w", c.IfDescRegStr, err)
 		}
 
 		c.IfDescReg = re

@@ -14,7 +14,7 @@ type mockClient struct {
 	lastCmd string
 }
 
-func (m *mockClient) RunCommandAndParse(cmd string, obj interface{}) error {
+func (m *mockClient) RunCommandAndParse(cmd string, obj any) error {
 	m.lastCmd = cmd
 	return nil
 }

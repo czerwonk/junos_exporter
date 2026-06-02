@@ -155,7 +155,12 @@ func main() {
 
 	initChannels(ctx, cancel)
 
-	go startServer()
+	go func() {
+		if err := startServer(); err != nil {
+			log.Errorf("server stopped unexpectedly: %v", err)
+			cancel()
+		}
+	}()
 
 	<-ctx.Done()
 	log.Infoln("Closing connections to devices")
@@ -383,7 +388,7 @@ func connectionManager() *connector.SSHConnectionManager {
 	return connector.NewConnectionManager(opts...)
 }
 
-func startServer() {
+func startServer() error {
 	log.Infof("Starting JunOS exporter (Version: %s)", version)
 	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte(`<html>
@@ -402,25 +407,20 @@ func startServer() {
 	if *webConfigFile != "" {
 		log.Infof("Listening for %s on %s (web-config: %q)",
 			*metricsPath, *listenAddress, *webConfigFile)
-	} else {
-		log.Infof("Listening for %s on %s (TLS: %v)",
-			*metricsPath, *listenAddress, *tlsEnabled)
+		return startListeningWithWebConfig()
 	}
 
-	if *webConfigFile != "" {
-		startListeningWithWebConfig()
-		return
-	}
+	log.Infof("Listening for %s on %s (TLS: %v)",
+		*metricsPath, *listenAddress, *tlsEnabled)
 
 	if *tlsEnabled {
-		log.Fatal(http.ListenAndServeTLS(*listenAddress, *tlsCertChainPath, *tlsKeyPath, nil))
-		return
+		return http.ListenAndServeTLS(*listenAddress, *tlsCertChainPath, *tlsKeyPath, nil)
 	}
 
-	log.Fatal(http.ListenAndServe(*listenAddress, nil))
+	return http.ListenAndServe(*listenAddress, nil)
 }
 
-func startListeningWithWebConfig() {
+func startListeningWithWebConfig() error {
 	if *tlsEnabled || *tlsCertChainPath != "" || *tlsKeyPath != "" {
 		log.Warnf("-web.config.file=%q overrides legacy -tls.* flags; "+
 			"TLS now comes from the YAML's tls_server_config block (or is "+
@@ -434,7 +434,7 @@ func startListeningWithWebConfig() {
 		WebConfigFile:      webConfigFile,
 	}
 
-	log.Fatal(web.ListenAndServe(server, flags, slogadapter.New()))
+	return web.ListenAndServe(server, flags, slogadapter.New())
 }
 
 func updateConfiguration(w http.ResponseWriter, r *http.Request) {
@@ -470,7 +470,7 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 
 	logicalSystem := r.URL.Query().Get("ls")
 	if !cfg.LSEnabled && logicalSystem != "" {
-		err := fmt.Errorf("Logical systems not enabled but the logical system '%s' in parameters", logicalSystem)
+		err := fmt.Errorf("logical systems not enabled but the logical system '%s' in parameters", logicalSystem)
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		http.Error(w, err.Error(), 400)

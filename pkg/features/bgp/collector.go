@@ -36,7 +36,7 @@ type description struct {
 }
 
 func newDescriptions(dynLabels dynamiclabels.Labels) *description {
-	d := &description{}
+	d := new(description)
 
 	l := []string{"target", "asn", "ip", "description", "group"}
 	l = append(l, dynLabels.Keys()...)
@@ -116,11 +116,12 @@ func (c *bgpCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 }
 
 func (c *bgpCollector) collectGroups(client collector.Client) (groupMap, error) {
-	var x = groupResult{}
+	var x groupResult
 	var cmd strings.Builder
 	cmd.WriteString("show bgp group")
 	if c.LogicalSystem != "" {
-		cmd.WriteString(" logical-system " + c.LogicalSystem)
+		cmd.WriteString(" logical-system ")
+		cmd.WriteString(c.LogicalSystem)
 	}
 
 	err := client.RunCommandAndParse(cmd.String(), &x)
@@ -142,11 +143,12 @@ func (c *bgpCollector) collect(client collector.Client, ch chan<- prometheus.Met
 		return fmt.Errorf("could not retrieve BGP group information: %w", err)
 	}
 
-	var x = result{}
+	var x result
 	var cmd strings.Builder
 	cmd.WriteString("show bgp neighbor")
 	if c.LogicalSystem != "" {
-		cmd.WriteString(" logical-system " + c.LogicalSystem)
+		cmd.WriteString(" logical-system ")
+		cmd.WriteString(c.LogicalSystem)
 	}
 
 	err = client.RunCommandAndParse(cmd.String(), &x)

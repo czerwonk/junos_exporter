@@ -76,6 +76,26 @@ func deviceInterfaceRegex(cfg *config.Config, host string) *regexp.Regexp {
 	return dynamiclabels.DefaultInterfaceDescRegex()
 }
 
+func deviceInterfaceNameRegex(cfg *config.Config, host string) string {
+	dc := cfg.FindDeviceConfig(host)
+
+	if dc != nil && dc.InterfaceNameRegex != "" {
+		return dc.InterfaceNameRegex
+	}
+
+	return cfg.InterfaceNameRegex
+}
+
+func deviceFirewallFilterNameRegex(cfg *config.Config, host string) string {
+	dc := cfg.FindDeviceConfig(host)
+
+	if dc != nil && dc.FirewallFilterNameRegex != "" {
+		return dc.FirewallFilterNameRegex
+	}
+
+	return cfg.FirewallFilterNameRegex
+}
+
 func clientForDevice(device *connector.Device, connManager *connector.SSHConnectionManager) (*rpc.Client, error) {
 	conn, err := connManager.GetSSHConnection(device)
 	if err != nil {

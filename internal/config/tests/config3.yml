@@ -26,3 +26,6 @@ devices:
       ipsec: true
       rpki: true
       power: true
+    interface_name_regex: 'ge-*'
+    firewall_filter_name_regex: 'dev-filter.*'
+

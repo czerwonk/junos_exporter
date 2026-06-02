@@ -26,11 +26,12 @@ func init() {
 }
 
 type firewallCollector struct {
+	filterNameRegex string
 }
 
 // NewCollector creates a new collector
-func NewCollector() collector.RPCCollector {
-	return &firewallCollector{}
+func NewCollector(filterNameRegex string) collector.RPCCollector {
+	return &firewallCollector{filterNameRegex: filterNameRegex}
 }
 
 // Name returns the name of the collector
@@ -49,7 +50,11 @@ func (*firewallCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *firewallCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = result{}
-	err := client.RunCommandAndParse("show firewall filter regex .*", &x)
+	filterNameRegex := c.filterNameRegex
+	if filterNameRegex == "" {
+		filterNameRegex = ".*"
+	}
+	err := client.RunCommandAndParse("show firewall filter regex "+filterNameRegex, &x)
 	if err != nil {
 		return err
 	}

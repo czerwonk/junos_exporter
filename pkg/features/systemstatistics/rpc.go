@@ -5,31 +5,30 @@ package systemstatistics
 import "encoding/xml"
 
 type SystemStatistics struct {
-	XMLName    xml.Name   `xml:"rpc-reply"`
+	XMLName xml.Name `xml:"rpc-reply"`
 	//Text       string     `xml:",chardata"`
 	//Junos      string     `xml:"junos,attr"`
-	rpcReply    rpcReply  `xml:"rpc-reply"`
-	Statistics   Statistics `xml:"statistics"`
-		Cli        struct {
-			Text   string `xml:",chardata"`
-			Banner string `xml:"banner"`
-		} `xml:"cli"`
-
+	// rpcReply   rpcReply   `xml:"rpc-reply"`
+	Statistics Statistics `xml:"statistics"`
+	Cli        struct {
+		Text   string `xml:",chardata"`
+		Banner string `xml:"banner"`
+	} `xml:"cli"`
 }
 
 type rpcReply struct {
 	XMLName xml.Name `xml:"rpc-reply"`
 }
 type Statistics struct {
-	Text string `xml:",chardata"`
-	Tcp  TCP `xml:"tcp"`
-	Udp UDP `xml:"udp"`
-	Ip  IP `xml:"ip"`
-	Icmp ICMP `xml:"icmp"`
-	Arp  ARP `xml:"arp"`
-	Ip6  IP6 `xml:"ip6"`
-	Icmp6 ICMP6`xml:"icmp6"`
-	Mpls MPLS`xml:"mpls"`
+	Text  string `xml:",chardata"`
+	Tcp   TCP    `xml:"tcp"`
+	Udp   UDP    `xml:"udp"`
+	Ip    IP     `xml:"ip"`
+	Icmp  ICMP   `xml:"icmp"`
+	Arp   ARP    `xml:"arp"`
+	Ip6   IP6    `xml:"ip6"`
+	Icmp6 ICMP6  `xml:"icmp6"`
+	Mpls  MPLS   `xml:"mpls"`
 }
 
 type IP struct {
@@ -106,7 +105,7 @@ type IP6 struct {
 	Ip6DatagramsThatCanNotBeFragmented    float64      `xml:"ip6-datagrams-that-can-not-be-fragmented"`
 	PacketsThatViolatedScopeRules         float64      `xml:"packets-that-violated-scope-rules"`
 	MulticastPacketsWhichWeDoNotJoin      float64      `xml:"multicast-packets-which-we-do-not-join"`
-	Histogram                             string      `xml:"histogram"`
+	Histogram                             string       `xml:"histogram"`
 	Ip6nhTcp                              float64      `xml:"ip6nh-tcp"`
 	Ip6nhUdp                              float64      `xml:"ip6nh-udp"`
 	Ip6nhIcmp6                            float64      `xml:"ip6nh-icmp6"`
@@ -268,7 +267,7 @@ type TCP struct {
 }
 
 type ARP struct {
-	Text                                                     string `xml:",chardata"`
+	Text                                                     string  `xml:",chardata"`
 	DatagramsReceived                                        float64 `xml:"datagrams-received"`
 	ArpRequestsReceived                                      float64 `xml:"arp-requests-received"`
 	ArpRepliesReceived                                       float64 `xml:"arp-replies-received"`
@@ -333,24 +332,24 @@ type ARP struct {
 }
 
 type ICMP struct {
-	Text                                       string `xml:",chardata"`
-	DropsDueToRateLimit                        float64 `xml:"drops-due-to-rate-limit"`
-	CallsToIcmpError                           float64 `xml:"calls-to-icmp-error"`
-	ErrorsNotGeneratedBecauseOldMessageWasIcmp float64 `xml:"errors-not-generated-because-old-message-was-icmp"`
-	Histogram                                  []ICMPHistogram `xml:"histogram"`
-	MessagesWithBadCodeFields                                float64 `xml:"messages-with-bad-code-fields"`
-	MessagesLessThanTheMinimumLength                         float64 `xml:"messages-less-than-the-minimum-length"`
-	MessagesWithBadChecksum                                  float64 `xml:"messages-with-bad-checksum"`
-	MessagesWithBadSourceAddress                             float64 `xml:"messages-with-bad-source-address"`
-	MessagesWithBadLength                                    float64 `xml:"messages-with-bad-length"`
-	EchoDropsWithBroadcastOrMulticastDestinatonAddress       float64 `xml:"echo-drops-with-broadcast-or-multicast-destinaton-address"`
-	TimestampDropsWithBroadcastOrMulticastDestinationAddress float64 `xml:"timestamp-drops-with-broadcast-or-multicast-destination-address"`
-	MessageResponsesGenerated                                float64 `xml:"message-responses-generated"`
+	Text                                                     string          `xml:",chardata"`
+	DropsDueToRateLimit                                      float64         `xml:"drops-due-to-rate-limit"`
+	CallsToIcmpError                                         float64         `xml:"calls-to-icmp-error"`
+	ErrorsNotGeneratedBecauseOldMessageWasIcmp               float64         `xml:"errors-not-generated-because-old-message-was-icmp"`
+	Histogram                                                []ICMPHistogram `xml:"histogram"`
+	MessagesWithBadCodeFields                                float64         `xml:"messages-with-bad-code-fields"`
+	MessagesLessThanTheMinimumLength                         float64         `xml:"messages-less-than-the-minimum-length"`
+	MessagesWithBadChecksum                                  float64         `xml:"messages-with-bad-checksum"`
+	MessagesWithBadSourceAddress                             float64         `xml:"messages-with-bad-source-address"`
+	MessagesWithBadLength                                    float64         `xml:"messages-with-bad-length"`
+	EchoDropsWithBroadcastOrMulticastDestinatonAddress       float64         `xml:"echo-drops-with-broadcast-or-multicast-destinaton-address"`
+	TimestampDropsWithBroadcastOrMulticastDestinationAddress float64         `xml:"timestamp-drops-with-broadcast-or-multicast-destination-address"`
+	MessageResponsesGenerated                                float64         `xml:"message-responses-generated"`
 }
 
 type ICMPHistogram struct {
-	Text                             string `xml:",chardata"`
-	TypeOfHistogram                  string `xml:"type-of-histogram"`
+	Text                             string  `xml:",chardata"`
+	TypeOfHistogram                  string  `xml:"type-of-histogram"`
 	IcmpEchoReply                    float64 `xml:"icmp-echo-reply"`
 	DestinationUnreachable           float64 `xml:"destination-unreachable"`
 	IcmpEcho                         float64 `xml:"icmp-echo"`
@@ -362,70 +361,70 @@ type ICMPHistogram struct {
 }
 
 type ICMP6 struct {
-	Text                                            string `xml:",chardata"`
-	ProtocolName                                    string `xml:"protocol-name"`
-	CallsToIcmp6Error                               float64 `xml:"calls-to-icmp6-error"`
-	ErrorsNotGeneratedBecauseOldMessageWasIcmpError float64 `xml:"errors-not-generated-because-old-message-was-icmp-error"`
-	ErrorsNotGeneratedBecauseRateLimitation         float64 `xml:"errors-not-generated-because-rate-limitation"`
-	OutputHistogram  ICMP6OutputHistogram `xml:"output-histogram"`
-	Icmp6MessagesWithBadCodeFields float64 `xml:"icmp6-messages-with-bad-code-fields"`
-	MessagesLessThanMinimumLength  float64 `xml:"messages-less-than-minimum-length"`
-	BadChecksums                   float64 `xml:"bad-checksums"`
-	Icmp6MessagesWithBadLength     float64 `xml:"icmp6-messages-with-bad-length"`
-	InputHistogram  ICMP6InputHistogram `xml:"input-histogram"`
-	HistogramOfErrorMessagesToBeGenerated string `xml:"histogram-of-error-messages-to-be-generated"`
-	NoRoute                               float64 `xml:"no-route"`
-	AdministrativelyProhibited            float64 `xml:"administratively-prohibited"`
-	BeyondScope                           float64 `xml:"beyond-scope"`
-	AddressUnreachable                    float64 `xml:"address-unreachable"`
-	PortUnreachable                       float64 `xml:"port-unreachable"`
-	PacketTooBig                          float64 `xml:"packet-too-big"`
-	TimeExceedTransit                     float64 `xml:"time-exceed-transit"`
-	TimeExceedReassembly                  float64 `xml:"time-exceed-reassembly"`
-	ErroneousHeaderField                  float64 `xml:"erroneous-header-field"`
-	UnrecognizedNextHeader                float64 `xml:"unrecognized-next-header"`
-	UnrecognizedOption                    float64 `xml:"unrecognized-option"`
-	Redirect                              float64 `xml:"redirect"`
-	Unknown                               float64 `xml:"unknown"`
-	Icmp6MessageResponsesGenerated        float64 `xml:"icmp6-message-responses-generated"`
-	MessagesWithTooManyNdOptions          float64 `xml:"messages-with-too-many-nd-options"`
-	NdSystemMax                           float64 `xml:"nd-system-max"`
-	NdPublicMax                           float64 `xml:"nd-public-max"`
-	NdIriMax                              float64 `xml:"nd-iri-max"`
-	NdMgtMax                              float64 `xml:"nd-mgt-max"`
-	NdPublicCnt                           float64 `xml:"nd-public-cnt"`
-	NdIriCnt                              float64 `xml:"nd-iri-cnt"`
-	NdMgtCnt                              float64 `xml:"nd-mgt-cnt"`
-	NdSystemDrop                          float64 `xml:"nd-system-drop"`
-	NdPublicDrop                          float64 `xml:"nd-public-drop"`
-	NdIriDrop                             float64 `xml:"nd-iri-drop"`
-	NdMgtDrop                             float64 `xml:"nd-mgt-drop"`
-	Nd6NdpProxyRequests                   float64 `xml:"nd6-ndp-proxy-requests"`
-	Nd6DadProxyRequests                   float64 `xml:"nd6-dad-proxy-requests"`
-	Nd6NdpProxyResponses                  float64 `xml:"nd6-ndp-proxy-responses"`
-	Nd6DadProxyConflicts                  float64 `xml:"nd6-dad-proxy-conflicts"`
-	Nd6DupProxyResponses                  float64 `xml:"nd6-dup-proxy-responses"`
-	Nd6NdpProxyResolveCnt                 float64 `xml:"nd6-ndp-proxy-resolve-cnt"`
-	Nd6DadProxyResolveCnt                 float64 `xml:"nd6-dad-proxy-resolve-cnt"`
-	Nd6DadProxyEqmacDrop                  float64 `xml:"nd6-dad-proxy-eqmac-drop"`
-	Nd6DadProxyNomacDrop                  float64 `xml:"nd6-dad-proxy-nomac-drop"`
-	Nd6NdpProxyUnrRequests                float64 `xml:"nd6-ndp-proxy-unr-requests"`
-	Nd6DadProxyUnrRequests                float64 `xml:"nd6-dad-proxy-unr-requests"`
-	Nd6NdpProxyUnrResponses               float64 `xml:"nd6-ndp-proxy-unr-responses"`
-	Nd6DadProxyUnrConflicts               float64 `xml:"nd6-dad-proxy-unr-conflicts"`
-	Nd6DadProxyUnrResponses               float64 `xml:"nd6-dad-proxy-unr-responses"`
-	Nd6NdpProxyUnrResolveCnt              float64 `xml:"nd6-ndp-proxy-unr-resolve-cnt"`
-	Nd6DadProxyUnrResolveCnt              float64 `xml:"nd6-dad-proxy-unr-resolve-cnt"`
-	Nd6DadProxyUnrEqportDrop              float64 `xml:"nd6-dad-proxy-unr-eqport-drop"`
-	Nd6DadProxyUnrNomacDrop               float64 `xml:"nd6-dad-proxy-unr-nomac-drop"`
-	Nd6RequestsDroppedOnEntry             float64 `xml:"nd6-requests-dropped-on-entry"`
-	Nd6RequestsDroppedDuringRetry         float64 `xml:"nd6-requests-dropped-during-retry"`
+	Text                                            string               `xml:",chardata"`
+	ProtocolName                                    string               `xml:"protocol-name"`
+	CallsToIcmp6Error                               float64              `xml:"calls-to-icmp6-error"`
+	ErrorsNotGeneratedBecauseOldMessageWasIcmpError float64              `xml:"errors-not-generated-because-old-message-was-icmp-error"`
+	ErrorsNotGeneratedBecauseRateLimitation         float64              `xml:"errors-not-generated-because-rate-limitation"`
+	OutputHistogram                                 ICMP6OutputHistogram `xml:"output-histogram"`
+	Icmp6MessagesWithBadCodeFields                  float64              `xml:"icmp6-messages-with-bad-code-fields"`
+	MessagesLessThanMinimumLength                   float64              `xml:"messages-less-than-minimum-length"`
+	BadChecksums                                    float64              `xml:"bad-checksums"`
+	Icmp6MessagesWithBadLength                      float64              `xml:"icmp6-messages-with-bad-length"`
+	InputHistogram                                  ICMP6InputHistogram  `xml:"input-histogram"`
+	HistogramOfErrorMessagesToBeGenerated           string               `xml:"histogram-of-error-messages-to-be-generated"`
+	NoRoute                                         float64              `xml:"no-route"`
+	AdministrativelyProhibited                      float64              `xml:"administratively-prohibited"`
+	BeyondScope                                     float64              `xml:"beyond-scope"`
+	AddressUnreachable                              float64              `xml:"address-unreachable"`
+	PortUnreachable                                 float64              `xml:"port-unreachable"`
+	PacketTooBig                                    float64              `xml:"packet-too-big"`
+	TimeExceedTransit                               float64              `xml:"time-exceed-transit"`
+	TimeExceedReassembly                            float64              `xml:"time-exceed-reassembly"`
+	ErroneousHeaderField                            float64              `xml:"erroneous-header-field"`
+	UnrecognizedNextHeader                          float64              `xml:"unrecognized-next-header"`
+	UnrecognizedOption                              float64              `xml:"unrecognized-option"`
+	Redirect                                        float64              `xml:"redirect"`
+	Unknown                                         float64              `xml:"unknown"`
+	Icmp6MessageResponsesGenerated                  float64              `xml:"icmp6-message-responses-generated"`
+	MessagesWithTooManyNdOptions                    float64              `xml:"messages-with-too-many-nd-options"`
+	NdSystemMax                                     float64              `xml:"nd-system-max"`
+	NdPublicMax                                     float64              `xml:"nd-public-max"`
+	NdIriMax                                        float64              `xml:"nd-iri-max"`
+	NdMgtMax                                        float64              `xml:"nd-mgt-max"`
+	NdPublicCnt                                     float64              `xml:"nd-public-cnt"`
+	NdIriCnt                                        float64              `xml:"nd-iri-cnt"`
+	NdMgtCnt                                        float64              `xml:"nd-mgt-cnt"`
+	NdSystemDrop                                    float64              `xml:"nd-system-drop"`
+	NdPublicDrop                                    float64              `xml:"nd-public-drop"`
+	NdIriDrop                                       float64              `xml:"nd-iri-drop"`
+	NdMgtDrop                                       float64              `xml:"nd-mgt-drop"`
+	Nd6NdpProxyRequests                             float64              `xml:"nd6-ndp-proxy-requests"`
+	Nd6DadProxyRequests                             float64              `xml:"nd6-dad-proxy-requests"`
+	Nd6NdpProxyResponses                            float64              `xml:"nd6-ndp-proxy-responses"`
+	Nd6DadProxyConflicts                            float64              `xml:"nd6-dad-proxy-conflicts"`
+	Nd6DupProxyResponses                            float64              `xml:"nd6-dup-proxy-responses"`
+	Nd6NdpProxyResolveCnt                           float64              `xml:"nd6-ndp-proxy-resolve-cnt"`
+	Nd6DadProxyResolveCnt                           float64              `xml:"nd6-dad-proxy-resolve-cnt"`
+	Nd6DadProxyEqmacDrop                            float64              `xml:"nd6-dad-proxy-eqmac-drop"`
+	Nd6DadProxyNomacDrop                            float64              `xml:"nd6-dad-proxy-nomac-drop"`
+	Nd6NdpProxyUnrRequests                          float64              `xml:"nd6-ndp-proxy-unr-requests"`
+	Nd6DadProxyUnrRequests                          float64              `xml:"nd6-dad-proxy-unr-requests"`
+	Nd6NdpProxyUnrResponses                         float64              `xml:"nd6-ndp-proxy-unr-responses"`
+	Nd6DadProxyUnrConflicts                         float64              `xml:"nd6-dad-proxy-unr-conflicts"`
+	Nd6DadProxyUnrResponses                         float64              `xml:"nd6-dad-proxy-unr-responses"`
+	Nd6NdpProxyUnrResolveCnt                        float64              `xml:"nd6-ndp-proxy-unr-resolve-cnt"`
+	Nd6DadProxyUnrResolveCnt                        float64              `xml:"nd6-dad-proxy-unr-resolve-cnt"`
+	Nd6DadProxyUnrEqportDrop                        float64              `xml:"nd6-dad-proxy-unr-eqport-drop"`
+	Nd6DadProxyUnrNomacDrop                         float64              `xml:"nd6-dad-proxy-unr-nomac-drop"`
+	Nd6RequestsDroppedOnEntry                       float64              `xml:"nd6-requests-dropped-on-entry"`
+	Nd6RequestsDroppedDuringRetry                   float64              `xml:"nd6-requests-dropped-during-retry"`
 }
 
 type ICMP6OutputHistogram struct {
-	Text                    string `xml:",chardata"`
-	Style                   string `xml:"style,attr"`
-	HistogramType           string `xml:"histogram-type"`
+	Text                    string  `xml:",chardata"`
+	Style                   string  `xml:"style,attr"`
+	HistogramType           string  `xml:"histogram-type"`
 	UnreachableIcmp6Packets float64 `xml:"unreachable-icmp6-packets"`
 	Icmp6Echo               float64 `xml:"icmp6-echo"`
 	Icmp6EchoReply          float64 `xml:"icmp6-echo-reply"`
@@ -434,9 +433,9 @@ type ICMP6OutputHistogram struct {
 }
 
 type ICMP6InputHistogram struct {
-	Text                           string `xml:",chardata"`
-	Style                          string `xml:"style,attr"`
-	HistogramType                  string `xml:"histogram-type"`
+	Text                           string  `xml:",chardata"`
+	Style                          string  `xml:"style,attr"`
+	HistogramType                  string  `xml:"histogram-type"`
 	UnreachableIcmp6Packets        float64 `xml:"unreachable-icmp6-packets"`
 	PacketTooBig                   float64 `xml:"packet-too-big"`
 	TimeExceededIcmp6Packets       float64 `xml:"time-exceeded-icmp6-packets"`
@@ -448,7 +447,7 @@ type ICMP6InputHistogram struct {
 }
 
 type MPLS struct {
-	Text                                      string `xml:",chardata"`
+	Text                                      string  `xml:",chardata"`
 	TotalMplsPacketsReceived                  float64 `xml:"total-mpls-packets-received"`
 	PacketsForwarded                          float64 `xml:"packets-forwarded"`
 	PacketsDropped                            float64 `xml:"packets-dropped"`

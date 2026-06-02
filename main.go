@@ -80,9 +80,11 @@ var (
 	systemEnabled               = flag.Bool("system.enabled", false, "Scrape system metrics")
 	macEnabled                  = flag.Bool("mac.enabled", false, "Scrape MAC address table metrics")
 	alarmFilter                 = flag.String("alarms.filter", "", "Regex to filter for alerts to ignore")
+	firewallFilterNameRegex     = flag.String("firewall.filter-name-regex", "", "Regex to filter firewall filters by name")
 	configFile                  = flag.String("config.file", "", "Path to config file")
 	dynamicIfaceLabels          = flag.Bool("dynamic-interface-labels", true, "Parse interface descriptions to get labels dynamically")
 	interfaceDescriptionRegex   = flag.String("interface-description-regex", "", "give a regex to retrieve the interface description labels")
+	interfaceNameRegex          = flag.String("interfaces.name-regex", "", "Regex to filter interfaces by name")
 	lsEnabled                   = flag.Bool("logical-systems.enabled", false, "Enable logical systems support")
 	powerEnabled                = flag.Bool("power.enabled", false, "Scrape power metrics")
 	lldpEnabled                 = flag.Bool("lldp.enabled", false, "Scrape LLDP metrics")
@@ -311,6 +313,8 @@ func loadConfigFromFlags() *config.Config {
 	c.Targets = strings.Split(*sshHosts, ",")
 	c.LSEnabled = *lsEnabled
 	c.IfDescReStr = *interfaceDescriptionRegex
+	c.InterfaceNameRegex = *interfaceNameRegex
+	c.FirewallFilterNameRegex = *firewallFilterNameRegex
 
 	f := &c.Features
 	f.Accounting = *accountingEnabled

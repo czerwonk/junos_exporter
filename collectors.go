@@ -103,7 +103,9 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "env", f.Environment, environment.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "evpn", f.EVPN, evpn.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "evpn_ip_prefix", f.EVPNIPPrefix, evpnipprefix.NewCollector)
-	c.addCollectorIfEnabledForDevice(device, "firewall", f.Firewall, firewall.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "firewall", f.Firewall, func() collector.RPCCollector {
+		return firewall.NewCollector(deviceFirewallFilterNameRegex(c.cfg, device.Host))
+	})
 	c.addCollectorIfEnabledForDevice(device, "fpc", f.FPC, fpc.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "ifacediag", f.InterfaceDiagnostic, func() collector.RPCCollector {
 		return interfacediagnostics.NewCollector(descRe)
@@ -112,7 +114,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 		return interfacequeue.NewCollector(descRe)
 	})
 	c.addCollectorIfEnabledForDevice(device, "iface", f.Interfaces, func() collector.RPCCollector {
-		return interfaces.NewCollector(descRe)
+		return interfaces.NewCollector(descRe, deviceInterfaceNameRegex(c.cfg, device.Host))
 	})
 	c.addCollectorIfEnabledForDevice(device, "ipsec", f.IPSec, ipsec.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "isis", f.ISIS, isis.NewCollector)
@@ -158,22 +160,25 @@ func (c *collectors) addCollectorIfEnabledForDevice(device *connector.Device, ke
 		return
 	}
 
-	col, found := c.collectors[key]
+	colKey := key + "_" + device.Host
+	col, found := c.collectors[colKey]
 	if !found {
 		col = newCollector()
-		c.collectors[key] = col
+		c.collectors[colKey] = col
 	}
 
 	c.devices[device.Host] = append(c.devices[device.Host], col)
 }
 
 func (c *collectors) allEnabledCollectors() []collector.RPCCollector {
-	collectors := make([]collector.RPCCollector, len(c.collectors))
+	collectors := make([]collector.RPCCollector, 0)
+	seen := make(map[string]bool)
 
-	i := 0
-	for _, collector := range c.collectors {
-		collectors[i] = collector
-		i++
+	for _, col := range c.collectors {
+		if !seen[col.Name()] {
+			seen[col.Name()] = true
+			collectors = append(collectors, col)
+		}
 	}
 
 	return collectors

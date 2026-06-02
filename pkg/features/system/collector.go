@@ -121,7 +121,7 @@ func init() {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &systemCollector{}
+	return new(systemCollector)
 }
 
 // Name returns the name of the collector
@@ -199,7 +199,7 @@ func (c *systemCollector) CollectSystem(client collector.Client, ch chan<- prome
 }
 
 func (c *systemCollector) collectBuffers(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	r := &buffers{}
+	r := new(buffers)
 
 	err := client.RunCommandAndParseWithParser("show system buffers", func(b []byte) error {
 		if string(b[:]) == "\nerror: syntax error, expecting <command>: buffers\n" || strings.Contains(string(b[:]), "error: command is not valid on the") {
@@ -421,7 +421,7 @@ func (c *systemCollector) collectBuffers(client collector.Client, ch chan<- prom
 }
 
 func (c *systemCollector) collectSystemInformation(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	r := &systemInformation{}
+	r := new(systemInformation)
 	err := client.RunCommandAndParse("show system information", r)
 	if err != nil {
 		return err
@@ -441,7 +441,7 @@ func (c *systemCollector) collectSystemInformation(client collector.Client, ch c
 }
 
 func (c *systemCollector) collectSatelites(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) {
-	r := &satelliteChassis{}
+	r := new(satelliteChassis)
 	err := client.RunCommandAndParse("show chassis satellite detail", r)
 	if err != nil {
 		// there are various error messages when satellite is not enabled; thus here we just ignore the error and continue
@@ -464,7 +464,7 @@ func (c *systemCollector) collectSatelites(client collector.Client, ch chan<- pr
 }
 
 func (c *systemCollector) collectLicense(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) {
-	r := &licenseInformation{}
+	r := new(licenseInformation)
 	err := client.RunCommandAndParse("show system license usage", r)
 
 	if err != nil {
@@ -497,7 +497,7 @@ func (c *systemCollector) collectLicense(client collector.Client, ch chan<- prom
 }
 
 func (c *systemCollector) collectCommit(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	sc := &systemCommit{}
+	sc := new(systemCommit)
 	err := client.RunCommandAndParse("show system commit", sc)
 	if err != nil {
 		return err

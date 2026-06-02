@@ -38,7 +38,7 @@ func (*routeCollector) Name() string {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &routeCollector{}
+	return new(routeCollector)
 }
 
 // Describe describes the metrics

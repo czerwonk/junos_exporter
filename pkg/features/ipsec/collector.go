@@ -32,7 +32,7 @@ type ipsecCollector struct {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &ipsecCollector{}
+	return new(ipsecCollector)
 }
 
 // Name returns the name of the collector

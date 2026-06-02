@@ -36,7 +36,7 @@ func (*lacpCollector) Name() string {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &lacpCollector{}
+	return new(lacpCollector)
 }
 
 // Describe describes the metrics

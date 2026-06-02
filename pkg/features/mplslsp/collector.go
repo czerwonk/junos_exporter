@@ -39,7 +39,7 @@ func (*mplsLSPCollector) Name() string {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &mplsLSPCollector{}
+	return new(mplsLSPCollector)
 }
 
 // Describe describes the metrics

@@ -61,7 +61,7 @@ type isisCollector struct {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &isisCollector{}
+	return new(isisCollector)
 }
 
 // Name returns the name of the collector

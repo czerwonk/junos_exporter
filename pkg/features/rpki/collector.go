@@ -48,7 +48,7 @@ func (*rpkiCollector) Name() string {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &rpkiCollector{}
+	return new(rpkiCollector)
 }
 
 // Describe describes the metrics

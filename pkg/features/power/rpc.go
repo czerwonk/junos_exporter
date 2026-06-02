@@ -98,7 +98,7 @@ func (p *PowerBudgetInformation) UnmarshalXML(d *xml.Decoder, start xml.StartEle
 				d.DecodeElement(&p.LineCardSlot, &t)
 			case "psu-slot":
 				flush() // save previous PSU before starting a new one
-				current = &PSU{}
+				current = new(PSU)
 				d.DecodeElement(&current.Slot, &t)
 			case "psu-type":
 				if current != nil {

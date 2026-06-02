@@ -61,7 +61,7 @@ func TestInterfaceCollectorCommand(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			col := NewCollector(nil, tt.interfaceNameRegex).(*interfaceCollector)
-			client := &mockClient{}
+			client := new(mockClient)
 			_, _ = col.interfaceStats(client)
 			if client.lastCmd != tt.expectedCmd {
 				t.Errorf("expected command %q, got %q", tt.expectedCmd, client.lastCmd)

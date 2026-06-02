@@ -64,7 +64,7 @@ type ufdCollector struct{}
 func (*ufdCollector) Name() string { return "ufd" }
 
 // NewCollector creates a new collector
-func NewCollector() collector.RPCCollector { return &ufdCollector{} }
+func NewCollector() collector.RPCCollector { return new(ufdCollector) }
 
 // Describe describes the metrics
 func (*ufdCollector) Describe(ch chan<- *prometheus.Desc) {

@@ -70,7 +70,7 @@ type l2vpnCollector struct {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &l2vpnCollector{}
+	return new(l2vpnCollector)
 }
 
 // Name returns the name of the collector

@@ -22,7 +22,7 @@ func init() {
 
 type krtCollector struct{}
 
-func NewCollector() collector.RPCCollector { return &krtCollector{} }
+func NewCollector() collector.RPCCollector { return new(krtCollector) }
 
 func (c *krtCollector) Name() string { return "krt" }
 

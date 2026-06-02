@@ -67,7 +67,7 @@ func TestEnabledRespectsLogrusLevel(t *testing.T) {
 	prevLvl := log.StandardLogger().Level
 	t.Cleanup(func() { log.StandardLogger().SetLevel(prevLvl) })
 
-	h := &Handler{}
+	h := new(Handler)
 
 	log.StandardLogger().SetLevel(log.WarnLevel)
 	if h.Enabled(context.Background(), slog.LevelInfo) {

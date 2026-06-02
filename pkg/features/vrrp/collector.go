@@ -28,7 +28,7 @@ func (*vrrpCollector) Name() string {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &vrrpCollector{}
+	return new(vrrpCollector)
 }
 
 // Describe describes the metrics

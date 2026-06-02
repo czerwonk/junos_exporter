@@ -790,7 +790,7 @@ func init() {
 type systemstatisticsCollector struct{}
 
 func NewCollector() collector.RPCCollector {
-	return &systemstatisticsCollector{}
+	return new(systemstatisticsCollector)
 }
 
 func (c *systemstatisticsCollector) Name() string {

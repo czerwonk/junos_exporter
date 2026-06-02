@@ -57,7 +57,7 @@ type environmentCollector struct {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &environmentCollector{}
+	return new(environmentCollector)
 }
 
 // Name returns the name of the collector

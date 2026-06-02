@@ -101,7 +101,7 @@ func init() {
 
 type ddosCollector struct{}
 
-func NewCollector() collector.RPCCollector { return &ddosCollector{} }
+func NewCollector() collector.RPCCollector { return new(ddosCollector) }
 
 func (c *ddosCollector) Name() string {
 	return "ddos"

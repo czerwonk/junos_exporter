@@ -73,7 +73,7 @@ type powerCollector struct {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &powerCollector{}
+	return new(powerCollector)
 }
 
 // Name returns the name of the collector

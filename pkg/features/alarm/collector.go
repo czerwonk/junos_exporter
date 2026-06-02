@@ -33,7 +33,7 @@ type alarmCollector struct {
 
 // NewCollector creates a new collector
 func NewCollector(alarmsFilter string) collector.RPCCollector {
-	c := &alarmCollector{}
+	c := new(alarmCollector)
 
 	if len(alarmsFilter) > 0 {
 		c.filter = regexp.MustCompile(alarmsFilter)

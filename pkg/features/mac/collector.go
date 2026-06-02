@@ -36,7 +36,7 @@ func (*macCollector) Name() string {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &macCollector{}
+	return new(macCollector)
 }
 
 // Describe describes the metrics

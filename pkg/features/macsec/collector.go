@@ -65,7 +65,7 @@ type macsecCollector struct{}
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &macsecCollector{}
+	return new(macsecCollector)
 }
 
 // Name returns the name of the collector

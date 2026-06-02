@@ -23,7 +23,7 @@ func init() {
 type arpCollector struct{}
 
 func NewCollector() collector.RPCCollector {
-	return &arpCollector{}
+	return new(arpCollector)
 }
 
 func (c *arpCollector) Name() string {

@@ -27,7 +27,7 @@ func (*subcsribers_information) Name() string {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &subcsribers_information{}
+	return new(subcsribers_information)
 }
 
 // Describe describes the metrics
@@ -62,7 +62,7 @@ func (c *subcsribers_information) Collect(client collector.Client, ch chan<- pro
 
 func getLogicalInterfaceInformation(client collector.Client) (map[string]string, error) {
 
-	var interfaceInformation = &InterfaceInformation{}
+	var interfaceInformation = new(InterfaceInformation)
 	var interfaceMap = make(map[string]string)
 
 	err := client.RunCommandAndParse("show interfaces demux0 brief", interfaceInformation)

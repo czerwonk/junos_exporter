@@ -32,7 +32,7 @@ func (*bfdCollector) Name() string {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &bfdCollector{}
+	return new(bfdCollector)
 }
 
 // Describe describes the metrics

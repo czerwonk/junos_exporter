@@ -30,7 +30,7 @@ type dot1xCollector struct{}
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &dot1xCollector{}
+	return new(dot1xCollector)
 }
 
 // Name returns the name of the collector

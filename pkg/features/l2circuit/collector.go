@@ -58,7 +58,7 @@ type l2circuitCollector struct {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &l2circuitCollector{}
+	return new(l2circuitCollector)
 }
 
 // Name returns the name of the collector

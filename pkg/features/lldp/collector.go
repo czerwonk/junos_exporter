@@ -23,7 +23,7 @@ type lldpCollector struct {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &lldpCollector{}
+	return new(lldpCollector)
 }
 
 // Name returns the name of the collector

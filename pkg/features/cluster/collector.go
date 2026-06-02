@@ -31,7 +31,7 @@ func init() {
 type chassisClusterCollector struct{}
 
 func NewCollector() collector.RPCCollector {
-	return &chassisClusterCollector{}
+	return new(chassisClusterCollector)
 }
 
 func (*chassisClusterCollector) Name() string {

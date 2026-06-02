@@ -57,7 +57,7 @@ func init() {
 type virtualChassisCollector struct{}
 
 func NewCollector() collector.RPCCollector {
-	return &virtualChassisCollector{}
+	return new(virtualChassisCollector)
 }
 
 func (*virtualChassisCollector) Name() string {

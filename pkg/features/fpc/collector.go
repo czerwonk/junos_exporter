@@ -55,7 +55,7 @@ func init() {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &fpcCollector{}
+	return new(fpcCollector)
 }
 
 // Name returns the name of the collector

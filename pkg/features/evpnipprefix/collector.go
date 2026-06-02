@@ -39,7 +39,7 @@ type evpnIPPrefixCollector struct{}
 func (*evpnIPPrefixCollector) Name() string { return "evpn_ip_prefix" }
 
 // NewCollector creates a new collector.
-func NewCollector() collector.RPCCollector { return &evpnIPPrefixCollector{} }
+func NewCollector() collector.RPCCollector { return new(evpnIPPrefixCollector) }
 
 // Describe describes the metrics.
 func (*evpnIPPrefixCollector) Describe(ch chan<- *prometheus.Desc) {

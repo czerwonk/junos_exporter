@@ -159,7 +159,7 @@ type evpnCollector struct{}
 func (*evpnCollector) Name() string { return "evpn" }
 
 // NewCollector creates a new collector.
-func NewCollector() collector.RPCCollector { return &evpnCollector{} }
+func NewCollector() collector.RPCCollector { return new(evpnCollector) }
 
 // Describe describes the metrics.
 func (*evpnCollector) Describe(ch chan<- *prometheus.Desc) {

@@ -109,7 +109,7 @@ type routingEngineCollector struct {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &routingEngineCollector{}
+	return new(routingEngineCollector)
 }
 
 // Name returns the name of the collector

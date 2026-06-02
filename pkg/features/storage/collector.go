@@ -33,7 +33,7 @@ type storageCollector struct {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &storageCollector{}
+	return new(storageCollector)
 }
 
 // Name returns the name of the collector

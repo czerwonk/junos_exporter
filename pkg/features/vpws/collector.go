@@ -42,7 +42,7 @@ func (*vpwsCollector) Name() string {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &vpwsCollector{}
+	return new(vpwsCollector)
 }
 
 // Describe describes the metrics

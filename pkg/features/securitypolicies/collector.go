@@ -42,7 +42,7 @@ type securityPolicyCollector struct {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &securityPolicyCollector{}
+	return new(securityPolicyCollector)
 }
 
 // Name returns the name of the collector

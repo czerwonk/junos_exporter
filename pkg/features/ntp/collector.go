@@ -41,7 +41,7 @@ func init() {
 type ntpCollector struct{}
 
 func NewCollector() collector.RPCCollector {
-	return &ntpCollector{}
+	return new(ntpCollector)
 }
 
 func (c *ntpCollector) Name() string {

@@ -58,7 +58,7 @@ type description struct {
 }
 
 func newDescriptions(dynLabels dynamiclabels.Labels) *description {
-	d := &description{}
+	d := new(description)
 
 	l := []string{"target", "name"}
 	l = append(l, dynLabels.Keys()...)

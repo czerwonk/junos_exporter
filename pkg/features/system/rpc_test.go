@@ -29,7 +29,7 @@ func TestSystemCommit(t *testing.T) {
 	</commit-information>
 	</rpc-reply>`
 
-	data := &systemCommit{}
+	data := new(systemCommit)
 	err := xml.Unmarshal([]byte(input), data)
 	if err != nil {
 		t.Errorf("unable to unmarshal XML: %v", err)

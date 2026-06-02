@@ -38,7 +38,7 @@ type rpmCollector struct{}
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &rpmCollector{}
+	return new(rpmCollector)
 }
 
 // Name returns the name of the collector

@@ -184,7 +184,7 @@ type natCollector struct {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &natCollector{}
+	return new(natCollector)
 }
 
 // Name returns the name of the collector

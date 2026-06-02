@@ -45,7 +45,7 @@ type accountingCollector struct {
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &accountingCollector{}
+	return new(accountingCollector)
 }
 
 // Name returns the name of the collector

@@ -35,7 +35,7 @@ type poeCollector struct{}
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &poeCollector{}
+	return new(poeCollector)
 }
 
 // Name returns the name of the collector

@@ -40,7 +40,7 @@ type twampCollector struct{}
 
 // NewCollector creates a new collector
 func NewCollector() collector.RPCCollector {
-	return &twampCollector{}
+	return new(twampCollector)
 }
 
 // Name returns the name of the collector

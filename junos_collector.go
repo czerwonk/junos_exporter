@@ -4,6 +4,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"io"
 	"regexp"
 	"sync"
 	"time"
@@ -181,7 +183,7 @@ func (c *junosCollector) collectForHost(ctx context.Context, device *connector.D
 		ct := time.Now()
 		err := col.Collect(cta, ch, l)
 
-		if err != nil && err.Error() != "EOF" {
+		if err != nil && errors.Is(err, io.EOF) {
 			sp.RecordError(err)
 			sp.SetStatus(codes.Error, err.Error())
 			log.Errorln(col.Name() + ": " + err.Error())

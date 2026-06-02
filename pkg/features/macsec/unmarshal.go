@@ -5,6 +5,7 @@ package macsec
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 )
@@ -22,7 +23,7 @@ func ParseShowSecurityMacsecConnections(input []byte) (*ShowSecMacsecConns, erro
 	d := xml.NewDecoder(bytes.NewBuffer(res.InnerXML))
 	for {
 		t, err := d.Token()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {

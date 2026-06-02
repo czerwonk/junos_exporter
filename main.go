@@ -153,12 +153,16 @@ func main() {
 	}
 	defer shutdownTracing()
 
-	initChannels(ctx)
+	initChannels(ctx, cancel)
 
-	startServer()
+	go startServer()
+
+	<-ctx.Done()
+	log.Infoln("Closing connections to devices")
+	connManager.CloseAll()
 }
 
-func initChannels(ctx context.Context) {
+func initChannels(ctx context.Context, cancel context.CancelFunc) {
 	hup := make(chan os.Signal, 1)
 	signal.Notify(hup, syscall.SIGHUP)
 
@@ -183,18 +187,13 @@ func initChannels(ctx context.Context) {
 					rc <- nil
 				}
 			case <-ctx.Done():
-				shutdown()
+				return
 			case <-term:
-				shutdown()
+				cancel()
+				return
 			}
 		}
 	}()
-}
-
-func shutdown() {
-	log.Infoln("Closing connections to devices")
-	connManager.CloseAll()
-	os.Exit(0)
 }
 
 func printVersion() {

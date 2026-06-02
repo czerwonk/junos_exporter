@@ -170,30 +170,32 @@ func initChannels(ctx context.Context, cancel context.CancelFunc) {
 	signal.Notify(term, syscall.SIGTERM)
 
 	reloadCh = make(chan chan error)
-	go func() {
-		for {
-			select {
-			case <-hup:
-				log.Infoln("Reload signal received as SIGHUP")
-				if err := reinitialize(); err != nil {
-					log.Errorf("Error reloading config: %s", err)
-				}
-			case rc := <-reloadCh:
-				log.Infoln("Reload signal received via POST")
-				if err := reinitialize(); err != nil {
-					log.Errorf("Error reloading config: %s", err)
-					rc <- err
-				} else {
-					rc <- nil
-				}
-			case <-ctx.Done():
-				return
-			case <-term:
-				cancel()
-				return
+	go handleSignals(ctx, cancel, hup, term)
+}
+
+func handleSignals(ctx context.Context, cancel context.CancelFunc, hup, term <-chan os.Signal) {
+	for {
+		select {
+		case <-hup:
+			log.Infoln("Reload signal received as SIGHUP")
+			if err := reinitialize(); err != nil {
+				log.Errorf("Error reloading config: %s", err)
 			}
+		case rc := <-reloadCh:
+			log.Infoln("Reload signal received via POST")
+			if err := reinitialize(); err != nil {
+				log.Errorf("Error reloading config: %s", err)
+				rc <- err
+			} else {
+				rc <- nil
+			}
+		case <-ctx.Done():
+			return
+		case <-term:
+			cancel()
+			return
 		}
-	}()
+	}
 }
 
 func printVersion() {

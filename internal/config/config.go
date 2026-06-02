@@ -160,60 +160,21 @@ func Load(reader io.Reader, dynamicIfaceLabels bool) (*Config, error) {
 }
 
 func setDefaultValues(c *Config) {
-	c.Password = ""
-	c.LSEnabled = false
 	f := &c.Features
-	f.Accounting = false
 	f.Alarm = true
-	f.ARP = false
-	f.BFD = false
 	f.BGP = true
-	f.Cluster = false
-	f.DDOSProtection = false
-	f.DOT1X = false
 	f.Environment = true
-	f.EVPN = false
-	f.EVPNIPPrefix = false
 	f.Firewall = true
-	f.FPC = false
 	f.Interfaces = true
 	f.InterfaceDiagnostic = true
 	f.InterfaceQueue = true
-	f.IPSec = false
 	f.ISIS = true
-	f.KRT = false
-	f.L2Circuit = false
-	f.L2Vpn = false
-	f.LACP = false
 	f.LDP = true
-	f.License = false
-	f.LLDP = false
-	f.MAC = false
 	f.MACSec = true
-	f.MPLSLSP = false
-	f.NAT = false
-	f.NAT2 = false
-	f.NTP = false
 	f.OSPF = true
-	f.Poe = false
-	f.Power = false
 	f.Routes = true
 	f.RoutingEngine = true
-	f.RPKI = false
-	f.RPM = false
-	f.Satellite = false
-	f.Security = false
-	f.SecurityIKE = false
-	f.SecurityPolicies = false
-	f.Storage = false
-	f.Subscriber = false
-	f.System = false
 	f.SystemStatistics = true
-	f.TWAMP = false
-	f.UFD = false
-	f.VirtualChassis = false
-	f.VPWS = false
-	f.VRRP = false
 }
 
 // FeaturesForDevice gets the feature set configured for a device

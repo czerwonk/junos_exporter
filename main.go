@@ -447,7 +447,7 @@ func updateConfiguration(w http.ResponseWriter, r *http.Request) {
 		}
 	default:
 		log.Errorf("POST method expected")
-		http.Error(w, "POST method expected", 400)
+		http.Error(w, "POST method expected", http.StatusBadRequest)
 	}
 }
 

@@ -64,15 +64,6 @@ func (*twampCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *twampCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	err := c.collect(client, ch, labelValues)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c *twampCollector) collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = result{}
 
 	err := client.RunCommandAndParse("show services monitoring twamp client probe-results", &x)

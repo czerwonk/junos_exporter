@@ -107,9 +107,26 @@ func (*bgpCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *bgpCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	err := c.collect(client, ch, labelValues)
+	groups, err := c.collectGroups(client)
+	if err != nil {
+		return fmt.Errorf("could not retrieve BGP group information: %w", err)
+	}
+
+	var x result
+	var cmd strings.Builder
+	cmd.WriteString("show bgp neighbor")
+	if c.LogicalSystem != "" {
+		cmd.WriteString(" logical-system ")
+		cmd.WriteString(c.LogicalSystem)
+	}
+
+	err = client.RunCommandAndParse(cmd.String(), &x)
 	if err != nil {
 		return err
+	}
+
+	for _, peer := range x.Information.Peers {
+		c.collectForPeer(peer, groups, ch, labelValues)
 	}
 
 	return nil
@@ -135,32 +152,6 @@ func (c *bgpCollector) collectGroups(client collector.Client) (groupMap, error) 
 	}
 
 	return groups, err
-}
-
-func (c *bgpCollector) collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	groups, err := c.collectGroups(client)
-	if err != nil {
-		return fmt.Errorf("could not retrieve BGP group information: %w", err)
-	}
-
-	var x result
-	var cmd strings.Builder
-	cmd.WriteString("show bgp neighbor")
-	if c.LogicalSystem != "" {
-		cmd.WriteString(" logical-system ")
-		cmd.WriteString(c.LogicalSystem)
-	}
-
-	err = client.RunCommandAndParse(cmd.String(), &x)
-	if err != nil {
-		return err
-	}
-
-	for _, peer := range x.Information.Peers {
-		c.collectForPeer(peer, groups, ch, labelValues)
-	}
-
-	return nil
 }
 
 func (c *bgpCollector) collectForPeer(p peer, groups groupMap, ch chan<- prometheus.Metric, labelValues []string) {

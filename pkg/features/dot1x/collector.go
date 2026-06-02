@@ -78,15 +78,6 @@ func dot1xInterfaceAuthMethhod(State string) float64 {
 
 // Collect collects metrics from JunOS
 func (c *dot1xCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	err := c.collect(client, ch, labelValues)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c *dot1xCollector) collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = result{}
 
 	err := client.RunCommandAndParse("show dot1x interface extensive", &x)

@@ -35,9 +35,9 @@ func (c *Config) load(dynamicIfaceLabels bool) error {
 
 	for _, d := range c.Devices {
 		if d.IfDescRegStr != "" && dynamicIfaceLabels {
-			re, err := regexp.Compile(c.IfDescReStr)
+			re, err := regexp.Compile(d.IfDescRegStr)
 			if err != nil {
-				return fmt.Errorf("unable to compile interfce description regex %q: %w", c.IfDescReStr, err)
+				return fmt.Errorf("unable to compile interface description regex %q: %w", d.IfDescRegStr, err)
 			}
 
 			d.IfDescReg = re

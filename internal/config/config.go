@@ -27,7 +27,7 @@ func (c *Config) load(dynamicIfaceLabels bool) error {
 	if c.IfDescRegStr != "" && dynamicIfaceLabels {
 		re, err := regexp.Compile(c.IfDescRegStr)
 		if err != nil {
-			return fmt.Errorf("unable to compile interfce description regex %q: %w", c.IfDescRegStr, err)
+			return fmt.Errorf("unable to compile interface description regex %q: %w", c.IfDescRegStr, err)
 		}
 
 		c.IfDescReg = re

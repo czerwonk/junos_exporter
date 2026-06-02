@@ -83,7 +83,7 @@ func (c *Client) Device() *connector.Device {
 	return c.conn.Device()
 }
 
-// IsSatelliteEnabled returns if sattelite features are enabled on the device
+// IsSatelliteEnabled returns if satellite features are enabled on the device
 func (c *Client) IsSatelliteEnabled() bool {
 	return c.satellite
 }

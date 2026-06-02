@@ -204,25 +204,25 @@ func (c *bgpCollector) collectForPeer(p peer, groups groupMap, ch chan<- prometh
 }
 
 func (*bgpCollector) collectRIBForPeer(p peer, ch chan<- prometheus.Metric, labelValues []string, d *description) {
-	var rib_name string
+	var ribName string
 
 	// derive the name of the rib for which the prefix limit is configured by examining the NLRI type
-	switch nlri_type := p.OptionInformation.PrefixLimit.NlriType; nlri_type {
+	switch nlriType := p.OptionInformation.PrefixLimit.NlriType; nlriType {
 	case "inet-unicast":
-		rib_name = "inet.0"
+		ribName = "inet.0"
 	case "inet6-unicast":
-		rib_name = "inet6.0"
+		ribName = "inet6.0"
 	default:
-		rib_name = ""
+		ribName = ""
 	}
 
 	// if the prefix limit is configured inside a routing instance we need to prepend the RTI name to the rib name
-	if p.CFGRTI != "" && p.CFGRTI != "master" && rib_name != "" {
-		rib_name = p.CFGRTI + "." + rib_name
+	if p.CFGRTI != "" && p.CFGRTI != "master" && ribName != "" {
+		ribName = p.CFGRTI + "." + ribName
 	}
 
 	if p.OptionInformation.PrefixLimit.PrefixCount > 0 {
-		ch <- prometheus.MustNewConstMetric(d.prefixesLimitCountDesc, prometheus.GaugeValue, float64(p.OptionInformation.PrefixLimit.PrefixCount), append(labelValues, rib_name)...)
+		ch <- prometheus.MustNewConstMetric(d.prefixesLimitCountDesc, prometheus.GaugeValue, float64(p.OptionInformation.PrefixLimit.PrefixCount), append(labelValues, ribName)...)
 	}
 
 	for _, rib := range p.RIBs {
@@ -233,7 +233,7 @@ func (*bgpCollector) collectRIBForPeer(p peer, ch chan<- prometheus.Metric, labe
 		ch <- prometheus.MustNewConstMetric(d.activePrefixesDesc, prometheus.GaugeValue, float64(rib.ActivePrefixes), l...)
 		ch <- prometheus.MustNewConstMetric(d.advertisedPrefixesDesc, prometheus.GaugeValue, float64(rib.AdvertisedPrefixes), l...)
 
-		if rib.Name == rib_name {
+		if rib.Name == ribName {
 			if p.OptionInformation.PrefixLimit.PrefixCount > 0 {
 				prefixesLimitPercent := float64(rib.ReceivedPrefixes) / float64(p.OptionInformation.PrefixLimit.PrefixCount)
 				ch <- prometheus.MustNewConstMetric(d.prefixesLimitPercentageDesc, prometheus.GaugeValue, math.Round(prefixesLimitPercent*100)/100, l...)

@@ -210,6 +210,7 @@ func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfa
 			ReceiveBytes:            float64(phy.Stats.InputBytes),
 			ReceivePackets:          float64(phy.Stats.InputPackets),
 			Speed:                   phy.Speed,
+			IfSpeedCfg:              phy.IfSpeedCfg,
 			BPDUError:               phy.BPDUError == "detected",
 			TransmitDrops:           float64(phy.OutputErrors.Drops),
 			TransmitErrors:          float64(phy.OutputErrors.Errors),
@@ -307,32 +308,7 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, ch chan<- pr
 			err = 1
 		}
 
-		speed := "0"
-		if strings.Contains(strings.ToLower(s.Speed), "mbps") {
-			speed = strings.Replace(strings.ToLower(s.Speed), "mbps", "000000", 1)
-		}
-		if strings.Contains(s.Speed, "Gbps") {
-			speed = strings.Replace(s.Speed, "Gbps", "000000000", 1)
-		}
-		if strings.Contains(s.Speed, "Auto") || strings.Contains(s.Speed, "Unspecified") {
-			//some cards have just 'Auto' as speed, let's check if it's Gigabit
-			if strings.Contains(s.Name, "ge-") {
-				speed = "1000000000"
-			} else if strings.Contains(s.Name, "xe-") {
-				speed = "10000000000"
-			} else {
-				speed = strings.Replace(s.Speed, "Auto", "0", 1)
-				speed = strings.Replace(speed, "Unspecified", "0", 1)
-			}
-		}
-		if strings.Contains(s.Speed, "Unlimited") {
-			speed = strings.Replace(s.Speed, "Unlimited", "0", 1)
-		}
-
-		// Trimming all white spaces in the entire string
-		speed = strings.ReplaceAll(speed, " ", "")
-
-		sp64, _ := strconv.ParseFloat(speed, 64)
+		sp64 := interfaceSpeedBPS(s)
 
 		if s.BPDUError {
 			ch <- prometheus.MustNewConstMetric(d.interfaceBPDUErrorDesc, prometheus.GaugeValue, float64(1), lv...)
@@ -379,6 +355,57 @@ func (c *interfaceCollector) collectForInterface(s *interfaceStats, ch chan<- pr
 		ch <- prometheus.MustNewConstMetric(d.fecModeDesc, prometheus.CounterValue, s.FECMode, lv...)
 
 	}
+}
+
+// interfaceSpeedBPS returns the interface speed in bits per second. It prefers
+// the configured speed (if-speed-cfg) over the hardware "speed", which reports
+// the port's physical capability (e.g. 10Gbps on an MX204 port configured to
+// 1G). Speeds that don't denote a fixed rate (Auto, Unspecified, Unlimited)
+// fall back to the interface naming convention or 0.
+func interfaceSpeedBPS(s *interfaceStats) float64 {
+	// Match case-insensitively; lowercase everything up front.
+	effectiveSpeed := strings.ToLower(s.Speed)
+
+	// if-speed-cfg uses a compact form ("1g", "100m"); normalize it to the
+	// hardware format ("1gbps", "100mbps") so the same parsing applies.
+	if cfg := strings.ToLower(s.IfSpeedCfg); cfg != "" && !strings.Contains(cfg, "auto") {
+		effectiveSpeed = strings.Replace(cfg, "g", "gbps", 1)
+		effectiveSpeed = strings.Replace(effectiveSpeed, "m", "mbps", 1)
+	}
+
+	switch {
+	case strings.Contains(effectiveSpeed, "mbps"):
+		return speedWithUnitToBPS(effectiveSpeed, "mbps", 1e6)
+	case strings.Contains(effectiveSpeed, "gbps"):
+		return speedWithUnitToBPS(effectiveSpeed, "gbps", 1e9)
+	case strings.Contains(effectiveSpeed, "auto"), strings.Contains(effectiveSpeed, "unspecified"):
+		// some cards have just 'Auto' as speed, let's check if it's Gigabit
+		if strings.Contains(s.Name, "ge-") {
+			return 1e9
+		}
+		if strings.Contains(s.Name, "xe-") {
+			return 10e9
+		}
+		return 0
+	default:
+		// includes "Unlimited" and any unrecognized value
+		return 0
+	}
+}
+
+// speedWithUnitToBPS strips the unit (e.g. "Gbps") from a speed string, parses
+// the remaining number and multiplies it by factor to get a bits-per-second
+// value. It returns 0 when the number can't be parsed. Multiplying (rather than
+// appending zeros) keeps fractional speeds such as "2.5Gbps" correct.
+func speedWithUnitToBPS(speed, unit string, factor float64) float64 {
+	number := strings.ReplaceAll(strings.Replace(speed, unit, "", 1), " ", "")
+
+	value, err := strconv.ParseFloat(number, 64)
+	if err != nil {
+		return 0
+	}
+
+	return value * factor
 }
 
 func convertFECModeToFloat64(s string) float64 {

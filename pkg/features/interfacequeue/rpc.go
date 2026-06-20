@@ -11,6 +11,7 @@ type result struct {
 type physicalInterface struct {
 	Name          string `xml:"name"`
 	Description   string `xml:"description"`
+	SnmpIndex     string `xml:"snmp-index"`
 	QueueCounters struct {
 		Queues []queue `xml:"queue"`
 	} `xml:"queue-counters"`

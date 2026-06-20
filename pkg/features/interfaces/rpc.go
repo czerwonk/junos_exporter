@@ -14,6 +14,7 @@ type phyInterface struct {
 	OperStatus        string         `xml:"oper-status"`
 	Description       string         `xml:"description"`
 	MacAddress        string         `xml:"current-physical-address"`
+	SnmpIndex         string         `xml:"snmp-index"`
 	Speed             string         `xml:"speed"`
 	BPDUError         string         `xml:"bpdu-error"`
 	Stats             trafficStat    `xml:"traffic-statistics"`
@@ -39,6 +40,7 @@ type phyInterface struct {
 type logInterface struct {
 	Name        string         `xml:"name"`
 	Description string         `xml:"description"`
+	SnmpIndex   string         `xml:"snmp-index"`
 	Stats       trafficStat    `xml:"traffic-statistics"`
 	LagStats    lagTrafficStat `xml:"lag-traffic-statistics"`
 }

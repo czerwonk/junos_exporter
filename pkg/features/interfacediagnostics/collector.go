@@ -60,7 +60,7 @@ type description struct {
 func newDescriptions(dynLabels dynamiclabels.Labels) *description {
 	d := new(description)
 
-	l := []string{"target", "name"}
+	l := []string{"target", "name", "if_index"}
 	l = append(l, dynLabels.Keys()...)
 
 	d.moduleVoltageDesc = prometheus.NewDesc(prefix+"module_voltage", "Module voltage", l, nil)
@@ -108,7 +108,7 @@ func newDescriptions(dynLabels dynamiclabels.Labels) *description {
 	d.laserRxOpticalPowerHighWarnThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_high_warn_threshold_dbm", "Laser rx power high warn threshold_dbm in dBm", l, nil)
 	d.laserRxOpticalPowerLowWarnThresholdDbmDesc = prometheus.NewDesc(prefix+"laser_rx_low_warn_threshold_dbm", "Laser rx power low warn threshold_dbm in dBm", l, nil)
 
-	transceiver_labels := []string{"target", "name", "serial_number", "description", "speed", "fiber_type", "vendor_name", "vendor_part_number", "wavelength"}
+	transceiver_labels := []string{"target", "name", "if_index", "serial_number", "description", "speed", "fiber_type", "vendor_name", "vendor_part_number", "wavelength"}
 	d.transceiverDesc = prometheus.NewDesc("junos_interface_transceiver", "Transceiver Info", transceiver_labels, nil)
 
 	return d
@@ -208,15 +208,17 @@ func (c *interfaceDiagnosticsCollector) Collect(client collector.Client, ch chan
 		diagnosticsDict[index] = diag
 
 		desc := ""
+		snmpIndex := ""
 		media := ifMediaDict[slotIndex(diag.Name)]
 		if media != nil {
 			desc = media.Description
+			snmpIndex = media.SnmpIndex
 		}
 
 		dynLabels := dynamiclabels.ParseDescription(desc, c.descriptionRe)
 		d := newDescriptions(dynLabels)
 
-		l := append(labelValues, diag.Name)
+		l := append(labelValues, diag.Name, snmpIndex)
 		l = append(l, dynLabels.Values()...)
 
 		ch <- prometheus.MustNewConstMetric(d.moduleTemperatureDesc, prometheus.GaugeValue, diag.ModuleTemperature, l...)
@@ -360,6 +362,7 @@ func (c *interfaceDiagnosticsCollector) createTransceiverMetrics(client collecto
 	for _, t := range transceiverInfo {
 		chassisInfo := t.ChassisHardwareInfo
 		port_speed := "0"
+		snmpIndex := ""
 		oper_status := 0.0
 
 		if media, hit := ifMediaDict[t.Name]; hit {
@@ -368,11 +371,12 @@ func (c *interfaceDiagnosticsCollector) createTransceiverMetrics(client collecto
 			}
 			t.Name = media.Name
 			port_speed = media.Speed
+			snmpIndex = media.SnmpIndex
 		} else {
 			t.Name = "slot-" + t.Name
 		}
 
-		transceiver_labels := append(labelValues, t.Name, chassisInfo.SerialNumber, chassisInfo.Description, port_speed, t.PicPort.FiberMode, strings.TrimSpace(t.PicPort.SFPVendorName), strings.TrimSpace(t.PicPort.SFPVendorPno), t.PicPort.Wavelength)
+		transceiver_labels := append(labelValues, t.Name, snmpIndex, chassisInfo.SerialNumber, chassisInfo.Description, port_speed, t.PicPort.FiberMode, strings.TrimSpace(t.PicPort.SFPVendorName), strings.TrimSpace(t.PicPort.SFPVendorPno), t.PicPort.Wavelength)
 
 		d := newDescriptions(nil)
 

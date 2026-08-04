@@ -116,6 +116,7 @@ type FeatureConfig struct {
 	TWAMP               bool `yaml:"twamp,omitempty"`
 	SystemStatistics    bool `yaml:"system_statistics,omitempty"`
 	UFD                 bool `yaml:"ufd,omitempty"`
+	MNHA                bool `yaml:"mnha,omitempty"`
 }
 
 // New creates a new config

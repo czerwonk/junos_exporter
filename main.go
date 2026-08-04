@@ -112,6 +112,8 @@ var (
 	twampEnabled                = flag.Bool("twamp.enabled", false, "Scrape TWAMP metrics")
 	systemstatisticsEnabled     = flag.Bool("systemstatistics.enabled", true, "Scrape system statistics metrics")
 	ufdEnabled                  = flag.Bool("ufd.enabled", false, "Scrape UFD (uplink-failure-detection) metrics")
+	mnhaEnabled                 = flag.Bool("mnha.enabled", false, "Scrape MNHA (Mixed/Multi-Node High Availability) metrics")
+	mnhaSRGIDs                  = flag.String("mnha.srg-ids", "0", "Comma-separated list of MNHA services-redundancy-group IDs to scrape")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -350,6 +352,7 @@ func loadConfigFromFlags() *config.Config {
 	f.LLDP = *lldpEnabled
 	f.MAC = *macEnabled
 	f.MACSec = *macsecEnabled
+	f.MNHA = *mnhaEnabled
 	f.MPLSLSP = *mplsLSPEnabled
 	f.NAT = *natEnabled
 	f.NAT2 = *nat2Enabled

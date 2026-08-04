@@ -4,6 +4,8 @@ package main
 
 import (
 	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/features/ddosprotection"
 	"github.com/czerwonk/junos_exporter/pkg/features/poe"
@@ -36,6 +38,7 @@ import (
 	"github.com/czerwonk/junos_exporter/pkg/features/lldp"
 	"github.com/czerwonk/junos_exporter/pkg/features/mac"
 	"github.com/czerwonk/junos_exporter/pkg/features/macsec"
+	"github.com/czerwonk/junos_exporter/pkg/features/mnha"
 	"github.com/czerwonk/junos_exporter/pkg/features/mplslsp"
 	"github.com/czerwonk/junos_exporter/pkg/features/nat"
 	"github.com/czerwonk/junos_exporter/pkg/features/nat2"
@@ -152,6 +155,9 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "twamp", f.TWAMP, twamp.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "system_statistics", f.SystemStatistics, systemstatistics.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "ufd", f.UFD, ufd.NewCollector)
+	c.addCollectorIfEnabledForDevice(device, "mnha", f.MNHA, func() collector.RPCCollector {
+		return mnha.NewCollector(parseMNHASRGIDs(*mnhaSRGIDs))
+	})
 
 }
 
@@ -191,4 +197,26 @@ func (c *collectors) collectorsForDevice(device *connector.Device) []collector.R
 	}
 
 	return cols
+}
+
+// parseMNHASRGIDs parses a comma-separated list of services-redundancy-group
+// IDs (e.g. "0,1,2"). Non-numeric entries are ignored.
+func parseMNHASRGIDs(s string) []int {
+	ids := make([]int, 0)
+
+	for _, part := range strings.Split(s, ",") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+
+		id, err := strconv.Atoi(part)
+		if err != nil {
+			continue
+		}
+
+		ids = append(ids, id)
+	}
+
+	return ids
 }

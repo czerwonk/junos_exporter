@@ -58,6 +58,7 @@ The following metrics are supported by now:
 * Subscribers Information (show subscribers client-type dhcp detail)
 * PoE (show poe interface)
 * UFD (uplink-failure-detection group state)
+* MNHA (Mixed/Multi-Node High Availability, SRX): node/peer BFD & ICL status, cold-sync, SPU/hardware monitoring, PFE loopback checks, services-redundancy-group state
 
 ## Feature specific mappings
 Some collected time series behave like enums - Integer values represent a certain state/meaning.
@@ -71,6 +72,13 @@ Some collected time series behave like enums - Integer values represent a certai
 5: lost
 6: not-configured
 7: ineligible
+```
+
+### MNHA (`junos_mnha_node_status`, `junos_mnha_srg_state`)
+```
+ 1: ONLINE
+ 0: OFFLINE
+-1: unknown/other
 ```
 
 ### L2circuits
@@ -356,6 +364,7 @@ features:
   lldp: false
   mac: false
   macsec: true
+  mnha: false
   mpls_lsp: false
   nat: false
   nat2: false

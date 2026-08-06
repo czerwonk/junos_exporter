@@ -156,7 +156,12 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "system_statistics", f.SystemStatistics, systemstatistics.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "ufd", f.UFD, ufd.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "mnha", f.MNHA, func() collector.RPCCollector {
-		return mnha.NewCollector(parseMNHASRGIDs(*mnhaSRGIDs))
+		srgIDs := deviceMNHASRGIDs(c.cfg, device.Host)
+		if srgIDs == "" {
+			srgIDs = *mnhaSRGIDs
+		}
+
+		return mnha.NewCollector(parseMNHASRGIDs(srgIDs))
 	})
 
 }

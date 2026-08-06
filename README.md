@@ -314,6 +314,7 @@ devices:
     # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
     # interface_name_regex: '[!(d)][!(i)]*'
     # firewall_filter_name_regex: 'test-filter.*'
+    # mnha_srg_ids: '0,1'
     features:
       isis: true
   - host: switch\d+
@@ -336,6 +337,7 @@ devices:
 # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
 # interface_name_regex: '[!(d)][!(i)]*'
 # firewall_filter_name_regex: 'test-filter.*'
+# mnha_srg_ids: '0,1'
 features:
   accounting: false
   alarm: true
@@ -468,6 +470,24 @@ This regex can be supplied via:
   ```
 
 If provided, the exporter will execute `show firewall filter regex <regex>` with your custom pattern instead of `.*`.
+
+
+### Configuring MNHA Services-Redundancy-Group IDs
+
+By default, the `mnha` collector only scrapes services-redundancy-group `0`.
+If your devices define additional SRGs, you can configure which group IDs to scrape using the `mnha_srg_ids` option, a comma-separated list.
+
+This option can be supplied via:
+- **CLI Flag**: `-mnha.srg-ids="0,1,2"`
+- **Config File (Global)**: `mnha_srg_ids: '0,1,2'`
+- **Config File (Per-Device)**: Under a specific device configuration:
+  ```yaml
+  devices:
+    - host: router1
+      mnha_srg_ids: '0,1'
+  ```
+
+Per-device config takes precedence over the global config file value, which takes precedence over the CLI flag.
 
 
 ### Grafana Dashboards

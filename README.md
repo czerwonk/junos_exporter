@@ -58,6 +58,7 @@ The following metrics are supported by now:
 * Subscribers Information (show subscribers client-type dhcp detail)
 * PoE (show poe interface)
 * UFD (uplink-failure-detection group state)
+* MNHA (Mixed/Multi-Node High Availability, SRX): node/peer BFD & ICL status, cold-sync, SPU/hardware monitoring, PFE loopback checks, services-redundancy-group state
 
 ## Feature specific mappings
 Some collected time series behave like enums - Integer values represent a certain state/meaning.
@@ -71,6 +72,13 @@ Some collected time series behave like enums - Integer values represent a certai
 5: lost
 6: not-configured
 7: ineligible
+```
+
+### MNHA (`junos_mnha_node_status`, `junos_mnha_srg_state`)
+```
+ 1: ONLINE
+ 0: OFFLINE
+-1: unknown/other
 ```
 
 ### L2circuits
@@ -306,6 +314,7 @@ devices:
     # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
     # interface_name_regex: '[!(d)][!(i)]*'
     # firewall_filter_name_regex: 'test-filter.*'
+    # mnha_srg_ids: '0,1'
     features:
       isis: true
   - host: switch\d+
@@ -328,6 +337,7 @@ devices:
 # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
 # interface_name_regex: '[!(d)][!(i)]*'
 # firewall_filter_name_regex: 'test-filter.*'
+# mnha_srg_ids: '0,1'
 features:
   accounting: false
   alarm: true
@@ -356,6 +366,7 @@ features:
   lldp: false
   mac: false
   macsec: true
+  mnha: false
   mpls_lsp: false
   nat: false
   nat2: false
@@ -468,6 +479,24 @@ This regex can be supplied via:
   ```
 
 If provided, the exporter will execute `show firewall filter regex <regex>` with your custom pattern instead of `.*`.
+
+
+### Configuring MNHA Services-Redundancy-Group IDs
+
+By default, the `mnha` collector only scrapes services-redundancy-group `0`.
+If your devices define additional SRGs, you can configure which group IDs to scrape using the `mnha_srg_ids` option, a comma-separated list.
+
+This option can be supplied via:
+- **CLI Flag**: `-mnha.srg-ids="0,1,2"`
+- **Config File (Global)**: `mnha_srg_ids: '0,1,2'`
+- **Config File (Per-Device)**: Under a specific device configuration:
+  ```yaml
+  devices:
+    - host: router1
+      mnha_srg_ids: '0,1'
+  ```
+
+Per-device config takes precedence over the global config file value, which takes precedence over the CLI flag.
 
 
 ### Grafana Dashboards

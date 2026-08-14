@@ -98,6 +98,16 @@ func deviceFirewallFilterNameRegex(cfg *config.Config, host string) string {
 	return cfg.FirewallFilterNameRegex
 }
 
+func deviceMNHASRGIDs(cfg *config.Config, host string) string {
+	dc := cfg.FindDeviceConfig(host)
+
+	if dc != nil && dc.MNHASRGIDs != "" {
+		return dc.MNHASRGIDs
+	}
+
+	return cfg.MNHASRGIDs
+}
+
 func clientForDevice(device *connector.Device, connManager *connector.SSHConnectionManager) (*rpc.Client, error) {
 	conn, err := connManager.GetSSHConnection(device)
 	if err != nil {

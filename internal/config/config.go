@@ -21,6 +21,7 @@ type Config struct {
 	IfDescReg               *regexp.Regexp  `yaml:"-"`
 	InterfaceNameRegex      string          `yaml:"interface_name_regex,omitempty"`
 	FirewallFilterNameRegex string          `yaml:"firewall_filter_name_regex,omitempty"`
+	MNHASRGIDs              string          `yaml:"mnha_srg_ids,omitempty"`
 }
 
 func (c *Config) load(dynamicIfaceLabels bool) error {
@@ -61,6 +62,7 @@ type DeviceConfig struct {
 	HostPattern             *regexp.Regexp
 	InterfaceNameRegex      string `yaml:"interface_name_regex,omitempty"`
 	FirewallFilterNameRegex string `yaml:"firewall_filter_name_regex,omitempty"`
+	MNHASRGIDs              string `yaml:"mnha_srg_ids,omitempty"`
 }
 
 // FeatureConfig is the list of collectors enabled or disabled
@@ -116,6 +118,7 @@ type FeatureConfig struct {
 	TWAMP               bool `yaml:"twamp,omitempty"`
 	SystemStatistics    bool `yaml:"system_statistics,omitempty"`
 	UFD                 bool `yaml:"ufd,omitempty"`
+	MNHA                bool `yaml:"mnha,omitempty"`
 }
 
 // New creates a new config

@@ -60,7 +60,7 @@ type description struct {
 
 func newDescriptions(dynLabels dynamiclabels.Labels) *description {
 	d := new(description)
-	l := []string{"target", "name", "description", "mac"}
+	l := []string{"target", "name", "if_index", "description", "mac"}
 	l = append(l, dynLabels.Keys()...)
 
 	d.receiveBytesDesc = prometheus.NewDesc(prefix+"receive_bytes", "Received data in bytes", l, nil)
@@ -205,6 +205,7 @@ func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfa
 			ErrorStatus:             !(phy.AdminStatus == phy.OperStatus),
 			Description:             phy.Description,
 			Mac:                     phy.MacAddress,
+			SnmpIndex:               phy.SnmpIndex,
 			ReceiveDrops:            float64(phy.InputErrors.Drops),
 			ReceiveErrors:           float64(phy.InputErrors.Errors),
 			ReceiveBytes:            float64(phy.Stats.InputBytes),
@@ -262,6 +263,7 @@ func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfa
 				Name:                log.Name,
 				Description:         log.Description,
 				Mac:                 phy.MacAddress,
+				SnmpIndex:           log.SnmpIndex,
 				ReceiveBytes:        float64(s.InputBytes),
 				ReceivePackets:      float64(s.InputPackets),
 				TransmitBytes:       float64(s.OutputBytes),
@@ -280,7 +282,7 @@ func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfa
 }
 
 func (c *interfaceCollector) collectForInterface(s *interfaceStats, ch chan<- prometheus.Metric, labelValues []string) {
-	lv := append(labelValues, []string{s.Name, s.Description, s.Mac}...)
+	lv := append(labelValues, []string{s.Name, s.SnmpIndex, s.Description, s.Mac}...)
 	dynLabels := dynamiclabels.ParseDescription(s.Description, c.descriptionRe)
 	lv = append(lv, dynLabels.Values()...)
 	d := newDescriptions(dynLabels)

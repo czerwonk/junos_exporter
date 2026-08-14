@@ -37,7 +37,7 @@ type description struct {
 func newDescriptions(dynLabels dynamiclabels.Labels) *description {
 	d := new(description)
 
-	l := []string{"target", "name", "description"}
+	l := []string{"target", "name", "if_index", "description"}
 	l = append(l, "queue_number")
 	l = append(l, "forwarding_class")
 	l = append(l, dynLabels.Keys()...)
@@ -124,7 +124,7 @@ func (c *interfaceQueueCollector) Collect(client collector.Client, ch chan<- pro
 }
 
 func (c *interfaceQueueCollector) collectForInterface(iface physicalInterface, ch chan<- prometheus.Metric, labelValues []string) {
-	lv := append(labelValues, []string{iface.Name, iface.Description}...)
+	lv := append(labelValues, []string{iface.Name, iface.SnmpIndex, iface.Description}...)
 	dynLabels := dynamiclabels.ParseDescription(iface.Description, c.descriptionRe)
 
 	for _, q := range iface.QueueCounters.Queues {

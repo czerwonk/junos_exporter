@@ -416,6 +416,15 @@ junos_evpn_interface_status
 ```
 This requires the `interfaces` collector to be enabled (the default).
 
+## Interface Index Label
+Interface, interface queue, and interface diagnostics metrics include an `if_index` label when the Junos RPC response provides one. This is the device-local SNMP IF-MIB `ifIndex` for the interface. In Grafana table panels, convert it to a numeric field when numeric ordering is required.
+
+Example:
+```
+name="ae10", if_index="524"
+name="xe-0/0/10.0", if_index="621"
+```
+
 ### Custom Label RegEx
 
 To override the default behavior a `interface_description_regex` can be supplied. This parameter can be given at a global level or per device. To use per-device regexes the target devices need to be defined in the exporter config. Per-device regex cannot be used in combination with `-config.ignore-targets`.

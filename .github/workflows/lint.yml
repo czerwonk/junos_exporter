@@ -1,4 +1,4 @@
-name: Test
+name: Lint
 
 on:
   push:
@@ -9,5 +9,5 @@ on:
       - main
 
 jobs:
-  test:
-    uses: czerwonk/go-ci/.github/workflows/test.yml@v1
+  lint:
+    uses: czerwonk/go-ci/.github/workflows/lint.yml@v1

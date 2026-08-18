@@ -31,7 +31,7 @@ jobs:
           sed -i "s/^appVersion:.*/appVersion: ${{ steps.version.outputs.tag }}/" helm/junosexporter/Chart.yaml
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore(helm): release chart ${{ steps.version.outputs.chart_version }}"

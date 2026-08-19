@@ -96,6 +96,7 @@ type FeatureConfig struct {
 	Cluster             bool `yaml:"cluster,omitempty"`
 	Security            bool `yaml:"security,omitempty"`
 	SecurityIKE         bool `yaml:"security_ike,omitempty"`
+	SecurityNAT         bool `yaml:"security_nat,omitempty"`
 	SecurityPolicies    bool `yaml:"security_policies,omitempty"`
 	FPC                 bool `yaml:"fpc,omitempty"`
 	RPKI                bool `yaml:"rpki,omitempty"`

@@ -48,6 +48,7 @@ The following metrics are supported by now:
 * Storage (total, available and used blocks, used percentage)
 * Firewall filters (counters and policers) - needs explicit rights beyond read-only
 * Security policy (SRX) statistics
+* Security NAT (SRX): source NAT pool resource usage (current and historical peak) and per-rule translation hit counters
 * Interface queue statistics
 * Power (Power usage)
 * License statistics (installed/used/needed)
@@ -159,6 +160,39 @@ junos_evpn_duplicate_mac_total > 0   # forwarding loop or split-brain
 `junos_evpn_ip_prefix_advertisement_count` uses a `status` discriminator label (`accepted`, `rejected`, …) so rejected Type-5 routes can be alerted on without separate metric families:
 ```
 junos_evpn_ip_prefix_advertisement_count{status="rejected"} > 0
+```
+
+### Security NAT
+The pool metrics count ports for port-translating pools and addresses for every other pool type. The `style` label carries the pool type Junos reports (for example `all-pat-pool`), so it tells the two apart:
+
+```
+junos_security_nat_pool_resource_used / junos_security_nat_pool_resource_total > 0.9
+```
+
+`junos_security_nat_pool_peak_usage_percent` is the highest usage the device has seen since the counters were last cleared and cannot be derived from the current values. `junos_security_nat_pool_peak_usage_timestamp_seconds` is only emitted once a peak has actually been recorded.
+
+The rule counters are labelled with the rule identity and the pool it translates to, which allows joining rule load onto pool usage:
+
+```
+junos_security_nat_rule_concurrent_hits
+  * on(target, pool_name) group_left()
+    junos_security_nat_pool_usage_percent
+```
+
+Translations the device rejected (most commonly because the pool ran out of resources) are the difference between the attempted and the successful counter:
+
+```
+  rate(junos_security_nat_rule_translation_hits_total[5m])
+- rate(junos_security_nat_rule_translation_success_hits_total[5m]) > 0
+```
+
+The zones a rule matches are deliberately kept off those counters, because a rule can match many zones and that list changes on configuration changes, which would break `rate()` over the counters. They are exposed as an info-pattern gauge instead, one series per zone pair, always `1`. Join on the rule identity when zones are needed:
+
+```
+junos_security_nat_rule_translation_hits_total
+  * on(target, rule_name, rule_set_name, rule_id)
+  group_left(from_zone, to_zone)
+    junos_security_nat_rule_info
 ```
 
 ### License statistics
@@ -381,6 +415,7 @@ features:
   satellite: false
   security: false
   security_ike: false
+  security_nat: false
   security_policies: false
   storage: false
   subscriber: false

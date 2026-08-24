@@ -103,7 +103,7 @@ func authForDevice(device *config.DeviceConfig, cfg *config.Config) (connector.A
 }
 
 func authForKeyFile(username, keyFile, keyPassphrase string) (connector.AuthMethod, error) {
-	f, err := os.Open(keyFile)
+	f, err := os.Open(keyFile) // #nosec G304 -- keyFile comes from trusted local flags/config, not user input
 	if err != nil {
 		return nil, fmt.Errorf("could not open ssh key file: %w", err)
 	}

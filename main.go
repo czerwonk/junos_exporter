@@ -418,11 +418,16 @@ func startServer() error {
 	log.Infof("Listening for %s on %s (TLS: %v)",
 		*metricsPath, *listenAddress, *tlsEnabled)
 
-	if *tlsEnabled {
-		return http.ListenAndServeTLS(*listenAddress, *tlsCertChainPath, *tlsKeyPath, nil)
+	server := &http.Server{
+		Addr:              *listenAddress,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
-	return http.ListenAndServe(*listenAddress, nil)
+	if *tlsEnabled {
+		return server.ListenAndServeTLS(*tlsCertChainPath, *tlsKeyPath)
+	}
+
+	return server.ListenAndServe()
 }
 
 func startListeningWithWebConfig() error {
@@ -432,7 +437,10 @@ func startListeningWithWebConfig() error {
 			"disabled if that block is absent)", *webConfigFile)
 	}
 
-	server := &http.Server{Addr: *listenAddress}
+	server := &http.Server{
+		Addr:              *listenAddress,
+		ReadHeaderTimeout: 10 * time.Second,
+	}
 	flags := &web.FlagConfig{
 		WebListenAddresses: &[]string{*listenAddress},
 		WebSystemdSocket:   new(false),

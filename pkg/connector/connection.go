@@ -146,6 +146,8 @@ func (c *SSHConnection) testSSHClient() bool {
 
 func (c *SSHConnection) connect() error {
 	cfg := &ssh.ClientConfig{
+		// #nosec G106 -- devices are operator-managed hosts on trusted networks;
+		// there is no known_hosts infrastructure for this tool to verify against.
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         timeoutInSeconds * time.Second,
 	}

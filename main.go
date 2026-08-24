@@ -114,6 +114,7 @@ var (
 	ufdEnabled                  = flag.Bool("ufd.enabled", false, "Scrape UFD (uplink-failure-detection) metrics")
 	mnhaEnabled                 = flag.Bool("mnha.enabled", false, "Scrape MNHA (Mixed/Multi-Node High Availability) metrics")
 	mnhaSRGIDs                  = flag.String("mnha.srg-ids", "0", "Comma-separated list of MNHA services-redundancy-group IDs to scrape")
+	securityNATEnabled          = flag.Bool("security_nat.enabled", false, "Scrape security NAT (source NAT pool usage and rule hit counters) metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -367,6 +368,7 @@ func loadConfigFromFlags() *config.Config {
 	f.Satellite = *satelliteEnabled
 	f.Security = *securityEnabled
 	f.SecurityIKE = *securityIKEEnabled
+	f.SecurityNAT = *securityNATEnabled
 	f.SecurityPolicies = *securityPoliciesEnabled
 	f.Storage = *storageEnabled
 	f.Subscriber = *subscriberEnabled

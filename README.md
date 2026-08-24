@@ -1,9 +1,9 @@
 # junos_exporter
-[![Go Report Card](https://goreportcard.com/badge/github.com/czerwonk/junos_exporter)](https://goreportcard.com/report/github.com/czerwonk/junos_exporter)
 
 Exporter for metrics from devices running JunOS (via SSH) https://prometheus.io/
 
 ## Remarks
+
 This project is an alternative approach for collecting metrics from Juniper devices.
 The set of metrics is minimal to increase performance.
 We (a few friends from the Freifunk community and myself) used the generic snmp_exporter before.
@@ -13,7 +13,9 @@ This approach should allow us to scrape our metrics in a very time efficient way
 For this reason this project was started.
 
 ## Important notice for users of version < 0.10
-In version 0.10 the ``config.ignore-targets`` flag was removed. The same beahior can be achieved by using an match all host pattern:
+
+In version 0.10 the `config.ignore-targets` flag was removed. The same beahior can be achieved by using an match all host pattern:
+
 ```
 devices:
   - host: .*
@@ -21,50 +23,56 @@ devices:
 ```
 
 ## Important notice for users of version < 0.7
+
 In version 0.7 a typo in the prefix of all BGP related metrics was fixed. Please update your queries accordingly.
 
 ## Important notice for users of version < 0.5
+
 In version 0.5 SNMP was replaced by SSH. This is was a breaking change (metric names were kept).
 All SNMP related parameters were removed at this point.
 Please have a look on the new SSH related parameters and update your service units accordingly.
 
 ## Features
+
 The following metrics are supported by now:
-* Interfaces (bytes transmitted/received, errors, drops, speed)
-* Interface L1/L2 details (FEC, MAC statistics)
-* L2 security (BPDU-block violations)
-* Routes (per table, by protocol)
-* Alarms (count)
-* BGP (message count, prefix counts per peer, session state)
-* OSPFv2, OSPFv3 (number of neighbors)
-* Interface diagnostics (optical signals)
-* ISIS (number of adjacencies, total number of routers)
-* NAT (all available statistics from services nat)
-* Chassis cluster HA status (SRX)
-* Environment (temperatures, fans and PEM power statistics)
-* EVPN (per-EVI state, neighbor route counts, detail tables for interfaces / IRBs / bridge-domains / ESIs with DF election, duplicate-MAC detection, L3 contexts)
-* EVPN Type-5 / IP-prefix database (per-context per-AFI local + remote prefix counts, accepted/rejected advertisements) — separate flag (`-evpn_ip_prefix.enabled`) because the response scales with prefix count
-* Routing engine statistics
-* Storage (total, available and used blocks, used percentage)
-* Firewall filters (counters and policers) - needs explicit rights beyond read-only
-* Security policy (SRX) statistics
-* Security NAT (SRX): source NAT pool resource usage (current and historical peak) and per-rule translation hit counters
-* Interface queue statistics
-* Power (Power usage)
-* License statistics (installed/used/needed)
-* L2circuits (tunnel state, number of tunnels)
-* LDP (number of neighbors, sessions and session states)
-* LLDP (local port, local parent interface, remote port and remote system name)
-* VRRP (state per interface)
-* Subscribers Information (show subscribers client-type dhcp detail)
-* PoE (show poe interface)
-* UFD (uplink-failure-detection group state)
-* MNHA (Mixed/Multi-Node High Availability, SRX): node/peer BFD & ICL status, cold-sync, SPU/hardware monitoring, PFE loopback checks, services-redundancy-group state
+
+- Interfaces (bytes transmitted/received, errors, drops, speed)
+- Interface L1/L2 details (FEC, MAC statistics)
+- L2 security (BPDU-block violations)
+- Routes (per table, by protocol)
+- Alarms (count)
+- BGP (message count, prefix counts per peer, session state)
+- OSPFv2, OSPFv3 (number of neighbors)
+- Interface diagnostics (optical signals)
+- ISIS (number of adjacencies, total number of routers)
+- NAT (all available statistics from services nat)
+- Chassis cluster HA status (SRX)
+- Environment (temperatures, fans and PEM power statistics)
+- EVPN (per-EVI state, neighbor route counts, detail tables for interfaces / IRBs / bridge-domains / ESIs with DF election, duplicate-MAC detection, L3 contexts)
+- EVPN Type-5 / IP-prefix database (per-context per-AFI local + remote prefix counts, accepted/rejected advertisements) — separate flag (`-evpn_ip_prefix.enabled`) because the response scales with prefix count
+- Routing engine statistics
+- Storage (total, available and used blocks, used percentage)
+- Firewall filters (counters and policers) - needs explicit rights beyond read-only
+- Security policy (SRX) statistics
+- Security NAT (SRX): source NAT pool resource usage (current and historical peak) and per-rule translation hit counters
+- Interface queue statistics
+- Power (Power usage)
+- License statistics (installed/used/needed)
+- L2circuits (tunnel state, number of tunnels)
+- LDP (number of neighbors, sessions and session states)
+- LLDP (local port, local parent interface, remote port and remote system name)
+- VRRP (state per interface)
+- Subscribers Information (show subscribers client-type dhcp detail)
+- PoE (show poe interface)
+- UFD (uplink-failure-detection group state)
+- MNHA (Mixed/Multi-Node High Availability, SRX): node/peer BFD & ICL status, cold-sync, SPU/hardware monitoring, PFE loopback checks, services-redundancy-group state
 
 ## Feature specific mappings
+
 Some collected time series behave like enums - Integer values represent a certain state/meaning.
 
 ### Chassis cluster (`junos_chassis_cluster_node_status`)
+
 ```
 1: primary
 2: secondary
@@ -76,6 +84,7 @@ Some collected time series behave like enums - Integer values represent a certai
 ```
 
 ### MNHA (`junos_mnha_node_status`, `junos_mnha_srg_state`)
+
 ```
  1: ONLINE
  0: OFFLINE
@@ -83,6 +92,7 @@ Some collected time series behave like enums - Integer values represent a certai
 ```
 
 ### L2circuits
+
 ```
 0:EI -- encapsulation invalid
 1:MM -- mtu mismatch
@@ -110,12 +120,14 @@ Some collected time series behave like enums - Integer values represent a certai
 ```
 
 ### LDP
+
 ```
 0: "Nonexistent"
 1: "Operational"
 ```
 
 ### RPKI
+
 ```
 0 = "Down"
 1 = "Up"
@@ -126,7 +138,9 @@ Some collected time series behave like enums - Integer values represent a certai
 ```
 
 ### VRRP
+
 States map to human readable names like this:
+
 ```
 1: "init"
 2: "backup"
@@ -134,6 +148,7 @@ States map to human readable names like this:
 ```
 
 ### EVPN
+
 The EVPN collector exposes both per-EVI scalars and several state metrics. The state metrics all use the same 0/1 mapping:
 
 ```
@@ -152,17 +167,21 @@ junos_evpn_esi_resolved
 ```
 
 The duplicate-MAC suppression total is always emitted and is the primary alert signal:
+
 ```
 junos_evpn_duplicate_mac_total > 0   # forwarding loop or split-brain
 ```
 
 ### EVPN Type-5 IP prefix
+
 `junos_evpn_ip_prefix_advertisement_count` uses a `status` discriminator label (`accepted`, `rejected`, …) so rejected Type-5 routes can be alerted on without separate metric families:
+
 ```
 junos_evpn_ip_prefix_advertisement_count{status="rejected"} > 0
 ```
 
 ### Security NAT
+
 The pool metrics count ports for port-translating pools and addresses for every other pool type. The `style` label carries the pool type Junos reports (for example `all-pat-pool`), so it tells the two apart:
 
 ```
@@ -196,7 +215,9 @@ junos_security_nat_rule_translation_hits_total
 ```
 
 ### License statistics
+
 Expiry is either presented as number of days until expiry date or certain special values.
+
 ```
 0 ... n = Days until expiry
      -1 = Expired
@@ -205,27 +226,33 @@ Expiry is either presented as number of days until expiry date or certain specia
 ```
 
 ## Install
+
 ```bash
 go get -u github.com/czerwonk/junos_exporter@master
 ```
 
 ## Usage
+
 In this example we want to scrape 3 hosts:
-* Host 1 (DNS: host1.example.com, Port: 22)
-* Host 2 (DNS: host2.example.com, Port: 2233)
-* Host 3 (IP: 172.16.0.1, Port: 22)
+
+- Host 1 (DNS: host1.example.com, Port: 22)
+- Host 2 (DNS: host2.example.com, Port: 2233)
+- Host 3 (IP: 172.16.0.1, Port: 22)
 
 ### Binary
+
 ```bash
 ./junos_exporter -ssh.targets="host1.example.com,host2.example.com:2233,172.16.0.1" -ssh.keyfile=junos_exporter
 ```
 
 ### Docker
+
 ```bash
 docker run -d --restart unless-stopped -p 9326:9326 -e SSH_KEYFILE=/ssh-keyfile -v /opt/junos_exporter_keyfile:/ssh-keyfile:ro -v /opt/junos_exporter_config.yml:/config.yml:ro czerwonk/junos_exporter
 ```
 
 ### Authentication
+
 junos_exporter supports SSH authentication via key or password based authentication.
 `-ssh.keyfile=<file>` enables key based authentication. `-ssh.password=<password-string>` enables password based authentication, this can also be enabled via the config file in the form of a `password: <password-string>` entry.
 Authentication order is ssh key, if none is found the cli flag is checked, the config file is checked last. If no valid auth method is specified junos_exporter exits with an error.
@@ -237,8 +264,8 @@ Both the SSH key passphrase and the SSH password can be supplied from any
 one of three mutually-exclusive sources -- a literal flag value, the
 contents of an environment variable, or the contents of a file:
 
-| Secret | Literal | Environment variable | File |
-|---|---|---|---|
+| Secret         | Literal                       | Environment variable           | File                            |
+| -------------- | ----------------------------- | ------------------------------ | ------------------------------- |
 | Key passphrase | `-ssh.keyPassphrase=<string>` | `-ssh.keyPassphraseEnv=<NAME>` | `-ssh.keyPassphraseFile=<PATH>` |
 | Password       | `-ssh.password=<string>`      | `-ssh.passwordEnv=<NAME>`      | `-ssh.passwordFile=<PATH>`      |
 
@@ -257,21 +284,22 @@ Only the global flags are affected; the per-device `key_passphrase` and
 `password` fields in the YAML config are unchanged.
 
 ### Target Parameter
+
 By default, all configured targets will be scrapped when `/metrics` is hit. As an alternative, it is possible to scrape a specific target by passing the target's hostname/IP address to the target parameter - e.g. ` http://localhost:9326/metrics?target=1.2.3.4`. The specific target must be present in the configuration file or passed in with the ssh.targets flag, you can also specify the `-config.ignore-targets` flag if you don't want to specify targets in the config or commandline, if none of this matches the request will be denied. This can be used with the below example Prometheus config:
 
 ```yaml
 scrape_configs:
-  - job_name: 'junos'
+  - job_name: "junos"
     static_configs:
       - targets:
-        - 192.168.1.2  # Target device.
+          - 192.168.1.2 # Target device.
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: 127.0.0.1:9326  # The junos_exporter's real hostname:port.
+        replacement: 127.0.0.1:9326 # The junos_exporter's real hostname:port.
 ```
 
 ### HTTP server: TLS and basic auth
@@ -285,10 +313,10 @@ of the Prometheus ecosystem. Pass a web-config YAML file with
 # web.config.yml
 tls_server_config:
   cert_file: /etc/junos_exporter/server.crt
-  key_file:  /etc/junos_exporter/server.key
+  key_file: /etc/junos_exporter/server.key
 
 basic_auth_users:
-  prom:    $2y$10$<bcrypt-hash>
+  prom: $2y$10$<bcrypt-hash>
   grafana: $2y$10$<another-bcrypt-hash>
 ```
 
@@ -319,11 +347,11 @@ scrape_configs:
 
 #### Dispatch / backwards compatibility
 
-| `-web.config.file` | `-tls.enabled` | Behaviour |
-|---|---|---|
-| empty | false | plain HTTP (unchanged) |
-| empty | true  | TLS via legacy `-tls.cert-file` / `-tls.key-file` (unchanged) |
-| set   | any   | `exporter-toolkit` handles everything; legacy `-tls.*` flags are ignored |
+| `-web.config.file` | `-tls.enabled` | Behaviour                                                                |
+| ------------------ | -------------- | ------------------------------------------------------------------------ |
+| empty              | false          | plain HTTP (unchanged)                                                   |
+| empty              | true           | TLS via legacy `-tls.cert-file` / `-tls.key-file` (unchanged)            |
+| set                | any            | `exporter-toolkit` handles everything; legacy `-tls.*` flags are ignored |
 
 The legacy `-tls.enabled` / `-tls.cert-file` / `-tls.key-file` flags keep
 working unchanged for existing deployments. New deployments should prefer
@@ -428,18 +456,22 @@ features:
 ```
 
 ## Dynamic Interface Labels
+
 Version 0.9.5 introduced dynamic labels retrieved from the interface descriptions. Version 0.12.4 added support for dynamic labels on BGP metrics. Flags are supported a well. The first part (label name) has to comply to the following rules:
-* must not begin with a figure
-* must only contain this characters: A-Z,a-z,0-9,_
-* is treated lower case
-* must no conflict with label names used in junos_exporter
+
+- must not begin with a figure
+- must only contain this characters: A-Z,a-z,0-9,_
+- is treated lower case
+- must no conflict with label names used in junos_exporter
 
 Values can contain arbitrary characters.
 
-The complete feature can be disabled by setting ``-dynamic-interface-labels`` to false.
+The complete feature can be disabled by setting `-dynamic-interface-labels` to false.
 
 ### Examples
+
 Tags:
+
 ```
 Description: XYZ [prod]
 Label name: prod
@@ -447,6 +479,7 @@ Label value: 1
 ```
 
 Label value pairs:
+
 ```
 Description: XYZ [peer=202739]
 Label name: peer
@@ -454,18 +487,23 @@ Label value: 202739
 ```
 
 ### Enriching other collectors via PromQL join
+
 Dynamic labels are attached only to metrics whose source RPC carries the description text (interfaces, interfacediagnostics, interfacequeue, bgp). Other collectors with an `interface` label — for example EVPN's `junos_evpn_interface_status` or `junos_evpn_esi_designated_forwarder_info` — can pick up the same labels at query time via a vector join on `(target, interface)`:
+
 ```
 junos_evpn_interface_status
   * on(target, interface) group_left(prod, peer, customer)
     junos_interfaces_up
 ```
+
 This requires the `interfaces` collector to be enabled (the default).
 
 ## Interface Index Label
+
 Interface, interface queue, and interface diagnostics metrics include an `if_index` label when the Junos RPC response provides one. This is the device-local SNMP IF-MIB `ifIndex` for the interface. In Grafana table panels, convert it to a numeric field when numeric ordering is required.
 
 Example:
+
 ```
 name="ae10", if_index="524"
 name="xe-0/0/10.0", if_index="621"
@@ -476,9 +514,9 @@ name="xe-0/0/10.0", if_index="621"
 To override the default behavior a `interface_description_regex` can be supplied. This parameter can be given at a global level or per device. To use per-device regexes the target devices need to be defined in the exporter config. Per-device regex cannot be used in combination with `-config.ignore-targets`.
 
 #### Example
+
 The default regex `\[([^=\]]+)(=[^\]]+)?\]` would match interface descriptions like `"Description [foo] [bar=123]"`.
 If we use `[[\s]([^=\[\]]+)(=[^,\]]+)?[,\]]` we can now match for `"Description [foo, bar=123]"` instead.
-
 
 ### Configuring Interfaces Collector Command Argument
 
@@ -486,17 +524,17 @@ By default, the interfaces collector executes the command `show interfaces exten
 If you want to query only specific interfaces or apply a wildcard filter (for example, to reduce scrape times or target specific ports), you can configure a custom argument using the `interface_name_regex` option. One example is for use with subscriber management, where `'"[!(d)][!(i)]*"'` will avoid scraping all the demux interfaces.
 
 This argument can be supplied via:
+
 - **CLI Flag**: `-interfaces.name-regex="\"[!(d)][!(i)]*\""`
 - **Config File (Global)**: `interface_name_regex: '"[!(d)][!(i)]*"'`
 - **Config File (Per-Device)**: Under a specific device configuration:
   ```yaml
   devices:
     - host: router1
-      interface_name_regex: 'ge-*'
+      interface_name_regex: "ge-*"
   ```
 
 If provided, the exporter will execute `show interfaces <argument> extensive` instead of the default `show interfaces extensive`.
-
 
 ### Configuring Firewall Filter Name Regex
 
@@ -504,17 +542,17 @@ By default, the firewall collector executes the command `show firewall filter re
 If you want to limit the collector to query only specific filters matching a regular expression, you can configure a custom regex using the `firewall_filter_name_regex` option.
 
 This regex can be supplied via:
+
 - **CLI Flag**: `-firewall.filter-name-regex="test-filter.*"`
 - **Config File (Global)**: `firewall_filter_name_regex: 'test-filter.*'`
 - **Config File (Per-Device)**: Under a specific device configuration:
   ```yaml
   devices:
     - host: router1
-      firewall_filter_name_regex: 'router1-filter.*'
+      firewall_filter_name_regex: "router1-filter.*"
   ```
 
 If provided, the exporter will execute `show firewall filter regex <regex>` with your custom pattern instead of `.*`.
-
 
 ### Configuring MNHA Services-Redundancy-Group IDs
 
@@ -522,33 +560,40 @@ By default, the `mnha` collector only scrapes services-redundancy-group `0`.
 If your devices define additional SRGs, you can configure which group IDs to scrape using the `mnha_srg_ids` option, a comma-separated list.
 
 This option can be supplied via:
+
 - **CLI Flag**: `-mnha.srg-ids="0,1,2"`
 - **Config File (Global)**: `mnha_srg_ids: '0,1,2'`
 - **Config File (Per-Device)**: Under a specific device configuration:
   ```yaml
   devices:
     - host: router1
-      mnha_srg_ids: '0,1'
+      mnha_srg_ids: "0,1"
   ```
 
 Per-device config takes precedence over the global config file value, which takes precedence over the CLI flag.
 
-
 ### Grafana Dashboards
+
 There are example Grafana dashboards included in [example/dashboards](example/dashboards).
 
 ## Third Party Components
+
 This software uses components of the following projects
-* Prometheus Go client library (https://github.com/prometheus/client_golang)
+
+- Prometheus Go client library (https://github.com/prometheus/client_golang)
 
 ## Contributors
+
 for a full list of contributors have a look at https://github.com/czerwonk/junos_exporter/graphs/contributors
 
 ## License
+
 (c) Daniel Czerwonk, 2017. Licensed under [MIT](LICENSE) license.
 
 ## Prometheus
+
 see https://prometheus.io/
 
 ## JunOS
+
 see https://www.juniper.net/us/en/products-services/nos/junos/

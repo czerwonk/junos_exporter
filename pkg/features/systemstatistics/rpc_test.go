@@ -175,7 +175,7 @@ func TestStatisticsIPv6Unmarshaling(t *testing.T) {
 				log.Fatal("failed to unmarshal xml file in IPv6 testing due to: ", err)
 			}
 			result.Statistics.Ip6.Text = ""
-			for i, _ := range result.Statistics.Ip6.HeaderType {
+			for i := range result.Statistics.Ip6.HeaderType {
 				result.Statistics.Ip6.HeaderType[i].Text = ""
 				tc.expect.Statistics.Ip6.HeaderType[i].HeaderForSourceAddressSelection = ""
 			}
@@ -551,7 +551,7 @@ func TestStatisticsICMPUnmarshaling(t *testing.T) {
 			if err != nil {
 				log.Fatal("failed to unmarshal xml file in ICMP testing due to: ", err)
 			}
-			for i, _ := range result.Statistics.Icmp.Histogram {
+			for i := range result.Statistics.Icmp.Histogram {
 				result.Statistics.Icmp.Histogram[i].Text = ""
 				result.Statistics.Icmp.Histogram[i].TypeOfHistogram = ""
 			}

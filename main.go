@@ -396,7 +396,7 @@ func connectionManager() *connector.SSHConnectionManager {
 func startServer() error {
 	log.Infof("Starting JunOS exporter (Version: %s)", version)
 	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
-		w.Write([]byte(`<html>
+		_, _ = w.Write([]byte(`<html>
 			<head><title>JunOS Exporter (Version ` + version + `)</title></head>
 			<body>
 			<h1>JunOS Exporter</h1>

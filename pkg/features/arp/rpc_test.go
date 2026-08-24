@@ -70,7 +70,7 @@ func TestARP(t *testing.T) {
 		inTest[a.InterfaceName] += 1
 	}
 	assert.Equal(t, len(expected), len(inTest))
-	for key, _ := range inTest {
+	for key := range inTest {
 		assert.Equal(t, int64(expected[key]), int64(inTest[key]))
 	}
 }

@@ -105,9 +105,10 @@ func (c *alarmCollector) alarmCounter(client collector.Client) (*alarmCounter, *
 					continue
 				}
 
-				if d.Class == "Major" {
+				switch d.Class {
+				case "Major":
 					red++
-				} else if d.Class == "Minor" {
+				case "Minor":
 					yellow++
 				}
 

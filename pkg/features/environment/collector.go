@@ -74,10 +74,11 @@ func (*environmentCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *environmentCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	c.environmentItems(client, ch, labelValues)
-	c.environmentPEMItems(client, ch, labelValues)
+	if err := c.environmentItems(client, ch, labelValues); err != nil {
+		return err
+	}
 
-	return nil
+	return c.environmentPEMItems(client, ch, labelValues)
 }
 
 func (c *environmentCollector) environmentItems(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
@@ -118,9 +119,8 @@ func (c *environmentCollector) environmentItems(client collector.Client, ch chan
 	}
 
 	for _, re := range x.MultiREResults.RoutingEngines {
-		l := labelValues
 		for _, item := range re.EnvironmentInformation.Items {
-			l = append(labelValues, re.Name)
+			l := append(labelValues, re.Name)
 			if strings.Contains(item.Name, "Power Supply") || strings.Contains(item.Name, "PEM") || strings.Contains(item.Name, "PSM") {
 				l = append(l, item.Name, item.Status)
 				ch <- prometheus.MustNewConstMetric(powerSupplyDesc, prometheus.GaugeValue, float64(statusValues[item.Status]), l...)

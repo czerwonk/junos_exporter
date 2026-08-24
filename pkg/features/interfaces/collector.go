@@ -202,7 +202,7 @@ func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfa
 			Name:                    phy.Name,
 			AdminStatus:             phy.AdminStatus == "up",
 			OperStatus:              phy.OperStatus == "up",
-			ErrorStatus:             !(phy.AdminStatus == phy.OperStatus),
+			ErrorStatus:             phy.AdminStatus != phy.OperStatus,
 			Description:             phy.Description,
 			Mac:                     phy.MacAddress,
 			SnmpIndex:               phy.SnmpIndex,

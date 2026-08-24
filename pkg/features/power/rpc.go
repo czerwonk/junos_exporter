@@ -93,33 +93,37 @@ func (p *PowerBudgetInformation) UnmarshalXML(d *xml.Decoder, start xml.StartEle
 
 		switch t := tok.(type) {
 		case xml.StartElement:
+			var decodeErr error
 			switch t.Name.Local {
 			case "line-card-slot":
-				d.DecodeElement(&p.LineCardSlot, &t)
+				decodeErr = d.DecodeElement(&p.LineCardSlot, &t)
 			case "psu-slot":
 				flush() // save previous PSU before starting a new one
 				current = new(PSU)
-				d.DecodeElement(&current.Slot, &t)
+				decodeErr = d.DecodeElement(&current.Slot, &t)
 			case "psu-type":
 				if current != nil {
-					d.DecodeElement(&current.Type, &t)
+					decodeErr = d.DecodeElement(&current.Type, &t)
 				}
 			case "power-supplied-psu":
 				if current != nil {
-					d.DecodeElement(&current.PowerSupplied, &t)
+					decodeErr = d.DecodeElement(&current.PowerSupplied, &t)
 				}
 			case "power-supply-state":
 				if current != nil {
-					d.DecodeElement(&current.State, &t)
+					decodeErr = d.DecodeElement(&current.State, &t)
 				}
 			case "total-power-supplied":
-				d.DecodeElement(&p.TotalPowerSupplied, &t)
+				decodeErr = d.DecodeElement(&p.TotalPowerSupplied, &t)
 			case "base-power":
-				d.DecodeElement(&p.BasePower, &t)
+				decodeErr = d.DecodeElement(&p.BasePower, &t)
 			case "actual-power-used":
-				d.DecodeElement(&p.ActualPowerUsed, &t)
+				decodeErr = d.DecodeElement(&p.ActualPowerUsed, &t)
 			default:
-				d.Skip()
+				decodeErr = d.Skip()
+			}
+			if decodeErr != nil {
+				return decodeErr
 			}
 		case xml.EndElement:
 			if t.Name.Local == start.Name.Local {

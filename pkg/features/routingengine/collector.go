@@ -175,7 +175,10 @@ func (c *routingEngineCollector) Collect(client collector.Client, ch chan<- prom
 	for _, re := range x.Results.RoutingEngines {
 		labelValues := append(labelValues, re.Name)
 		for _, engine := range re.Information.RouteEngines {
-			c.collectForSlot(engine, ch, labelValues)
+			err := c.collectForSlot(engine, ch, labelValues)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

@@ -60,12 +60,12 @@ func (c *SSHConnection) Stop(err error) {
 	close(c.done)
 
 	if c.sshClient != nil {
-		c.sshClient.Close()
+		_ = c.sshClient.Close()
 		c.sshClient = nil
 	}
 
 	if c.tcpConn != nil {
-		c.tcpConn.Close()
+		_ = c.tcpConn.Close()
 		c.tcpConn = nil
 	}
 
@@ -78,7 +78,7 @@ func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 
 	sshClient := c.getSSHClient()
 	if sshClient == nil {
-		c.Stop(fmt.Errorf("No ssh client"))
+		c.Stop(fmt.Errorf("no ssh client"))
 		return nil, fmt.Errorf("no SSH client to %s", c.device.Host)
 	}
 
@@ -87,7 +87,7 @@ func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 		c.Stop(fmt.Errorf("SSH session failure"))
 		return nil, fmt.Errorf("could not open session with %s: %w", c.device.Host, err)
 	}
-	defer session.Close()
+	defer func() { _ = session.Close() }()
 
 	var b = &bytes.Buffer{}
 	session.Stdout = b
@@ -162,7 +162,7 @@ func (c *SSHConnection) connect() error {
 
 	sshConn, chans, reqs, err := ssh.NewClientConn(tcpConn, host, cfg)
 	if err != nil {
-		tcpConn.Close()
+		_ = tcpConn.Close()
 		return fmt.Errorf("could not connect to device: %w", err)
 	}
 

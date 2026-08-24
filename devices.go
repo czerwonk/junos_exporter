@@ -107,7 +107,7 @@ func authForKeyFile(username, keyFile, keyPassphrase string) (connector.AuthMeth
 	if err != nil {
 		return nil, fmt.Errorf("could not open ssh key file: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	auth, err := connector.AuthByKey(username, f, keyPassphrase)
 	if err != nil {

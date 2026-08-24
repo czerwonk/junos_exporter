@@ -41,11 +41,11 @@ func TestToolkitErrorIsForwardedAtErrorLevel(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer lis.Close()
+	defer func() { _ = lis.Close() }()
 	addr := lis.Addr().String()
 
 	server := &http.Server{}
-	defer server.Close()
+	defer func() { _ = server.Close() }()
 
 	listenAddrs := []string{addr}
 	systemdSocket := false
@@ -85,8 +85,8 @@ func TestToolkitErrorIsForwardedAtErrorLevel(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GET failed: %v", err)
 	}
-	io.Copy(io.Discard, resp.Body)
-	resp.Body.Close()
+	_, _ = io.Copy(io.Discard, resp.Body)
+	_ = resp.Body.Close()
 
 	// Toolkit logs synchronously inside ServeHTTP, but logrus may buffer at
 	// the Writer boundary -- give it a brief flush window.
@@ -127,8 +127,8 @@ func waitForHTTPReady(client *http.Client, url string, serveErr <-chan error, ti
 		}
 		resp, err := client.Get(url)
 		if err == nil {
-			io.Copy(io.Discard, resp.Body)
-			resp.Body.Close()
+			_, _ = io.Copy(io.Discard, resp.Body)
+			_ = resp.Body.Close()
 			return nil
 		}
 		lastErr = err

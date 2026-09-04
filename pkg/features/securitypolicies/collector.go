@@ -85,6 +85,10 @@ func (c *securityPolicyCollector) CollectStats(client collector.Client, ch chan<
 		return err
 	}
 
+	if len(x.Results.RoutingEngines) == 0 {
+		return nil
+	}
+
 	for _, ctx := range x.Results.RoutingEngines[0].Policies.Contexts {
 		for _, pol := range ctx.Policies {
 			if pol.PolicyInformation.StatisticsInformation == nil {
@@ -127,6 +131,10 @@ func (c *securityPolicyCollector) CollectHits(client collector.Client, ch chan<-
 	})
 	if err != nil {
 		return err
+	}
+
+	if len(x.MultiRoutingEngineResults.RoutingEngine) == 0 {
+		return nil
 	}
 
 	for _, pol := range x.MultiRoutingEngineResults.RoutingEngine[0].HitCount.Policies {

@@ -82,7 +82,7 @@ func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 		return nil, fmt.Errorf("no SSH client to %s", c.device.Host)
 	}
 
-	session, err := c.sshClient.NewSession()
+	session, err := sshClient.NewSession()
 	if err != nil {
 		c.Stop(fmt.Errorf("SSH session failure"))
 		return nil, fmt.Errorf("could not open session with %s: %w", c.device.Host, err)
@@ -110,10 +110,14 @@ func (c *SSHConnection) keepalive(expiredConnectionTimeout time.Duration) {
 				return
 			}
 
-			_ = c.tcpConn.SetDeadline(time.Now().Add(c.keepAliveTimeout))
-
-			ok := c.testSSHClient()
+			tcpConn, sshClient, ok := c.connectionHandles()
 			if !ok {
+				return
+			}
+
+			_ = tcpConn.SetDeadline(time.Now().Add(c.keepAliveTimeout))
+
+			if !c.testSSHClient(sshClient) {
 				return
 			}
 		case <-c.done:
@@ -131,9 +135,7 @@ func (c *SSHConnection) terminateIfLifetimeExpired(expiredConnectionTimeout time
 	return false
 }
 
-func (c *SSHConnection) testSSHClient() bool {
-	sshClient := c.getSSHClient()
-
+func (c *SSHConnection) testSSHClient(sshClient *ssh.Client) bool {
 	_, _, err := sshClient.SendRequest("keepalive@golang.org", true, nil)
 	if err != nil {
 		log.Infof("SSH keepalive request to %s failed: %v", c.device, err)
@@ -190,6 +192,20 @@ func (c *SSHConnection) GetLastUsed() time.Time {
 	defer c.lastUsedMu.RUnlock()
 
 	return c.lastUsed
+}
+
+// connectionHandles returns the transport and SSH client under a single lock.
+// ok is false once the connection has been stopped, so callers bail out instead
+// of dereferencing fields Stop has already cleared.
+func (c *SSHConnection) connectionHandles() (net.Conn, *ssh.Client, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	if !c.isConnected || c.tcpConn == nil || c.sshClient == nil {
+		return nil, nil, false
+	}
+
+	return c.tcpConn, c.sshClient, true
 }
 
 func (c *SSHConnection) getSSHClient() *ssh.Client {

@@ -27,7 +27,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const version string = "0.17.2"
+// Overridden at build time via -ldflags -X. They must stay variables: -X cannot
+// patch a constant.
+var (
+	version   = "0.17.2"
+	revision  = "unknown"
+	branch    = "unknown"
+	buildDate = "unknown"
+)
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -209,6 +216,9 @@ func handleSignals(ctx context.Context, cancel context.CancelFunc, hup, term <-c
 func printVersion() {
 	fmt.Println("junos_exporter")
 	fmt.Printf("Version: %s\n", version)
+	fmt.Printf("Revision: %s\n", revision)
+	fmt.Printf("Branch: %s\n", branch)
+	fmt.Printf("Build date: %s\n", buildDate)
 	fmt.Println("Author(s): Daniel Czerwonk")
 	fmt.Println("Metric exporter for switches and routers running JunOS")
 }

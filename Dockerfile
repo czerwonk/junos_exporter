@@ -20,8 +20,8 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} \
 
 
 FROM gcr.io/distroless/static-debian13:nonroot@sha256:e2e927ec666bae08560abb3c55d0659eceabb657f56b6782ab500a9fc7f555e3
-# evaluated by junos_exporter itself when started without arguments (see docker_env.go)
 
+# evaluated by junos_exporter itself when started without arguments (see docker_env.go)
 ENV SSH_KEYFILE=""
 ENV CONFIG_FILE="/config.yml"
 ENV ALARM_FILTER=""

@@ -113,7 +113,7 @@ func (c *environmentCollector) environmentItems(client collector.Client, ch chan
 			return nil
 		}
 
-		if len(y.MultiREResults.RoutingEngines) > 0 {
+		if len(x.MultiREResults.RoutingEngines) > 0 && len(y.MultiREResults.RoutingEngines) > 0 {
 			x.MultiREResults.RoutingEngines[0].EnvironmentInformation.Items = append(x.MultiREResults.RoutingEngines[0].EnvironmentInformation.Items, y.MultiREResults.RoutingEngines[0].EnvironmentInformation.Items...)
 		}
 	}

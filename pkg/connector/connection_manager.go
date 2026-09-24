@@ -145,7 +145,16 @@ func formatHost(host string) string {
 
 // CloseAll closes all TCP connections and stops keep alives
 func (m *SSHConnectionManager) CloseAll() {
+	m.connectionsMu.Lock()
+	connections := make([]*SSHConnection, 0, len(m.connections))
 	for _, c := range m.connections {
+		connections = append(connections, c)
+	}
+	m.connectionsMu.Unlock()
+
+	// Stop outside the lock: it blocks on network teardown and takes the
+	// connection's own mutex.
+	for _, c := range connections {
 		c.Stop(fmt.Errorf("end of world"))
 	}
 }

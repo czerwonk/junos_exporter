@@ -255,6 +255,9 @@ The image is based on `gcr.io/distroless/static-debian13:nonroot` and runs as UI
 Mounted files (e.g. the SSH key) must be readable by this user (e.g. `chown 65532 /opt/junos_exporter_keyfile`),
 alternatively the user can be overridden with `--user`.
 
+The image contains no shell or other tools (e.g. `wget`/`curl`), so healthchecks or commands executed inside
+the container are not possible. Use an external check against `http://<host>:9326/metrics` instead.
+
 When the container is started without arguments, the environment variables `SSH_KEYFILE`, `CONFIG_FILE` (default `/config.yml`),
 `ALARM_FILTER` and `CMD_FLAGS` (whitespace separated additional flags) are mapped to the corresponding flags.
 If arguments are passed (e.g. `docker run czerwonk/junos_exporter /app/junos_exporter -ssh.targets=...`), these variables are ignored.

@@ -35,7 +35,7 @@ var (
 	metricsPath                 = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	sshHosts                    = flag.String("ssh.targets", "", "Hosts to scrape")
 	sshUsername                 = flag.String("ssh.user", "junos_exporter", "Username to use when connecting to junos devices using ssh")
-	sshKeyFile                  = flag.String("ssh.keyfile", "", "Public key file to use when connecting to junos devices using ssh")
+	sshKeyFile                  = flag.String("ssh.keyfile", "", "Private key file to use when connecting to junos devices using ssh")
 	sshKeyPassphrase            = flag.String("ssh.keyPassphrase", "", "Passphrase to decrypt key file if it's encrypted (mutually exclusive with -ssh.keyPassphraseEnv and -ssh.keyPassphraseFile)")
 	sshKeyPassphraseEnv         = flag.String("ssh.keyPassphraseEnv", "", "Name of an environment variable to read the SSH key passphrase from")
 	sshKeyPassphraseFile        = flag.String("ssh.keyPassphraseFile", "", "Path to a file containing the SSH key passphrase (trailing newline trimmed)")

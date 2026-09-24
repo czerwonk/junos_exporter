@@ -251,6 +251,14 @@ In this example we want to scrape 3 hosts:
 docker run -d --restart unless-stopped -p 9326:9326 -e SSH_KEYFILE=/ssh-keyfile -v /opt/junos_exporter_keyfile:/ssh-keyfile:ro -v /opt/junos_exporter_config.yml:/config.yml:ro czerwonk/junos_exporter
 ```
 
+The image is based on `gcr.io/distroless/static-debian13:nonroot` and runs as UID `65532` without a shell.
+Mounted files (e.g. the SSH key) must be readable by this user (e.g. `chown 65532 /opt/junos_exporter_keyfile`),
+alternatively the user can be overridden with `--user`.
+
+When the container is started without arguments, the environment variables `SSH_KEYFILE`, `CONFIG_FILE` (default `/config.yml`),
+`ALARM_FILTER` and `CMD_FLAGS` (whitespace separated additional flags) are mapped to the corresponding flags.
+If arguments are passed (e.g. `docker run czerwonk/junos_exporter /app/junos_exporter -ssh.targets=...`), these variables are ignored.
+
 ### Authentication
 
 junos_exporter supports SSH authentication via key or password based authentication.

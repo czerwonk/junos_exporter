@@ -3,13 +3,13 @@ ADD . /go/junos_exporter/
 WORKDIR /go/junos_exporter
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /go/bin/junos_exporter
 
-FROM alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6
+FROM gcr.io/distroless/static-debian13:nonroot@sha256:2293b36c7c9082bf4115aab724b4d2cddec82c8eba39bf27ac0517e159acf150
+# evaluated by junos_exporter itself when started without arguments (see docker_env.go)
 ENV SSH_KEYFILE=""
 ENV CONFIG_FILE="/config.yml"
 ENV ALARM_FILTER=""
 ENV CMD_FLAGS=""
-RUN apk --no-cache add ca-certificates
 WORKDIR /app
 COPY --from=builder /go/bin/junos_exporter .
-CMD ./junos_exporter -ssh.keyfile=$SSH_KEYFILE -config.file=$CONFIG_FILE -alarms.filter=$ALARM_FILTER $CMD_FLAGS
+CMD ["/app/junos_exporter"]
 EXPOSE 9326

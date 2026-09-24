@@ -131,7 +131,7 @@ func init() {
 }
 
 func main() {
-	flag.Parse()
+	_ = flag.CommandLine.Parse(legacyDockerArgs(os.Args[1:], os.LookupEnv))
 
 	if *showVersion {
 		printVersion()

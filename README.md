@@ -67,6 +67,15 @@ The following metrics are supported by now:
 - UFD (uplink-failure-detection group state)
 - MNHA (Mixed/Multi-Node High Availability, SRX): node/peer BFD & ICL status, cold-sync, SPU/hardware monitoring, PFE loopback checks, services-redundancy-group state
 
+## Scrape metrics
+
+| Metric | Labels | Meaning |
+| --- | --- | --- |
+| `junos_exporter_build_info` | `version`, `revision`, `branch`, `goversion`, `builddate` | Always `1`. Identifies which build produced the scrape. |
+
+The labels are populated at build time via `-ldflags -X`. A binary built without
+them reports the fallback values compiled into `main.go`.
+
 ## Feature specific mappings
 
 Some collected time series behave like enums - Integer values represent a certain state/meaning.

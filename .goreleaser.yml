@@ -18,7 +18,7 @@ builds:
     ignore:
     - goos: freebsd
       goarch: arm64
-    ldflags: -s -w -X main.version={{.Version}}
+    ldflags: -s -w -X main.version={{.Version}} -X main.revision={{.FullCommit}} -X main.branch={{.Branch}} -X main.buildDate={{.Date}}
     binary: junos_exporter
 
 nfpms:

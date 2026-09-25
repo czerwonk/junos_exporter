@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"regexp"
+	"runtime"
 	"sync"
 	"time"
 
@@ -25,12 +26,14 @@ import (
 const prefix = "junos_"
 
 var (
+	buildInfoDesc               *prometheus.Desc
 	scrapeCollectorDurationDesc *prometheus.Desc
 	scrapeDurationDesc          *prometheus.Desc
 	upDesc                      *prometheus.Desc
 )
 
 func init() {
+	buildInfoDesc = prometheus.NewDesc(prefix+"exporter_build_info", "Build information about the running exporter (always 1)", []string{"version", "revision", "branch", "goversion", "builddate"}, nil)
 	upDesc = prometheus.NewDesc(prefix+"up", "Scrape of target was successful", []string{"target"}, nil)
 	scrapeDurationDesc = prometheus.NewDesc(prefix+"collector_duration_seconds", "Duration of a collector scrape for one target", []string{"target"}, nil)
 	scrapeCollectorDurationDesc = prometheus.NewDesc(prefix+"collect_duration_seconds", "Duration of a scrape by collector and target", []string{"target", "collector"}, nil)
@@ -131,8 +134,16 @@ func clientForDevice(device *connector.Device, connManager *connector.SSHConnect
 	return c, nil
 }
 
+// buildInfoMetric reports the build identity of the running exporter, so a
+// scrape shows which binary produced it.
+func buildInfoMetric() prometheus.Metric {
+	return prometheus.MustNewConstMetric(buildInfoDesc, prometheus.GaugeValue, 1,
+		version, revision, branch, runtime.Version(), buildDate)
+}
+
 // Describe implements prometheus.Collector interface
 func (c *junosCollector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- buildInfoDesc
 	ch <- upDesc
 	ch <- scrapeDurationDesc
 	ch <- scrapeCollectorDurationDesc
@@ -146,6 +157,8 @@ func (c *junosCollector) Describe(ch chan<- *prometheus.Desc) {
 func (c *junosCollector) Collect(ch chan<- prometheus.Metric) {
 	ctx, span := tracer.Start(c.ctx, "Collect")
 	defer span.End()
+
+	ch <- buildInfoMetric()
 
 	var wg sync.WaitGroup
 	for _, d := range c.devices {

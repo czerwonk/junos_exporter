@@ -4,14 +4,14 @@ package main
 
 import (
 	"context"
-	"errors"
-	"io"
 	"regexp"
 	"runtime"
+	"slices"
 	"sync"
 	"time"
 
 	"github.com/czerwonk/junos_exporter/internal/config"
+	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/czerwonk/junos_exporter/pkg/connector"
 	"github.com/czerwonk/junos_exporter/pkg/dynamiclabels"
 	"github.com/czerwonk/junos_exporter/pkg/rpc"
@@ -28,6 +28,7 @@ const prefix = "junos_"
 var (
 	buildInfoDesc               *prometheus.Desc
 	scrapeCollectorDurationDesc *prometheus.Desc
+	scrapeCollectorSuccessDesc  *prometheus.Desc
 	scrapeDurationDesc          *prometheus.Desc
 	upDesc                      *prometheus.Desc
 )
@@ -37,6 +38,7 @@ func init() {
 	upDesc = prometheus.NewDesc(prefix+"up", "Scrape of target was successful", []string{"target"}, nil)
 	scrapeDurationDesc = prometheus.NewDesc(prefix+"collector_duration_seconds", "Duration of a collector scrape for one target", []string{"target"}, nil)
 	scrapeCollectorDurationDesc = prometheus.NewDesc(prefix+"collect_duration_seconds", "Duration of a scrape by collector and target", []string{"target", "collector"}, nil)
+	scrapeCollectorSuccessDesc = prometheus.NewDesc(prefix+"collect_success", "Whether a collector succeeded for one target (1 success, 0 failure)", []string{"target", "collector"}, nil)
 }
 
 type junosCollector struct {
@@ -147,6 +149,7 @@ func (c *junosCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- upDesc
 	ch <- scrapeDurationDesc
 	ch <- scrapeCollectorDurationDesc
+	ch <- scrapeCollectorSuccessDesc
 
 	for _, col := range c.collectors.allEnabledCollectors() {
 		col.Describe(ch)
@@ -192,25 +195,37 @@ func (c *junosCollector) collectForHost(ctx context.Context, device *connector.D
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, 1, l...)
 
 	for _, col := range c.collectors.collectorsForDevice(device) {
-		ctx, sp := tracer.Start(ctx, "CollectForHostWithCollector", trace.WithAttributes(
-			attribute.String("collector", col.Name()),
-		))
-
-		cta := &clientTracingAdapter{
-			cl:  cl,
-			ctx: ctx,
-		}
-
-		ct := time.Now()
-		err := col.Collect(cta, ch, l)
-
-		if err != nil && !errors.Is(err, io.EOF) {
-			sp.RecordError(err)
-			sp.SetStatus(codes.Error, err.Error())
-			log.Errorln(col.Name() + ": " + err.Error())
-		}
-
-		ch <- prometheus.MustNewConstMetric(scrapeCollectorDurationDesc, prometheus.GaugeValue, time.Since(ct).Seconds(), append(l, col.Name())...)
-		sp.End()
+		c.collectWithCollector(ctx, col, cl, ch, l)
 	}
+}
+
+// collectWithCollector runs a single collector and reports its outcome and
+// duration, so a collector that keeps failing is visible in metrics rather than
+// only in the log.
+func (c *junosCollector) collectWithCollector(ctx context.Context, col collector.RPCCollector, cl *rpc.Client, ch chan<- prometheus.Metric, labelValues []string) {
+	ctx, sp := tracer.Start(ctx, "CollectForHostWithCollector", trace.WithAttributes(
+		attribute.String("collector", col.Name()),
+	))
+	defer sp.End()
+
+	cta := &clientTracingAdapter{
+		cl:  cl,
+		ctx: ctx,
+	}
+
+	ct := time.Now()
+	err := col.Collect(cta, ch, labelValues)
+
+	success := float64(1)
+	if err != nil {
+		success = 0
+
+		sp.RecordError(err)
+		sp.SetStatus(codes.Error, err.Error())
+		log.Errorln(col.Name() + ": " + err.Error())
+	}
+
+	l := slices.Concat(labelValues, []string{col.Name()})
+	ch <- prometheus.MustNewConstMetric(scrapeCollectorDurationDesc, prometheus.GaugeValue, time.Since(ct).Seconds(), l...)
+	ch <- prometheus.MustNewConstMetric(scrapeCollectorSuccessDesc, prometheus.GaugeValue, success, l...)
 }

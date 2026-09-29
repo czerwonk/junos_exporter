@@ -12,9 +12,9 @@ import (
 const prefix string = "junos_chassis_cluster_"
 
 var (
-	nodeStatusDesc      *prometheus.Desc
-	nodePriorityDesc    *prometheus.Desc
-	failoverCountDesc   *prometheus.Desc
+	nodeStatusDesc    *prometheus.Desc
+	nodePriorityDesc  *prometheus.Desc
+	failoverCountDesc *prometheus.Desc
 )
 
 func init() {

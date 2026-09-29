@@ -106,3 +106,19 @@ func TestCloseAllConcurrentWithConnect(t *testing.T) {
 
 	wg.Wait()
 }
+
+func TestNewConnectionManagerDefaults(t *testing.T) {
+	m := NewConnectionManager()
+
+	assert.Equal(t, 30*time.Second, m.reconnectInterval)
+	assert.Equal(t, 10*time.Second, m.keepAliveInterval)
+	assert.Equal(t, 15*time.Second, m.keepAliveTimeout)
+	assert.Equal(t, 15*time.Minute, m.expiredConnectionTimeout,
+		"a zero expiry terminates every connection on the first keepalive tick")
+}
+
+func TestNewConnectionManagerOptionsOverrideDefaults(t *testing.T) {
+	m := NewConnectionManager(WithExpiredConnectionTimeout(time.Hour))
+
+	assert.Equal(t, time.Hour, m.expiredConnectionTimeout)
+}

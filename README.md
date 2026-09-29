@@ -47,6 +47,7 @@ The following metrics are supported by now:
 - ISIS (number of adjacencies, total number of routers)
 - NAT (all available statistics from services nat)
 - Chassis cluster HA status (SRX)
+- Virtual chassis status
 - Environment (temperatures, fans and PEM power statistics)
 - EVPN (per-EVI state, neighbor route counts, detail tables for interfaces / IRBs / bridge-domains / ESIs with DF election, duplicate-MAC detection, L3 contexts)
 - EVPN Type-5 / IP-prefix database (per-context per-AFI local + remote prefix counts, accepted/rejected advertisements) — separate flag (`-evpn_ip_prefix.enabled`) because the response scales with prefix count
@@ -492,6 +493,7 @@ features:
   system_statistics: true
   twamp: false
   ufd: false
+  virtual_chassis: false
   vpws: false
   vrrp: false
 ```

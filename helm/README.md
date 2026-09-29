@@ -39,7 +39,7 @@ be used with a `junos-exporter-ssh` secret object storing SSH secrets:
 extraArgs:
 - "-ssh.targets=$(JUNOS_EXPORTER_SSH_TARGETS)"
 - "-ssh.user=$(JUNOS_EXPORTER_SSH_USER)"
-- "-ssh.password=$(JUNOS_EXPORTER_SSH_PASSWORD)"
+- "-ssh.passwordEnv=JUNOS_EXPORTER_SSH_PASSWORD"
 
 extraEnv:
 - name: JUNOS_EXPORTER_SSH_TARGETS

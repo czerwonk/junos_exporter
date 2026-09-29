@@ -5,7 +5,7 @@ go 1.26.6
 require (
 	github.com/prometheus/client_golang v1.24.1
 	github.com/prometheus/client_model v0.6.3
-	github.com/prometheus/exporter-toolkit v0.19.0
+	github.com/prometheus/exporter-toolkit v0.20.0
 	github.com/sirupsen/logrus v1.10.2
 	github.com/stretchr/testify v1.12.1
 	go.opentelemetry.io/otel v1.46.0

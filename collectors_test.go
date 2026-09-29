@@ -133,4 +133,3 @@ func TestPerDeviceCollectors(t *testing.T) {
 
 	assert.NotSame(t, col1[0], col2[0], "collectors for different devices should be separate instances")
 }
-

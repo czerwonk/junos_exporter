@@ -4,6 +4,10 @@ ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
 
+# passed by czerwonk/go-ci/.github/workflows/docker-publish.yml; empty for local builds,
+# which then keep the version compiled into main.go
+ARG VERSION=""
+
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify
@@ -15,7 +19,7 @@ COPY pkg ./pkg
 RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} \
   GOARM=${TARGETVARIANT#v} \
   go build -trimpath \
-  -ldflags="-s -w" \
+  -ldflags="-s -w ${VERSION:+-X main.version=$VERSION}" \
   -o /out/junos_exporter .
 
 

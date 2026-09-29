@@ -1,6 +1,6 @@
 on:
   workflow_run:
-    workflows: ["Docker Build (tag)"]
+    workflows: ["Docker"]
     types:
       - completed
 
@@ -8,7 +8,11 @@ name: Helm Chart Release PR
 
 jobs:
   create-pr:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      startsWith(github.event.workflow_run.head_branch, 'v')
+
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -20,8 +24,14 @@ jobs:
 
       - name: Extract version from tag
         id: version
+        env:
+          TAG: ${{ github.event.workflow_run.head_branch }}
         run: |
-          TAG="${{ github.event.workflow_run.head_branch }}"
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::'$TAG' is not a semver tag, skipping"
+            exit 1
+          fi
+
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "chart_version=${TAG#v}" >> $GITHUB_OUTPUT
 

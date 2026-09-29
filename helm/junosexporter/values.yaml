@@ -8,7 +8,7 @@ replicaCount: 1
 prometheusOperator: prometheus-operator
 
 image:
-  repository: czerwonk/junos_exporter
+  repository: ghcr.io/czerwonk/junos_exporter
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -30,23 +30,17 @@ extraVolumes: []
 extraVolumeMounts: []
 
 # configyml is the configfile for the exporter
+# features configured here are overlayed on top of default config
 # configyml:
-#     devices:
-#       - host: srx.example.com
-#         username: junos_exporter
-#         keyfile: /config/ssh-keyfile
+#   devices:
+#     - host: srx.example.com
+#       username: junos_exporter
+#       keyfile: /config/ssh-keyfile
 #
-#     features:
-#       bgp: false
-#       ospf: false
-#       isis: false
-#       l2circuit: false
-#       l2vpn: false
-#       environment: true
-#       routes: true
-#       routing_engine: true
-#       interface_diagnostic: true
-#       power: true
+#   features:
+#     ospf: false
+#     environment: true
+#     routes: true
 
 #serviceMonitor.scapeTimeout needs to be high since junos_exporter uses ssh
 #serviceMonitor.interval needs to be higher than scrapeTimeout
@@ -100,4 +94,4 @@ affinity: {}
 annotations: {}
 
 # Roll out junos-exporter pods automatically when configyml or sshkey is updated
-rollOutJunosExporterPods: false
+rollOutJunosExporterPods: true

@@ -58,7 +58,7 @@ func (c *chassisClusterCollector) Collect(client collector.Client, ch chan<- pro
 	var x chassisClusterResult
 	err := client.RunCommandAndParse("show chassis cluster status", &x)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	if len(x.Status.RedundancyGroups) == 0 {

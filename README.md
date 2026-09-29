@@ -69,12 +69,33 @@ The following metrics are supported by now:
 
 ## Scrape metrics
 
+Alongside the device metrics, every scrape emits:
+
 | Metric | Labels | Meaning |
 | --- | --- | --- |
 | `junos_exporter_build_info` | `version`, `revision`, `branch`, `goversion`, `builddate` | Always `1`. Identifies which build produced the scrape. |
+| `junos_up` | `target` | `1` once an SSH connection to the target is established, `0` if it could not be. |
+| `junos_collector_duration_seconds` | `target` | Duration of the whole scrape for one target. |
+| `junos_collect_duration_seconds` | `target`, `collector` | Duration of a single collector. |
+| `junos_collect_success` | `target`, `collector` | `1` if the collector succeeded, `0` if it returned an error. |
 
-The labels are populated at build time via `-ldflags -X`. A binary built without
-them reports the fallback values compiled into `main.go`.
+The `build_info` labels are populated at build time via `-ldflags -X`. A binary built
+without them reports the fallback values compiled into `main.go`.
+
+`junos_collect_success` is the metric to alert on. Without it a collector that fails
+every scrape is indistinguishable from a device that does not have the feature, because
+both simply produce no series:
+
+```
+junos_collect_success == 0
+```
+
+Note that 14 features are enabled by default (alarm, bgp, environment, firewall,
+interfaces, interface diagnostics, interface queues, isis, ldp, macsec, ospf, routes,
+routing engine, system statistics). On a device that does not support one of them the
+underlying RPC fails, so `junos_collect_success` will sit at `0` for that collector until
+the feature is disabled for that device. Disable unsupported features per device in the
+config file rather than ignoring the metric.
 
 ## Feature specific mappings
 

@@ -96,7 +96,7 @@ func (c *environmentCollector) environmentItems(client collector.Client, ch chan
 		return parseXML(b, &x)
 	})
 	if err != nil {
-		return nil
+		return err
 	}
 
 	if client.IsSatelliteEnabled() {
@@ -110,7 +110,7 @@ func (c *environmentCollector) environmentItems(client collector.Client, ch chan
 			return parseXML(b, &y)
 		})
 		if err != nil {
-			return nil
+			return err
 		}
 
 		if len(x.MultiREResults.RoutingEngines) > 0 && len(y.MultiREResults.RoutingEngines) > 0 {

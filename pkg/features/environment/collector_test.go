@@ -5,6 +5,7 @@ package environment
 import (
 	"context"
 	"encoding/xml"
+	"errors"
 	"strings"
 	"testing"
 
@@ -15,10 +16,12 @@ import (
 )
 
 // fakeClient returns a different canned reply per command, so the base and
-// satellite RPCs can be given different shapes.
+// satellite RPCs can be given different shapes. A non-nil err fails every RPC
+// instead.
 type fakeClient struct {
 	replies   map[string]string
 	satellite bool
+	err       error
 }
 
 func (c *fakeClient) replyFor(cmd string) []byte {
@@ -35,10 +38,18 @@ func (c *fakeClient) replyFor(cmd string) []byte {
 }
 
 func (c *fakeClient) RunCommandAndParse(cmd string, obj any) error {
+	if c.err != nil {
+		return c.err
+	}
+
 	return xml.Unmarshal(c.replyFor(cmd), obj)
 }
 
 func (c *fakeClient) RunCommandAndParseWithParser(cmd string, parser rpc.Parser) error {
+	if c.err != nil {
+		return c.err
+	}
+
 	return parser(c.replyFor(cmd))
 }
 
@@ -85,5 +96,20 @@ func TestEnvironmentItemsSatelliteWithEmptyBaseResult(t *testing.T) {
 
 	if err := c.environmentItems(cl, ch, []string{"target"}); err != nil {
 		t.Fatalf("environmentItems returned error: %v", err)
+	}
+}
+
+// TestEnvironmentItemsPropagatesRPCError pins that a failed RPC surfaces as an
+// error rather than an empty successful scrape.
+func TestEnvironmentItemsPropagatesRPCError(t *testing.T) {
+	want := errors.New("rpc failed")
+	cl := &fakeClient{err: want}
+
+	c := &environmentCollector{}
+	ch := make(chan prometheus.Metric, 16)
+
+	err := c.environmentItems(cl, ch, []string{"target"})
+	if !errors.Is(err, want) {
+		t.Errorf("environmentItems error = %v, want %v", err, want)
 	}
 }

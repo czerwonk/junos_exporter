@@ -282,6 +282,15 @@ In this example we want to scrape 3 hosts:
 docker run -d --restart unless-stopped -p 9326:9326 -e SSH_KEYFILE=/ssh-keyfile -v /opt/junos_exporter_keyfile:/ssh-keyfile:ro -v /opt/junos_exporter_config.yml:/config.yml:ro czerwonk/junos_exporter
 ```
 
+Images are also published to the GitHub Container Registry, from the same workflow run and with the
+same tags:
+
+```bash
+docker run -d --restart unless-stopped -p 9326:9326 -e SSH_KEYFILE=/ssh-keyfile -v /opt/junos_exporter_keyfile:/ssh-keyfile:ro -v /opt/junos_exporter_config.yml:/config.yml:ro ghcr.io/czerwonk/junos_exporter
+```
+
+Both registries provide `linux/amd64`, `linux/arm64` and `linux/arm/v7`.
+
 The image is based on `gcr.io/distroless/static-debian13:nonroot` and runs as UID `65532` without a shell.
 Mounted files (e.g. the SSH key) must be readable by this user (e.g. `chown 65532 /opt/junos_exporter_keyfile`),
 alternatively the user can be overridden with `--user`.

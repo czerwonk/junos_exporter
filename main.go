@@ -127,6 +127,7 @@ var (
 	connManager                 *connector.SSHConnectionManager
 	reloadCh                    chan chan error
 	configMu                    sync.RWMutex
+	selfMetrics                 *exporterMetrics
 )
 
 func init() {
@@ -149,7 +150,10 @@ func main() {
 		log.Fatalf("could not resolve ssh credentials: %v", err)
 	}
 
+	selfMetrics = newExporterMetrics()
+
 	err := initialize()
+	selfMetrics.recordReload(err)
 	if err != nil {
 		log.Fatalf("could not initialize exporter. %v", err)
 	}
@@ -249,7 +253,10 @@ func reinitialize() error {
 		connManager = nil
 	}
 
-	return initialize()
+	err := initialize()
+	selfMetrics.recordReload(err)
+
+	return err
 }
 
 // resolveSSHSecrets materialises both *sshKeyPassphrase and *sshPassword from
@@ -403,21 +410,27 @@ func connectionManager() *connector.SSHConnectionManager {
 	return connector.NewConnectionManager(opts...)
 }
 
-func startServer() error {
-	log.Infof("Starting JunOS exporter (Version: %s)", version)
-	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
+func registerRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte(`<html>
 			<head><title>JunOS Exporter (Version ` + version + `)</title></head>
 			<body>
 			<h1>JunOS Exporter</h1>
 			<p><a href="` + *metricsPath + `">Metrics</a></p>
+			<p><a href="` + exporterMetricsPath(*metricsPath) + `">Exporter metrics</a></p>
 			<h2>More information:</h2>
 			<p><a href="https://github.com/czerwonk/junos_exporter">github.com/czerwonk/junos_exporter</a></p>
 			</body>
 			</html>`))
 	})
-	http.HandleFunc(*metricsPath, handleMetricsRequest)
-	http.HandleFunc("/-/reload", updateConfiguration)
+	mux.HandleFunc(*metricsPath, handleMetricsRequest)
+	mux.Handle(exporterMetricsPath(*metricsPath), selfMetrics.handler())
+	mux.HandleFunc("/-/reload", updateConfiguration)
+}
+
+func startServer() error {
+	log.Infof("Starting JunOS exporter (Version: %s)", version)
+	registerRoutes(http.DefaultServeMux)
 
 	if *webConfigFile != "" {
 		log.Infof("Listening for %s on %s (web-config: %q)",

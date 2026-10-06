@@ -98,6 +98,42 @@ underlying RPC fails, so `junos_collect_success` will sit at `0` for that collec
 the feature is disabled for that device. Disable unsupported features per device in the
 config file rather than ignoring the metric.
 
+## Exporter metrics
+
+The exporter reports on itself at `/metrics/exporter` (or `<telemetry-path>/exporter` when
+`-web.telemetry-path` is set). This path never contacts a device, so it is cheap to scrape
+at any interval:
+
+| Metric | Meaning |
+| --- | --- |
+| `go_*` | Go runtime: goroutines, heap, GC, threads. |
+| `process_*` | Process: CPU, resident memory, open file descriptors, start time. |
+| `junos_exporter_config_last_reload_successful` | `1` if the last configuration load succeeded, `0` if it failed. |
+| `junos_exporter_config_last_reload_success_timestamp_seconds` | Timestamp of the last load that succeeded. |
+
+`go_goroutines` and `process_open_fds` are the ones to watch: the exporter holds an SSH
+connection per device and starts a goroutine per device per scrape, so both grow if
+connections are not released.
+
+A failed reload leaves the previous configuration in service, so it is otherwise only
+visible in the logs:
+
+```
+junos_exporter_config_last_reload_successful == 0
+```
+
+These metrics are served separately from the device metrics because `<telemetry-path>`
+takes a `target` parameter. Serving them there would repeat every runtime metric once per
+device.
+
+```yaml
+scrape_configs:
+  - job_name: junos_exporter
+    metrics_path: /metrics/exporter
+    static_configs:
+      - targets: ['junos-exporter:9326']
+```
+
 ## Feature specific mappings
 
 Some collected time series behave like enums - Integer values represent a certain state/meaning.

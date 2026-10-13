@@ -9,6 +9,7 @@ prometheusOperator: prometheus-operator
 
 image:
   repository: ghcr.io/czerwonk/junos_exporter
+  tag: ""  # defaults to .Chart.AppVersion
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []

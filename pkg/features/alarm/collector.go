@@ -31,15 +31,9 @@ type alarmCollector struct {
 	filter *regexp.Regexp
 }
 
-// NewCollector creates a new collector
-func NewCollector(alarmsFilter string) collector.RPCCollector {
-	c := new(alarmCollector)
-
-	if len(alarmsFilter) > 0 {
-		c.filter = regexp.MustCompile(alarmsFilter)
-	}
-
-	return c
+// NewCollector creates a new collector. A nil filter matches no alarm.
+func NewCollector(alarmsFilter *regexp.Regexp) collector.RPCCollector {
+	return &alarmCollector{filter: alarmsFilter}
 }
 
 // Name returns the name of the collector

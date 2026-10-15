@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"regexp"
 	"strings"
 	"sync"
 	"syscall"
@@ -128,6 +129,7 @@ var (
 	reloadCh                    chan chan error
 	configMu                    sync.RWMutex
 	selfMetrics                 *exporterMetrics
+	alarmFilterExpression       *regexp.Regexp
 )
 
 func init() {
@@ -229,6 +231,11 @@ func printVersion() {
 
 func initialize() error {
 	c, err := loadConfig()
+	if err != nil {
+		return err
+	}
+
+	alarmFilterExpression, err = compileAlarmFilter(*alarmFilter)
 	if err != nil {
 		return err
 	}

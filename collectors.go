@@ -94,7 +94,7 @@ func (c *collectors) initCollectorsForDevices(device *connector.Device, descRe *
 	c.addCollectorIfEnabledForDevice(device, "routingengine", f.RoutingEngine, routingengine.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "accounting", f.Accounting, accounting.NewCollector)
 	c.addCollectorIfEnabledForDevice(device, "alarm", f.Alarm, func() collector.RPCCollector {
-		return alarm.NewCollector(*alarmFilter)
+		return alarm.NewCollector(alarmFilterExpression)
 	})
 	c.addCollectorIfEnabledForDevice(device, "ntp", f.NTP, func() collector.RPCCollector {
 		return ntp.NewCollector()

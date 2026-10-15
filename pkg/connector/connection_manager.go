@@ -59,10 +59,11 @@ type SSHConnectionManager struct {
 // NewConnectionManager creates a new connection manager
 func NewConnectionManager(opts ...Option) *SSHConnectionManager {
 	m := &SSHConnectionManager{
-		connections:       make(map[string]*SSHConnection),
-		reconnectInterval: 30 * time.Second,
-		keepAliveInterval: 10 * time.Second,
-		keepAliveTimeout:  15 * time.Second,
+		connections:              make(map[string]*SSHConnection),
+		reconnectInterval:        30 * time.Second,
+		keepAliveInterval:        10 * time.Second,
+		keepAliveTimeout:         15 * time.Second,
+		expiredConnectionTimeout: 15 * time.Minute,
 	}
 
 	for _, opt := range opts {

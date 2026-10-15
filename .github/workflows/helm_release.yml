@@ -32,27 +32,26 @@ jobs:
             exit 1
           fi
 
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "chart_version=${TAG#v}" >> $GITHUB_OUTPUT
+          echo "version=${TAG#v}" >> $GITHUB_OUTPUT
 
       - name: Update Chart versions
         run: |
-          sed -i "s/^version:.*/version: ${{ steps.version.outputs.chart_version }}/" helm/junosexporter/Chart.yaml
-          sed -i "s/^appVersion:.*/appVersion: ${{ steps.version.outputs.tag }}/" helm/junosexporter/Chart.yaml
+          sed -i "s/^version:.*/version: ${{ steps.version.outputs.version }}/" helm/junosexporter/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: ${{ steps.version.outputs.version }}/" helm/junosexporter/Chart.yaml
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore(helm): release chart ${{ steps.version.outputs.chart_version }}"
-          branch: helm-release/${{ steps.version.outputs.chart_version }}
-          title: "chore(helm): release chart ${{ steps.version.outputs.chart_version }}"
+          commit-message: "chore(helm): release chart ${{ steps.version.outputs.version }}"
+          branch: helm-release/${{ steps.version.outputs.version }}
+          title: "chore(helm): release chart ${{ steps.version.outputs.version }}"
           body: |
-            Automated chart version bump following app release `${{ steps.version.outputs.tag }}`.
+            Automated chart version bump following app release `${{ github.event.workflow_run.head_branch }}`.
 
             Changes:
-            - `version`: bumped to `${{ steps.version.outputs.chart_version }}`
-            - `appVersion`: bumped to `${{ steps.version.outputs.tag }}`
+            - `version`: bumped to `${{ steps.version.outputs.version }}`
+            - `appVersion`: bumped to `${{ steps.version.outputs.version }}`
 
             Merging this PR will trigger the Helm Chart Publish workflow, which packages and pushes
             the chart to `oci://ghcr.io/${{ github.repository_owner }}/charts`.

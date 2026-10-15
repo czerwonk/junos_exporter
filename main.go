@@ -31,7 +31,7 @@ import (
 // Overridden at build time via -ldflags -X. They must stay variables: -X cannot
 // patch a constant.
 var (
-	version   = "0.17.3"
+	version   = "0.17.4"
 	revision  = "unknown"
 	branch    = "unknown"
 	buildDate = "unknown"

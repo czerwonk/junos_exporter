@@ -3,81 +3,180 @@
 package firewall
 
 import (
-	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/prometheus/client_golang/prometheus"
+        "strings"
+
+        "github.com/czerwonk/junos_exporter/pkg/collector"
+        "github.com/prometheus/client_golang/prometheus"
 )
 
 const prefix string = "junos_firewall_filter_"
 
 var (
-	counterPackets *prometheus.Desc
-	counterBytes   *prometheus.Desc
-	policerPackets *prometheus.Desc
-	policerBytes   *prometheus.Desc
+        counterPackets *prometheus.Desc
+        counterBytes   *prometheus.Desc
+        policerPackets *prometheus.Desc
+        policerBytes   *prometheus.Desc
 )
 
 func init() {
-	l := []string{"target", "filter", "counter"}
+        l := []string{"target", "filter", "counter"}
 
-	counterPackets = prometheus.NewDesc(prefix+"counter_packets", "Number of packets matching counter in firewall filter", l, nil)
-	counterBytes = prometheus.NewDesc(prefix+"counter_bytes", "Number of bytes matching counter in firewall filter", l, nil)
-	policerPackets = prometheus.NewDesc(prefix+"policer_packets", "Number of packets matching policer in firewall filter", l, nil)
-	policerBytes = prometheus.NewDesc(prefix+"policer_bytes", "Number of bytes matching policer in firewall filter", l, nil)
+        counterPackets = prometheus.NewDesc(
+                prefix+"counter_packets",
+                "Number of packets matching counter in firewall filter",
+                l,
+                nil,
+        )
+
+        counterBytes = prometheus.NewDesc(
+                prefix+"counter_bytes",
+                "Number of bytes matching counter in firewall filter",
+                l,
+                nil,
+        )
+
+        policerPackets = prometheus.NewDesc(
+                prefix+"policer_packets",
+                "Number of packets matching policer in firewall filter",
+                l,
+                nil,
+        )
+
+        policerBytes = prometheus.NewDesc(
+                prefix+"policer_bytes",
+                "Number of bytes matching policer in firewall filter",
+                l,
+                nil,
+        )
 }
 
 type firewallCollector struct {
-	filterNameRegex string
+        filterNameRegex string
 }
 
 // NewCollector creates a new collector
 func NewCollector(filterNameRegex string) collector.RPCCollector {
-	return &firewallCollector{filterNameRegex: filterNameRegex}
+        return &firewallCollector{
+                filterNameRegex: filterNameRegex,
+        }
 }
 
 // Name returns the name of the collector
 func (*firewallCollector) Name() string {
-	return "Firewall"
+        return "Firewall"
 }
 
 // Describe describes the metrics
 func (*firewallCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- counterPackets
-	ch <- counterBytes
-	ch <- policerPackets
-	ch <- policerBytes
+        ch <- counterPackets
+        ch <- counterBytes
+        ch <- policerPackets
+        ch <- policerBytes
 }
 
 // Collect collects metrics from JunOS
-func (c *firewallCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var x = result{}
-	filterNameRegex := c.filterNameRegex
-	if filterNameRegex == "" {
-		filterNameRegex = ".*"
-	}
-	err := client.RunCommandAndParse("show firewall filter regex "+filterNameRegex, &x)
-	if err != nil {
-		return err
-	}
+func (c *firewallCollector) Collect(
+        client collector.Client,
+        ch chan<- prometheus.Metric,
+        labelValues []string,
+) error {
+        var x = result{}
 
-	for _, t := range x.Information.Filters {
-		c.collectForFilter(t, ch, labelValues)
-	}
+        filterNameRegex := c.filterNameRegex
+        if filterNameRegex == "" {
+                filterNameRegex = ".*"
+        }
 
-	return nil
+        // Collect regular firewall filters.
+        err := client.RunCommandAndParse(
+                "show firewall filter regex "+filterNameRegex,
+                &x,
+        )
+        if err != nil {
+                return err
+        }
+
+        for _, t := range x.Information.Filters {
+                c.collectForFilter(t, ch, labelValues)
+        }
+
+        // Check whether this device is a PTX.
+        var systemInfo = systemInformation{}
+
+        err = client.RunCommandAndParse(
+                "show system information",
+                &systemInfo,
+        )
+        if err != nil {
+                return err
+        }
+
+        // "show firewall application routing" is only available on PTX.
+        hardwareModel := strings.TrimSpace(
+                strings.ToLower(
+                        systemInfo.SystemInformation.HardwareModel,
+                ),
+        )
+
+        if strings.HasPrefix(hardwareModel, "ptx") {
+                var applicationRouting = result{}
+
+                err = client.RunCommandAndParse(
+                        "show firewall application routing",
+                        &applicationRouting,
+                )
+                if err != nil {
+                        return err
+                }
+
+                for _, t := range applicationRouting.Information.Filters {
+                        c.collectForFilter(t, ch, labelValues)
+                }
+        }
+
+        return nil
 }
 
-func (c *firewallCollector) collectForFilter(filter filter, ch chan<- prometheus.Metric, labelValues []string) {
-	l := append(labelValues, filter.Name)
+func (c *firewallCollector) collectForFilter(
+        filter filter,
+        ch chan<- prometheus.Metric,
+        labelValues []string,
+) {
+        l := append(labelValues, filter.Name)
 
-	for _, counter := range filter.Counters {
-		lp := append(l, counter.Name)
-		ch <- prometheus.MustNewConstMetric(counterPackets, prometheus.GaugeValue, float64(counter.Packets), lp...)
-		ch <- prometheus.MustNewConstMetric(counterBytes, prometheus.GaugeValue, float64(counter.Bytes), lp...)
-	}
+        for _, counter := range filter.Counters {
+                lp := append(l, counter.Name)
 
-	for _, policer := range filter.Policers {
-		lp := append(l, policer.Name)
-		ch <- prometheus.MustNewConstMetric(policerPackets, prometheus.GaugeValue, float64(policer.Packets), lp...)
-		ch <- prometheus.MustNewConstMetric(policerBytes, prometheus.GaugeValue, float64(policer.Bytes), lp...)
-	}
+                ch <- prometheus.MustNewConstMetric(
+                        counterPackets,
+                        prometheus.GaugeValue,
+                        float64(counter.Packets),
+                        lp...,
+                )
+
+                ch <- prometheus.MustNewConstMetric(
+                        counterBytes,
+                        prometheus.GaugeValue,
+                        float64(counter.Bytes),
+                        lp...,
+                )
+        }
+
+        for _, policer := range filter.Policers {
+                lp := append(l, policer.Name)
+
+                ch <- prometheus.MustNewConstMetric(
+                        policerPackets,
+                        prometheus.GaugeValue,
+                        float64(policer.Packets),
+                        lp...,
+                )
+
+                ch <- prometheus.MustNewConstMetric(
+                        policerBytes,
+                        prometheus.GaugeValue,
+                        float64(policer.Bytes),
+                        lp...,
+                )
+        }
 }

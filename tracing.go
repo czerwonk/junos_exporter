@@ -116,7 +116,18 @@ type clientTracingAdapter struct {
 
 // RunCommandAndParse implements RunCommandAndParse of the collector.Client interface
 func (cta *clientTracingAdapter) RunCommandAndParse(cmd string, obj any) error {
-	return cta.cl.RunCommandAndParse(cmd, obj)
+	_, span := tracer.Start(cta.ctx, "RunCommandAndParse", trace.WithAttributes(
+		attribute.String("command", cmd),
+	))
+	defer span.End()
+
+	err := cta.cl.RunCommandAndParse(cmd, obj)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+
+	return err
 }
 
 // RunCommandAndParseWithParser implements RunCommandAndParseWithParser of the collector.Client interface

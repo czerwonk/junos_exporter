@@ -127,6 +127,7 @@ var (
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
 	reloadCh                    chan chan error
+	shutdownCtx                 = context.Background()
 	configMu                    sync.RWMutex
 	selfMetrics                 *exporterMetrics
 	alarmFilterExpression       *regexp.Regexp
@@ -191,6 +192,7 @@ func initChannels(ctx context.Context, cancel context.CancelFunc) {
 	signal.Notify(term, syscall.SIGTERM)
 
 	reloadCh = make(chan chan error)
+	shutdownCtx = ctx
 	go handleSignals(ctx, cancel, hup, term)
 }
 
@@ -483,10 +485,25 @@ func startListeningWithWebConfig() error {
 func updateConfiguration(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
-		rc := make(chan error)
-		reloadCh <- rc
-		if err := <-rc; err != nil {
-			http.Error(w, fmt.Sprintf("failed to reload config: %s", err), http.StatusInternalServerError)
+		// Buffered so the signal handler can always deliver its reply, even if
+		// the client has already gone away.
+		rc := make(chan error, 1)
+
+		select {
+		case reloadCh <- rc:
+		case <-shutdownCtx.Done():
+			http.Error(w, "exporter is shutting down", http.StatusServiceUnavailable)
+			return
+		case <-r.Context().Done():
+			return
+		}
+
+		select {
+		case err := <-rc:
+			if err != nil {
+				http.Error(w, fmt.Sprintf("failed to reload config: %s", err), http.StatusInternalServerError)
+			}
+		case <-r.Context().Done():
 		}
 	default:
 		log.Errorf("POST method expected")

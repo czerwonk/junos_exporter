@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
@@ -325,14 +326,29 @@ func (c *interfaceDiagnosticsCollector) transceiverInfoFromRPCResult(client coll
 				return nil, err
 			}
 
-			for port, subSubModule := range subModule.ChassisSubSubModule {
-				port_name := strings.Split(subSubModule.Name, " ")[1]
+			// The PIC port list only contains populated ports, so match each
+			// transceiver to its port by number instead of by position.
+			picPortsByNumber := make(map[string]*picPort, len(picPortsInformation))
+			for i := range picPortsInformation {
+				picPortsByNumber[strconv.Itoa(picPortsInformation[i].PortNumber)] = &picPortsInformation[i]
+			}
+
+			for _, subSubModule := range subModule.ChassisSubSubModule {
+				nameFields := strings.Fields(subSubModule.Name)
+				if len(nameFields) < 2 {
+					continue
+				}
+				port_name := nameFields[1]
 				subSubModule_pointer := subSubModule
 				id := fpc + "/" + pic + "/" + port_name
+				picPortInfo, found := picPortsByNumber[port_name]
+				if !found {
+					picPortInfo = &picPort{}
+				}
 				transceiver := transceiverInformation{
 					Name:                id,
 					ChassisHardwareInfo: &subSubModule_pointer,
-					PicPort:             &picPortsInformation[port],
+					PicPort:             picPortInfo,
 				}
 				transceiverList = append(transceiverList, &transceiver)
 			}

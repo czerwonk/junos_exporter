@@ -67,7 +67,7 @@ func (c *ntpCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 		return fmt.Errorf("failed to execute NTP command: %w", err)
 	}
 
-	metrics := parseNTPOutput(reply.Output.Text)
+	metrics := reply.metrics()
 	if len(metrics) == 0 {
 		return fmt.Errorf("no NTP metrics parsed")
 	}

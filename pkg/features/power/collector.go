@@ -104,15 +104,21 @@ func (c *powerCollector) Collect(client collector.Client, ch chan<- prometheus.M
 		return fmt.Errorf("failed to get platform: %w", err)
 	}
 
-	if isEX4300(platform) {
+	if usesPowerBudgetStatistics(platform) {
 		return c.collectChassisPowerBudgetStatistics(client, ch, labelValues)
 	}
 
 	return c.collectChassisPower(client, ch, labelValues)
 }
 
-func isEX4300(platform string) bool {
-	return strings.HasPrefix(platform, "EX4300")
+// usesPowerBudgetStatistics reports whether the platform exposes power data
+// through "show chassis power-budget-statistics" rather than
+// "show chassis power". EX4300 and EX4000 do not implement the latter
+// (on EX4000 the CLI even autocompletes "show chassis power" to the
+// budget-statistics command) and return XML that cannot be parsed as
+// an <rpc-reply> power-usage document.
+func usesPowerBudgetStatistics(platform string) bool {
+	return strings.HasPrefix(platform, "EX4300") || strings.HasPrefix(platform, "EX4000")
 }
 
 func (c *powerCollector) getPlatform(client collector.Client) (string, error) {

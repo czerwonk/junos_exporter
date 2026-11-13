@@ -23,14 +23,14 @@ type securityPerformanceSummary struct {
 }
 
 type securityPerformanceStatistics struct {
-	FPCNumber   int64 `xml:"fpc-number"`
-	PICNumber   int64 `xml:"pic-number"`
-	CPUUtil     int64 `xml:"spu-cpu-utilization"`
-	MemoryUtil  int64 `xml:"spu-memory-utilization"`
-	CurrentFlow int64 `xml:"spu-current-flow-session"`
-	MaxFlow     int64 `xml:"spu-max-flow-session"`
-	CurrentCP   int64 `xml:"spu-current-cp-session"`
-	MaxCP       int64 `xml:"spu-max-cp-session"`
+	FPCNumber   int64  `xml:"fpc-number"`
+	PICNumber   int64  `xml:"pic-number"`
+	CPUUtil     int64  `xml:"spu-cpu-utilization"`
+	MemoryUtil  int64  `xml:"spu-memory-utilization"`
+	CurrentFlow int64  `xml:"spu-current-flow-session"`
+	MaxFlow     int64  `xml:"spu-max-flow-session"`
+	CurrentCP   string `xml:"spu-current-cp-session"`
+	MaxCP       string `xml:"spu-max-cp-session"`
 }
 
 type singleEngineResult struct {

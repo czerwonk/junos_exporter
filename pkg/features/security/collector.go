@@ -4,6 +4,7 @@ package security
 
 import (
 	"encoding/xml"
+	"strconv"
 	"strings"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
@@ -80,8 +81,14 @@ func (c *securityCollector) Collect(client collector.Client, ch chan<- prometheu
 			ch <- prometheus.MustNewConstMetric(memoryUtilization, prometheus.GaugeValue, float64(ps.MemoryUtil), ls...)
 			ch <- prometheus.MustNewConstMetric(currentFlowSession, prometheus.GaugeValue, float64(ps.CurrentFlow), ls...)
 			ch <- prometheus.MustNewConstMetric(maxFlowSession, prometheus.GaugeValue, float64(ps.MaxFlow), ls...)
-			ch <- prometheus.MustNewConstMetric(currentCpSession, prometheus.GaugeValue, float64(ps.CurrentCP), ls...)
-			ch <- prometheus.MustNewConstMetric(maxCpSession, prometheus.GaugeValue, float64(ps.MaxCP), ls...)
+
+			// Branch SRX devices have no central point and report "N/A" here.
+			if v, err := strconv.ParseFloat(ps.CurrentCP, 64); err == nil {
+				ch <- prometheus.MustNewConstMetric(currentCpSession, prometheus.GaugeValue, v, ls...)
+			}
+			if v, err := strconv.ParseFloat(ps.MaxCP, 64); err == nil {
+				ch <- prometheus.MustNewConstMetric(maxCpSession, prometheus.GaugeValue, v, ls...)
+			}
 		}
 	}
 

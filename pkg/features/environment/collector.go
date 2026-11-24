@@ -197,9 +197,14 @@ func processEnvironmentComponentItem(e environmentComponentItem, ch chan<- prome
 		voltage = e.DcInformation.DcDetail.Str3DcVoltage
 	}
 
+	current := e.DcInformation.DcDetail.DcCurrent
+	if e.DcInformation.DcDetail.Str3DcCurrent > 0 {
+		current = e.DcInformation.DcDetail.Str3DcCurrent
+	}
+
 	if voltage > 0 {
 		ch <- prometheus.MustNewConstMetric(dcVoltageDesc, prometheus.GaugeValue, voltage, l...)
-		ch <- prometheus.MustNewConstMetric(dcCurrentDesc, prometheus.GaugeValue, e.DcInformation.DcDetail.DcCurrent, l...)
+		ch <- prometheus.MustNewConstMetric(dcCurrentDesc, prometheus.GaugeValue, current, l...)
 		ch <- prometheus.MustNewConstMetric(dcPowerDesc, prometheus.GaugeValue, e.DcInformation.DcDetail.DcPower, l...)
 		ch <- prometheus.MustNewConstMetric(dcLoadDesc, prometheus.GaugeValue, e.DcInformation.DcDetail.DcLoad, l...)
 	}

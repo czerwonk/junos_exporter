@@ -38,6 +38,7 @@ type environmentComponentItem struct {
 			DcPower       float64 `xml:"dc-power,omitempty"`
 			DcLoad        float64 `xml:"dc-load,omitempty"`
 			Str3DcVoltage float64 `xml:"str3-dc-voltage,omitempty"`
+			Str3DcCurrent float64 `xml:"str3-dc-current,omitempty"`
 		} `xml:"dc-detail"`
 	} `xml:"dc-information"`
 }
